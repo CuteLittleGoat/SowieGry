@@ -1,6 +1,4 @@
-# SowaRunner — instrukcja obsługi / user guide
-
-## PL 🇵🇱
+# SowaRunner — instrukcja obsługi
 
 ### Jak uruchomić
 1. Otwórz plik `SowaRunner/index.html` w przeglądarce.
@@ -15,21 +13,3 @@
 
 ### Dźwięk
 - Pierwsze kliknięcie/tap włącza dźwięk (wymóg przeglądarek).
-
----
-
-## EN 🇬🇧
-
-### How to run
-1. Open `SowaRunner/index.html` in your browser.
-2. On the start screen, choose difficulty (1 / 2 / 3 or click).
-3. Press **Space** or click the Start button to begin.
-
-### Controls
-- **Space / click / tap** — start the game and jump.
-- **Double jump** — two quick jumps in the air.
-- **1 / 2 / 3** — select difficulty on the start screen.
-- **R** — return to the start screen while playing.
-
-### Audio
-- The first click/tap enables audio (browser requirement).

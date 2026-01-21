@@ -1,4 +1,4 @@
-# Sowa Jumper — instrukcja gry dla gracza (PL)
+# Sowa Jumper — instrukcja gry dla gracza
 
 ## Cel gry
 Twoim zadaniem jest sterowanie sową, która wspina się coraz wyżej po platformach. Zdobywaj punkty za wysokość oraz zbieraj bonusy, a jednocześnie unikaj upadków poza ekran i niebezpiecznej „strefy dołu”. Gra nie ma końca — celem jest jak najwyższy wynik.
@@ -48,56 +48,3 @@ W prawym górnym rogu ekranu widzisz:
 - **Punkty** — aktualny wynik.
 
 Powodzenia i wysokich lotów!
-
----
-
-# Sowa Jumper — player instructions (EN)
-
-## Goal of the game
-Your task is to control the owl climbing higher and higher on platforms. Earn points for height and collect bonuses while avoiding falling below the screen and the dangerous “bottom zone.” The game has no end — the goal is the highest possible score.
-
-## Controls
-The game starts only after **pressing any key** or **clicking/tapping** the screen on the title screen.
-
-### Keyboard
-- **Move left:** `←` or `A`
-- **Move right:** `→` or `D`
-- **Hoot (sound):** `Space`
-
-### Touchscreen / mouse
-- **Tap/click the left half of the screen** — the owl moves left.
-- **Tap/click the right half of the screen** — the owl moves right.
-- **Tapping/clicking** also triggers the hoot sound.
-- **Release your finger/button** — the owl stops accelerating and slows down.
-
-## Gameplay rules
-- At the start you see the **title screen** — the owl keeps bouncing on platforms, and the game starts after any input.
-- **The owl automatically falls downward** (gravity), and when it lands on a platform it bounces up.
-- **During the first 25 meters** platforms are noticeably denser to help you get into the rhythm.
-- **Platforms are random** and appear higher as you progress.
-- **If you fall below the screen**, you lose a life and respawn in the center.
-- The **“Pracu Pracu” zone** (bottom band of the screen) also causes a life loss.
-- After losing a life the owl is briefly **invulnerable** (blinking/semi-transparent).
-
-## Points and bonuses
-- **Height** increases as you climb.
-- **Points**:
-  - Small points for climbing up.
-  - **Goats** — appear from 20 m, provide a stronger jump; the first contact with each goat grants +25 points.
-  - **Leaves** — collected in flight:
-    - monstera: +30 points
-    - alocasia: +20 points
-  - **Whales** — appear from 30 m; if you have fewer than max lives you gain +1 life; if you are at max lives you gain +50 points.
-
-## Lives
-- You start with **3 lives**.
-- The maximum is **5 lives**.
-- When you lose all lives, the score and height reset and lives return to 3.
-
-## HUD (info panel)
-In the top-right corner you see:
-- **Height** (meters) — how far you climbed from the start.
-- **Lives** — current number of lives.
-- **Points** — current score.
-
-Good luck and happy jumping!
