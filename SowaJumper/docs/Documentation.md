@@ -263,19 +263,26 @@ Kolejność rysowania w `draw()`:
    - wypełnienie tła kolorem `#bfe7ff`
    - chmury (białe elipsy z `globalAlpha`)
 2. `drawPracuTexts()` (biały tekst + czerwony obrys)
-3. Platformy (`drawPlatform`) — białe zaokrąglone prostokąty z napisem „amic”
-4. Liście
-5. Wieloryby
-6. Kozy
-7. Sowa (`drawOwl`), z półprzezroczystością przy nietykalności i animacją machania skrzydeł
+3. Platformy (`drawPlatform`) — szare platformy jak w SowaRunner + stacje Amic dla katapult
+4. Liście (Monstera/Alocasia z konturami i światłem)
+5. Wieloryby (humbaki z cieniem i refleksami)
+6. Kozy (białe bryły z szarymi kopytami, rogami i rumieńcami)
+7. Sowa (`drawOwl`), z półprzezroczystością przy nietykalności, cieniem i skrzydłami jak w SowaRunner
 8. Jeśli `phase === "title"` — półprzezroczysta plansza z tytułem i instrukcją startu
 
 ### 12.1. Style rysowania
-- Platforma: biały fill, obrys `#f3c6c6`, napis „amic” czerwony `#d32f2f`.
-- Koza: jasnobeżowa bryła, brązowy obrys, oczy, rogi, nogi i racice.
-- Wieloryb: niebieskie elipsy, ciemne oczy, biały „pysk”.
-- Liść: zielone elipsy (różne odcienie), lekka rotacja.
-- Sowa: beżowe koło, białe oczy, pomarańczowy dziób, skrzydła z animacją machania.
+- Platforma standardowa/moving/breakable: prostokąt `rgba(90, 125, 155, 0.86)` z jasnym połyskiem (`rgba(255,255,255,0.4)`) i zaokrąglonymi rogami; przy platformie „breakable” po pęknięciu alfa spada do 0.35.
+- Platforma „catapult”: renderowana jako stacja **Amic** (czerwony dach, biały korpus, czerwony panel z napisem „Amic”, jasne okna i szare dyspensery) — rysowana przez `drawAmicStation`.
+- Koza: biała bryła (`roundRect`) z cieniem, jasnymi łatami, rogami, oczami i rumieńcami; skaluje się względem `goat.size`.
+- Wieloryb (humbak): niebieskie ciało z cieniem, płetwą ogonową, jasnym brzuchem, okiem i refleksami wody; skaluje się względem `whale.size`.
+- Liść: dwa warianty — **Monstera** z zielonymi warstwami, żyłkami i refleksami oraz **Alocasia** z jasnymi żyłkami i konturem; oba rysowane na białej poświacie i skalowane względem `leaf.size`.
+- Sowa: ciało w odcieniach brązu, jasny brzuch, policzki, animowane skrzydła, cień pod spodem, oczy z połyskiem i mruganiem oraz żółty dziób.
+
+### 12.2. Funkcje renderujące detale (nowe)
+- `drawRunnerPlatform(x, y, width, height, alpha)` — rysuje standardową platformę z zaokrągleniami i połyskiem (jak w SowaRunner).
+- `drawAmicStation(platform)` — rysuje stację Amic skalowaną do szerokości platformy katapultującej; zawiera dach, korpus, panel z napisem „Amic” i dyspensery.
+- `drawMonsteraLeaf()` — liść Monstera z dwiema warstwami zieleni, wycięciami, refleksami oraz żyłkami.
+- `drawAlocasiaLeaf()` — liść Alocasia z jasnymi żyłkami, konturem i długim ogonkiem.
 
 ## 13. Dźwięk
 `playHoot()`:
