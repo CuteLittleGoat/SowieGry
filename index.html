@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="pl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>SowieGry — Start</title>
+    <style>
+      :root {
+        font-family: "Trebuchet MS", "Comic Sans MS", "Segoe UI", sans-serif;
+        color: #2c2a32;
+        background: #f7f2ff;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: radial-gradient(circle at top, #fff4f8, #e4f4ff 55%, #e7ffe6 100%);
+      }
+
+      .start-screen {
+        width: min(1100px, 92vw);
+        padding: 48px 40px 56px;
+        border-radius: 32px;
+        background: rgba(255, 255, 255, 0.8);
+        box-shadow: 0 25px 60px rgba(56, 49, 88, 0.18);
+        position: relative;
+        overflow: hidden;
+      }
+
+      header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 24px;
+        flex-wrap: wrap;
+      }
+
+      h1 {
+        font-size: clamp(2.1rem, 3.4vw, 3rem);
+        margin: 0;
+        letter-spacing: 0.02em;
+      }
+
+      .subtitle {
+        font-size: 1.1rem;
+        margin-top: 6px;
+        color: #5a5a70;
+      }
+
+      .cards {
+        margin-top: 36px;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 20px;
+      }
+
+      .game-card {
+        text-decoration: none;
+        color: inherit;
+        background: white;
+        border-radius: 22px;
+        padding: 22px;
+        box-shadow: 0 14px 30px rgba(70, 65, 98, 0.12);
+        border: 2px solid transparent;
+        transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+      }
+
+      .game-card:hover {
+        transform: translateY(-6px) scale(1.02);
+        border-color: #a88cff;
+        box-shadow: 0 20px 40px rgba(70, 65, 98, 0.2);
+      }
+
+      .game-card h2 {
+        margin: 0 0 10px;
+        font-size: 1.5rem;
+      }
+
+      .game-card p {
+        margin: 0;
+        color: #6a6b7f;
+      }
+
+      .floating-band {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+      }
+
+      .creature {
+        position: absolute;
+        font-size: clamp(2.2rem, 3vw, 3.6rem);
+        animation: floaty 6s ease-in-out infinite;
+        filter: drop-shadow(0 10px 12px rgba(0, 0, 0, 0.15));
+      }
+
+      .owl {
+        top: 14%;
+        left: 6%;
+        animation-duration: 5.4s;
+      }
+
+      .goat {
+        top: 22%;
+        right: 12%;
+        animation-duration: 6.8s;
+      }
+
+      .whale {
+        bottom: 16%;
+        left: 10%;
+        animation-duration: 7.2s;
+      }
+
+      .leaf {
+        bottom: 10%;
+        right: 18%;
+        animation-duration: 5.8s;
+      }
+
+      .monstera {
+        top: 55%;
+        right: 4%;
+        animation-duration: 7.6s;
+      }
+
+      .alokazja {
+        top: 58%;
+        left: 4%;
+        animation-duration: 6.1s;
+      }
+
+      @keyframes floaty {
+        0%,
+        100% {
+          transform: translateY(0) rotate(-2deg) scale(1);
+        }
+        50% {
+          transform: translateY(-18px) rotate(4deg) scale(1.05);
+        }
+      }
+
+      .sparkles {
+        position: absolute;
+        width: 220px;
+        height: 220px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(255, 213, 255, 0.7), transparent 70%);
+        opacity: 0.8;
+        animation: pulse 4s ease-in-out infinite;
+      }
+
+      .sparkle-one {
+        top: -60px;
+        right: -40px;
+      }
+
+      .sparkle-two {
+        bottom: -80px;
+        left: -40px;
+        animation-delay: 1.2s;
+      }
+
+      @keyframes pulse {
+        0%,
+        100% {
+          transform: scale(0.9);
+          opacity: 0.6;
+        }
+        50% {
+          transform: scale(1.05);
+          opacity: 0.95;
+        }
+      }
+
+      .footer-note {
+        margin-top: 26px;
+        text-align: center;
+        font-size: 0.95rem;
+        color: #7a7a8f;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="start-screen">
+      <div class="floating-band" aria-hidden="true">
+        <span class="creature owl">🦉</span>
+        <span class="creature goat">🐐</span>
+        <span class="creature whale">🐋</span>
+        <span class="creature leaf">🍃</span>
+        <span class="creature monstera">🌿</span>
+        <span class="creature alokazja">🪴</span>
+        <span class="sparkles sparkle-one"></span>
+        <span class="sparkles sparkle-two"></span>
+      </div>
+
+      <header>
+        <div>
+          <h1>SowieGry</h1>
+          <p class="subtitle">Wybierz swoją przygodę — słodkie zwierzaki już czekają!</p>
+        </div>
+      </header>
+
+      <section class="cards">
+        <a class="game-card" href="SowaRunner/">
+          <h2>SowaRunner</h2>
+          <p>Dynamiczny endless runner z sówką, kozami i humbakami.</p>
+        </a>
+        <a class="game-card" href="SowaJumper/">
+          <h2>SowaJumper</h2>
+          <p>Skacz wysoko i zbieraj punkty w stylu retro arcade.</p>
+        </a>
+      </section>
+
+      <p class="footer-note">Miłej zabawy! ✨</p>
+    </main>
+  </body>
+</html>
