@@ -493,105 +493,185 @@ function drawBackground() {
 }
 
 function drawPlatform(platform) {
-  let fill = "#ffffff";
-  let stroke = "#f3c6c6";
-  if (platform.type === "moving") {
-    fill = "#e8f5ff";
-    stroke = "#8bc5ff";
-  } else if (platform.type === "catapult") {
-    fill = "#e6ffec";
-    stroke = "#4caf50";
-  } else if (platform.type === "breakable") {
-    fill = platform.broken ? "rgba(255, 224, 178, 0.4)" : "#ffe0b2";
-    stroke = "#f57c00";
+  if (platform.type === "catapult") {
+    drawAmicStation(platform);
+    return;
   }
-  ctx.fillStyle = fill;
-  ctx.strokeStyle = stroke;
-  ctx.lineWidth = 2;
-  ctx.beginPath();
-  ctx.roundRect(platform.x, platform.y - state.cameraY, platform.width, platform.height, 8);
-  ctx.fill();
-  ctx.stroke();
 
-  ctx.fillStyle = platform.type === "catapult" ? "#2e7d32" : "#d32f2f";
-  ctx.font = "bold 12px 'Baloo 2'";
+  const alpha = platform.type === "breakable" && platform.broken ? 0.35 : 1;
+  drawRunnerPlatform(platform.x, platform.y - state.cameraY, platform.width, platform.height, alpha);
+}
+
+function drawRunnerPlatform(x, y, width, height, alpha) {
+  ctx.save();
+  ctx.fillStyle = `rgba(90, 125, 155, ${0.86 * alpha})`;
+  ctx.beginPath();
+  ctx.roundRect(x, y, width, height, 10);
+  ctx.fill();
+
+  ctx.fillStyle = `rgba(255, 255, 255, ${0.4 * alpha})`;
+  ctx.beginPath();
+  ctx.roundRect(x + 10, y + 4, width - 20, 4, 6);
+  ctx.fill();
+  ctx.restore();
+}
+
+function drawAmicStation(platform) {
+  ctx.save();
+  const baseWidth = 112;
+  const baseHeight = 70;
+  const scale = platform.width / baseWidth;
+  ctx.translate(platform.x, platform.y - state.cameraY);
+  ctx.scale(scale, scale);
+
+  const roofH = 14;
+  ctx.fillStyle = "rgb(240, 85, 95)";
+  ctx.beginPath();
+  ctx.roundRect(-10, -roofH, baseWidth + 20, roofH + 6, 12);
+  ctx.fill();
+
+  ctx.fillStyle = "rgba(255, 255, 255, 0.47)";
+  ctx.beginPath();
+  ctx.roundRect(-6, -roofH + 4, baseWidth + 12, 5, 8);
+  ctx.fill();
+
+  ctx.fillStyle = "#ffffff";
+  ctx.beginPath();
+  ctx.roundRect(0, 0, baseWidth, baseHeight, 10);
+  ctx.fill();
+
+  ctx.fillStyle = "rgb(230, 60, 70)";
+  ctx.beginPath();
+  ctx.roundRect(-6, -14, baseWidth + 12, 18, 8);
+  ctx.fill();
+
+  ctx.fillStyle = "#ffffff";
+  ctx.beginPath();
+  ctx.roundRect(14, 14, baseWidth - 28, 26, 6);
+  ctx.fill();
+
+  ctx.fillStyle = "rgb(20, 20, 20)";
+  ctx.font = "bold 16px 'Baloo 2'";
   ctx.textAlign = "center";
-  let label = "amic";
-  if (platform.type === "moving") label = "ruch";
-  if (platform.type === "catapult") label = "boost";
-  if (platform.type === "breakable") label = platform.broken ? "pęk" : "kruch";
-  ctx.fillText(label, platform.x + platform.width / 2, platform.y - state.cameraY + 14);
+  ctx.textBaseline = "middle";
+  ctx.fillText("Amic", baseWidth / 2, 27);
+
+  ctx.fillStyle = "rgb(200, 200, 200)";
+  ctx.beginPath();
+  ctx.roundRect(12, baseHeight - 26, 18, 22, 4);
+  ctx.roundRect(baseWidth - 30, baseHeight - 26, 18, 22, 4);
+  ctx.fill();
+  ctx.restore();
 }
 
 function drawGoat(goat) {
   ctx.save();
+  const scale = goat.size / 24;
   ctx.translate(goat.x, goat.y - state.cameraY);
-  ctx.strokeStyle = "#7c5a4a";
-  ctx.lineWidth = 2;
-  ctx.beginPath();
-  ctx.moveTo(-8, 8);
-  ctx.lineTo(-8, 18);
-  ctx.moveTo(0, 8);
-  ctx.lineTo(0, 18);
-  ctx.moveTo(8, 8);
-  ctx.lineTo(8, 18);
-  ctx.moveTo(14, 8);
-  ctx.lineTo(14, 18);
-  ctx.stroke();
+  ctx.scale(scale, scale);
+  const hop = Math.sin(performance.now() / 120) * 2;
 
-  ctx.fillStyle = "#3b2f2f";
-  ctx.fillRect(-10, 18, 4, 3);
-  ctx.fillRect(-2, 18, 4, 3);
-  ctx.fillRect(6, 18, 4, 3);
-  ctx.fillRect(12, 18, 4, 3);
-
-  ctx.fillStyle = "#fff6ea";
-  ctx.strokeStyle = "#d8b9a5";
-  ctx.lineWidth = 2;
+  ctx.fillStyle = "rgba(0, 0, 0, 0.4)";
   ctx.beginPath();
-  ctx.roundRect(-goat.size / 1.5, -goat.size / 2, goat.size * 1.2, goat.size, 8);
-  ctx.fill();
-  ctx.stroke();
-
-  ctx.fillStyle = "#3b2f2f";
-  ctx.beginPath();
-  ctx.arc(-4, -2, 2, 0, Math.PI * 2);
-  ctx.arc(4, -2, 2, 0, Math.PI * 2);
+  ctx.ellipse(0, 24, 28, 6, 0, 0, Math.PI * 2);
   ctx.fill();
 
-  ctx.strokeStyle = "#c49a6c";
+  ctx.fillStyle = "#ffffff";
   ctx.beginPath();
-  ctx.moveTo(-8, -10);
-  ctx.lineTo(-14, -16);
-  ctx.lineTo(-6, -18);
-  ctx.moveTo(8, -10);
-  ctx.lineTo(14, -16);
-  ctx.lineTo(6, -18);
+  ctx.roundRect(-24, -28 + hop, 48, 34, 12);
+  ctx.fill();
+
+  ctx.fillStyle = "rgba(255, 255, 255, 0.47)";
+  ctx.beginPath();
+  ctx.ellipse(-10, -16 + hop, 8, 7, 0, 0, Math.PI * 2);
+  ctx.ellipse(6, -18 + hop, 7, 6, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.fillStyle = "rgb(252, 252, 252)";
+  ctx.beginPath();
+  ctx.roundRect(18, -34 + hop, 24, 24, 10);
+  ctx.fill();
+
+  ctx.strokeStyle = "rgb(180, 180, 180)";
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.moveTo(27, -36 + hop);
+  ctx.lineTo(22, -48 + hop);
+  ctx.moveTo(36, -36 + hop);
+  ctx.lineTo(41, -48 + hop);
   ctx.stroke();
+
+  ctx.fillStyle = "rgb(25, 25, 25)";
+  ctx.beginPath();
+  ctx.ellipse(26, -24 + hop, 2, 2, 0, 0, Math.PI * 2);
+  ctx.ellipse(36, -24 + hop, 2, 2, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.fillStyle = "rgba(255, 160, 170, 0.9)";
+  ctx.beginPath();
+  ctx.ellipse(24, -18 + hop, 3.5, 2.5, 0, 0, Math.PI * 2);
+  ctx.ellipse(38, -18 + hop, 3.5, 2.5, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.fillStyle = "rgb(90, 90, 90)";
+  ctx.beginPath();
+  ctx.roundRect(-16, 6 + hop, 7, 18, 3);
+  ctx.roundRect(-2, 6 + hop, 7, 18, 3);
+  ctx.roundRect(12, 6 + hop, 7, 18, 3);
+  ctx.fill();
   ctx.restore();
 }
 
 function drawWhale(whale) {
   if (whale.taken) return;
   ctx.save();
+  const scale = whale.size / 51;
   ctx.translate(whale.x, whale.y - state.cameraY);
-  ctx.fillStyle = "#8fd3ff";
-  ctx.strokeStyle = "#4fa3d1";
-  ctx.lineWidth = 2;
+  ctx.scale(scale, scale);
+
+  ctx.fillStyle = "rgba(0, 0, 0, 0.3)";
   ctx.beginPath();
-  ctx.ellipse(0, 0, whale.size, whale.size * 0.7, 0, 0, Math.PI * 2);
+  ctx.ellipse(0, 34, 48, 8, 0, 0, Math.PI * 2);
   ctx.fill();
+
+  ctx.fillStyle = "rgb(125, 205, 238)";
+  ctx.beginPath();
+  ctx.ellipse(0, 0, 51, 28, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.fillStyle = "rgb(115, 195, 228)";
+  ctx.beginPath();
+  ctx.moveTo(48, 0);
+  ctx.lineTo(78, -20);
+  ctx.lineTo(78, 20);
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.fillStyle = "rgba(205, 248, 255, 0.82)";
+  ctx.beginPath();
+  ctx.ellipse(-8, 12, 34, 15, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.fillStyle = "rgb(30, 30, 30)";
+  ctx.beginPath();
+  ctx.ellipse(-26, -6, 3.5, 3.5, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.fillStyle = "rgba(255, 255, 255, 0.82)";
+  ctx.beginPath();
+  ctx.ellipse(-27, -7, 1.25, 1.25, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.strokeStyle = "rgba(30, 30, 30, 0.33)";
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.arc(-18, 4, 14, 0, Math.PI);
   ctx.stroke();
 
-  ctx.fillStyle = "#2a1f2d";
+  ctx.fillStyle = "rgba(200, 245, 255, 0.7)";
   ctx.beginPath();
-  ctx.arc(-6, -4, 2.4, 0, Math.PI * 2);
-  ctx.arc(6, -4, 2.4, 0, Math.PI * 2);
-  ctx.fill();
-
-  ctx.fillStyle = "#ffffff";
-  ctx.beginPath();
-  ctx.arc(0, 6, 3, 0, Math.PI * 2);
+  ctx.ellipse(10, -30, 5, 8, 0, 0, Math.PI * 2);
+  ctx.ellipse(22, -34, 4, 6, 0, 0, Math.PI * 2);
   ctx.fill();
   ctx.restore();
 }
@@ -599,15 +679,21 @@ function drawWhale(whale) {
 function drawLeaf(leaf) {
   if (leaf.taken) return;
   ctx.save();
+  const scale = leaf.size / 33;
   ctx.translate(leaf.x, leaf.y - state.cameraY);
   ctx.rotate(leaf.type === "monstera" ? 0.2 : -0.3);
-  ctx.fillStyle = leaf.type === "monstera" ? "#4caf50" : "#5fc88a";
-  ctx.strokeStyle = "#2f7a4f";
-  ctx.lineWidth = 2;
+  ctx.scale(scale, scale);
+
+  ctx.fillStyle = "rgba(255, 255, 255, 0.35)";
   ctx.beginPath();
-  ctx.ellipse(0, 0, leaf.size, leaf.size * 0.7, 0, 0, Math.PI * 2);
+  ctx.ellipse(0, 0, 33, 24, 0, 0, Math.PI * 2);
   ctx.fill();
-  ctx.stroke();
+
+  if (leaf.type === "monstera") {
+    drawMonsteraLeaf();
+  } else {
+    drawAlocasiaLeaf();
+  }
   ctx.restore();
 }
 
@@ -618,51 +704,214 @@ function drawOwl() {
     ctx.globalAlpha = 0.6;
   }
   const flap = Math.sin(performance.now() / 120) * 0.5;
-  ctx.strokeStyle = "#b58b66";
-  ctx.lineWidth = 3;
-  ctx.beginPath();
-  ctx.moveTo(-10, 4);
-  ctx.lineTo(-22, 8 + flap * 6);
-  ctx.moveTo(10, 4);
-  ctx.lineTo(22, 8 - flap * 6);
-  ctx.stroke();
+  const wingAngle = flap * 0.62;
 
-  ctx.fillStyle = "#f2d7aa";
-  ctx.strokeStyle = "#b58b66";
-  ctx.lineWidth = 2;
+  ctx.fillStyle = "rgba(0, 0, 0, 0.45)";
   ctx.beginPath();
-  ctx.arc(0, 0, owl.radius, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.stroke();
-
-  ctx.fillStyle = "#ffffff";
-  ctx.beginPath();
-  ctx.arc(-8, -4, 6, 0, Math.PI * 2);
-  ctx.arc(8, -4, 6, 0, Math.PI * 2);
+  ctx.ellipse(0, owl.radius + 28, 30, 7, 0, 0, Math.PI * 2);
   ctx.fill();
 
-  ctx.fillStyle = "#3b2f2f";
+  ctx.save();
+  ctx.rotate(-wingAngle);
+  ctx.fillStyle = "rgb(150, 105, 72)";
   ctx.beginPath();
-  ctx.arc(-8, -4, 2.5, 0, Math.PI * 2);
-  ctx.arc(8, -4, 2.5, 0, Math.PI * 2);
+  ctx.ellipse(-34, -2, 18, 27, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = "rgba(170, 125, 92, 0.55)";
+  ctx.beginPath();
+  ctx.ellipse(-34, 2, 11, 17, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+
+  ctx.save();
+  ctx.rotate(wingAngle);
+  ctx.fillStyle = "rgb(150, 105, 72)";
+  ctx.beginPath();
+  ctx.ellipse(34, -2, 18, 27, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = "rgba(170, 125, 92, 0.55)";
+  ctx.beginPath();
+  ctx.ellipse(34, 2, 11, 17, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+
+  ctx.fillStyle = "rgb(175, 125, 90)";
+  ctx.beginPath();
+  ctx.ellipse(0, 0, 37, 41, 0, 0, Math.PI * 2);
   ctx.fill();
 
-  ctx.fillStyle = "#f39c12";
+  ctx.fillStyle = "rgb(240, 226, 205)";
   ctx.beginPath();
-  ctx.moveTo(0, 2);
-  ctx.lineTo(-4, 8);
-  ctx.lineTo(4, 8);
+  ctx.ellipse(0, 12, 24, 27, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.fillStyle = "rgb(220, 205, 185)";
+  ctx.beginPath();
+  ctx.ellipse(-19, -10, 16, 16, 0, 0, Math.PI * 2);
+  ctx.ellipse(19, -10, 16, 16, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  const blink = Math.sin(performance.now() / 900) > 0.92;
+  if (!blink) {
+    ctx.fillStyle = "#ffffff";
+    ctx.beginPath();
+    ctx.ellipse(-18, -12, 9.5, 9.5, 0, 0, Math.PI * 2);
+    ctx.ellipse(18, -12, 9.5, 9.5, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = "rgb(30, 30, 30)";
+    ctx.beginPath();
+    ctx.ellipse(-18, -12, 3.5, 3.5, 0, 0, Math.PI * 2);
+    ctx.ellipse(18, -12, 3.5, 3.5, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = "rgba(255, 255, 255, 0.7)";
+    ctx.beginPath();
+    ctx.ellipse(-20, -15, 2, 2, 0, 0, Math.PI * 2);
+    ctx.ellipse(16, -15, 2, 2, 0, 0, Math.PI * 2);
+    ctx.fill();
+  } else {
+    ctx.strokeStyle = "rgb(70, 45, 35)";
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.arc(-18, -12, 9, 0, Math.PI);
+    ctx.arc(18, -12, 9, 0, Math.PI);
+    ctx.stroke();
+  }
+
+  ctx.fillStyle = "rgb(248, 198, 70)";
+  ctx.beginPath();
+  ctx.moveTo(0, -2);
+  ctx.lineTo(-8, 9);
+  ctx.lineTo(8, 9);
   ctx.closePath();
   ctx.fill();
 
-  ctx.strokeStyle = "#b58b66";
+  ctx.fillStyle = "rgba(255, 160, 170, 0.31)";
   ctx.beginPath();
-  ctx.moveTo(-12, 8);
-  ctx.lineTo(-20, 14);
-  ctx.moveTo(12, 8);
-  ctx.lineTo(20, 14);
-  ctx.stroke();
+  ctx.ellipse(-28, 4, 5.5, 4, 0, 0, Math.PI * 2);
+  ctx.ellipse(28, 4, 5.5, 4, 0, 0, Math.PI * 2);
+  ctx.fill();
   ctx.restore();
+}
+
+function drawMonsteraLeaf() {
+  ctx.fillStyle = "rgb(50, 165, 95)";
+  ctx.beginPath();
+  ctx.moveTo(0, -34);
+  ctx.bezierCurveTo(28, -38, 44, -12, 32, 10);
+  ctx.bezierCurveTo(24, 30, 12, 40, 0, 46);
+  ctx.bezierCurveTo(-12, 40, -24, 30, -32, 10);
+  ctx.bezierCurveTo(-44, -12, -28, -38, 0, -34);
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.fillStyle = "rgba(78, 195, 120, 0.75)";
+  ctx.beginPath();
+  ctx.moveTo(0, -30);
+  ctx.bezierCurveTo(22, -32, 34, -10, 26, 10);
+  ctx.bezierCurveTo(20, 26, 10, 36, 0, 40);
+  ctx.bezierCurveTo(-10, 36, -20, 26, -26, 10);
+  ctx.bezierCurveTo(-34, -10, -22, -32, 0, -30);
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.fillStyle = "rgba(0, 0, 0, 0.35)";
+  ctx.beginPath();
+  ctx.ellipse(-12, -2, 10, 6.5, 0, 0, Math.PI * 2);
+  ctx.ellipse(12, -2, 10, 6.5, 0, 0, Math.PI * 2);
+  ctx.ellipse(0, 14, 11, 6.5, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.fillStyle = "rgba(180, 220, 255, 0.96)";
+  ctx.beginPath();
+  ctx.ellipse(-12, -2, 7.5, 5, 0, 0, Math.PI * 2);
+  ctx.ellipse(12, -2, 7.5, 5, 0, 0, Math.PI * 2);
+  ctx.ellipse(0, 14, 8.5, 5, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.strokeStyle = "rgba(30, 120, 70, 0.67)";
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.moveTo(0, -30);
+  ctx.lineTo(0, 42);
+  ctx.stroke();
+
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(0, -18);
+  ctx.lineTo(-18, -10);
+  ctx.moveTo(0, -18);
+  ctx.lineTo(18, -10);
+  ctx.moveTo(0, -2);
+  ctx.lineTo(-22, 8);
+  ctx.moveTo(0, -2);
+  ctx.lineTo(22, 8);
+  ctx.moveTo(0, 12);
+  ctx.lineTo(-18, 24);
+  ctx.moveTo(0, 12);
+  ctx.lineTo(18, 24);
+  ctx.stroke();
+
+  ctx.strokeStyle = "rgba(30, 120, 70, 0.86)";
+  ctx.lineWidth = 4;
+  ctx.beginPath();
+  ctx.moveTo(0, 42);
+  ctx.lineTo(0, 60);
+  ctx.stroke();
+}
+
+function drawAlocasiaLeaf() {
+  ctx.fillStyle = "rgb(45, 175, 125)";
+  ctx.beginPath();
+  ctx.moveTo(0, -46);
+  ctx.bezierCurveTo(24, -36, 34, -10, 20, 8);
+  ctx.bezierCurveTo(14, 20, 12, 32, 0, 48);
+  ctx.bezierCurveTo(-12, 32, -14, 20, -20, 8);
+  ctx.bezierCurveTo(-34, -10, -24, -36, 0, -46);
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.strokeStyle = "rgba(235, 255, 245, 0.82)";
+  ctx.lineWidth = 2.6;
+  ctx.beginPath();
+  ctx.moveTo(0, -42);
+  ctx.lineTo(0, 46);
+  ctx.stroke();
+
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(0, -24);
+  ctx.lineTo(-18, -10);
+  ctx.moveTo(0, -24);
+  ctx.lineTo(18, -10);
+  ctx.moveTo(0, -6);
+  ctx.lineTo(-22, 8);
+  ctx.moveTo(0, -6);
+  ctx.lineTo(22, 8);
+  ctx.moveTo(0, 12);
+  ctx.lineTo(-18, 28);
+  ctx.moveTo(0, 12);
+  ctx.lineTo(18, 28);
+  ctx.stroke();
+
+  ctx.strokeStyle = "rgba(25, 95, 70, 0.51)";
+  ctx.lineWidth = 1.8;
+  ctx.beginPath();
+  ctx.moveTo(0, -46);
+  ctx.bezierCurveTo(24, -36, 34, -10, 20, 8);
+  ctx.bezierCurveTo(14, 20, 12, 32, 0, 48);
+  ctx.bezierCurveTo(-12, 32, -14, 20, -20, 8);
+  ctx.bezierCurveTo(-34, -10, -24, -36, 0, -46);
+  ctx.closePath();
+  ctx.stroke();
+
+  ctx.strokeStyle = "rgba(235, 255, 245, 0.75)";
+  ctx.lineWidth = 3.8;
+  ctx.beginPath();
+  ctx.moveTo(0, 48);
+  ctx.lineTo(0, 66);
+  ctx.stroke();
 }
 
 function drawPracuTexts() {
