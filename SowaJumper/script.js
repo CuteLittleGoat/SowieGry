@@ -11,15 +11,16 @@ const state = {
   dpr: window.devicePixelRatio || 1,
   gravity: 0.45,
   jumpPower: 12,
-  boostPower: 16,
-  catapultPower: 19,
-  deathCatapultPower: 17,
+  boostPower: 36,
+  catapultPower: 120,
+  deathCatapultPower: 120,
   maxLives: 5,
   invincibleUntil: 0,
   cameraY: 0,
   highestY: 0,
   score: 0,
   lives: 3,
+  lastHeight: 0,
   worldSpeed: 0,
   phase: "title",
 };
@@ -266,10 +267,9 @@ function handleInput() {
 function resetAfterFall() {
   state.lives -= 1;
   if (state.lives <= 0) {
-    state.lives = 3;
-    state.score = 0;
-    state.cameraY = 0;
-    state.highestY = owl.y;
+    state.lastHeight = Math.max(0, Math.round(-state.cameraY / 10));
+    initTitle();
+    return;
   }
   owl.x = state.width / 2;
   owl.y = state.height / 2;
@@ -962,6 +962,10 @@ function draw() {
     ctx.fillText("Naciśnij dowolny klawisz lub kliknij, aby rozpocząć", state.width / 2, state.height * 0.45);
     ctx.font = "16px 'Baloo 2'";
     ctx.fillText("Sowa skacze po platformach — złap rytm!", state.width / 2, state.height * 0.5);
+    if (state.lastHeight > 0) {
+      ctx.font = "bold 18px 'Baloo 2'";
+      ctx.fillText(`Osiągnięta wysokość: ${state.lastHeight} m`, state.width / 2, state.height * 0.56);
+    }
     ctx.restore();
   }
 }

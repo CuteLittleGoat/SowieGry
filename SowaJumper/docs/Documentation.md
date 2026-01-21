@@ -36,13 +36,16 @@ W `script.js` istnieje obiekt `state` z parametrami:
 - `dpr`: `window.devicePixelRatio || 1`.
 - `gravity`: **0.45**.
 - `jumpPower`: **12** (odbicie od platformy).
-- `boostPower`: **16** (wzmocniony skok od kozy).
+- `boostPower`: **36** (3× standardowego skoku — od kozy).
+- `catapultPower`: **120** (10× standardowego skoku — stacja Amic).
+- `deathCatapultPower`: **120** (10× standardowego skoku po śmierci).
 - `maxLives`: **5**.
 - `invincibleUntil`: timestamp w ms (nietykalność po utracie życia).
 - `cameraY`: pozycja kamery w osi Y.
 - `highestY`: najwyższa (najmniejsza) pozycja sowy.
 - `score`: licznik punktów.
 - `lives`: startowo **3**.
+- `lastHeight`: ostatnia osiągnięta wysokość do pokazania na ekranie tytułowym.
 - `worldSpeed`: zdefiniowane, ale **nieużywane**.
 - `phase`: tryb gry — `"title"` (ekran tytułowy) lub `"playing"`.
 
@@ -136,6 +139,7 @@ Funkcja `rand(min, max)` zwraca liczbę zmiennoprzecinkową z zakresu `[min, max
 - Czyści wszystkie tablice.
 - Ustawia sówkę na `x = width/2`, `y = height*0.55`, `vy = -jumpPower`.
 - Ustawia `phase = "title"` i resetuje HUD.
+- `lastHeight` pozostaje zapamiętane, aby wyświetlić wynik na ekranie tytułowym.
 - Generuje platformy tylko w obrębie ekranu (`y` od `height - 80` do `height * 0.2`).
 - Odstęp w ekranie tytułowym: `rand(60, 90)` (zagęszczone platformy).
 - Dodaje **10 chmur** i **6 tekstów „Pracu Pracu”**.
@@ -187,14 +191,16 @@ Warunek odbicia:
 - Sowa **spada** (`owl.vy > 0`) i jej obwiednia nachodzi na platformę:
   - `owl.x` w zakresie `[platform.x - radius, platform.x + width + radius]`
   - `owl.y + radius` w zakresie `(platform.y, platform.y + height + 6)`
-Po spełnieniu: `owl.vy = -jumpPower`.
+Po spełnieniu:
+- platforma standardowa/moving/breakable → `owl.vy = -jumpPower`
+- platforma `"catapult"` (stacja Amic) → `owl.vy = -catapultPower`
 
 ### 7.4. Kozy (boost + punkty)
 - Każda koza porusza się po platformie z `vx`.
 - Odbicie od krawędzi platformy: jeśli zbliża się do `platform.x + 8` lub `platform.x + width - 8`, kierunek się odwraca.
 - Kolizja z sową: dystans < `owl.radius + goat.size * 0.6`.
 - Efekt:
-  - `owl.vy = -boostPower` (silniejszy skok)
+  - `owl.vy = -boostPower` (3× standardowego skoku)
   - Jeśli `boostUsed` było `false`: +25 pkt i `boostUsed = true`.
 
 ### 7.5. Wieloryby (życie lub punkty)
@@ -219,15 +225,13 @@ Po spełnieniu: `owl.vy = -jumpPower`.
 ### 8.1. `resetAfterFall()`
 - `lives -= 1`.
 - Jeśli `lives <= 0`:
-  - `lives = 3`
-  - `score = 0`
-  - `cameraY = 0`
-  - `highestY = owl.y`
+  - `lastHeight = Math.max(0, Math.round(-cameraY / 10))`
+  - `initTitle()` (powrót na ekran tytułowy z zapamiętanym wynikiem)
 - Po respawnie:
   - `owl.x = width/2`
   - `owl.y = height/2`
   - `owl.vx = 0`
-  - `owl.vy = 0`
+  - `owl.vy = -deathCatapultPower` (10× standardowego skoku)
 - Nietykalność przez 3 sekundy:
   - `invincibleUntil = performance.now() + 3000`
 
@@ -268,7 +272,7 @@ Kolejność rysowania w `draw()`:
 5. Wieloryby (humbaki z cieniem i refleksami)
 6. Kozy (białe bryły z szarymi kopytami, rogami i rumieńcami)
 7. Sowa (`drawOwl`), z półprzezroczystością przy nietykalności, cieniem i skrzydłami jak w SowaRunner
-8. Jeśli `phase === "title"` — półprzezroczysta plansza z tytułem i instrukcją startu
+8. Jeśli `phase === "title"` — półprzezroczysta plansza z tytułem, instrukcją startu i (opcjonalnie) ostatnią wysokością
 
 ### 12.1. Style rysowania
 - Platforma standardowa/moving/breakable: prostokąt `rgba(90, 125, 155, 0.86)` z jasnym połyskiem (`rgba(255,255,255,0.4)`) i zaokrąglonymi rogami; przy platformie „breakable” po pęknięciu alfa spada do 0.35.
