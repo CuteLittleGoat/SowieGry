@@ -2,7 +2,7 @@
 Każda gra to osobny podfolder.
 
 
-1. Po każdej zmianie kodu którejkolwiek z gier zmodyfikuj pliki docs/Documentation.md oraz docs/README.md w odpowiednim folderze.
+1. Po każdej zmianie kodu którejkolwiek z gier zmodyfikuj pliki docs/Documentation.md oraz docs/README.md w odpowiednim folderze
 2. Plik README.md ma zawierać instrukcję obsługi dla użytkownika
 3. Plik README.md ma zawierać instrukcję w języku polskim 
 4. Plik Documentation.md ma zawierać dokładny opis kodu. Wszystkich funkcji, użytych styli, fontów, zasad działania poszczególnych elementów itp.
