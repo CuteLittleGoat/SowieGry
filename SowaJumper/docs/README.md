@@ -30,7 +30,7 @@ Gra startuje dopiero po **naciśnięciu dowolnego klawisza** albo **kliknięciu/
 - **Wysokość**: rośnie, gdy wspinasz się w górę.
 - **Punkty**:
   - Za samo wspinanie się w górę zdobywasz niewielkie punkty.
-  - **Kozy** — pojawiają się od 20 m, dają silniejszy skok; pierwszy kontakt z każdą kozą daje +25 pkt.
+  - **Kozy** — pojawiają się od 20 m, dają skok na **3×** standardowej wysokości; pierwszy kontakt z każdą kozą daje +25 pkt.
   - **Liście** — zbierane w locie:
     - monstera: +30 pkt
     - alocasia: +20 pkt
@@ -39,7 +39,12 @@ Gra startuje dopiero po **naciśnięciu dowolnego klawisza** albo **kliknięciu/
 ## Życia
 - Startujesz z **3 życiami**.
 - Maksymalnie możesz mieć **5 żyć**.
-- Gdy stracisz wszystkie życia, wynik i wysokość są resetowane, a liczba żyć wraca do 3.
+- Po utracie wszystkich żyć gra wraca do **ekranu tytułowego**, a osiągnięta wysokość jest wyświetlana pod tytułem.
+
+## Boosty i katapulty
+- **Koza**: odbicie na **3×** standardowej wysokości.
+- **Stacja Amic (katapulta)**: odbicie na **10×** standardowej wysokości.
+- **Po śmierci**: odrodzenie następuje z wybiciem na **10×** standardowej wysokości.
 
 ## HUD (panel informacyjny)
 W prawym górnym rogu ekranu widzisz:
