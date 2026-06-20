@@ -4,10 +4,11 @@
 `Sowa3` jest samodzielną grą HTML/CSS/JavaScript bez frameworka. To trzytorowy runner w perspektywie „wgłąb ekranu”, inspirowany klasycznymi lane runnerami. Gracz steruje sową, zmieniając tor między lewym, środkowym i prawym.
 
 ## Pliki
-- `index.html` — struktura strony, `canvas#game`, HUD, opis sterowania oraz ładowanie `script.js` i `difficulty.js`.
+- `index.html` — struktura strony, `canvas#game`, HUD, opis sterowania oraz ładowanie `script.js`, `difficulty.js` i `extra-lives.js`.
 - `style.css` — pełnoekranowy layout, blokada przewijania, safe-area, HUD i opis sterowania.
 - `script.js` — główna logika gry, renderowanie, proceduralne generowanie przeszkód, plansze, kolizje, wynik i rekord.
 - `difficulty.js` — poziomy trudności, panel wyboru, skróty `1 / 2 / 3` i zapamiętanie wyboru w `localStorage`.
+- `extra-lives.js` — serduszka jako pickupy dodatkowych żyć.
 - `docs/README.md` — instrukcja dla gracza.
 - `docs/Documentation.md` — dokumentacja techniczna.
 
@@ -24,13 +25,14 @@
 - `arcade` — standardowy balans.
 - `chaos` — 2 życia, szybszy start, niższy mnożnik przerw między przeszkodami, brak zamiany przeszkód na liście, wyższy mnożnik punktów.
 
-Plik nadpisuje wybrane funkcje:
-- `startGame()` — po standardowym resecie stosuje aktywną trudność i ustawia liczbę żyć.
-- `nextStage()` — po przejściu do kolejnej planszy dopasowuje bazową prędkość do trudności.
-- `spawnObject()` — na niższych poziomach może zamienić przeszkodę na liść.
-- `update()` — skaluje punkty i jednorazowo modyfikuje nowo ustawiony odstęp do kolejnego spawnu.
-
 Wybór jest zapisywany w `localStorage` pod kluczem `sowa3Difficulty`.
+
+## Dodatkowe życia
+`extra-lives.js` dodaje serduszka jako osobne pickupy na torach. Serduszka poruszają się w tej samej pseudo-3D perspektywie co przeszkody. Zebranie serduszka:
+- dodaje 1 życie, jeśli gracz ma mniej niż 5 żyć,
+- daje punkty, jeśli gracz ma już 5 żyć.
+
+Częstotliwość pojawiania się serduszek zależy od poziomu trudności.
 
 ## Plansze
 Tablica `STAGES` definiuje trzy plansze:
@@ -38,7 +40,7 @@ Tablica `STAGES` definiuje trzy plansze:
 - `Wystawa kwiatów ozdobnych`
 - `Blokowisko PRL`
 
-Każda plansza ma nazwę, skrót do HUD, kolory, kolor podłoża, akcent i długość. Po osiągnięciu długości planszy gra przełącza się do trybu `finish`, pokazuje ogród działkowy z basenem, dodaje premię punktową i po krótkim czasie uruchamia kolejną planszę.
+Każda plansza kończy się ogrodem działkowym z basenem.
 
 ## Perspektywa i tory
 Gra używa pseudo-3D na canvasie:
@@ -55,8 +57,8 @@ Gra używa pseudo-3D na canvasie:
 - Funkcja `moveLane(dir)` ogranicza tor do zakresu od `-1` do `1`.
 
 ## Obiekty gry
-`spawnObject()` generuje obiekty na losowym torze:
 - `leaf` — liść monstery, punktowy obiekt do zebrania.
+- `heart` / serduszko — dodatkowe życie albo punkty przy limicie.
 - `amic` — stacja Amic jako przeszkoda.
 - `shift` — smartfon z napisem „przyjmiesz zmianę?”.
 - `magda` — telefon z napisem „telefon od Magdy”.
@@ -65,32 +67,15 @@ Gra używa pseudo-3D na canvasie:
 - `block` — betonowy słupek, częstszy na planszy PRL.
 
 ## Kolizje
-Gdy obiekt osiąga bliski zakres `z < .12`, gra sprawdza, czy zaokrąglony tor sowy jest równy torowi obiektu:
+Gdy obiekt osiąga bliski zakres, gra sprawdza tor sowy i tor obiektu:
 - `leaf` daje punkty i znika.
+- serduszko dodaje życie albo punkty.
 - przeszkody wywołują `damage(reason)`.
 
 Po obrażeniu gracz traci życie, dostaje krótką nietykalność, pojawia się shake i komunikat. Po utracie wszystkich żyć gra przełącza się do `over`.
 
-## Renderowanie
-Renderowanie jest w pełni proceduralne:
-- `drawScene()` rysuje tło, drogę i dekoracje planszy.
-- `drawStageDecor()` rysuje regały, kwiaty albo bloki zależnie od planszy.
-- `drawAllotment()` rysuje ogród działkowy z basenem.
-- `drawObjects()` rysuje przeszkody i znajdźki od najdalszych do najbliższych.
-- `drawOwl()` rysuje sowę gracza.
-- osobne funkcje rysują Amic, smartfony, monstery, donice, blokowisko i cząsteczki.
-
 ## HUD i rekord
-HUD pokazuje:
-- numer i skrót planszy,
-- punkty,
-- życia.
-
-Najlepszy wynik jest zapisywany w `localStorage` pod kluczem `sowa3Best`.
+HUD pokazuje numer planszy, punkty i życia. Najlepszy wynik jest zapisywany w `localStorage` pod kluczem `sowa3Best`.
 
 ## Zasady utrzymania
-Przy każdej zmianie mechaniki, sterowania, plansz lub obiektów aktualizuj:
-- `Sowa3/docs/README.md`
-- `Sowa3/docs/Documentation.md`
-
-Jeżeli gra jest dodawana albo usuwana z ekranu startowego, aktualizuj także dokumentację w katalogu głównym `docs/`.
+Przy każdej zmianie mechaniki, sterowania, plansz lub obiektów aktualizuj `Sowa3/docs/README.md` oraz `Sowa3/docs/Documentation.md`.
