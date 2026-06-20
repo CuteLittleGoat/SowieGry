@@ -150,6 +150,13 @@ function syncJumperDifficultyPanel() {
   requestAnimationFrame(syncJumperDifficultyPanel);
 }
 
+function loadJumperExtraLives() {
+  const script = document.createElement("script");
+  script.src = "extra-lives.js";
+  document.body.appendChild(script);
+}
+
 applyJumperDifficulty();
 renderJumperDifficultyButtons();
 syncJumperDifficultyPanel();
+loadJumperExtraLives();
