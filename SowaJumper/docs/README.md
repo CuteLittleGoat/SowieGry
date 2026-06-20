@@ -26,13 +26,24 @@ Sowa odbija się automatycznie po lądowaniu na platformie. Gracz kontroluje gł
 
 ## Obiekty i zasady
 - **Liście monstery** — punkty. Każdy zebrany liść daje punkty i krótki efekt cząsteczkowy.
+- **Serduszka** — dodatkowe życia. Jeżeli masz już maksymalną liczbę żyć, serduszko daje punkty zamiast kolejnego życia.
 - **Skaczące kozy** — mocny boost w górę. Pierwsze trafienie danej kozy daje większy bonus punktowy.
 - **Stacje paliw Amic** — katapulty. Lądowanie na dachu stacji wybija sowę bardzo wysoko.
 - **Napisy „Pracu Pracu”** — przeszkody. Kontakt zabiera życie.
-- **Humbak** — wejście do mini-gry bonusowej. Po złapaniu humbaka zaczyna się krótka sekwencja, w której zbierasz monstery i omijasz „Pracu Pracu”.
+- **Humbak** — wejście do mini-gry bonusowej.
+
+## Mini-gra z humbakiem
+Po złapaniu humbaka zaczyna się sekwencja bonusowa. Sowa znajduje się przy dole ekranu i porusza się lewo/prawo, a monstery oraz napisy „Pracu Pracu” spadają z góry na dół.
+
+Dzięki temu wynik zależy od gracza:
+- ustawiaj sowę pod spadającymi monsterami, żeby zdobywać punkty,
+- uciekaj poziomo przed spadającymi napisami „Pracu Pracu”,
+- trafienie w „Pracu Pracu” odejmuje punkty z bonusu.
 
 ## Życia i koniec gry
-- Liczba żyć zależy od poziomu trudności.
+- Liczba żyć na starcie zależy od poziomu trudności.
+- W trakcie gry można zdobywać kolejne życia przez serduszka.
+- Maksymalna liczba żyć to **5**.
 - Upadek poza ekran lub uderzenie w „Pracu Pracu” zabiera życie.
 - Po stracie życia sowa wraca z chwilową nietykalnością i silnym wybiciem.
 - Po utracie wszystkich żyć pojawia się ekran końca gry z wynikiem, wysokością i rekordami zapisanymi lokalnie w przeglądarce.
@@ -40,4 +51,4 @@ Sowa odbija się automatycznie po lądowaniu na platformie. Gracz kontroluje gł
 ## Wskazówki
 - Amic i kozy są najlepszym sposobem na szybkie nabranie wysokości.
 - Nie każda wysoka platforma jest bezpieczna — część platform kruszy się po użyciu.
-- Mini-gra z humbakiem jest najłatwiejszym sposobem na szybkie podbicie punktów.
+- W mini-grze z humbakiem patrz przede wszystkim na pionową trajektorię spadających obiektów.
