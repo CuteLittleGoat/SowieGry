@@ -4,9 +4,10 @@
 `Sowa3` jest samodzielną grą HTML/CSS/JavaScript bez frameworka. To trzytorowy runner w perspektywie „wgłąb ekranu”, inspirowany klasycznymi lane runnerami. Gracz steruje sową, zmieniając tor między lewym, środkowym i prawym.
 
 ## Pliki
-- `index.html` — struktura strony, `canvas#game`, HUD i opis sterowania.
+- `index.html` — struktura strony, `canvas#game`, HUD, opis sterowania oraz ładowanie `script.js` i `difficulty.js`.
 - `style.css` — pełnoekranowy layout, blokada przewijania, safe-area, HUD i opis sterowania.
-- `script.js` — cała logika gry, renderowanie, proceduralne generowanie przeszkód, plansze, kolizje, wynik i rekord.
+- `script.js` — główna logika gry, renderowanie, proceduralne generowanie przeszkód, plansze, kolizje, wynik i rekord.
+- `difficulty.js` — poziomy trudności, panel wyboru, skróty `1 / 2 / 3` i zapamiętanie wyboru w `localStorage`.
 - `docs/README.md` — instrukcja dla gracza.
 - `docs/Documentation.md` — dokumentacja techniczna.
 
@@ -16,6 +17,20 @@
 - `run` — właściwa gra.
 - `finish` — meta planszy: ogród działkowy z basenem.
 - `over` — ekran końca gry.
+
+## Poziomy trudności
+`difficulty.js` definiuje `SOWA3_DIFFICULTIES`:
+- `chill` — 4 życia, wolniejszy start, wyższy mnożnik przerw między przeszkodami, częstsza zamiana przeszkody na liść, niższy mnożnik punktów.
+- `arcade` — standardowy balans.
+- `chaos` — 2 życia, szybszy start, niższy mnożnik przerw między przeszkodami, brak zamiany przeszkód na liście, wyższy mnożnik punktów.
+
+Plik nadpisuje wybrane funkcje:
+- `startGame()` — po standardowym resecie stosuje aktywną trudność i ustawia liczbę żyć.
+- `nextStage()` — po przejściu do kolejnej planszy dopasowuje bazową prędkość do trudności.
+- `spawnObject()` — na niższych poziomach może zamienić przeszkodę na liść.
+- `update()` — skaluje punkty i jednorazowo modyfikuje nowo ustawiony odstęp do kolejnego spawnu.
+
+Wybór jest zapisywany w `localStorage` pod kluczem `sowa3Difficulty`.
 
 ## Plansze
 Tablica `STAGES` definiuje trzy plansze:
@@ -34,7 +49,7 @@ Gra używa pseudo-3D na canvasie:
 - `scaleAt(z)` skaluje obiekty, aby rosły w miarę zbliżania się do gracza.
 
 ## Sterowanie
-- `keydown` obsługuje `A/D`, strzałki, `Spację` i `Enter`.
+- `keydown` obsługuje `A/D`, strzałki, `Spację`, `Enter` i wybór poziomu `1 / 2 / 3`.
 - `pointerdown` obsługuje start gry i tapnięcia po lewej/prawej stronie ekranu.
 - `pointerup` obsługuje swipe w lewo/prawo.
 - Funkcja `moveLane(dir)` ogranicza tor do zakresu od `-1` do `1`.
