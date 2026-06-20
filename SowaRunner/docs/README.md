@@ -12,8 +12,8 @@ Gra jest przygotowana pod urządzenia mobilne: jedno tapnięcie służy do start
 
 ## Sterowanie
 - **Spacja / klik / tap** — start, skok, podwójny skok.
+- **Strzałka w górę / Enter** — alternatywny skok na klawiaturze.
 - **1 / 2 / 3** — wybór poziomu trudności na ekranie tytułowym.
-- **P** — pauza / wznowienie na klawiaturze.
 
 W mini-grze z humbakiem tapnięcie unosi sowę, a brak tapnięcia pozwala jej opadać.
 
