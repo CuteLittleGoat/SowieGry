@@ -1,14 +1,15 @@
 # SowaRunner — dokumentacja techniczna
 
 ## Zakres
-`SowaRunner` jest bocznym endless runnerem zrealizowanym w p5.js. Gra ma ekran tytułowy, poziomy trudności, game over, mobilne one-tap sterowanie, proceduralne spawnowanie obiektów, mini-grę z humbakiem oraz mechanikę zdobywania dodatkowych żyć.
+`SowaRunner` jest bocznym endless runnerem zrealizowanym w p5.js. Gra ma ekran tytułowy, poziomy trudności, game over, mobilne one-tap sterowanie, proceduralne spawnowanie obiektów, mini-grę z humbakiem, mechanikę dodatkowych żyć oraz dodatkowy balans odstępów między przeszkodami.
 
 ## Pliki
-- `index.html` — ładuje `p5.js`, `p5.sound.min.js`, `style.css`, `sketch.js`, `render-fix.js` oraz `extra-lives.js`.
+- `index.html` — ładuje `p5.js`, `p5.sound.min.js`, `style.css`, `sketch.js`, `render-fix.js`, `extra-lives.js` oraz `obstacle-balance.js`.
 - `style.css` — blokuje scrollowanie, ustawia pełnoekranowy canvas i `touch-action: none`.
 - `sketch.js` — główna logika gry w kompaktowej formie.
 - `render-fix.js` — hotfix renderowania; nadpisuje `drawBg()`, aby każda klatka była w pełni czyszczona i zamalowywana pełnym gradientem.
 - `extra-lives.js` — serduszka jako pickupy dodatkowych żyć.
+- `obstacle-balance.js` — bezpieczniejszy spawn przeszkód i większe minimalne odstępy między przeszkodami blokującymi.
 - `docs/README.md` — instrukcja dla gracza.
 - `docs/Documentation.md` — dokumentacja techniczna.
 
@@ -20,7 +21,16 @@ Stała `SCREEN` definiuje tryby:
 - `OVER` — ekran wyniku po utracie żyć.
 
 ## Trudności
-`LEVELS` zawiera konfiguracje `Chill`, `Arcade` i `Chaos`. Każda trudność ustawia maksymalną prędkość, tempo narastania prędkości oraz odstępy między przeszkodami.
+`LEVELS` zawiera konfiguracje `Chill`, `Arcade` i `Chaos`. Każda trudność ustawia maksymalną prędkość, tempo narastania prędkości oraz bazowe odstępy między przeszkodami.
+
+## Balans przeszkód
+`obstacle-balance.js` nadpisuje `spawnStuff()`. Moduł:
+- zwiększa minimalny odstęp między przeszkodami blokującymi,
+- dodatkowo zwiększa odstęp po szerokich albo trudniejszych przeszkodach,
+- ogranicza powtarzanie tego samego typu przeszkody kilka razy z rzędu,
+- utrzymuje różne wartości balansu dla `Chill`, `Arcade` i `Chaos`.
+
+Celem jest uniknięcie sytuacji, w której przy dużej prędkości gracz nie ma realnego czasu na reakcję.
 
 ## Dodatkowe życia
 `extra-lives.js` dodaje `runnerLifePickups`. Serduszka pojawiają się co pewien czas podczas właściwego biegu. Zebranie serduszka:
