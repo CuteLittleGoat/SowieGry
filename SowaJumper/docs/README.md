@@ -5,12 +5,21 @@ Sterujesz sową, która wspina się jak najwyżej po platformach. Gra jest piono
 
 ## Uruchomienie
 1. Otwórz `SowaJumper/index.html` w przeglądarce.
-2. Na ekranie tytułowym naciśnij **Spację**, kliknij albo dotknij ekranu.
-3. Gra działa także na urządzeniu mobilnym w orientacji pionowej i poziomej.
+2. Na ekranie tytułowym wybierz poziom trudności albo użyj klawiszy `1 / 2 / 3`.
+3. Naciśnij **Spację**, kliknij albo dotknij ekranu.
+4. Gra działa także na urządzeniu mobilnym w orientacji pionowej i poziomej.
+
+## Poziomy trudności
+- **Chill** — 4 życia, bliższe platformy, mocniejsze wybicia.
+- **Arcade** — standardowa wersja gry.
+- **Chaos** — 3 życia, dalsze platformy, słabsze ratunki i bardziej wymagające skoki.
+
+Wybrany poziom jest zapisywany lokalnie w przeglądarce.
 
 ## Sterowanie
 - **Telefon / tablet:** przytrzymaj lewą połowę ekranu, aby lecieć w lewo; prawą połowę, aby lecieć w prawo.
 - **Klawiatura:** `←` / `A` oraz `→` / `D`.
+- **Wybór trudności:** przyciski na ekranie tytułowym albo `1 / 2 / 3`.
 - **Start / restart:** `Spacja`, `Enter`, kliknięcie albo tapnięcie na ekranie tytułowym lub ekranie końca gry.
 
 Sowa odbija się automatycznie po lądowaniu na platformie. Gracz kontroluje głównie pozycję w poziomie i wybiera, na czym wylądować.
@@ -23,7 +32,7 @@ Sowa odbija się automatycznie po lądowaniu na platformie. Gracz kontroluje gł
 - **Humbak** — wejście do mini-gry bonusowej. Po złapaniu humbaka zaczyna się krótka sekwencja, w której zbierasz monstery i omijasz „Pracu Pracu”.
 
 ## Życia i koniec gry
-- Startujesz z **3 życiami**.
+- Liczba żyć zależy od poziomu trudności.
 - Upadek poza ekran lub uderzenie w „Pracu Pracu” zabiera życie.
 - Po stracie życia sowa wraca z chwilową nietykalnością i silnym wybiciem.
 - Po utracie wszystkich żyć pojawia się ekran końca gry z wynikiem, wysokością i rekordami zapisanymi lokalnie w przeglądarce.
