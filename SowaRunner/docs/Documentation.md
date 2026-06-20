@@ -1,13 +1,14 @@
 # SowaRunner — dokumentacja techniczna
 
 ## Zakres
-`SowaRunner` jest bocznym endless runnerem zrealizowanym w p5.js. Gra została przebudowana jako pełniejsza wersja arcade z ekranem tytułowym, poziomami trudności, game over, mobilnym one-tap sterowaniem, proceduralnym spawnowaniem obiektów oraz mini-grą z humbakiem.
+`SowaRunner` jest bocznym endless runnerem zrealizowanym w p5.js. Gra ma ekran tytułowy, poziomy trudności, game over, mobilne one-tap sterowanie, proceduralne spawnowanie obiektów, mini-grę z humbakiem oraz mechanikę zdobywania dodatkowych żyć.
 
 ## Pliki
-- `index.html` — ładuje `p5.js`, `p5.sound.min.js`, `style.css`, `sketch.js` oraz `render-fix.js`; zawiera metadane mobilne.
+- `index.html` — ładuje `p5.js`, `p5.sound.min.js`, `style.css`, `sketch.js`, `render-fix.js` oraz `extra-lives.js`.
 - `style.css` — blokuje scrollowanie, ustawia pełnoekranowy canvas i `touch-action: none`.
-- `sketch.js` — pełna logika gry w kompaktowej formie.
-- `render-fix.js` — hotfix renderowania; nadpisuje `drawBg()`, aby każda klatka była w pełni czyszczona i zamalowywana pełnym gradientem, co eliminuje powidoki/smużenie na mobile.
+- `sketch.js` — główna logika gry w kompaktowej formie.
+- `render-fix.js` — hotfix renderowania; nadpisuje `drawBg()`, aby każda klatka była w pełni czyszczona i zamalowywana pełnym gradientem.
+- `extra-lives.js` — serduszka jako pickupy dodatkowych żyć.
 - `docs/README.md` — instrukcja dla gracza.
 - `docs/Documentation.md` — dokumentacja techniczna.
 
@@ -19,15 +20,16 @@ Stała `SCREEN` definiuje tryby:
 - `OVER` — ekran wyniku po utracie żyć.
 
 ## Trudności
-`LEVELS` zawiera trzy konfiguracje:
-- `Chill`
-- `Arcade`
-- `Chaos`
+`LEVELS` zawiera konfiguracje `Chill`, `Arcade` i `Chaos`. Każda trudność ustawia maksymalną prędkość, tempo narastania prędkości oraz odstępy między przeszkodami.
 
-Każda trudność ustawia maksymalną prędkość, tempo narastania prędkości oraz minimalny i maksymalny odstęp między przeszkodami.
+## Dodatkowe życia
+`extra-lives.js` dodaje `runnerLifePickups`. Serduszka pojawiają się co pewien czas podczas właściwego biegu. Zebranie serduszka:
+- dodaje 1 życie, jeśli gracz ma mniej niż 5 żyć,
+- daje punkty, jeśli gracz ma już 5 żyć.
+
+Częstotliwość serduszek zależy od wybranego poziomu trudności.
 
 ## Główne zmienne i kolekcje
-Kod używa globalnych zmiennych stanu, aby utrzymać plik krótki i łatwy do uruchomienia bez bundlera:
 - `mode` — aktualny ekran.
 - `level` — wybrany poziom trudności.
 - `score`, `distM`, `lives` — wynik, dystans i życia.
@@ -39,60 +41,26 @@ Kod używa globalnych zmiennych stanu, aby utrzymać plik krótki i łatwy do ur
 - `clouds`, `hills` — tło.
 
 ## Sterowanie
-Gra jest projektowana pod mobile:
 - `touchStarted()` i `mousePressed()` wywołują `trigger()`.
 - Na ekranie tytułowym klik/tap w kartę trudności zmienia poziom.
 - `keyPressed()` obsługuje `1/2/3`, `Spację`, `Enter` i `strzałkę w górę`.
 
-Runner jest sterowany jednym przyciskiem/tapnięciem. W trybie `RUN` tapnięcie wykonuje skok lub podwójny skok. W trybie `WHALE` tapnięcie unosi sowę w mini-grze.
+## Fizyka i obiekty
+`updateRun(dt)` zwiększa czas, dystans, prędkość i wynik. `updateOwl(dt)` obsługuje grawitację, lądowanie, skoki, dziury, platformy, dachy Amic i kozy. `hit()` odejmuje życie i kończy grę po spadku życia do zera.
 
-## Fizyka runnera
-- `updateRun(dt)` zwiększa czas, dystans, prędkość i wynik.
-- `updateOwl(dt)` obsługuje grawitację, lądowanie, coyote time, jump buffer, dziury, platformy, dachy Amic i kozy.
-- `jump()` rozróżnia pierwszy skok i podwójny skok.
-- `hit()` odejmuje życie, uruchamia nietykalność, shake i ekran końca gry po spadku życia do zera.
-
-## Proceduralne generowanie
-`spawnStuff(dt, c)` generuje:
+Obiekty obowiązkowe:
 - liście monstery,
-- platformy,
+- serduszka,
 - skaczące kozy,
-- tokeny humbaka,
-- dziury,
-- ściany,
+- humbak,
 - napisy „Pracu Pracu”,
 - stacje Amic.
 
-Odstępy między przeszkodami zależą od aktywnej trudności.
-
-## Obiekty obowiązkowe
-- **Liście monstery** — `leaves`, punktowe znajdźki.
-- **Skaczące kozy** — `goats`, poruszają się skokami; stomp daje boost, kontakt z boku szkodzi.
-- **Humbak** — `whales`, uruchamia mini-grę.
-- **Napisy „Pracu Pracu”** — `pracu` i `bPracu`, przeszkody.
-- **Stacje Amic** — `amic`, działają jako przeszkoda z bezpiecznym dachem-katapulta.
-
 ## Mini-gra z humbakiem
-`startWhale()` przełącza ekran na `WHALE`. W tym trybie:
-- sowa unosi się po tapnięciu i opada bez wejścia,
-- monstery dają punkty,
-- „Pracu Pracu” odejmuje punkty i wywołuje shake,
-- po upływie czasu gracz wraca do runnera z boostem i chwilową nietykalnością.
+`startWhale()` przełącza ekran na `WHALE`. W tym trybie sowa unosi się po tapnięciu, monstery dają punkty, a „Pracu Pracu” odejmuje punkty.
 
 ## Renderowanie
-Kod rysuje wszystko proceduralnie w p5.js:
-- tło, chmury i wzgórza,
-- grunt i dziury,
-- platformy,
-- stacje Amic,
-- liście monstery,
-- skaczące kozy,
-- humbaka,
-- napisy „Pracu Pracu”,
-- sowę,
-- cząsteczki i HUD.
-
-`render-fix.js` jest ładowany po `sketch.js`, więc jego definicja `drawBg()` zastępuje wcześniejszą wersję. Hotfix wykonuje `clear()` i pełny fill gradientem na każdej klatce, zamiast rysować tło paskami co kilka pikseli.
+Kod rysuje wszystko proceduralnie w p5.js. `render-fix.js` jest ładowany po `sketch.js`, więc jego definicja `drawBg()` zastępuje wcześniejszą wersję i eliminuje smużenie na mobile.
 
 ## Rekordy
 Gra zapisuje rekordy w `localStorage`:
@@ -100,8 +68,4 @@ Gra zapisuje rekordy w `localStorage`:
 - `sowaRunnerBestDistance`
 
 ## Zasady utrzymania
-Przy każdej zmianie mechaniki, sterowania, UI lub obiektów aktualizuj:
-- `docs/README.md`
-- `docs/Documentation.md`
-
-Jeżeli zmiana dotyczy ekranu startowego repozytorium, zaktualizuj także główną dokumentację w katalogu `docs/`.
+Przy zmianach mechaniki, sterowania, UI lub obiektów aktualizuj `docs/README.md` oraz `docs/Documentation.md`.
