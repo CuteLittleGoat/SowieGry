@@ -25,9 +25,9 @@ Wybrany poziom jest zapisywany lokalnie w przeglądarce.
 
 ## Plansze
 Gra ma trzy plansze, które zapętlają się po ukończeniu cyklu:
-1. **Supermarket** — alejki, regały i sklepowy klimat.
+1. **Supermarket** — alejka inspirowana polskim dyskontem: regały po bokach, kafelki, stosy produktów i czarno-pomarańczowe tablice „SUPER CENA!”.
 2. **Wystawa kwiatów ozdobnych** — dekoracyjna, zielona plansza z roślinami.
-3. **Blokowisko PRL** — betonowe bloki, okna i osiedlowe przeszkody.
+3. **Blokowisko PRL** — osiedle z wielkiej płyty: wysokie prefabrykowane bloki, powtarzalne okna, balkony, przygaszona kolorystyka i osiedlowe drzewa.
 
 Każda plansza kończy się dobiegnięciem do **ogrodu działkowego z basenem ogrodowym**. Ukończenie planszy daje premię punktową i przenosi do kolejnej scenerii.
 
@@ -37,6 +37,8 @@ Każda plansza kończy się dobiegnięciem do **ogrodu działkowego z basenem og
 - **Stacje Amic** — duże przeszkody blokujące tor.
 - **Smartfony z napisem „przyjmiesz zmianę?”** — przeszkody.
 - **Telefon od Magdy** — przeszkoda.
+- **Palety z towarem** — dodatkowe przeszkody na planszy supermarketu.
+- **Dziki** — dodatkowe przeszkody na planszy blokowiska.
 - **Wózki, donice i betonowe słupki** — dodatkowe przeszkody zależne od planszy.
 
 ## Życia i rekord
