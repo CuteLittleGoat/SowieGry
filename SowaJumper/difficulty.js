@@ -153,6 +153,7 @@ function syncJumperDifficultyPanel() {
 function loadJumperModule(src) {
   const script = document.createElement("script");
   script.src = src;
+  script.async = false;
   document.body.appendChild(script);
 }
 
@@ -161,3 +162,4 @@ renderJumperDifficultyButtons();
 syncJumperDifficultyPanel();
 loadJumperModule("extra-lives.js");
 loadJumperModule("bonus-fix.js");
+loadJumperModule("safety-balance.js");
