@@ -4,11 +4,13 @@
 `Sowa3` jest samodzielną grą HTML/CSS/JavaScript bez frameworka. To trzytorowy runner w perspektywie „wgłąb ekranu”, inspirowany klasycznymi lane runnerami. Gracz steruje sową, zmieniając tor między lewym, środkowym i prawym.
 
 ## Pliki
-- `index.html` — struktura strony, `canvas#game`, HUD, opis sterowania oraz ładowanie `script.js`, `difficulty.js` i `extra-lives.js`.
+- `index.html` — struktura strony, `canvas#game`, HUD, opis sterowania oraz ładowanie `script.js`, `difficulty.js`, `extra-lives.js`, `visual-polish.js` i `stage-obstacles.js`.
 - `style.css` — pełnoekranowy layout, blokada przewijania, safe-area, HUD i opis sterowania.
 - `script.js` — główna logika gry, renderowanie, proceduralne generowanie przeszkód, plansze, kolizje, wynik i rekord.
 - `difficulty.js` — poziomy trudności, panel wyboru, skróty `1 / 2 / 3` i zapamiętanie wyboru w `localStorage`.
 - `extra-lives.js` — serduszka jako pickupy dodatkowych żyć.
+- `visual-polish.js` — poprawione tła supermarketu i blokowiska.
+- `stage-obstacles.js` — palety z towarem w supermarkecie i dziki na blokowisku.
 - `docs/README.md` — instrukcja dla gracza.
 - `docs/Documentation.md` — dokumentacja techniczna.
 
@@ -28,19 +30,21 @@
 Wybór jest zapisywany w `localStorage` pod kluczem `sowa3Difficulty`.
 
 ## Dodatkowe życia
-`extra-lives.js` dodaje serduszka jako osobne pickupy na torach. Serduszka poruszają się w tej samej pseudo-3D perspektywie co przeszkody. Zebranie serduszka:
-- dodaje 1 życie, jeśli gracz ma mniej niż 5 żyć,
-- daje punkty, jeśli gracz ma już 5 żyć.
+`extra-lives.js` dodaje serduszka jako osobne pickupy na torach. Zebranie serduszka dodaje 1 życie do limitu 5 żyć albo daje punkty, jeśli gracz ma już limit.
 
-Częstotliwość pojawiania się serduszek zależy od poziomu trudności.
+## Plansze i tła
+`visual-polish.js` nadpisuje `drawScene()` dla wybranych plansz:
+- `Supermarket` — polski dyskont z jasną alejką, regałami po bokach, kafelkami, stosami produktów i tablicami „SUPER CENA!”.
+- `Blokowisko PRL` — osiedle z wielkiej płyty: prefabrykowane bloki, powtarzalne okna, balkony, bure elewacje, drzewa i osiedlowy plac.
 
-## Plansze
-Tablica `STAGES` definiuje trzy plansze:
-- `Supermarket`
-- `Wystawa kwiatów ozdobnych`
-- `Blokowisko PRL`
+Plansza `Wystawa kwiatów ozdobnych` pozostaje renderowana bazowo przez `script.js`. Każda plansza kończy się ogrodem działkowym z basenem.
 
-Każda plansza kończy się ogrodem działkowym z basenem.
+## Przeszkody planszowe
+`stage-obstacles.js` dodaje osobne przeszkody zależne od planszy:
+- `pallet` — paleta z towarem na planszy supermarketu.
+- `boar` — dzik na planszy blokowiska.
+
+Te przeszkody mają własny timer spawnu, poruszają się w pseudo-3D tak jak inne obiekty i wywołują `damage()` po trafieniu sowy na tym samym torze.
 
 ## Perspektywa i tory
 Gra używa pseudo-3D na canvasie:
@@ -63,8 +67,10 @@ Gra używa pseudo-3D na canvasie:
 - `shift` — smartfon z napisem „przyjmiesz zmianę?”.
 - `magda` — telefon z napisem „telefon od Magdy”.
 - `cart` — wózek sklepowy.
+- `pallet` — paleta z towarem w supermarkecie.
 - `pot` — donica, częstsza na planszy kwiatowej.
 - `block` — betonowy słupek, częstszy na planszy PRL.
+- `boar` — dzik na blokowisku.
 
 ## Kolizje
 Gdy obiekt osiąga bliski zakres, gra sprawdza tor sowy i tor obiektu:
