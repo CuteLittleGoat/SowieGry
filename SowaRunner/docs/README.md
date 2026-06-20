@@ -26,10 +26,13 @@ W mini-grze z humbakiem tapnięcie unosi sowę, a brak tapnięcia pozwala jej op
 - **Stacje paliw Amic** — przeszkody z bezpiecznym dachem. Lądowanie na dachu wybija sowę jak katapulta, ale zderzenie z bokiem szkodzi.
 - **Dziury i ściany** — klasyczne przeszkody runnera.
 
+## Balans przeszkód
+Gra ma dodatkowy moduł balansu przeszkód. Wymusza on większy odstęp między kolejnymi przeszkodami blokującymi, ogranicza powtarzanie tego samego typu przeszkody i daje więcej czasu na reakcję, szczególnie na wyższych prędkościach.
+
 ## Poziomy trudności
 - **Chill** — spokojniejszy rozbieg.
 - **Arcade** — główny tryb.
-- **Chaos** — większa prędkość i ciaśniejsze odstępy.
+- **Chaos** — większa prędkość i ciaśniejsze odstępy, ale nadal z minimalnym odstępem między przeszkodami.
 
 ## Koniec gry i rekordy
 Startujesz z **3 życiami**. W trakcie gry możesz zdobywać kolejne życia przez zbieranie serduszek, maksymalnie do **5 żyć**. Po utracie wszystkich żyć pojawia się ekran wyniku. Najlepszy dystans i najlepszy wynik są zapisywane lokalnie w przeglądarce.
