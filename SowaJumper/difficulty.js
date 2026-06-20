@@ -150,13 +150,14 @@ function syncJumperDifficultyPanel() {
   requestAnimationFrame(syncJumperDifficultyPanel);
 }
 
-function loadJumperExtraLives() {
+function loadJumperModule(src) {
   const script = document.createElement("script");
-  script.src = "extra-lives.js";
+  script.src = src;
   document.body.appendChild(script);
 }
 
 applyJumperDifficulty();
 renderJumperDifficultyButtons();
 syncJumperDifficultyPanel();
-loadJumperExtraLives();
+loadJumperModule("extra-lives.js");
+loadJumperModule("bonus-fix.js");
