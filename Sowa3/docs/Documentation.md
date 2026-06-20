@@ -9,8 +9,8 @@
 - `script.js` — główna logika gry, renderowanie, proceduralne generowanie przeszkód, plansze, kolizje, wynik i rekord.
 - `difficulty.js` — poziomy trudności, panel wyboru, skróty `1 / 2 / 3` i zapamiętanie wyboru w `localStorage`.
 - `extra-lives.js` — serduszka jako pickupy dodatkowych żyć.
-- `visual-polish.js` — poprawione tła supermarketu i blokowiska.
-- `stage-obstacles.js` — palety z towarem w supermarkecie i dziki na blokowisku.
+- `visual-polish.js` — poprawione tła supermarketu, wystawy kwiatów i blokowiska.
+- `stage-obstacles.js` — palety z towarem w supermarkecie, ludzie na wystawie kwiatów i dziki na blokowisku.
 - `docs/README.md` — instrukcja dla gracza.
 - `docs/Documentation.md` — dokumentacja techniczna.
 
@@ -33,15 +33,17 @@ Wybór jest zapisywany w `localStorage` pod kluczem `sowa3Difficulty`.
 `extra-lives.js` dodaje serduszka jako osobne pickupy na torach. Zebranie serduszka dodaje 1 życie do limitu 5 żyć albo daje punkty, jeśli gracz ma już limit.
 
 ## Plansze i tła
-`visual-polish.js` nadpisuje `drawScene()` dla wybranych plansz:
+`visual-polish.js` nadpisuje `drawScene()` dla trzech plansz:
 - `Supermarket` — polski dyskont z jasną alejką, regałami po bokach, kafelkami, stosami produktów i tablicami „SUPER CENA!”.
+- `Wystawa kwiatów ozdobnych` — hala / festiwal roślin z długimi alejkami, metalowymi stojakami, wieloma doniczkami, żółtymi cenówkami, ciemnym sufitem i tłumem odwiedzających.
 - `Blokowisko PRL` — osiedle z wielkiej płyty: prefabrykowane bloki, powtarzalne okna, balkony, bure elewacje, drzewa i osiedlowy plac.
 
-Plansza `Wystawa kwiatów ozdobnych` pozostaje renderowana bazowo przez `script.js`. Każda plansza kończy się ogrodem działkowym z basenem.
+Każda plansza kończy się ogrodem działkowym z basenem.
 
 ## Przeszkody planszowe
 `stage-obstacles.js` dodaje osobne przeszkody zależne od planszy:
 - `pallet` — paleta z towarem na planszy supermarketu.
+- `person` — człowiek / odwiedzający jako przeszkoda na planszy wystawy kwiatów.
 - `boar` — dzik na planszy blokowiska.
 
 Te przeszkody mają własny timer spawnu, poruszają się w pseudo-3D tak jak inne obiekty i wywołują `damage()` po trafieniu sowy na tym samym torze.
@@ -68,6 +70,7 @@ Gra używa pseudo-3D na canvasie:
 - `magda` — telefon z napisem „telefon od Magdy”.
 - `cart` — wózek sklepowy.
 - `pallet` — paleta z towarem w supermarkecie.
+- `person` — człowiek jako przeszkoda na wystawie kwiatów.
 - `pot` — donica, częstsza na planszy kwiatowej.
 - `block` — betonowy słupek, częstszy na planszy PRL.
 - `boar` — dzik na blokowisku.
