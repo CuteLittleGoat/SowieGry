@@ -1,7 +1,7 @@
 # Sowa3 — instrukcja gry
 
 ## Cel gry
-`Sowa3` to trzytorowy runner w perspektywie „wgłąb ekranu”. Sowa biegnie przed siebie, a gracz zmienia tor: lewy, środkowy albo prawy. Celem jest zbieranie punktów, omijanie przeszkód i ukończenie kolejnych plansz.
+`Sowa3` to trzytorowy runner w perspektywie „wgłąb ekranu”. Sowa biegnie przed siebie, a gracz zmienia tor: lewy, środkowy albo prawy. Celem jest zbieranie punktów, omijanie przeszkód, zdobywanie dodatkowych żyć i ukończenie kolejnych plansz.
 
 ## Uruchomienie
 1. Otwórz `Sowa3/index.html` w przeglądarce.
@@ -33,10 +33,11 @@ Każda plansza kończy się dobiegnięciem do **ogrodu działkowego z basenem og
 
 ## Punkty i przeszkody
 - **Liście monstery** — punkty.
+- **Serduszka** — dodatkowe życia. Jeśli masz już 5 żyć, serduszko daje punkty.
 - **Stacje Amic** — duże przeszkody blokujące tor.
 - **Smartfony z napisem „przyjmiesz zmianę?”** — przeszkody.
 - **Telefon od Magdy** — przeszkoda.
 - **Wózki, donice i betonowe słupki** — dodatkowe przeszkody zależne od planszy.
 
 ## Życia i rekord
-Liczba żyć zależy od poziomu trudności. Trafienie w przeszkodę zabiera życie i daje krótką nietykalność. Po utracie wszystkich żyć pojawia się ekran końca gry. Najlepszy wynik jest zapisywany lokalnie w przeglądarce.
+Liczba żyć na starcie zależy od poziomu trudności. W trakcie gry można zdobywać kolejne życia przez serduszka, maksymalnie do **5 żyć**. Trafienie w przeszkodę zabiera życie i daje krótką nietykalność. Po utracie wszystkich żyć pojawia się ekran końca gry. Najlepszy wynik jest zapisywany lokalnie w przeglądarce.
