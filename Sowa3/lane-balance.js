@@ -27,6 +27,10 @@ function sowa3DifficultyKey() {
   return state.difficultyKey || "arcade";
 }
 
+function sowa3ActiveDifficulty() {
+  return SOWA3_DIFFICULTIES[sowa3DifficultyKey()] || SOWA3_DIFFICULTIES.arcade;
+}
+
 function sowa3MinBlockerGap() {
   return SOWA3_MIN_BLOCKER_GAP[sowa3DifficultyKey()] || SOWA3_MIN_BLOCKER_GAP.arcade;
 }
@@ -81,9 +85,7 @@ function addSowa3LeafInsteadOfBlockedObstacle() {
 }
 
 function chooseSowa3BaseSpawnType() {
-  const difficulty = typeof activeSowa3Difficulty !== "undefined"
-    ? activeSowa3Difficulty
-    : (SOWA3_DIFFICULTIES?.[sowa3DifficultyKey()] || SOWA3_DIFFICULTIES.arcade);
+  const difficulty = sowa3ActiveDifficulty();
 
   if (Math.random() < difficulty.obstacleSkip) return "leaf";
 
