@@ -101,50 +101,17 @@
         filter: drop-shadow(0 10px 12px rgba(0, 0, 0, 0.15));
       }
 
-      .owl {
-        top: 14%;
-        left: 6%;
-        animation-duration: 5.4s;
-      }
-
-      .goat {
-        top: 22%;
-        right: 12%;
-        animation-duration: 6.8s;
-      }
-
-      .whale {
-        bottom: 16%;
-        left: 10%;
-        animation-duration: 7.2s;
-      }
-
-      .leaf {
-        bottom: 10%;
-        right: 18%;
-        animation-duration: 5.8s;
-      }
-
-      .monstera {
-        top: 55%;
-        right: 4%;
-        animation-duration: 7.6s;
-      }
-
-      .alokazja {
-        top: 58%;
-        left: 4%;
-        animation-duration: 6.1s;
-      }
+      .owl { top: 14%; left: 6%; animation-duration: 5.4s; }
+      .goat { top: 22%; right: 12%; animation-duration: 6.8s; }
+      .whale { bottom: 16%; left: 10%; animation-duration: 7.2s; }
+      .leaf { bottom: 10%; right: 18%; animation-duration: 5.8s; }
+      .monstera { top: 55%; right: 4%; animation-duration: 7.6s; }
+      .alokazja { top: 58%; left: 4%; animation-duration: 6.1s; }
+      .phone { top: 42%; left: 48%; animation-duration: 6.6s; }
 
       @keyframes floaty {
-        0%,
-        100% {
-          transform: translateY(0) rotate(-2deg) scale(1);
-        }
-        50% {
-          transform: translateY(-18px) rotate(4deg) scale(1.05);
-        }
+        0%, 100% { transform: translateY(0) rotate(-2deg) scale(1); }
+        50% { transform: translateY(-18px) rotate(4deg) scale(1.05); }
       }
 
       .sparkles {
@@ -157,27 +124,12 @@
         animation: pulse 4s ease-in-out infinite;
       }
 
-      .sparkle-one {
-        top: -60px;
-        right: -40px;
-      }
-
-      .sparkle-two {
-        bottom: -80px;
-        left: -40px;
-        animation-delay: 1.2s;
-      }
+      .sparkle-one { top: -60px; right: -40px; }
+      .sparkle-two { bottom: -80px; left: -40px; animation-delay: 1.2s; }
 
       @keyframes pulse {
-        0%,
-        100% {
-          transform: scale(0.9);
-          opacity: 0.6;
-        }
-        50% {
-          transform: scale(1.05);
-          opacity: 0.95;
-        }
+        0%, 100% { transform: scale(0.9); opacity: 0.6; }
+        50% { transform: scale(1.05); opacity: 0.95; }
       }
 
       .footer-note {
@@ -197,6 +149,7 @@
         <span class="creature leaf">🍃</span>
         <span class="creature monstera">🌿</span>
         <span class="creature alokazja">🪴</span>
+        <span class="creature phone">📱</span>
         <span class="sparkles sparkle-one"></span>
         <span class="sparkles sparkle-two"></span>
       </div>
@@ -216,6 +169,10 @@
         <a class="game-card" href="SowaJumper/">
           <h2>SowaJumper</h2>
           <p>Skacz wysoko i zbieraj punkty w stylu retro arcade.</p>
+        </a>
+        <a class="game-card" href="Sowa3/">
+          <h2>Sowa3</h2>
+          <p>Trzytorowy runner wgłąb ekranu: supermarket, kwiaty, blokowisko i meta na działce.</p>
         </a>
       </section>
 
