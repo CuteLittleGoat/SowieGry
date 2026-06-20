@@ -1,7 +1,30 @@
-html, body {
+html,
+body {
   margin: 0;
   padding: 0;
+  width: 100%;
+  min-height: 100%;
+  overflow: hidden;
+  background: #aee5ff;
+  touch-action: none;
+  overscroll-behavior: none;
+  -webkit-user-select: none;
+  user-select: none;
 }
+
+body {
+  min-height: 100svh;
+}
+
+main {
+  width: 100vw;
+  height: 100svh;
+  min-height: 100vh;
+}
+
 canvas {
   display: block;
+  width: 100% !important;
+  height: 100% !important;
+  touch-action: none;
 }
