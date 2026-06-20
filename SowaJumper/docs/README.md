@@ -24,6 +24,9 @@ Wybrany poziom jest zapisywany lokalnie w przeglądarce.
 
 Sowa odbija się automatycznie po lądowaniu na platformie. Gracz kontroluje głównie pozycję w poziomie i wybiera, na czym wylądować.
 
+## Balans platform i przeszkód
+Gra ma dodatkowy moduł bezpieczeństwa platform. Ogranicza zbyt duże poziome przeskoki między kolejnymi platformami, nie pozwala na długie serie trudnych platform i usuwa napisy „Pracu Pracu”, jeśli pojawiłyby się zbyt blisko lądowania albo zbyt blisko poprzedniego napisu.
+
 ## Obiekty i zasady
 - **Liście monstery** — punkty. Każdy zebrany liść daje punkty i krótki efekt cząsteczkowy.
 - **Serduszka** — dodatkowe życia. Jeżeli masz już maksymalną liczbę żyć, serduszko daje punkty zamiast kolejnego życia.
