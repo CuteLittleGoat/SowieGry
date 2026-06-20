@@ -1,12 +1,13 @@
 # Sowa Jumper — dokumentacja techniczna
 
 ## Zakres
-`SowaJumper` jest samodzielną grą HTML/CSS/JavaScript bez frameworka. Całość logiki, renderowania i sterowania znajduje się w `script.js`; `index.html` dostarcza strukturę strony, a `styles.css` odpowiada za pełnoekranowy, mobilny layout.
+`SowaJumper` jest samodzielną grą HTML/CSS/JavaScript bez frameworka. Główna logika, renderowanie i sterowanie znajdują się w `script.js`; `difficulty.js` dodaje wybór poziomu trudności, a `index.html` dostarcza strukturę strony.
 
 ## Pliki
-- `index.html` — canvas gry, HUD, komunikat sterowania i metadane mobilne.
+- `index.html` — canvas gry, HUD, komunikat sterowania, metadane mobilne oraz ładowanie `script.js` i `difficulty.js`.
 - `styles.css` — pełnoekranowy layout, safe-area, blokada scrollowania, HUD i podpowiedzi sterowania dotykowego.
 - `script.js` — pętla gry, fizyka, proceduralne generowanie świata, kolizje, mini-gra z humbakiem, rysowanie obiektów i zapis rekordów w `localStorage`.
+- `difficulty.js` — trzy poziomy trudności, panel wyboru, skróty `1 / 2 / 3` i zapamiętanie wyboru w `localStorage`.
 - `docs/README.md` — instrukcja dla gracza.
 - `docs/Documentation.md` — dokumentacja techniczna.
 
@@ -28,12 +29,26 @@ Główna pętla `loop()` używa `requestAnimationFrame()`. W zależności od `st
 - `bonus` — mini-gra z humbakiem.
 - `gameover` — ekran końca gry.
 
+## Poziomy trudności
+`difficulty.js` definiuje `JUMPER_DIFFICULTIES`:
+- `chill` — 4 życia, niższa grawitacja, mocniejsze wybicia, mniejszy mnożnik odstępu platform.
+- `arcade` — wartości standardowe.
+- `chaos` — większa grawitacja, dalsze platformy, słabsze wybicia i 3 życia.
+
+Plik nadpisuje wybrane funkcje i parametry:
+- `startGame()` — przed startem stosuje aktywne parametry, a po resecie ustawia liczbę żyć.
+- `platformGapForHeight()` — mnoży odstęp między platformami przez `gapMult` aktywnego poziomu.
+- `state.gravity`, `state.jumpPower`, `state.goatPower`, `state.amicPower` — są aktualizowane przez `applyJumperDifficulty()`.
+
+Wybór jest zapisywany w `localStorage` pod kluczem `sowaJumperDifficulty`.
+
 ## Sterowanie i mobile
 Gra jest projektowana jako mobile-first:
 - `touch-action: none` i `overflow: hidden` blokują przewijanie strony podczas gry.
 - Sterowanie dotykowe działa przez `pointerdown`, `pointermove`, `pointerup` i `pointercancel`.
 - Lewa połowa ekranu ustawia `input.left`, prawa połowa `input.right`.
 - Klawiatura obsługuje `A/D`, strzałki, `Spację` i `Enter`.
+- Poziom trudności można wybrać przyciskami na ekranie tytułowym lub klawiszami `1 / 2 / 3`.
 
 ## Fizyka i kamera
 - Sowa ma pozycję `x/y`, promień, prędkości `vx/vy` i animację skrzydeł.
@@ -49,7 +64,7 @@ Gra jest projektowana jako mobile-first:
 - `crumbly` — krusząca się platforma usuwana po użyciu.
 - `amic` — stacja paliw Amic działająca jak katapulta.
 
-Odstęp między platformami zależy od wysokości, dzięki czemu gra stopniowo robi się trudniejsza.
+Odstęp między platformami zależy od wysokości oraz wybranego poziomu trudności.
 
 ## Obiekty obowiązkowe
 - **Liście monstery** (`leaves`) — podstawowe znajdźki punktowe.
