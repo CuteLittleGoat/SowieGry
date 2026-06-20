@@ -1,5 +1,6 @@
 // Dodatkowe przeszkody zależne od planszy Sowa3.
 // Supermarket: palety z towarem.
+// Wystawa kwiatów: ludzie.
 // Blokowisko PRL: dziki.
 
 const sowa3StageObstacles = [];
@@ -34,6 +35,7 @@ drawObjects = function patchedSowa3DrawObjectsWithStageObstacles() {
     const y = roadY(o.z);
     const sc = scaleAt(o.z);
     if (o.type === "pallet") drawSowa3Pallet(x, y, sc, o.phase);
+    if (o.type === "person") drawSowa3ExpoPersonObstacle(x, y, sc, o.phase, o.variant);
     if (o.type === "boar") drawSowa3Boar(x, y, sc, o.phase);
   });
 };
@@ -44,11 +46,12 @@ function updateSowa3StageObstacles(dt) {
   sowa3StageObstacleTimer -= dt;
   if (sowa3StageObstacleTimer <= 0) {
     if (state.stage === 0) spawnSowa3StageObstacle("pallet");
+    if (state.stage === 1) spawnSowa3StageObstacle("person");
     if (state.stage === 2) spawnSowa3StageObstacle("boar");
 
     const difficulty = state.difficultyKey || "arcade";
     const difficultyMult = difficulty === "chill" ? 1.18 : difficulty === "chaos" ? 0.82 : 1;
-    const stageMult = state.stage === 2 ? 0.92 : 1;
+    const stageMult = state.stage === 1 ? 0.86 : state.stage === 2 ? 0.92 : 1;
     sowa3StageObstacleTimer = rand(2100, 3600) * difficultyMult * stageMult;
   }
 
@@ -61,12 +64,19 @@ function updateSowa3StageObstacles(dt) {
       const sameLane = Math.round(state.lane) === o.lane;
       if (sameLane) {
         o.hit = true;
-        damage(o.type === "pallet" ? "Paleta z towarem!" : "Dzik na osiedlu!");
+        damage(labelForSowa3StageObstacle(o.type));
       }
     }
 
     if (o.z < -.08 || o.hit) sowa3StageObstacles.splice(i, 1);
   }
+}
+
+function labelForSowa3StageObstacle(type) {
+  if (type === "pallet") return "Paleta z towarem!";
+  if (type === "person") return "Tłum na wystawie kwiatów!";
+  if (type === "boar") return "Dzik na osiedlu!";
+  return "Przeszkoda!";
 }
 
 function spawnSowa3StageObstacle(type) {
@@ -77,6 +87,7 @@ function spawnSowa3StageObstacle(type) {
     z: 1.08,
     hit: false,
     phase: rand(0, Math.PI * 2),
+    variant: Math.floor(rand(0, 5)),
   });
 }
 
@@ -116,6 +127,77 @@ function drawSowa3Pallet(x, y, sc, phase) {
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
   ctx.fillText("PALETA", 0, -60);
+  ctx.restore();
+}
+
+function drawSowa3ExpoPersonObstacle(x, y, sc, phase, variant = 0) {
+  ctx.save();
+  ctx.translate(x, y + Math.sin(phase * 2.4) * 2.5);
+  ctx.scale(sc, sc);
+
+  ctx.fillStyle = "rgba(0,0,0,.24)";
+  ctx.beginPath();
+  ctx.ellipse(0, 50, 54, 10, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  const coats = ["#3e4b52", "#c96b4c", "#4e6b45", "#ba456a", "#2f5f8f"];
+  const bags = ["#111111", "#263238", "#704c2f", "#194d35", "#5b3a78"];
+  const skin = ["#e7c3a3", "#d7a980", "#f0cfaf"][variant % 3];
+
+  ctx.fillStyle = skin;
+  ctx.beginPath();
+  ctx.arc(0, -38, 13, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.fillStyle = ["#593b2f", "#2b211f", "#d6a044", "#7a3a2a", "#6a625c"][variant % 5];
+  ctx.beginPath();
+  ctx.ellipse(0, -47, 15, 8, 0, Math.PI, Math.PI * 2);
+  ctx.fill();
+
+  ctx.fillStyle = coats[variant % coats.length];
+  round(-18, -24, 36, 54, 8, true);
+
+  ctx.fillStyle = "rgba(255,255,255,.78)";
+  round(-13, -18, 26, 12, 5, true);
+  ctx.fillStyle = "#7ddc7b";
+  ctx.font = "bold 8px sans-serif";
+  ctx.textAlign = "center";
+  ctx.fillText("ROŚL", 0, -9);
+
+  ctx.strokeStyle = coats[variant % coats.length];
+  ctx.lineWidth = 7;
+  ctx.beginPath();
+  ctx.moveTo(-15, -12);
+  ctx.lineTo(-32, 10 + Math.sin(phase * 3) * 4);
+  ctx.moveTo(15, -12);
+  ctx.lineTo(30, 8 + Math.cos(phase * 3) * 4);
+  ctx.stroke();
+
+  ctx.strokeStyle = "#262626";
+  ctx.lineWidth = 7;
+  ctx.beginPath();
+  ctx.moveTo(-8, 28);
+  ctx.lineTo(-11, 52);
+  ctx.moveTo(8, 28);
+  ctx.lineTo(12, 52);
+  ctx.stroke();
+
+  ctx.fillStyle = bags[variant % bags.length];
+  round(24, 10, 18, 23, 4, true);
+  ctx.strokeStyle = bags[variant % bags.length];
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.arc(33, 10, 8, Math.PI, Math.PI * 2);
+  ctx.stroke();
+
+  ctx.fillStyle = "#2e7d32";
+  ctx.beginPath();
+  ctx.ellipse(-36, 4, 10, 22, -0.4, 0, Math.PI * 2);
+  ctx.ellipse(-24, -4, 9, 20, 0.3, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = "#9b5b32";
+  round(-38, 17, 22, 15, 4, true);
+
   ctx.restore();
 }
 
