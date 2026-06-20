@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no" />
+  <meta name="theme-color" content="#dff6ff" />
+  <title>Sowa3 — trzytorowy runner</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="game-shell" aria-label="Sowa3">
+    <canvas id="game" aria-label="Gra Sowa3" role="img"></canvas>
+    <section class="hud" aria-label="Panel gry">
+      <div class="hud-card"><span>Plansza</span><strong id="stageValue">1</strong></div>
+      <div class="hud-card"><span>Punkty</span><strong id="scoreValue">0</strong></div>
+      <div class="hud-card"><span>Życia</span><strong id="livesValue">3</strong></div>
+    </section>
+    <p class="controls">Przesuń palcem w lewo/prawo albo użyj ←/→ / A/D. Tap po bokach też zmienia tor.</p>
+  </main>
+  <script src="script.js"></script>
+</body>
+</html>
