@@ -1,55 +1,34 @@
-# Sowa Jumper — instrukcja gry dla gracza
+# Sowa Jumper — instrukcja gry
 
 ## Cel gry
-Twoim zadaniem jest sterowanie sową, która wspina się coraz wyżej po platformach. Zdobywaj punkty za wysokość oraz zbieraj bonusy, a jednocześnie unikaj upadków poza ekran i niebezpiecznej „strefy dołu”. Gra nie ma końca — celem jest jak najwyższy wynik.
+Sterujesz sową, która wspina się jak najwyżej po platformach. Gra jest pionowym jumperem arcade: kamera idzie w górę, platformy stają się trudniejsze, a wynik rośnie za wysokość i zbierane bonusy.
+
+## Uruchomienie
+1. Otwórz `SowaJumper/index.html` w przeglądarce.
+2. Na ekranie tytułowym naciśnij **Spację**, kliknij albo dotknij ekranu.
+3. Gra działa także na urządzeniu mobilnym w orientacji pionowej i poziomej.
 
 ## Sterowanie
-Gra startuje dopiero po **naciśnięciu dowolnego klawisza** albo **kliknięciu/dotknięciu** ekranu na ekranie tytułowym.
+- **Telefon / tablet:** przytrzymaj lewą połowę ekranu, aby lecieć w lewo; prawą połowę, aby lecieć w prawo.
+- **Klawiatura:** `←` / `A` oraz `→` / `D`.
+- **Start / restart:** `Spacja`, `Enter`, kliknięcie albo tapnięcie na ekranie tytułowym lub ekranie końca gry.
 
-### Klawiatura
-- **Ruch w lewo:** `←` lub `A`
-- **Ruch w prawo:** `→` lub `D`
-- **Huknięcie (dźwięk):** `Spacja`
+Sowa odbija się automatycznie po lądowaniu na platformie. Gracz kontroluje głównie pozycję w poziomie i wybiera, na czym wylądować.
 
-### Ekran dotykowy / mysz
-- **Dotknij lub kliknij lewą połowę ekranu** — sowa leci w lewo.
-- **Dotknij lub kliknij prawą połowę ekranu** — sowa leci w prawo.
-- **Dotknięcie/kliknięcie** uruchamia też dźwięk „huku”.
-- **Puść palec/przycisk** — sowa przestaje przyspieszać i zwalnia.
+## Obiekty i zasady
+- **Liście monstery** — punkty. Każdy zebrany liść daje punkty i krótki efekt cząsteczkowy.
+- **Skaczące kozy** — mocny boost w górę. Pierwsze trafienie danej kozy daje większy bonus punktowy.
+- **Stacje paliw Amic** — katapulty. Lądowanie na dachu stacji wybija sowę bardzo wysoko.
+- **Napisy „Pracu Pracu”** — przeszkody. Kontakt zabiera życie.
+- **Humbak** — wejście do mini-gry bonusowej. Po złapaniu humbaka zaczyna się krótka sekwencja, w której zbierasz monstery i omijasz „Pracu Pracu”.
 
-## Zasady rozgrywki
-- Na starcie widzisz **ekran tytułowy** — sowa skacze po platformach, a gra rusza po dowolnym wejściu.
-- **Sowa automatycznie spada w dół** (grawitacja), a gdy wyląduje na platformie, odbija się w górę.
-- **Przez pierwsze 25 metrów** platformy są wyraźnie zagęszczone, by ułatwić rozbieg i utrzymać rytm skoków.
-- **Platformy są losowe** i pojawiają się wyżej wraz z Twoim postępem.
-- **Gdy spadniesz za dół ekranu**, tracisz życie i wracasz na środek ekranu.
-- **Strefa „Pracu Pracu”** (dolny pas ekranu) również powoduje utratę życia.
-- Po utracie życia sowa jest przez chwilę **niewrażliwa** (migotanie/półprzezroczystość).
-
-## Punkty i bonusy
-- **Wysokość**: rośnie, gdy wspinasz się w górę.
-- **Punkty**:
-  - Za samo wspinanie się w górę zdobywasz niewielkie punkty.
-  - **Kozy** — pojawiają się od 20 m, dają skok na **3×** standardowej wysokości; pierwszy kontakt z każdą kozą daje +25 pkt.
-  - **Liście** — zbierane w locie:
-    - monstera: +30 pkt
-    - alocasia: +20 pkt
-  - **Wieloryby** — pojawiają się od 30 m; jeśli masz mniej niż maksymalną liczbę żyć, dostajesz +1 życie; jeśli masz maks, dostajesz +50 pkt.
-
-## Życia
+## Życia i koniec gry
 - Startujesz z **3 życiami**.
-- Maksymalnie możesz mieć **5 żyć**.
-- Po utracie wszystkich żyć gra wraca do **ekranu tytułowego**, a osiągnięta wysokość jest wyświetlana pod tytułem.
+- Upadek poza ekran lub uderzenie w „Pracu Pracu” zabiera życie.
+- Po stracie życia sowa wraca z chwilową nietykalnością i silnym wybiciem.
+- Po utracie wszystkich żyć pojawia się ekran końca gry z wynikiem, wysokością i rekordami zapisanymi lokalnie w przeglądarce.
 
-## Boosty i katapulty
-- **Koza**: odbicie na **3×** standardowej wysokości.
-- **Stacja Amic (katapulta)**: odbicie na **10×** standardowej wysokości.
-- **Po śmierci**: odrodzenie następuje z wybiciem na **10×** standardowej wysokości.
-
-## HUD (panel informacyjny)
-W prawym górnym rogu ekranu widzisz:
-- **Wysokość** (w metrach) — jak wysoko wspiąłeś się od startu.
-- **Życia** — aktualna liczba żyć.
-- **Punkty** — aktualny wynik.
-
-Powodzenia i wysokich lotów!
+## Wskazówki
+- Amic i kozy są najlepszym sposobem na szybkie nabranie wysokości.
+- Nie każda wysoka platforma jest bezpieczna — część platform kruszy się po użyciu.
+- Mini-gra z humbakiem jest najłatwiejszym sposobem na szybkie podbicie punktów.
