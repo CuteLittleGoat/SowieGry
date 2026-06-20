@@ -4,9 +4,10 @@
 `SowaRunner` jest bocznym endless runnerem zrealizowanym w p5.js. Gra została przebudowana jako pełniejsza wersja arcade z ekranem tytułowym, poziomami trudności, game over, mobilnym one-tap sterowaniem, proceduralnym spawnowaniem obiektów oraz mini-grą z humbakiem.
 
 ## Pliki
-- `index.html` — ładuje `p5.js`, `p5.sound.min.js`, `style.css` i `sketch.js`; zawiera metadane mobilne.
+- `index.html` — ładuje `p5.js`, `p5.sound.min.js`, `style.css`, `sketch.js` oraz `render-fix.js`; zawiera metadane mobilne.
 - `style.css` — blokuje scrollowanie, ustawia pełnoekranowy canvas i `touch-action: none`.
 - `sketch.js` — pełna logika gry w kompaktowej formie.
+- `render-fix.js` — hotfix renderowania; nadpisuje `drawBg()`, aby każda klatka była w pełni czyszczona i zamalowywana pełnym gradientem, co eliminuje powidoki/smużenie na mobile.
 - `docs/README.md` — instrukcja dla gracza.
 - `docs/Documentation.md` — dokumentacja techniczna.
 
@@ -90,6 +91,8 @@ Kod rysuje wszystko proceduralnie w p5.js:
 - napisy „Pracu Pracu”,
 - sowę,
 - cząsteczki i HUD.
+
+`render-fix.js` jest ładowany po `sketch.js`, więc jego definicja `drawBg()` zastępuje wcześniejszą wersję. Hotfix wykonuje `clear()` i pełny fill gradientem na każdej klatce, zamiast rysować tło paskami co kilka pikseli.
 
 ## Rekordy
 Gra zapisuje rekordy w `localStorage`:
