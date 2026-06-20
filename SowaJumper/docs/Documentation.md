@@ -10,6 +10,7 @@
 - `difficulty.js` — poziomy trudności, panel wyboru, skróty `1 / 2 / 3`, zapis wyboru oraz dynamiczne ładowanie modułów dodatkowych.
 - `extra-lives.js` — serduszka jako pickupy dodatkowych żyć.
 - `bonus-fix.js` — poprawiona mini-gra z humbakiem.
+- `safety-balance.js` — dodatkowe zabezpieczenie generowania platform i przeszkód.
 - `docs/README.md` — instrukcja dla gracza.
 - `docs/Documentation.md` — dokumentacja techniczna.
 
@@ -21,6 +22,17 @@
 
 ## Poziomy trudności
 `difficulty.js` definiuje `chill`, `arcade` i `chaos`. Poziomy zmieniają liczbę żyć na starcie, grawitację, moc wybić oraz odstępy między platformami. Wybór jest zapisywany w `localStorage` pod kluczem `sowaJumperDifficulty`.
+
+## Balans bezpieczeństwa
+`safety-balance.js` nadpisuje `createPlatform()`, `spawnOnPlatform()`, `startGame()` i `initTitle()`.
+
+Moduł:
+- ogranicza maksymalne poziome przesunięcie między kolejnymi platformami,
+- wymusza normalną platformę po zbyt długiej serii trudnych platform,
+- usuwa nowy napis „Pracu Pracu”, jeśli pojawiłby się zbyt blisko lądowania,
+- usuwa nowy napis „Pracu Pracu”, jeśli pojawiłby się zbyt blisko poprzedniego napisu.
+
+Celem jest ograniczenie sytuacji, w której układ platform i przeszkód wymaga nierealnego manewru.
 
 ## Dodatkowe życia
 `extra-lives.js` dodaje kolekcję serduszek. Serduszka pojawiają się nad platformami po osiągnięciu pewnej wysokości. Zebranie serduszka:
