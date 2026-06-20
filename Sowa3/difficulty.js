@@ -79,12 +79,13 @@ spawnObject = function patchedSowa3SpawnObject() {
 
 update = function patchedSowa3Update(dt) {
   const beforeScore = state.score;
+  const beforeSpawn = state.spawn;
   originalSowa3Update(dt);
   if (state.mode === "run") {
     const d = activeSowa3Difficulty;
     const delta = state.score - beforeScore;
     if (delta > 0 && d.scoreMult !== 1) state.score = beforeScore + delta * d.scoreMult;
-    state.spawn *= d.spawnMult;
+    if (beforeSpawn <= 0 && state.spawn > 0) state.spawn *= d.spawnMult;
     state.speed = Math.max(state.speed, d.speedStart + state.stage * d.stageBonus);
   }
 };
