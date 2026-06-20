@@ -42,5 +42,8 @@ Każda plansza kończy się dobiegnięciem do **ogrodu działkowego z basenem og
 - **Dziki** — dodatkowe przeszkody na planszy blokowiska.
 - **Wózki, donice i betonowe słupki** — dodatkowe przeszkody zależne od planszy.
 
+## Balans torów
+Gra pilnuje minimalnego odstępu między kolejnymi przeszkodami blokującymi. Jeżeli przeszkoda pojawiła się zbyt niedawno, kolejna przeszkoda blokująca zostaje opóźniona albo zastąpiona liściem. Dzięki temu nie powinny powstawać sytuacje, w których wszystkie trzy tory są jednocześnie zamknięte i gracz nie ma pola manewru.
+
 ## Życia i rekord
 Liczba żyć na starcie zależy od poziomu trudności. W trakcie gry można zdobywać kolejne życia przez serduszka, maksymalnie do **5 żyć**. Trafienie w przeszkodę zabiera życie i daje krótką nietykalność. Po utracie wszystkich żyć pojawia się ekran końca gry. Najlepszy wynik jest zapisywany lokalnie w przeglądarce.
