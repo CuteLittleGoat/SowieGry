@@ -1,7 +1,7 @@
 # SowaRunner — instrukcja gry
 
 ## Cel gry
-`SowaRunner` to boczny endless runner arcade. Sowa biegnie automatycznie, a gracz skacze, używa podwójnego skoku, zbiera liście monstery, odbija się od kóz i próbuje przeżyć jak najdłużej.
+`SowaRunner` to boczny endless runner arcade. Sowa biegnie automatycznie, a gracz skacze, używa podwójnego skoku, zbiera liście monstery, odbija się od kóz, zdobywa dodatkowe życia i próbuje przeżyć jak najdłużej.
 
 ## Uruchomienie
 1. Otwórz `SowaRunner/index.html` w przeglądarce.
@@ -19,6 +19,7 @@ W mini-grze z humbakiem tapnięcie unosi sowę, a brak tapnięcia pozwala jej op
 
 ## Obiekty i zasady
 - **Liście monstery** — punkty.
+- **Serduszka** — dodatkowe życia. Jeżeli masz już maksymalnie 5 żyć, serduszko daje punkty zamiast kolejnego życia.
 - **Skaczące kozy** — można je „stompnąć” z góry, żeby dostać mocny boost i punkty. Kontakt z boku zabiera życie.
 - **Humbak** — specjalny bonus. Złapanie humbaka uruchamia mini-grę.
 - **Napisy „Pracu Pracu”** — przeszkody; kontakt zabiera życie lub w mini-grze odejmuje punkty.
@@ -31,4 +32,4 @@ W mini-grze z humbakiem tapnięcie unosi sowę, a brak tapnięcia pozwala jej op
 - **Chaos** — większa prędkość i ciaśniejsze odstępy.
 
 ## Koniec gry i rekordy
-Startujesz z **3 życiami**. Po utracie wszystkich żyć pojawia się ekran wyniku. Najlepszy dystans i najlepszy wynik są zapisywane lokalnie w przeglądarce.
+Startujesz z **3 życiami**. W trakcie gry możesz zdobywać kolejne życia przez zbieranie serduszek, maksymalnie do **5 żyć**. Po utracie wszystkich żyć pojawia się ekran wyniku. Najlepszy dystans i najlepszy wynik są zapisywane lokalnie w przeglądarce.
