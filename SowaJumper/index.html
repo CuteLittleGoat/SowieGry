@@ -2,31 +2,40 @@
 <html lang="pl">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Sowa Jumper - Cute Icy Tower</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no" />
+  <meta name="theme-color" content="#bfe7ff" />
+  <title>Sowa Jumper — pełna wersja arcade</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <div class="game-wrapper">
-    <canvas id="game" aria-label="Gra Sowa Jumper"></canvas>
-    <div class="hud">
+  <main class="game-shell" aria-label="Sowa Jumper">
+    <canvas id="game" aria-label="Gra Sowa Jumper" role="img"></canvas>
+
+    <section class="hud" aria-label="Panel gry">
       <div class="hud-card">
-        <div class="hud-label">Wysokość</div>
-        <div id="heightValue" class="hud-value">0 m</div>
+        <span class="hud-label">Wysokość</span>
+        <strong id="heightValue" class="hud-value">0 m</strong>
       </div>
       <div class="hud-card">
-        <div class="hud-label">Życia</div>
-        <div id="livesValue" class="hud-value">3</div>
+        <span class="hud-label">Punkty</span>
+        <strong id="scoreValue" class="hud-value">0</strong>
       </div>
       <div class="hud-card">
-        <div class="hud-label">Punkty</div>
-        <div id="scoreValue" class="hud-value">0</div>
+        <span class="hud-label">Życia</span>
+        <strong id="livesValue" class="hud-value">3</strong>
       </div>
+    </section>
+
+    <div class="mobile-hints" aria-hidden="true">
+      <span>◀ lewo</span>
+      <span>prawo ▶</span>
     </div>
-    <div class="controls">
-      <p>Dotknij po lewej/prawej stronie, aby sterować. Użyj strzałek ←/→ lub A/D. Kliknij, aby pohukać.</p>
-    </div>
-  </div>
+
+    <p class="controls">
+      Dotknij lewej/prawej połowy ekranu, użyj ←/→ lub A/D. Spacja / tap na ekranie tytułowym startuje grę.
+    </p>
+  </main>
+
   <script src="script.js"></script>
 </body>
 </html>
