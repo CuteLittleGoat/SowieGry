@@ -22,6 +22,12 @@
           const expansion = document.createElement("script");
           expansion.src = "platform-expansion.js";
           expansion.async = false;
+          expansion.addEventListener("load", () => {
+            const pause = document.createElement("script");
+            pause.src = "pause-final.js";
+            pause.async = false;
+            document.body.appendChild(pause);
+          });
           document.body.appendChild(expansion);
         });
         document.body.appendChild(animation);
