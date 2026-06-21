@@ -2,7 +2,7 @@
 
 ## Architektura
 
-`SowaJumper` jest grą Canvas 2D bez frameworka. Bazowy silnik znajduje się w `script.js`. `difficulty.js` dynamicznie ładuje wcześniejsze moduły, a `cute-loader.js` czeka na ich gotowość przed uruchomieniem reworku.
+`SowaJumper` jest grą Canvas 2D bez frameworka. Bazowy silnik znajduje się w `script.js`. `difficulty.js` ładuje starsze moduły dynamicznie, a `cute-loader.js` czeka na ich gotowość przed uruchomieniem kolejnych warstw.
 
 ## Kolejność ładowania
 
@@ -25,34 +25,19 @@
 1. `cute-rework.js`
 2. `bonus-lanes.js`
 3. `animation-polish.js`
+4. `platform-expansion.js`
 
-W `<head>` ładowane są także `styles.css`, `../shared/cute-ui.css` i `../shared/sowie-smoke-hook.js`.
+W `<head>` ładowane są również `styles.css`, `../shared/cute-ui.css` i `../shared/sowie-smoke-hook.js`.
 
 ## Poziomy trudności
 
-`JUMPER_DIFFICULTIES` zmienia:
-
-- grawitację,
-- zwykłe wybicie,
-- wybicie kozy,
-- wybicie Amic,
-- liczbę żyć,
-- mnożnik odstępu platform.
-
-Wybór jest zapisany w `sowaJumperDifficulty`.
+`JUMPER_DIFFICULTIES` zmienia grawitację, zwykłe wybicie, wybicie kozy, wybicie Amic, życia startowe oraz mnożnik odstępów. Wybór jest zapisywany w `sowaJumperDifficulty`.
 
 ## Bezpieczeństwo platform
 
-`safety-balance.js` kontroluje:
+`safety-balance.js` kontroluje maksymalny poziomy skok między platformami, serie ruchomych i kruszących się platform oraz pozycję `Pracu Pracu`.
 
-- maksymalny poziomy skok między środkami platform,
-- serię platform ruchomych i kruszących się,
-- pozycję `Pracu Pracu`,
-- odległość kolejnych napisów.
-
-## Nowe platformy
-
-`cute-rework.js` rozszerza wyniki `createPlatform()` o:
+## Platformy z `cute-rework.js`
 
 - `cushion`,
 - `cloud`,
@@ -60,11 +45,17 @@ Wybór jest zapisany w `sowaJumperDifficulty`.
 - `balcony`,
 - `rest`.
 
-`collidePlatforms()` jest opakowane tak, aby po standardowej detekcji zastosować dodatkowe wybicie i premie konkretnego typu.
+Punkty odpoczynku pojawiają się w kolejnych przedziałach wysokości i dają chwilową nietykalność.
+
+## Platformy z `platform-expansion.js`
+
+- `rotating` — lekko obraca się i daje premię punktową,
+- `temporary` — znika około 720 ms po pierwszym lądowaniu,
+- `springGoat` — kozia trampolina z mocnym wybiciem.
+
+Moduł opakowuje `createPlatform()`, `updateGame()`, `collidePlatforms()` i `drawPlatform()` po załadowaniu wcześniejszych systemów.
 
 ## Strefy wysokości
-
-`drawBackground()` jest rozszerzone o warstwy:
 
 - miasto poniżej 100 m,
 - dachy 100–250 m,
@@ -72,29 +63,19 @@ Wybór jest zapisany w `sowaJumperDifficulty`.
 - noc 450–700 m,
 - sowie niebo powyżej 700 m.
 
-Są to warstwy dekoracyjne i nie wpływają na kolizje.
+Warstwy są dekoracyjne i nie zmieniają kolizji.
 
 ## Combo i near miss
 
-- combo ma progi `×1`–`×5`,
-- perfekcyjne lądowanie jest wykrywane po odbiciu,
-- near miss dotyczy `Pracu Pracu`,
-- obrażenie resetuje serię,
-- statystyki trafiają do wspólnego profilu.
+Combo ma progi `×1`–`×5`. Rośnie za liście, perfekcyjne lądowania i bliskie minięcie `Pracu Pracu`; obrażenie resetuje serię.
 
-## Liście
+## Liście i gorączka
 
-Każdy nowy liść otrzymuje wariant:
-
-- `normal`,
-- `gold`,
-- `rainbow`.
-
-Tęczowy liść albo seria ośmiu zbiórek aktywuje gorączkę monster. Gorączka dodaje liście nad istniejącymi platformami.
+Liście otrzymują wariant `normal`, `gold` albo `rainbow`. Tęczowy liść lub seria ośmiu zbiórek uruchamia gorączkę, która dodaje wyłącznie pickupy nad istniejącymi platformami.
 
 ## Dodatkowe życia
 
-`extra-lives.js` tworzy `jumperLifePickups`. Limit jest oparty na `state.maxLives`. Nadmiarowy pickup daje punkty.
+`extra-lives.js` tworzy `jumperLifePickups`. Nadmiarowy pickup przy limicie żyć daje punkty.
 
 ## Mini-gra humbaka
 
@@ -107,39 +88,22 @@ Tęczowy liść albo seria ośmiu zbiórek aktywuje gorączkę monster. Gorączk
 ### `bonus-lanes.js`
 
 - trzy pasy,
-- spawn liści i przeszkód na środkach pasów,
-- kontrola pionowych grup przeszkód,
+- lane-based spawn,
 - brak blokady wszystkich pasów,
-- ostrzeżenia u góry ekranu.
+- ostrzeżenia u góry,
+- złote liście bonusowe.
 
-## Animacja
+## Animacja i kosmetyki
 
-`animation-polish.js` dodaje:
-
-- squash-and-stretch,
-- wydłużenie podczas wybicia,
-- przechylenie zależne od `owl.vx`,
-- gwiazdki po obrażeniu,
-- efekty dźwiękowe.
-
-Kosmetyki rysuje wspólny `SowieCore`.
+`animation-polish.js` dodaje squash-and-stretch, przechylenie, gwiazdki, dźwięki oraz działający kosmetyk `bubbleTrail`. Pozostałe kosmetyki są rysowane przez `SowieCore`.
 
 ## Profil i misje
 
-Gra raportuje:
-
-- liście,
-- dodatkowe życia,
-- near missy,
-- maksymalne combo,
-- wysokość,
-- wynik mini-gry.
-
-Misja 250 m odblokowuje plecak.
+Gra raportuje liście, dodatkowe życia, near missy, combo, wysokość i wynik bonusu. Misja 250 m odblokowuje plecak.
 
 ## Pauza i audio
 
-Adapter przekazany do `SowieCore.registerGame()` zatrzymuje aktualizacje `title`, `playing` i `bonus`. Muzyka używa motywu `jumper`.
+Adapter przekazany do `SowieCore.registerGame()` zatrzymuje sceny `title`, `playing` i `bonus`. Muzyka korzysta z motywu `jumper`.
 
 ## Diagnostyka i testy
 
