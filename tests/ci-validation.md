@@ -1,3 +1,3 @@
 # Cute Polish validation
 
-Temporary validation marker used to trigger pull-request checks for the complete Cute Polish implementation.
+Validation marker refreshed after the merge audit and integration fixes on 2026-06-21.
