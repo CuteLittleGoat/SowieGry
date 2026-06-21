@@ -14,6 +14,12 @@
       const lanes = document.createElement("script");
       lanes.src = "bonus-lanes.js";
       lanes.async = false;
+      lanes.addEventListener("load", () => {
+        const animation = document.createElement("script");
+        animation.src = "animation-polish.js";
+        animation.async = false;
+        document.body.appendChild(animation);
+      });
       document.body.appendChild(lanes);
     });
     document.body.appendChild(cute);
