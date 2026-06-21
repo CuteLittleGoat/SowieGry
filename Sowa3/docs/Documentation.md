@@ -1,102 +1,244 @@
 # Sowa3 — dokumentacja techniczna
 
-## Zakres
-`Sowa3` jest samodzielną grą HTML/CSS/JavaScript bez frameworka. To trzytorowy runner w perspektywie „wgłąb ekranu”, inspirowany klasycznymi lane runnerami. Gracz steruje sową, zmieniając tor między lewym, środkowym i prawym.
+## Architektura
 
-## Pliki
-- `index.html` — struktura strony, `canvas#game`, HUD, opis sterowania oraz ładowanie `script.js`, `difficulty.js`, `extra-lives.js`, `visual-polish.js`, `stage-obstacles.js` i `lane-balance.js`.
-- `style.css` — pełnoekranowy layout, blokada przewijania, safe-area, HUD i opis sterowania.
-- `script.js` — główna logika gry, renderowanie, proceduralne generowanie przeszkód, plansze, kolizje, wynik i rekord.
-- `difficulty.js` — poziomy trudności, panel wyboru, skróty `1 / 2 / 3` i zapamiętanie wyboru w `localStorage`.
-- `extra-lives.js` — serduszka jako pickupy dodatkowych żyć.
-- `visual-polish.js` — poprawione tła supermarketu, wystawy kwiatów i blokowiska.
-- `stage-obstacles.js` — palety z towarem w supermarkecie, ludzie na wystawie kwiatów i dziki na blokowisku.
-- `lane-balance.js` — globalny balans przeszkód blokujących tory.
-- `docs/README.md` — instrukcja dla gracza.
-- `docs/Documentation.md` — dokumentacja techniczna.
+`Sowa3` jest trzytorowym runnerem Canvas 2D. Bazowy silnik znajduje się w `script.js`, a kolejne moduły rozwijają go warstwowo. Kolejność ładowania jest istotna, ponieważ część modułów opakowuje wcześniej zdefiniowane funkcje.
 
-## Stany gry
-`state.mode` obsługuje cztery tryby:
-- `title` — ekran tytułowy.
-- `run` — właściwa gra.
-- `finish` — meta planszy: ogród działkowy z basenem.
-- `over` — ekran końca gry.
+## Kolejność ładowania
 
-## Poziomy trudności
-`difficulty.js` definiuje `SOWA3_DIFFICULTIES`:
-- `chill` — 4 życia, wolniejszy start, wyższy mnożnik przerw między przeszkodami, częstsza zamiana przeszkody na liść, niższy mnożnik punktów.
-- `arcade` — standardowy balans.
-- `chaos` — 2 życia, szybszy start, niższy mnożnik przerw między przeszkodami, brak zamiany przeszkód na liście, wyższy mnożnik punktów.
+1. `../shared/sowie-smoke-hook.js`
+2. `style.css`
+3. `../shared/cute-ui.css`
+4. `script.js`
+5. `difficulty.js`
+6. `extra-lives.js`
+7. `visual-polish.js`
+8. `stage-ambience.js`
+9. `stage-obstacles.js`
+10. `lane-balance.js`
+11. `visibility-corridor.js`
+12. `finish-pool.js`
+13. `../shared/sowie-core.js`
+14. `../shared/sowie-runtime.js`
+15. `cute-rework.js`
+16. `finish-controls.js`
+17. `animation-polish.js`
 
-Wybór jest zapisywany w `localStorage` pod kluczem `sowa3Difficulty`.
+## Odpowiedzialność modułów
 
-## Dodatkowe życia
-`extra-lives.js` dodaje serduszka jako osobne pickupy na torach. Zebranie serduszka dodaje 1 życie do limitu 5 żyć albo daje punkty, jeśli gracz ma już limit.
+### `script.js`
 
-## Balans torów i odstępy przeszkód
-`lane-balance.js` nadpisuje spawn bazowych przeszkód oraz spawn przeszkód planszowych. Moduł traktuje jako przeszkody blokujące między innymi `amic`, `shift`, `magda`, `cart`, `pot`, `block`, `pallet`, `person` i `boar`.
+- stany `title`, `run`, `finish`, `over`,
+- trzy tory,
+- bazowy spawn,
+- kolizje,
+- bazowe rysowanie,
+- wynik i rekord.
 
-Zasady balansu:
-- przeszkoda blokująca nie pojawia się, jeśli poprzednia przeszkoda blokująca jest zbyt blisko na osi głębi `z`,
-- minimalny odstęp zależy od poziomu trudności: największy na `chill`, standardowy na `arcade`, najmniejszy na `chaos`,
-- jeżeli spawn blokującej przeszkody został zatrzymany, gra może zamiast niej dodać liść monstery,
-- kolejne przeszkody preferują inny tor niż poprzednia, żeby zmuszać do ruchu, ale nie zamykać całej szerokości planszy.
+### `difficulty.js`
 
-Celem modułu jest niedopuszczenie do sytuacji, w której wszystkie trzy tory są jednocześnie zablokowane i gracz nie ma pola manewru.
+Definiuje `chill`, `arcade` i `chaos`. Poziomy zmieniają:
 
-## Plansze i tła
-`visual-polish.js` nadpisuje `drawScene()` dla trzech plansz:
-- `Supermarket` — polski dyskont z jasną alejką, regałami po bokach, kafelkami, stosami produktów i tablicami „SUPER CENA!”.
-- `Wystawa kwiatów ozdobnych` — hala / festiwal roślin z długimi alejkami, metalowymi stojakami, wieloma doniczkami, żółtymi cenówkami, ciemnym sufitem i tłumem odwiedzających.
-- `Blokowisko PRL` — osiedle z wielkiej płyty: prefabrykowane bloki, powtarzalne okna, balkony, bure elewacje, drzewa i osiedlowy plac.
+- życia startowe,
+- prędkość,
+- wzrost prędkości,
+- częstotliwość przeszkód,
+- prawdopodobieństwo zamiany przeszkody na liść,
+- mnożnik punktów.
 
-Każda plansza kończy się ogrodem działkowym z basenem.
+Wybór jest zapisany pod `sowa3Difficulty`.
 
-## Przeszkody planszowe
-`stage-obstacles.js` dodaje osobne przeszkody zależne od planszy:
-- `pallet` — paleta z towarem na planszy supermarketu.
-- `person` — człowiek / odwiedzający jako przeszkoda na planszy wystawy kwiatów.
-- `boar` — dzik na planszy blokowiska.
+### `extra-lives.js`
 
-Te przeszkody mają własny timer spawnu, poruszają się w pseudo-3D tak jak inne obiekty i wywołują `damage()` po trafieniu sowy na tym samym torze. Ich faktyczne pojawienie się jest dodatkowo filtrowane przez `lane-balance.js`.
+- serduszka na torach,
+- limit pięciu żyć,
+- zamiana nadmiarowego życia na punkty,
+- częstotliwość zależna od trudności.
 
-## Perspektywa i tory
-Gra używa pseudo-3D na canvasie:
-- Obiekty mają tor `lane` równy `-1`, `0` albo `1`.
-- Obiekty mają pozycję głębi `z`; pojawiają się daleko i przesuwają się w stronę gracza.
-- `laneX(lane, z)` wyznacza poziomą pozycję toru zależnie od głębi.
-- `roadY(z)` wyznacza pionową pozycję na drodze.
-- `scaleAt(z)` skaluje obiekty, aby rosły w miarę zbliżania się do gracza.
+### `visual-polish.js`
 
-## Sterowanie
-- `keydown` obsługuje `A/D`, strzałki, `Spację`, `Enter` i wybór poziomu `1 / 2 / 3`.
-- `pointerdown` obsługuje start gry i tapnięcia po lewej/prawej stronie ekranu.
-- `pointerup` obsługuje swipe w lewo/prawo.
-- Funkcja `moveLane(dir)` ogranicza tor do zakresu od `-1` do `1`.
+Rysuje główne scenografie:
 
-## Obiekty gry
-- `leaf` — liść monstery, punktowy obiekt do zebrania.
-- `heart` / serduszko — dodatkowe życie albo punkty przy limicie.
-- `amic` — stacja Amic jako przeszkoda.
-- `shift` — smartfon z napisem „przyjmiesz zmianę?”.
-- `magda` — telefon z napisem „telefon od Magdy”.
-- `cart` — wózek sklepowy.
-- `pallet` — paleta z towarem w supermarkecie.
-- `person` — człowiek jako przeszkoda na wystawie kwiatów.
-- `pot` — donica, częstsza na planszy kwiatowej.
-- `block` — betonowy słupek, częstszy na planszy PRL.
-- `boar` — dzik na blokowisku.
+- supermarket,
+- wystawę kwiatów,
+- blokowisko PRL.
 
-## Kolizje
-Gdy obiekt osiąga bliski zakres, gra sprawdza tor sowy i tor obiektu:
-- `leaf` daje punkty i znika.
-- serduszko dodaje życie albo punkty.
-- przeszkody wywołują `damage(reason)`.
+### `stage-ambience.js`
 
-Po obrażeniu gracz traci życie, dostaje krótką nietykalność, pojawia się shake i komunikat. Po utracie wszystkich żyć gra przełącza się do `over`.
+Dodaje wyłącznie dekoracje boczne albo górne:
 
-## HUD i rekord
-HUD pokazuje numer planszy, punkty i życia. Najlepszy wynik jest zapisywany w `localStorage` pod kluczem `sowa3Best`.
+- supermarket: pieczywo i pracownik z paleciakiem,
+- kwiaty: boczne wózki i zraszacze,
+- blokowisko: trzepak, ławkę, kota i gołębie.
+
+### `stage-obstacles.js`
+
+Dodaje przeszkody tematyczne:
+
+- `pallet`,
+- `person`,
+- `boar`.
+
+### `lane-balance.js`
+
+Koordynuje bazowe i tematyczne przeszkody:
+
+- minimalny odstęp na osi `z`,
+- różne wartości dla poziomów trudności,
+- preferowanie innego toru niż poprzedni,
+- możliwość zastąpienia zablokowanego spawnu liściem,
+- brak jednoczesnego zamknięcia wszystkich torów.
+
+### `visibility-corridor.js`
+
+Po narysowaniu scenografii ponownie rysuje czysty trapez trasy. Korytarz jest szerszy niż trzy linie torów i usuwa optyczne nachodzenie:
+
+- regałów,
+- kwiatów,
+- ludzi tła,
+- drzew,
+- budynków,
+- innych dekoracji.
+
+Przeszkody i pickupy są rysowane później, więc pozostają widoczne nad czystą trasą.
+
+### `finish-pool.js`
+
+Nadpisuje finał planszy:
+
+- działka,
+- okrągły basen naziemny,
+- szara ryflowana ściana,
+- niebieski rant,
+- turkusowa woda i fale,
+- dobiegnięcie sowy,
+- skok do basenu,
+- plusk,
+- przemiana w humbaka.
+
+### `finish-controls.js`
+
+- zmienia motyw muzyczny między planszami,
+- zapisuje obejrzenie finału,
+- pozwala skrócić kolejne finały,
+- zatrzymuje finał podczas pauzy lub otwartego modalu.
+
+### `cute-rework.js`
+
+- combo `×1`–`×5`,
+- near miss,
+- złote i tęczowe liście,
+- gorączka monster,
+- ruch części ludzi i dzików,
+- ostrzeżenia kierunkowe,
+- piórka,
+- kosmetyki,
+- wspólne misje i statystyki,
+- dodatkowa karta HUD,
+- podsumowanie planszy,
+- debug.
+
+### `animation-polish.js`
+
+- przechylenie podczas zmiany toru,
+- stretch podczas szybkiego ruchu,
+- gwiazdki po obrażeniu,
+- dźwięki dopasowane do telefonu, dzika i innych kolizji.
+
+## Wspólna warstwa
+
+`SowieCore` odpowiada za:
+
+- profil `sowieGryProfile`,
+- garderobę,
+- kosmetyki,
+- misje,
+- ustawienia,
+- pauzę,
+- dźwięki i muzykę Web Audio,
+- toasty i komentarze,
+- debug.
+
+`SowieRuntime` ogranicza częstotliwość zapisów i obsługuje wznowienie gry po zamknięciu modalu.
+
+## Combo
+
+Progi:
+
+- 5 akcji — `×2`,
+- 12 — `×3`,
+- 22 — `×4`,
+- 35 — `×5`.
+
+Combo rośnie za liście i near missy. Utrata życia resetuje serię.
+
+## Near miss
+
+Przeszkoda może przyznać premię tylko raz. Near miss jest wykrywany po przejściu przeszkody, gdy gracz znajduje się na sąsiednim torze.
+
+## Ruchome przeszkody
+
+Wybrane osoby i dziki mogą otrzymać tor docelowy. Przed ruchem wyświetlana jest strzałka. Zmiana następuje w bezpiecznej części głębi, a bazowy spawn nadal przechodzi przez `lane-balance.js`.
+
+## Liście i gorączka
+
+Liście otrzymują wariant:
+
+- `normal`,
+- `gold`,
+- `rainbow`.
+
+Tęczowy liść albo osiem kolejnych zbiórek uruchamia gorączkę. Gorączka dodaje wyłącznie pickupy, nie przeszkody.
+
+## Finał i podsumowanie
+
+Sekwencja trwa około 4,3 sekundy. Podsumowanie zawiera:
+
+- wynik,
+- zebrane liście,
+- liczbę near missów,
+- najlepsze combo,
+- ocenę tekstową.
+
+Po pierwszym pełnym obejrzeniu zapis `sowa3FinishSeen` pozwala skrócić kolejne finały.
+
+## Audio
+
+Motywy:
+
+- `market`,
+- `flowers`,
+- `estate`.
+
+Efekty obejmują liście, serca, combo, near miss, telefon, dzika, obrażenia, plusk i odblokowania.
+
+## Rekordy i profil
+
+- rekord gry: `sowa3Best`,
+- trudność: `sowa3Difficulty`,
+- obejrzenie finału: `sowa3FinishSeen`,
+- profil wspólny: `sowieGryProfile`.
+
+## Diagnostyka i testy
+
+- `?debug=1`,
+- `tests/smoke.html`,
+- `.github/workflows/js-check.yml`.
+
+Debug pokazuje:
+
+- tryb,
+- planszę,
+- liczbę przeszkód,
+- combo,
+- gorączkę,
+- liczbę obiektów.
 
 ## Zasady utrzymania
-Przy każdej zmianie mechaniki, sterowania, plansz lub obiektów aktualizuj `Sowa3/docs/README.md` oraz `Sowa3/docs/Documentation.md`.
+
+1. Dekoracje muszą pozostawać przy bokach albo nad horyzontem.
+2. Nowe przeszkody muszą przechodzić przez `lane-balance.js`.
+3. Ruchoma przeszkoda musi mieć ostrzeżenie.
+4. Nowe warstwy scenografii muszą być ładowane przed `visibility-corridor.js`.
+5. Nowe modyfikatory finału muszą respektować pauzę.
+6. Dokumentację należy aktualizować razem z kodem.
