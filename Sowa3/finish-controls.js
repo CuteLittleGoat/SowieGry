@@ -1,4 +1,4 @@
-// Sterowanie finałem Sowa3, pauza i zmiana muzyki między planszami.
+// Sterowanie finałem Sowa3, pauza, dodatkowe detale i zmiana muzyki między planszami.
 (() => {
   const core = window.SowieCore;
   const themes = ["market", "flowers", "estate"];
@@ -31,4 +31,9 @@
       localStorage.setItem("sowa3FinishSeen", "1");
     }
   };
+
+  const details = document.createElement("script");
+  details.src = "finish-details.js";
+  details.async = false;
+  document.body.appendChild(details);
 })();
