@@ -17,12 +17,9 @@
 9. `cute-rework.js`
 10. `animation-polish.js`
 11. `runner-events-extra.js`
+12. `pause-final.js`
 
-W `<head>` ładowane są również:
-
-- `../shared/sowie-smoke-hook.js`,
-- `style.css`,
-- `../shared/cute-ui.css`.
+W `<head>` ładowane są również `../shared/sowie-smoke-hook.js`, `style.css` i `../shared/cute-ui.css`.
 
 ## Odpowiedzialność plików
 
@@ -44,46 +41,27 @@ Kontroluje minimalny odstęp, dodatkowy margines po szerokich przeszkodach, powt
 
 ### `cute-rework.js`
 
-- combo,
-- near miss,
-- złote i tęczowe liście,
-- gorączka monster,
-- wydarzenia `monsterRain` i `goatParade`,
-- zmiana pory dnia,
-- perfekcyjne lądowania,
-- kosmetyki i piórka,
-- misje oraz wspólny profil,
-- dodatkowy HUD i debug.
+Combo, near miss, złote i tęczowe liście, gorączka monster, wydarzenia `monsterRain` i `goatParade`, zmiana pory dnia, perfekcyjne lądowania, kosmetyki, piórka, misje, wspólny profil, dodatkowy HUD i debug.
 
 ### `animation-polish.js`
 
-- squash-and-stretch,
-- przechylenie w locie,
-- gwiazdki po obrażeniu,
-- dźwięki skoku i obrażenia,
-- rzeczywisty kosmetyk `bubbleTrail`.
+Squash-and-stretch, przechylenie, gwiazdki, dźwięki oraz działający kosmetyk `bubbleTrail`.
 
 ### `runner-events-extra.js`
 
-- zapowiadany przeciwny wiatr,
-- wizualne linie wiatru,
-- znak ostrzegający o najbliższej przeszkodzie,
-- osobny czas trwania i odpoczynku między wydarzeniami.
+Zapowiadany przeciwny wiatr, wizualne linie wiatru i znak ostrzegający o najbliższej przeszkodzie.
+
+### `pause-final.js`
+
+Ostatnia warstwa `updateRun()` i `updateWhale()`. Zatrzymuje wszystkie wcześniej dołączone systemy podczas pauzy lub otwartego modalu.
 
 ## Wspólna warstwa
 
-`SowieCore` udostępnia profil, misje, statystyki, audio, muzykę, kosmetyki, toasty i debug. `SowieRuntime` ogranicza częstotliwość zapisów i obsługuje wznowienie po zamknięciu modalu.
+`SowieCore` udostępnia profil, misje, statystyki, audio, muzykę, kosmetyki, komunikaty i debug. `SowieRuntime` ogranicza częstotliwość zapisów i obsługuje wznowienie po zamknięciu modalu.
 
 ## Combo
 
-Progi:
-
-- 5 akcji — `×2`,
-- 12 akcji — `×3`,
-- 22 akcje — `×4`,
-- 35 akcji — `×5`.
-
-Obrażenie resetuje serię.
+Progi: 5, 12, 22 i 35 akcji dla mnożników `×2`–`×5`. Obrażenie resetuje serię.
 
 ## Near miss
 
@@ -99,7 +77,7 @@ Wydarzenia nie omijają `obstacle-balance.js` i nie zagęszczają bazowych przes
 
 ## Audio i profil
 
-Audio jest generowane przez Web Audio API. Rekordy gry pozostają pod kluczami `sowaRunnerBestScore` i `sowaRunnerBestDistance`, a profil wspólny pod `sowieGryProfile`.
+Audio jest generowane przez Web Audio API. Rekordy gry pozostają pod `sowaRunnerBestScore` i `sowaRunnerBestDistance`, a profil wspólny pod `sowieGryProfile`.
 
 ## Diagnostyka i testy
 
