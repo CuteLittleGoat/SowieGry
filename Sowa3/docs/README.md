@@ -1,49 +1,117 @@
 # Sowa3 — instrukcja gry
 
 ## Cel gry
-`Sowa3` to trzytorowy runner w perspektywie „wgłąb ekranu”. Sowa biegnie przed siebie, a gracz zmienia tor: lewy, środkowy albo prawy. Celem jest zbieranie punktów, omijanie przeszkód, zdobywanie dodatkowych żyć i ukończenie kolejnych plansz.
 
-## Uruchomienie
-1. Otwórz `Sowa3/index.html` w przeglądarce.
-2. Na ekranie tytułowym wybierz poziom trudności albo użyj `1 / 2 / 3`.
-3. Naciśnij **Spację**, kliknij albo dotknij ekranu, aby rozpocząć.
-4. Gra działa na komputerze i urządzeniach mobilnych.
-
-## Poziomy trudności
-- **Chill** — 4 życia, wolniejszy start, luźniejsze przeszkody i częstsza zamiana przeszkód na liście.
-- **Arcade** — standardowa wersja gry.
-- **Chaos** — 2 życia, szybszy start, ciaśniejsze przeszkody i większy mnożnik punktów.
-
-Wybrany poziom jest zapisywany lokalnie w przeglądarce.
+`Sowa3` to trzytorowy runner w perspektywie wgłąb ekranu. Sowa biegnie przez trzy różne plansze, zbiera liście, zdobywa życia i omija przeszkody, aż dotrze do ogródka działkowego z basenem.
 
 ## Sterowanie
-- **Telefon / tablet:** przesuń palcem w lewo lub prawo, aby zmienić tor.
-- **Telefon / tablet:** tapnięcie po lewej lub prawej stronie ekranu też zmienia tor.
-- **Klawiatura:** `←` / `A` oraz `→` / `D`.
-- **Wybór trudności:** przyciski na ekranie tytułowym albo `1 / 2 / 3`.
-- **Start / restart:** `Spacja`, `Enter`, kliknięcie albo tapnięcie.
+
+- **Swipe w lewo/prawo** — zmiana toru.
+- **Tap po lewej lub prawej stronie** — zmiana toru o jeden pas.
+- **A/D lub strzałki** — sterowanie na klawiaturze.
+- **Spacja / Enter / tap** — start i restart.
+- **1 / 2 / 3** — `Chill`, `Arcade`, `Chaos`.
+- Przyciski pod HUD-em — pauza, garderoba, misje i ustawienia.
 
 ## Plansze
-Gra ma trzy plansze, które zapętlają się po ukończeniu cyklu:
-1. **Supermarket** — alejka inspirowana polskim dyskontem: regały po bokach, kafelki, stosy produktów i czarno-pomarańczowe tablice „SUPER CENA!”.
-2. **Wystawa kwiatów ozdobnych** — hala / festiwal roślin: długie alejki, metalowe stojaki, mnóstwo różnych doniczek, żółte cenówki i tłum odwiedzających.
-3. **Blokowisko PRL** — osiedle z wielkiej płyty: wysokie prefabrykowane bloki, powtarzalne okna, balkony, przygaszona kolorystyka i osiedlowe drzewa.
 
-Każda plansza kończy się dobiegnięciem do **ogrodu działkowego z basenem ogrodowym**. Ukończenie planszy daje premię punktową i przenosi do kolejnej scenerii.
+### Supermarket
 
-## Punkty i przeszkody
-- **Liście monstery** — punkty.
-- **Serduszka** — dodatkowe życia. Jeśli masz już 5 żyć, serduszko daje punkty.
-- **Stacje Amic** — duże przeszkody blokujące tor.
-- **Smartfony z napisem „przyjmiesz zmianę?”** — przeszkody.
-- **Telefon od Magdy** — przeszkoda.
-- **Palety z towarem** — dodatkowe przeszkody na planszy supermarketu.
-- **Ludzie** — dodatkowe przeszkody na planszy wystawy kwiatów.
-- **Dziki** — dodatkowe przeszkody na planszy blokowiska.
-- **Wózki, donice i betonowe słupki** — dodatkowe przeszkody zależne od planszy.
+Polski dyskont bez kopiowania konkretnego logo:
+
+- regały i dekoracje wyłącznie po bokach,
+- tablice „SUPER CENA!” wysoko nad alejką,
+- pieczywo, stosy produktów i pracownik z paleciakiem przy krawędziach,
+- palety z towarem jako przeszkody.
+
+### Wystawa kwiatów
+
+- hala targowa,
+- metalowe stojaki pełne roślin,
+- boczne wózki z kwiatami,
+- zraszacze i mgiełka przy krawędziach,
+- ludzie jako przeszkody.
+
+### Blokowisko PRL
+
+- wysokie bloki z wielkiej płyty,
+- powtarzalne okna i balkony,
+- trzepak i ławka przy bokach,
+- kot wysoko na balkonie,
+- gołębie w górnej części ekranu,
+- dziki jako przeszkody.
+
+## Czytelność trasy
+
+Środek ekranu jest zarezerwowany dla trzech torów, przeszkód i pickupów. Elementy kosmetyczne są umieszczane wyłącznie:
+
+- przy bokach,
+- wysoko nad horyzontem,
+- poza aktywnym korytarzem gry.
+
+Gra ponownie rysuje czystą powierzchnię trasy po dekoracjach, dlatego tło nie powinno zasłaniać przeszkód.
 
 ## Balans torów
-Gra pilnuje minimalnego odstępu między kolejnymi przeszkodami blokującymi. Jeżeli przeszkoda pojawiła się zbyt niedawno, kolejna przeszkoda blokująca zostaje opóźniona albo zastąpiona liściem. Dzięki temu nie powinny powstawać sytuacje, w których wszystkie trzy tory są jednocześnie zamknięte i gracz nie ma pola manewru.
 
-## Życia i rekord
-Liczba żyć na starcie zależy od poziomu trudności. W trakcie gry można zdobywać kolejne życia przez serduszka, maksymalnie do **5 żyć**. Trafienie w przeszkodę zabiera życie i daje krótką nietykalność. Po utracie wszystkich żyć pojawia się ekran końca gry. Najlepszy wynik jest zapisywany lokalnie w przeglądarce.
+- przeszkody mają minimalny odstęp,
+- wszystkie trzy tory nie mogą zostać jednocześnie zamknięte,
+- zablokowany spawn może zostać zastąpiony liściem,
+- kolejne przeszkody preferują różne tory,
+- ruch osoby lub dzika jest wcześniej sygnalizowany strzałką.
+
+## Combo i „O włos!”
+
+Combo rośnie za:
+
+- zbieranie liści,
+- bliskie minięcie przeszkody,
+- dłuższą serię bez obrażeń.
+
+Mnożnik ma poziomy od `×1` do `×5`. Utrata życia resetuje serię.
+
+## Liście i gorączka monster
+
+- zwykły liść — punkty,
+- złoty liść — duża premia,
+- tęczowy liść — uruchamia gorączkę monster.
+
+Gorączka zwiększa liczbę liści, ale nie zwiększa liczby przeszkód.
+
+## Życia
+
+Serduszko dodaje życie do limitu pięciu. Przy pełnym limicie daje punkty.
+
+## Finał planszy
+
+Po dobiegnięciu do działki:
+
+1. sowa kieruje się do środka,
+2. wskakuje do okrągłego basenu,
+3. pojawia się plusk,
+4. sowa zmienia się w humbaka,
+5. pojawia się podsumowanie planszy.
+
+Basen ma:
+
+- szarą pionowo ryflowaną ściankę,
+- szeroki niebieski rant,
+- jasną turkusową wodę,
+- delikatne fale,
+- działkową trawę, płot, drzewa i krzewy.
+
+Po pierwszym pełnym obejrzeniu finał można skrócić tapnięciem.
+
+## Profil, kosmetyki i misje
+
+Wspólny profil działa również w `SowaRunner` i `SowaJumper`. Garderoba pozwala wybierać odblokowane dodatki, a misje zapewniają kolejne kosmetyki.
+
+## Audio i pauza
+
+- osobna muzyka dla każdej planszy,
+- efekty dla liści, telefonów, dzików, obrażeń i plusku,
+- możliwość wyłączenia muzyki, efektów i komentarzy,
+- pauza zatrzymuje również animację finałową.
+
+## Diagnostyka
+
+Dodaj `?debug=1` do adresu, aby wyświetlić tryb, numer planszy, liczbę przeszkód, combo, gorączkę i liczbę obiektów.
