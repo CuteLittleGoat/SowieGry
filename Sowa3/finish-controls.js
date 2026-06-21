@@ -1,4 +1,4 @@
-// Sterowanie finałem Sowa3 i zmiana muzyki między planszami.
+// Sterowanie finałem Sowa3, pauza i zmiana muzyki między planszami.
 (() => {
   const core = window.SowieCore;
   const themes = ["market", "flowers", "estate"];
@@ -9,8 +9,14 @@
     core?.startMusic(themes[state.stage] || "default");
   };
 
+  function finishUiPaused() {
+    const badge = document.querySelector(".sowie-paused-badge");
+    const modal = document.querySelector(".sowie-modal-backdrop");
+    return Boolean((badge && !badge.hidden) || (modal && !modal.hidden));
+  }
+
   canvas.addEventListener("pointerdown", () => {
-    if (state.mode !== "finish") return;
+    if (state.mode !== "finish" || finishUiPaused()) return;
     const seen = localStorage.getItem("sowa3FinishSeen") === "1";
     if (!seen || (state.finishElapsed || 0) < 2200) return;
     state.finishTimer = Math.min(state.finishTimer, 30);
@@ -18,6 +24,7 @@
 
   const previousUpdateFinish = updateFinish;
   updateFinish = function finishWithSeenFlag(dt) {
+    if (finishUiPaused()) return;
     const wasFinish = state.mode === "finish";
     previousUpdateFinish(dt);
     if (wasFinish && (state.finishElapsed || 0) > 2500) {
