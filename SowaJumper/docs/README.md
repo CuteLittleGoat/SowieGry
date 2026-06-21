@@ -1,57 +1,85 @@
-# Sowa Jumper — instrukcja gry
+# SowaJumper — instrukcja gry
 
 ## Cel gry
-Sterujesz sową, która wspina się jak najwyżej po platformach. Gra jest pionowym jumperem arcade: kamera idzie w górę, platformy stają się trudniejsze, a wynik rośnie za wysokość i zbierane bonusy.
 
-## Uruchomienie
-1. Otwórz `SowaJumper/index.html` w przeglądarce.
-2. Na ekranie tytułowym wybierz poziom trudności albo użyj klawiszy `1 / 2 / 3`.
-3. Naciśnij **Spację**, kliknij albo dotknij ekranu.
-4. Gra działa także na urządzeniu mobilnym w orientacji pionowej i poziomej.
-
-## Poziomy trudności
-- **Chill** — 4 życia, bliższe platformy, mocniejsze wybicia.
-- **Arcade** — standardowa wersja gry.
-- **Chaos** — 3 życia, dalsze platformy, słabsze ratunki i bardziej wymagające skoki.
-
-Wybrany poziom jest zapisywany lokalnie w przeglądarce.
+Sowa odbija się automatycznie od platform i wspina coraz wyżej. Gracz steruje ruchem poziomym, wybiera bezpieczne lądowania, zbiera liście i korzysta z kóz, stacji Amic oraz humbaka.
 
 ## Sterowanie
-- **Telefon / tablet:** przytrzymaj lewą połowę ekranu, aby lecieć w lewo; prawą połowę, aby lecieć w prawo.
-- **Klawiatura:** `←` / `A` oraz `→` / `D`.
-- **Wybór trudności:** przyciski na ekranie tytułowym albo `1 / 2 / 3`.
-- **Start / restart:** `Spacja`, `Enter`, kliknięcie albo tapnięcie na ekranie tytułowym lub ekranie końca gry.
 
-Sowa odbija się automatycznie po lądowaniu na platformie. Gracz kontroluje głównie pozycję w poziomie i wybiera, na czym wylądować.
+- **Lewa/prawa połowa ekranu** — ruch poziomy.
+- **A/D lub strzałki** — ruch poziomy na klawiaturze.
+- **Spacja / Enter / tap** — start i restart.
+- **1 / 2 / 3** — `Chill`, `Arcade`, `Chaos`.
+- Przyciski pod HUD-em — pauza, garderoba, misje i ustawienia.
 
-## Balans platform i przeszkód
-Gra ma dodatkowy moduł bezpieczeństwa platform. Ogranicza zbyt duże poziome przeskoki między kolejnymi platformami, nie pozwala na długie serie trudnych platform i usuwa napisy „Pracu Pracu”, jeśli pojawiłyby się zbyt blisko lądowania albo zbyt blisko poprzedniego napisu.
+## Strefy wysokości
 
-## Obiekty i zasady
-- **Liście monstery** — punkty. Każdy zebrany liść daje punkty i krótki efekt cząsteczkowy.
-- **Serduszka** — dodatkowe życia. Jeżeli masz już maksymalną liczbę żyć, serduszko daje punkty zamiast kolejnego życia.
-- **Skaczące kozy** — mocny boost w górę. Pierwsze trafienie danej kozy daje większy bonus punktowy.
-- **Stacje paliw Amic** — katapulty. Lądowanie na dachu stacji wybija sowę bardzo wysoko.
-- **Napisy „Pracu Pracu”** — przeszkody. Kontakt zabiera życie.
-- **Humbak** — wejście do mini-gry bonusowej.
+Wygląd świata zmienia się wraz z wysokością:
+
+1. pastelowe miasto,
+2. dachy i balkony,
+3. chmury,
+4. nocne niebo,
+5. surrealistyczne sowie niebo.
+
+## Platformy
+
+Poza platformami normalnymi, ruchomymi, kruszącymi się i Amic pojawiają się:
+
+- **poduszka** — mocniejsze miękkie wybicie,
+- **chmurka** — delikatnie zwiększone wybicie,
+- **liść** — bonusowe wybicie i punkty,
+- **balkon** — bezpieczna platforma tematyczna,
+- **punkt odpoczynku** — szeroka platforma z krótką nietykalnością.
+
+Punkty odpoczynku pojawiają się mniej więcej co 150 metrów.
+
+## Combo i perfekcyjne lądowania
+
+Lądowanie blisko środka platformy daje premię „Idealnie!” i zwiększa combo. Combo rośnie także za liście oraz bliskie minięcie `Pracu Pracu`.
+
+Utrata życia resetuje mnożnik.
+
+## Liście i gorączka monster
+
+- zwykłe liście — punkty,
+- złote — większa premia,
+- tęczowe — uruchamiają gorączkę monster.
+
+Gorączka dodaje więcej liści, ale nie zwiększa liczby przeszkód.
 
 ## Mini-gra z humbakiem
-Po złapaniu humbaka zaczyna się sekwencja bonusowa. Sowa znajduje się przy dole ekranu i porusza się lewo/prawo, a monstery oraz napisy „Pracu Pracu” spadają z góry na dół.
 
-Dzięki temu wynik zależy od gracza:
-- ustawiaj sowę pod spadającymi monsterami, żeby zdobywać punkty,
-- uciekaj poziomo przed spadającymi napisami „Pracu Pracu”,
-- trafienie w „Pracu Pracu” odejmuje punkty z bonusu.
+Po zebraniu humbaka uruchamia się osobna sekwencja:
 
-## Życia i koniec gry
-- Liczba żyć na starcie zależy od poziomu trudności.
-- W trakcie gry można zdobywać kolejne życia przez serduszka.
-- Maksymalna liczba żyć to **5**.
-- Upadek poza ekran lub uderzenie w „Pracu Pracu” zabiera życie.
-- Po stracie życia sowa wraca z chwilową nietykalnością i silnym wybiciem.
-- Po utracie wszystkich żyć pojawia się ekran końca gry z wynikiem, wysokością i rekordami zapisanymi lokalnie w przeglądarce.
+- sowa porusza się lewo/prawo,
+- obiekty spadają z góry,
+- ekran ma trzy czytelne pasy,
+- żółty znak ostrzega przed `Pracu Pracu`,
+- system nie pozwala zablokować wszystkich trzech pasów,
+- złote liście dają większy bonus.
 
-## Wskazówki
-- Amic i kozy są najlepszym sposobem na szybkie nabranie wysokości.
-- Nie każda wysoka platforma jest bezpieczna — część platform kruszy się po użyciu.
-- W mini-grze z humbakiem patrz przede wszystkim na pionową trajektorię spadających obiektów.
+## Bezpieczeństwo generowania
+
+Gra ogranicza:
+
+- zbyt duże poziome przeskoki,
+- długie serie trudnych platform,
+- `Pracu Pracu` przy jedynym sensownym lądowaniu,
+- zbyt ciasne układy mini-gry.
+
+## Życia
+
+Serduszka zwiększają liczbę żyć do pięciu. Przy pełnym limicie dają punkty.
+
+## Profil, kosmetyki i misje
+
+Wspólny profil działa także w pozostałych grach. Misje odblokowują kosmetyki, które można wybrać w garderobie.
+
+## Audio i pauza
+
+Muzykę, efekty i komentarze sowy można niezależnie wyłączyć. Gra ma pauzę oraz ustawienie ograniczenia efektów.
+
+## Diagnostyka
+
+Uruchom grę z `?debug=1`, aby zobaczyć wysokość, liczbę platform, przeszkody, combo i czas gorączki.
