@@ -36,4 +36,11 @@
   details.src = "finish-details.js";
   details.async = false;
   document.body.appendChild(details);
+
+  window.addEventListener("load", () => {
+    const pauseGuard = document.createElement("script");
+    pauseGuard.src = "pause-guard.js";
+    pauseGuard.async = false;
+    document.body.appendChild(pauseGuard);
+  }, { once: true });
 })();
