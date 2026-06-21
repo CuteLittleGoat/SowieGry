@@ -2,7 +2,7 @@
 
 ## Architektura
 
-`SowaRunner` jest grą p5.js. Bazowa logika pozostaje w `sketch.js`, a systemy reworku są ładowane warstwowo w określonej kolejności.
+`SowaRunner` jest grą p5.js. Bazowa logika pozostaje w `sketch.js`, a systemy reworku są ładowane warstwowo.
 
 ## Kolejność plików
 
@@ -16,8 +16,9 @@
 8. `../shared/sowie-runtime.js`
 9. `cute-rework.js`
 10. `animation-polish.js`
+11. `runner-events-extra.js`
 
-Dodatkowo w `<head>` ładowane są:
+W `<head>` ładowane są również:
 
 - `../shared/sowie-smoke-hook.js`,
 - `style.css`,
@@ -27,13 +28,7 @@ Dodatkowo w `<head>` ładowane są:
 
 ### `sketch.js`
 
-- główna pętla p5,
-- fizyka,
-- skoki,
-- podstawowe przeszkody,
-- bazowy HUD,
-- mini-gra humbaka,
-- rysowanie świata.
+Główna pętla, fizyka, skoki, przeszkody, bazowy HUD, mini-gra humbaka i renderowanie.
 
 ### `render-fix.js`
 
@@ -41,18 +36,11 @@ Pełne czyszczenie i zamalowanie tła każdej klatki. Eliminuje smużenie na cz�
 
 ### `extra-lives.js`
 
-- serduszka,
-- limit pięciu żyć,
-- zamiana nadmiarowego życia na punkty.
+Serduszka, limit pięciu żyć i zamiana nadmiarowego życia na punkty.
 
 ### `obstacle-balance.js`
 
-Nadpisuje `spawnStuff()` i kontroluje:
-
-- minimalny odstęp,
-- dodatkowy margines po szerokich przeszkodach,
-- powtarzanie typu przeszkody,
-- osobny balans dla trzech trudności.
+Kontroluje minimalny odstęp, dodatkowy margines po szerokich przeszkodach, powtarzanie typu przeszkody i balans dla trzech trudności.
 
 ### `cute-rework.js`
 
@@ -60,39 +48,35 @@ Nadpisuje `spawnStuff()` i kontroluje:
 - near miss,
 - złote i tęczowe liście,
 - gorączka monster,
-- wydarzenia czasowe,
+- wydarzenia `monsterRain` i `goatParade`,
 - zmiana pory dnia,
 - perfekcyjne lądowania,
-- kosmetyki,
-- piórka,
-- integracja misji,
-- integracja wspólnego profilu,
-- dodatkowy HUD,
-- debug.
+- kosmetyki i piórka,
+- misje oraz wspólny profil,
+- dodatkowy HUD i debug.
 
 ### `animation-polish.js`
 
 - squash-and-stretch,
 - przechylenie w locie,
 - gwiazdki po obrażeniu,
-- dźwięki skoku i obrażenia.
+- dźwięki skoku i obrażenia,
+- rzeczywisty kosmetyk `bubbleTrail`.
+
+### `runner-events-extra.js`
+
+- zapowiadany przeciwny wiatr,
+- wizualne linie wiatru,
+- znak ostrzegający o najbliższej przeszkodzie,
+- osobny czas trwania i odpoczynku między wydarzeniami.
 
 ## Wspólna warstwa
 
-`SowieCore` udostępnia:
-
-- `registerGame()` — pauza i motyw muzyczny,
-- `progressMission()` — misje,
-- `recordStat()` — statystyki,
-- `play()` — efekty,
-- `startMusic()` — proceduralna muzyka,
-- `drawCanvasCosmetic()` — dodatki sowy,
-- `toast()` i `maybeQuip()` — komunikaty,
-- `setDebugData()` — panel diagnostyczny.
+`SowieCore` udostępnia profil, misje, statystyki, audio, muzykę, kosmetyki, toasty i debug. `SowieRuntime` ogranicza częstotliwość zapisów i obsługuje wznowienie po zamknięciu modalu.
 
 ## Combo
 
-Stan combo jest lokalny dla biegu. Progi:
+Progi:
 
 - 5 akcji — `×2`,
 - 12 akcji — `×3`,
@@ -103,55 +87,26 @@ Obrażenie resetuje serię.
 
 ## Near miss
 
-Kontrolowane są:
-
-- ściany,
-- dziury,
-- napisy `Pracu Pracu`,
-- stacje Amic.
-
-Każdy obiekt może przyznać premię tylko raz.
+Kontrolowane są ściany, dziury, `Pracu Pracu` oraz Amic. Jeden obiekt może przyznać premię tylko raz.
 
 ## Wydarzenia
 
-`cute-rework.js` obsługuje:
-
 - `monsterRain`,
-- `goatParade`.
+- `goatParade`,
+- przeciwny wiatr z wcześniejszym ostrzeżeniem.
 
-Wydarzenia nie zwiększają bazowej liczby przeszkód blokujących i nie omijają `obstacle-balance.js`.
+Wydarzenia nie omijają `obstacle-balance.js` i nie zagęszczają bazowych przeszkód blokujących.
 
-## Audio
+## Audio i profil
 
-Audio jest generowane przez Web Audio API we wspólnej warstwie. p5.sound pozostaje dostępne, ale nowe efekty nie wymagają plików dźwiękowych.
+Audio jest generowane przez Web Audio API. Rekordy gry pozostają pod kluczami `sowaRunnerBestScore` i `sowaRunnerBestDistance`, a profil wspólny pod `sowieGryProfile`.
 
-## Profil i zapis
+## Diagnostyka i testy
 
-Rekordy gry:
-
-- `sowaRunnerBestScore`,
-- `sowaRunnerBestDistance`.
-
-Profil wspólny:
-
-- `sowieGryProfile`.
-
-## Diagnostyka
-
-`?debug=1` pokazuje:
-
-- tryb,
-- prędkość,
-- liczbę przeszkód,
-- combo,
-- czas gorączki,
-- aktywne wydarzenie.
-
-## Testy
-
+- `?debug=1`,
 - `tests/smoke.html`,
 - `.github/workflows/js-check.yml`.
 
 ## Utrzymanie
 
-Nowe przeszkody muszą respektować `obstacle-balance.js`. Nowe elementy punktowe mogą pojawiać się podczas gorączki, ale nie powinny zmieniać bezpiecznych odstępów między przeszkodami.
+Nowe przeszkody muszą respektować `obstacle-balance.js`. Elementy punktowe mogą być dodawane przez gorączkę, ale nie mogą skracać odstępów między zagrożeniami.
