@@ -5,6 +5,12 @@
   const baseCollide = collidePlatforms;
   const baseDraw = drawPlatform;
 
+  function uiPaused() {
+    const badge = document.querySelector(".sowie-paused-badge");
+    const modal = document.querySelector(".sowie-modal-backdrop");
+    return Boolean((badge && !badge.hidden) || (modal && !modal.hidden));
+  }
+
   createPlatform = function expandedCreate(y, forcedType = null) {
     const platform = baseCreate(y, forcedType);
     if (forcedType || platform.type !== "normal") return platform;
@@ -19,6 +25,7 @@
   };
 
   updateGame = function expandedUpdate(delta) {
+    if (uiPaused()) return;
     baseUpdate(delta);
     const current = now();
     for (const platform of platforms) platform.extraPhase = (platform.extraPhase || 0) + delta * 0.003;
