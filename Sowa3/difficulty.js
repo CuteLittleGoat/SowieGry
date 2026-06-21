@@ -85,7 +85,12 @@ update = function patchedSowa3Update(dt) {
     const d = activeSowa3Difficulty;
     const delta = state.score - beforeScore;
     if (delta > 0 && d.scoreMult !== 1) state.score = beforeScore + delta * d.scoreMult;
-    if (beforeSpawn <= 0 && state.spawn > 0) state.spawn *= d.spawnMult;
+
+    // Nowy interwał spawnu jest większy od odliczanej wartości z początku klatki.
+    // Poprzedni warunek sprawdzał beforeSpawn <= 0, przez co często pomijał
+    // klatkę, w której dodatnia wartość spadła poniżej zera i została zresetowana.
+    if (state.spawn > beforeSpawn) state.spawn *= d.spawnMult;
+
     state.speed = Math.max(state.speed, d.speedStart + state.stage * d.stageBonus);
   }
 };
