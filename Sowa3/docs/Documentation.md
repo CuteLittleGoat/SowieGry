@@ -2,7 +2,7 @@
 
 ## Architektura
 
-`Sowa3` jest trzytorowym runnerem Canvas 2D. Bazowy silnik znajduje się w `script.js`, a kolejne moduły rozwijają go warstwowo. Kolejność ładowania jest istotna, ponieważ część modułów opakowuje wcześniej zdefiniowane funkcje.
+`Sowa3` jest trzytorowym runnerem Canvas 2D. Bazowy silnik znajduje się w `script.js`, a kolejne moduły rozwijają go warstwowo.
 
 ## Kolejność ładowania
 
@@ -25,7 +25,7 @@
 17. `finish-controls.js`
 18. `animation-polish.js`
 
-`finish-controls.js` dynamicznie ładuje dodatkowo `finish-details.js`.
+`finish-controls.js` dynamicznie ładuje `finish-details.js`, a po pełnym załadowaniu strony także `pause-guard.js`, aby ten ostatni pozostał końcową warstwą `update()`.
 
 ## Odpowiedzialność modułów
 
@@ -35,7 +35,7 @@ Stany `title`, `run`, `finish`, `over`, trzy tory, bazowy spawn, kolizje, render
 
 ### `difficulty.js`
 
-Definiuje `chill`, `arcade` i `chaos`. Zmienia życia startowe, prędkość, wzrost prędkości, częstotliwość przeszkód, szansę zamiany przeszkody na liść oraz mnożnik punktów. Wybór jest zapisany pod `sowa3Difficulty`.
+Definiuje `chill`, `arcade` i `chaos`. Zmienia życia startowe, prędkość, wzrost prędkości, częstotliwość przeszkód, szansę zamiany przeszkody na liść oraz mnożnik punktów.
 
 ### `extra-lives.js`
 
@@ -47,11 +47,7 @@ Rysuje główne scenografie supermarketu, wystawy kwiatów i blokowiska PRL.
 
 ### `stage-ambience.js`
 
-Dodaje wyłącznie dekoracje boczne albo górne:
-
-- supermarket: pieczywo i pracownik z paleciakiem,
-- kwiaty: boczne wózki i zraszacze,
-- blokowisko: trzepak, ławkę, kota i gołębie.
+Dodaje wyłącznie dekoracje boczne albo górne: pieczywo i pracownika, boczne wózki oraz zraszacze, trzepak, ławkę, kota i gołębie.
 
 ### `stage-obstacles.js`
 
@@ -59,82 +55,51 @@ Dodaje `pallet`, `person` i `boar`.
 
 ### `lane-balance.js`
 
-Koordynuje bazowe i tematyczne przeszkody: minimalny odstęp na osi `z`, wartości zależne od trudności, preferowanie innego toru, możliwość zastąpienia zablokowanego spawnu liściem i brak jednoczesnego zamknięcia wszystkich torów.
+Kontroluje minimalny odstęp, wartości zależne od trudności, preferowanie innego toru, zamianę zablokowanego spawnu na liść oraz brak jednoczesnego zamknięcia wszystkich torów.
 
 ### `visibility-corridor.js`
 
-Po scenografii ponownie rysuje czysty trapez trasy. Korytarz jest szerszy niż trzy linie torów i usuwa optyczne nachodzenie regałów, kwiatów, ludzi tła, drzew i budynków. Przeszkody oraz pickupy są rysowane później.
+Po scenografii ponownie rysuje czysty trapez trasy. Przeszkody i pickupy są rysowane później, dlatego dekoracje nie zasłaniają rozgrywki.
 
 ### `finish-pool.js`
 
-Nadpisuje finał planszy:
-
-- działka,
-- okrągły basen naziemny,
-- szara ryflowana ściana,
-- niebieski rant,
-- turkusowa woda i fale,
-- dobiegnięcie sowy,
-- skok do basenu,
-- plusk,
-- przemiana w humbaka.
+Rysuje działkę, okrągły basen z szarą ryflowaną ścianą, niebieskim rantem i turkusową wodą. Obsługuje dobiegnięcie sowy, skok, plusk oraz przemianę w humbaka.
 
 ### `finish-details.js`
 
-Dynamicznie dodaje boczne detale finału: kozę odpoczywającą na leżaku oraz grill. Oba elementy pozostają poza centralnym basenem i trasą dojścia.
+Dodaje po bokach kozę na leżaku i grill.
 
 ### `cute-rework.js`
 
-- combo `×1`–`×5`,
-- near miss,
-- złote i tęczowe liście,
-- gorączka monster,
-- ruch części ludzi i dzików,
-- ostrzeżenia kierunkowe,
-- piórka,
-- kosmetyki,
-- misje i statystyki,
-- dodatkowa karta HUD,
-- podsumowanie planszy,
-- debug.
+Combo, near miss, złote i tęczowe liście, gorączka monster, ruch części ludzi i dzików, ostrzeżenia, piórka, kosmetyki, misje, HUD, podsumowanie i debug.
 
 ### `moving-obstacle-safety.js`
 
-Przed ruchem człowieka lub dzika sprawdza:
-
-- czy tor docelowy jest zajęty,
-- czy ruch zamknąłby wszystkie trzy pasy,
-- czy ostrzeżenie pojawiło się odpowiednio wcześnie.
-
-Niebezpieczny ruch jest anulowany.
+Anuluje zmianę toru, gdy tor docelowy jest zajęty, powstałaby ściana na trzech pasach albo ostrzeżenie byłoby zbyt późne.
 
 ### `finish-controls.js`
 
-Zmienia motyw muzyczny między planszami, zapisuje obejrzenie finału, pozwala skrócić kolejne finały, zatrzymuje sekwencję podczas pauzy i ładuje `finish-details.js`.
+Zmienia muzykę między planszami, zapisuje obejrzenie finału, pozwala skrócić kolejne finały, zatrzymuje sekwencję podczas pauzy oraz ładuje detale finału i końcowy guard pauzy.
 
 ### `animation-polish.js`
 
-Przechylenie, stretch, gwiazdki po obrażeniu, kontekstowe dźwięki oraz działający kosmetyk `bubbleTrail`.
+Przechylenie, stretch, gwiazdki, dźwięki oraz działający kosmetyk `bubbleTrail`.
+
+### `pause-guard.js`
+
+Końcowa warstwa `update()`. Zatrzymuje bąbelki, ruchome przeszkody i wszystkie późne systemy podczas pauzy lub otwartego modalu.
 
 ## Wspólna warstwa
 
 `SowieCore` odpowiada za profil `sowieGryProfile`, garderobę, misje, ustawienia, pauzę, Web Audio, komunikaty i debug. `SowieRuntime` ogranicza częstotliwość zapisów i wznawia grę po zamknięciu modalu.
 
-## Combo i near miss
+## Combo, near miss i gorączka
 
-Progi combo: 5, 12, 22 i 35 akcji dla mnożników `×2`–`×5`. Near miss jest wykrywany po przejściu przeszkody na sąsiednim torze; każdy obiekt może przyznać premię tylko raz.
+Progi combo: 5, 12, 22 i 35 akcji dla `×2`–`×5`. Near miss jest wykrywany po przejściu przeszkody na sąsiednim torze. Liście mają wariant `normal`, `gold` albo `rainbow`; tęczowy liść lub osiem zbiórek aktywuje gorączkę.
 
-## Liście i gorączka
+## Finał
 
-Liście mają wariant `normal`, `gold` albo `rainbow`. Tęczowy liść lub osiem kolejnych zbiórek uruchamia gorączkę, która dodaje wyłącznie pickupy.
-
-## Finał i podsumowanie
-
-Sekwencja trwa około 4,3 sekundy. Podsumowanie zawiera wynik, liście, near missy, najlepsze combo i ocenę tekstową. Po pierwszym pełnym obejrzeniu zapis `sowa3FinishSeen` pozwala skrócić kolejne finały.
-
-## Audio
-
-Motywy: `market`, `flowers`, `estate`. Efekty obejmują liście, serca, combo, near miss, telefon, dzika, obrażenia, plusk i odblokowania.
+Sekwencja trwa około 4,3 sekundy. Podsumowanie pokazuje wynik, liście, near missy, najlepsze combo i ocenę. Po pierwszym pełnym obejrzeniu można ją skrócić tapnięciem.
 
 ## Rekordy i profil
 
@@ -153,7 +118,7 @@ Motywy: `market`, `flowers`, `estate`. Efekty obejmują liście, serca, combo, n
 
 1. Dekoracje muszą pozostawać przy bokach albo nad horyzontem.
 2. Nowe przeszkody muszą przechodzić przez `lane-balance.js`.
-3. Ruchoma przeszkoda musi mieć ostrzeżenie i walidację toru docelowego.
-4. Nowe warstwy scenografii muszą być ładowane przed `visibility-corridor.js`.
-5. Nowe modyfikatory finału muszą respektować pauzę.
+3. Ruchoma przeszkoda wymaga ostrzeżenia i walidacji toru docelowego.
+4. Warstwy scenografii muszą być ładowane przed `visibility-corridor.js`.
+5. Modyfikatory finału muszą respektować pauzę.
 6. Dokumentację należy aktualizować razem z kodem.
