@@ -1,6 +1,8 @@
-// Squash-and-stretch, reakcje i gwiazdki dla sowy w SowaJumper.
+// Squash-and-stretch, reakcje, gwiazdki i ślad bąbelków w SowaJumper.
 (() => {
   const core = window.SowieCore;
+  const bubbles = [];
+  let bubbleTimer = 0;
 
   const previousDamage = damage;
   damage = function animatedJumperDamage(reason) {
@@ -23,6 +25,40 @@
     }
   };
 
+  const previousUpdateGame = updateGame;
+  updateGame = function animatedJumperUpdate(delta) {
+    previousUpdateGame(delta);
+    updateJumperBubbles(delta);
+  };
+
+  const previousUpdateBonus = updateBonus;
+  updateBonus = function animatedJumperBonus(delta) {
+    previousUpdateBonus(delta);
+    updateJumperBubbles(delta);
+  };
+
+  function updateJumperBubbles(delta) {
+    bubbleTimer -= delta;
+    const enabled = core?.selectedCosmetic() === "bubbleTrail" && (state.scene === "playing" || state.scene === "bonus");
+    const interval = core?.settings().reducedEffects ? 300 : 135;
+    if (enabled && bubbleTimer <= 0) {
+      bubbleTimer = interval;
+      bubbles.push({
+        x: owl.x - owl.vx * 2,
+        y: owl.y - state.cameraY + rand(-8, 12),
+        r: rand(3, 7),
+        life: 1050,
+        vy: rand(-0.8, -0.25),
+      });
+    }
+    for (let i = bubbles.length - 1; i >= 0; i -= 1) {
+      const bubble = bubbles[i];
+      bubble.y += bubble.vy;
+      bubble.life -= delta;
+      if (bubble.life <= 0) bubbles.splice(i, 1);
+    }
+  }
+
   const previousDrawOwl = drawOwl;
   drawOwl = function animatedJumperOwl(x, y, radius, invincible = false) {
     const squash = Math.max(0, (owl._cuteSquashUntil || 0) - now());
@@ -40,6 +76,24 @@
 
     if (hurt > 0) drawJumperStars(x, y - radius * 1.6, hurt / 900);
   };
+
+  const previousDrawParticles = drawParticles;
+  drawParticles = function drawJumperParticlesAndBubbles() {
+    drawJumperBubbles();
+    previousDrawParticles();
+  };
+
+  function drawJumperBubbles() {
+    ctx.save();
+    ctx.lineWidth = 1.5;
+    for (const bubble of bubbles) {
+      ctx.strokeStyle = `rgba(170,232,255,${clamp(bubble.life / 1050, 0, 1) * .82})`;
+      ctx.beginPath();
+      ctx.arc(bubble.x, bubble.y, bubble.r, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
 
   function drawJumperStars(x, y, alpha) {
     ctx.save();
