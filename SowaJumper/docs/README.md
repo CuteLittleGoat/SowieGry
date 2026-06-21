@@ -30,15 +30,16 @@ Poza platformami normalnymi, ruchomymi, kruszącymi się i Amic pojawiają się:
 - **chmurka** — delikatnie zwiększone wybicie,
 - **liść** — bonusowe wybicie i punkty,
 - **balkon** — bezpieczna platforma tematyczna,
-- **punkt odpoczynku** — szeroka platforma z krótką nietykalnością.
+- **punkt odpoczynku** — szeroka platforma z krótką nietykalnością,
+- **platforma obracająca się** — dodatkowa premia,
+- **platforma tymczasowa** — znika chwilę po lądowaniu,
+- **kozia trampolina** — bardzo mocne wybicie i punkty.
 
 Punkty odpoczynku pojawiają się mniej więcej co 150 metrów.
 
 ## Combo i perfekcyjne lądowania
 
-Lądowanie blisko środka platformy daje premię „Idealnie!” i zwiększa combo. Combo rośnie także za liście oraz bliskie minięcie `Pracu Pracu`.
-
-Utrata życia resetuje mnożnik.
+Lądowanie blisko środka platformy daje premię „Idealnie!” i zwiększa combo. Combo rośnie także za liście oraz bliskie minięcie `Pracu Pracu`. Utrata życia resetuje mnożnik.
 
 ## Liście i gorączka monster
 
@@ -50,8 +51,6 @@ Gorączka dodaje więcej liści, ale nie zwiększa liczby przeszkód.
 
 ## Mini-gra z humbakiem
 
-Po zebraniu humbaka uruchamia się osobna sekwencja:
-
 - sowa porusza się lewo/prawo,
 - obiekty spadają z góry,
 - ekran ma trzy czytelne pasy,
@@ -61,12 +60,7 @@ Po zebraniu humbaka uruchamia się osobna sekwencja:
 
 ## Bezpieczeństwo generowania
 
-Gra ogranicza:
-
-- zbyt duże poziome przeskoki,
-- długie serie trudnych platform,
-- `Pracu Pracu` przy jedynym sensownym lądowaniu,
-- zbyt ciasne układy mini-gry.
+Gra ogranicza zbyt duże poziome przeskoki, długie serie trudnych platform, `Pracu Pracu` przy jedynym sensownym lądowaniu oraz ciasne układy mini-gry.
 
 ## Życia
 
@@ -74,7 +68,7 @@ Serduszka zwiększają liczbę żyć do pięciu. Przy pełnym limicie dają punk
 
 ## Profil, kosmetyki i misje
 
-Wspólny profil działa także w pozostałych grach. Misje odblokowują kosmetyki, które można wybrać w garderobie.
+Wspólny profil działa także w pozostałych grach. Misje odblokowują kosmetyki wybierane w garderobie. Kosmetyk **Ślad bąbelków** rzeczywiście zostawia za sową delikatne bąbelki; ustawienie ograniczonych efektów zmniejsza ich liczbę.
 
 ## Audio i pauza
 
