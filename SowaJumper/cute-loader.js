@@ -6,9 +6,16 @@
     const ready = typeof resetJumperSafetyState === "function" && typeof drawJumperHeart === "function" && typeof startBonus === "function";
     if (!ready && attempts < 200) return;
     window.clearInterval(timer);
-    const script = document.createElement("script");
-    script.src = "cute-rework.js";
-    script.async = false;
-    document.body.appendChild(script);
+
+    const cute = document.createElement("script");
+    cute.src = "cute-rework.js";
+    cute.async = false;
+    cute.addEventListener("load", () => {
+      const lanes = document.createElement("script");
+      lanes.src = "bonus-lanes.js";
+      lanes.async = false;
+      document.body.appendChild(lanes);
+    });
+    document.body.appendChild(cute);
   }, 20);
 })();
