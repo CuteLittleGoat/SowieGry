@@ -1,81 +1,229 @@
-# SowieGry — Dokumentacja techniczna
+# SowieGry — dokumentacja techniczna repozytorium
 
 ## Zakres
-Ten dokument opisuje plik `index.html` w głównym katalogu repozytorium, czyli ekran startowy do wyboru gry.
 
-## Struktura pliku `index.html`
+Repozytorium zawiera ekran startowy i trzy samodzielne gry:
 
-### HTML
-- `<!DOCTYPE html>` uruchamia tryb standardowy.
-- `<html lang="pl">` ustawia język dokumentu na polski.
-- `<head>` zawiera metadane (`charset`, `viewport`) i osadzony blok CSS.
-- `<title>` ustawiony na **SowieGry — Start**.
-- `<body>` zawiera pojedynczy komponent startowy.
+- `SowaRunner`,
+- `SowaJumper`,
+- `Sowa3`.
 
-**Główna hierarchia elementów:**
-- `<main class="start-screen">` — kontener całego ekranu.
-  - `<div class="floating-band">` — warstwa animowanych ozdób (nie klikalna, `aria-hidden`).
-    - `span.creature` z emoji: sowa (🦉), koza (🐐), humbak (🐋), liść (🍃), monstera (🌿), alokazja (🪴), smartfon (📱).
-    - `span.sparkles` — dwa pulsujące „poświaty”.
-  - `<header>` — nagłówek z tytułem i podtytułem.
-  - `<section class="cards">` — siatka kart gier.
-    - `<a class="game-card" href="SowaRunner/">` — karta gry SowaRunner.
-    - `<a class="game-card" href="SowaJumper/">` — karta gry SowaJumper.
-    - `<a class="game-card" href="Sowa3/">` — karta gry Sowa3.
-  - `<p class="footer-note">` — krótka notatka na dole.
+Wspólna warstwa „Cute Polish” zapewnia profil, kosmetyki, misje, ustawienia, audio, pauzę, debug i testy uruchomieniowe.
 
-### Linkowanie
-- Każda karta to link (`<a>`) do folderu gry.
-- Ścieżki są względne, dzięki czemu działają po otwarciu lokalnie z dysku.
+## Struktura główna
 
-## Stylowanie (CSS)
+```text
+index.html
+shared/
+  cute-ui.css
+  sowie-core.js
+  sowie-runtime.js
+  sowie-smoke-hook.js
+tests/
+  smoke.html
+SowaRunner/
+SowaJumper/
+Sowa3/
+docs/
+.github/workflows/js-check.yml
+```
 
-### Ustawienia globalne
-- `:root`:
-  - `font-family`: "Trebuchet MS", "Comic Sans MS", "Segoe UI", sans-serif — miękki, „cute” charakter.
-  - `color`: #2c2a32 (ciemny tekst).
-  - `background`: #f7f2ff.
-- `* { box-sizing: border-box; }` — ułatwia kontrolę rozmiarów.
-- `body`:
-  - tło w postaci radialnego gradientu (pastelowy róż, błękit i zieleń),
-  - wyśrodkowanie zawartości (`display: flex`, `align-items`, `justify-content`).
+## Ekran startowy
 
-### Kontener startowy
-- `.start-screen`:
-  - ograniczenie szerokości `min(1100px, 92vw)`.
-  - duże `padding` i zaokrąglenie `border-radius: 32px`.
-  - półprzezroczyste tło i cień (`box-shadow`) dla efektu karty.
-  - `position: relative` i `overflow: hidden` dla animowanych ozdób.
+Główny `index.html` pozostaje prostym ekranem wyboru gry. Karty prowadzą względnymi linkami do:
 
-### Karty gier
-- `.cards` to siatka CSS Grid (`auto-fit`, `minmax(220px, 1fr)`), dzięki czemu karty układają się responsywnie.
-- `.game-card`:
-  - tło białe, cień, zaokrąglenie.
-  - `transition` i `:hover` dla lekkiego uniesienia i podświetlenia obramowania.
-- Obecne gry na ekranie startowym:
-  - `SowaRunner/`
-  - `SowaJumper/`
-  - `Sowa3/`
+- `SowaRunner/`,
+- `SowaJumper/`,
+- `Sowa3/`.
 
-### Ozdoby i animacje
-- `.floating-band` jest absolutnie pozycjonowane i ma `pointer-events: none` (nie blokuje kliknięć).
-- `.creature`:
-  - duży font-size (responsywny),
-  - `filter: drop-shadow` dla miękkiego cienia,
-  - animacja `floaty` (unoszenie i delikatny obrót).
-- Pozycje ikon (`.owl`, `.goat`, `.whale`, `.leaf`, `.monstera`, `.alokazja`, `.phone`) są ustawione procentowo w obrębie kontenera.
-- `.sparkles`:
-  - duże koła z gradientem radialnym,
-  - animacja `pulse` (pulsowanie skali i przezroczystości).
+Animowane ozdoby ekranu startowego mają `pointer-events: none`, dzięki czemu nie blokują kart.
 
-## Logika działania
-- Brak JavaScript — interakcja opiera się wyłącznie na linkach.
-- Animacje są realizowane wyłącznie CSS.
-- Użytkownik wybiera grę przez kliknięcie karty i przechodzi do odpowiedniego folderu.
+## Wspólna warstwa
 
-## Wskazówki do odtworzenia 1:1
-1. Utwórz plik `index.html` z opisanym HTML.
-2. Wklej dokładny CSS w sekcji `<style>`.
-3. Ustaw emoji i klasy zgodnie z opisem w sekcji ozdób.
-4. Sprawdź, czy linki do gier prowadzą do `SowaRunner/`, `SowaJumper/` i `Sowa3/`.
-5. Zadbaj o `pointer-events: none` na warstwie ozdób, aby kliknięcia trafiały w karty.
+### `shared/cute-ui.css`
+
+Definiuje:
+
+- pasek narzędzi,
+- modal garderoby,
+- modal misji,
+- ustawienia,
+- toasty,
+- wskaźnik pauzy,
+- panel debug.
+
+Pasek narzędzi znajduje się pod HUD-em po lewej stronie, aby nie zasłaniać wyników ani centralnego obszaru gry.
+
+### `shared/sowie-core.js`
+
+Udostępnia globalny obiekt `SowieCore`.
+
+Najważniejsze systemy:
+
+- wspólny profil `sowieGryProfile`,
+- kosmetyki,
+- misje,
+- statystyki,
+- ustawienia,
+- proceduralne efekty dźwiękowe,
+- proceduralna muzyka,
+- garderoba,
+- toasty,
+- komentarze sowy,
+- rysowanie kosmetyków na Canvasie,
+- rejestracja adaptera pauzy każdej gry.
+
+### `shared/sowie-runtime.js`
+
+- ogranicza częstotliwość zapisu statystyk dystansu i wysokości,
+- obsługuje wznowienie po zamknięciu modalu,
+- obsługuje klawisz Escape.
+
+### `shared/sowie-smoke-hook.js`
+
+Przesyła do `tests/smoke.html`:
+
+- błędy JavaScript,
+- nieobsłużone odrzucenia Promise,
+- informację o załadowaniu gry.
+
+## Profil
+
+Klucz:
+
+```text
+sowieGryProfile
+```
+
+Profil zawiera:
+
+- `unlockedCosmetics`,
+- `selectedCosmetic`,
+- `settings`,
+- `missions`,
+- `stats`.
+
+Dotychczasowe klucze rekordów gier pozostają zachowane.
+
+## Kosmetyki
+
+Dostępne warianty:
+
+- brak,
+- kokardka,
+- okulary,
+- wianek,
+- kapelusz ogrodnika,
+- czapka z daszkiem,
+- szalik,
+- plecak,
+- ślad bąbelków jako odblokowanie profilowe.
+
+Kosmetyki nie wpływają na hitboxy ani parametry mechaniczne.
+
+## Misje
+
+Wspólne misje obejmują:
+
+- 20 liści,
+- dodatkowe życie,
+- 3 near missy,
+- ukończenie etapu `Chaos`,
+- combo `×4`,
+- 1000 m w `SowaRunner`,
+- 250 m w `SowaJumper`.
+
+Nagrodami są kosmetyki.
+
+## Audio
+
+Audio jest generowane przez Web Audio API bez zewnętrznych plików.
+
+Ustawienia:
+
+- muzyka,
+- efekty,
+- komentarze sowy,
+- ograniczone efekty wizualne.
+
+Każda gra rejestruje własny motyw muzyczny przez `SowieCore.registerGame()`.
+
+## Systemy rozgrywki
+
+Wszystkie gry mają:
+
+- `Chill`, `Arcade`, `Chaos`,
+- zdobywanie dodatkowych żyć,
+- zabezpieczenie przed niemożliwymi układami,
+- combo,
+- near miss,
+- zwykłe, złote i tęczowe liście,
+- gorączkę monster,
+- animacje sowy,
+- piórka i gwiazdki,
+- wspólny profil,
+- pauzę,
+- audio,
+- debug.
+
+Szczegóły implementacji znajdują się w dokumentacji poszczególnych gier.
+
+## Sowa3 — zasada czytelności
+
+Dekoracje są dopuszczalne tylko:
+
+- po bokach ekranu,
+- wysoko nad horyzontem,
+- poza perspektywicznym korytarzem torów.
+
+`visibility-corridor.js` ponownie rysuje czystą trasę po wszystkich warstwach scenografii.
+
+Ruch ludzi i dzików jest dodatkowo kontrolowany przez `moving-obstacle-safety.js`, który anuluje zmianę toru, gdy:
+
+- tor docelowy jest zajęty,
+- ruch zamknąłby wszystkie trzy pasy,
+- ostrzeżenie pojawiłoby się zbyt późno.
+
+## Testy
+
+### Kontrola składni
+
+`.github/workflows/js-check.yml` wykonuje:
+
+```bash
+node --check
+```
+
+dla wszystkich plików JavaScript podczas push i pull request.
+
+### Test uruchomieniowy
+
+`tests/smoke.html` ładuje gry w ukrytych ramkach i sprawdza:
+
+- poziomy trudności,
+- główne funkcje startowe,
+- dodatkowe życia,
+- systemy balansu,
+- wspólny profil,
+- kluczowe systemy `Sowa3`.
+
+### Tryb debug
+
+Parametr:
+
+```text
+?debug=1
+```
+
+wyświetla dane diagnostyczne konkretnej gry.
+
+## Dokumentacja planu
+
+- `docs/PLAN_ROZWOJU_CUTE_POLISH.md` — plan reworku.
+- `docs/WDROZENIE_CUTE_POLISH.md` — faktyczny stan implementacji i lista testów wymagających wykonania ręcznego.
+
+## Dług techniczny
+
+Gry nadal korzystają z części modułów opakowujących funkcje globalne. Wspólna warstwa została wydzielona, ale pełne scalenie każdego silnika do `game.js`, `config.js` i jawnego systemu hooków pozostaje osobnym etapem refaktoru.
+
+Nie należy usuwać obecnych modułów przed wykonaniem testów regresji.
