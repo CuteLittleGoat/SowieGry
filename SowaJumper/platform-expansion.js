@@ -20,18 +20,19 @@
     else if (meters > 240 && roll < 0.11) platform.type = "temporary";
     else if (meters > 110 && roll < 0.16) platform.type = "springGoat";
     platform.extraPhase = rand(0, Math.PI * 2);
-    platform.touchedAt = 0;
+    platform.temporaryLife = null;
     return platform;
   };
 
   updateGame = function expandedUpdate(delta) {
     if (uiPaused()) return;
     baseUpdate(delta);
-    const current = now();
     for (const platform of platforms) platform.extraPhase = (platform.extraPhase || 0) + delta * 0.003;
     for (let i = platforms.length - 1; i >= 0; i -= 1) {
       const platform = platforms[i];
-      if (platform.type === "temporary" && platform.touchedAt && current - platform.touchedAt > 720) platforms.splice(i, 1);
+      if (platform.type !== "temporary" || platform.temporaryLife === null) continue;
+      platform.temporaryLife -= delta;
+      if (platform.temporaryLife <= 0) platforms.splice(i, 1);
     }
   };
 
@@ -41,8 +42,8 @@
     if (!falling || owl.vy >= 0) return;
     const landed = platforms.find((platform) => Math.abs(owl.y - (platform.y - owl.radius)) < 4 && owl.x + owl.radius > platform.x && owl.x - owl.radius < platform.x + platform.width);
     if (!landed) return;
-    if (landed.type === "temporary" && !landed.touchedAt) {
-      landed.touchedAt = now();
+    if (landed.type === "temporary" && landed.temporaryLife === null) {
+      landed.temporaryLife = 720;
       state.message = "Platforma zaraz zniknie!";
       state.messageUntil = now() + 850;
     }
@@ -70,7 +71,7 @@
       ctx.arc(0, 0, 5, 0, Math.PI * 2);
       ctx.fill();
     } else if (platform.type === "temporary") {
-      const remaining = platform.touchedAt ? Math.max(0, 1 - (now() - platform.touchedAt) / 720) : 1;
+      const remaining = platform.temporaryLife === null ? 1 : Math.max(0, platform.temporaryLife / 720);
       ctx.globalAlpha = 0.35 + remaining * 0.65;
       ctx.fillStyle = "#9fd7ed";
       roundRect(platform.x, y, platform.width, platform.height, 9, true);
