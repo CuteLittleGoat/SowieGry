@@ -43,9 +43,10 @@
     const interval = core?.settings().reducedEffects ? 300 : 135;
     if (enabled && bubbleTimer <= 0) {
       bubbleTimer = interval;
+      const screenY = state.scene === "bonus" ? owl.y : owl.y - state.cameraY;
       bubbles.push({
         x: owl.x - owl.vx * 2,
-        y: owl.y - state.cameraY + rand(-8, 12),
+        y: screenY + rand(-8, 12),
         r: rand(3, 7),
         life: 1050,
         vy: rand(-0.8, -0.25),
