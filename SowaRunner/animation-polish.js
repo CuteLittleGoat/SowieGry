@@ -1,6 +1,8 @@
-// Squash-and-stretch, reakcje i gwiazdki dla sowy w SowaRunner.
+// Squash-and-stretch, reakcje, gwiazdki i ślad bąbelków w SowaRunner.
 (() => {
   const core = window.SowieCore;
+  const bubbles = [];
+  let bubbleTimer = 0;
 
   const previousHit = hit;
   hit = function animatedRunnerHit(message) {
@@ -28,6 +30,29 @@
     return result;
   };
 
+  const previousUpdateRun = updateRun;
+  updateRun = function animatedRunnerUpdate(dt) {
+    previousUpdateRun(dt);
+    updateRunnerBubbles(dt);
+  };
+
+  function updateRunnerBubbles(dt) {
+    bubbleTimer -= dt;
+    const enabled = core?.selectedCosmetic() === "bubbleTrail" && mode === SCREEN.RUN;
+    const interval = core?.settings().reducedEffects ? .30 : .13;
+    if (enabled && bubbleTimer <= 0) {
+      bubbleTimer = interval;
+      bubbles.push({ x: owl.x - owl.r * .65, y: owl.y + random(-8, 12) * s, r: random(3, 7) * s, life: 1.05, vy: random(-16, -7) * s });
+    }
+    for (let i = bubbles.length - 1; i >= 0; i -= 1) {
+      const bubble = bubbles[i];
+      bubble.x -= spd * 16 * dt;
+      bubble.y += bubble.vy * dt;
+      bubble.life -= dt;
+      if (bubble.life <= 0) bubbles.splice(i, 1);
+    }
+  }
+
   const previousDrawOwl = drawOwl;
   drawOwl = function animatedRunnerOwl() {
     const squash = Math.max(0, (owl._cuteSquashUntil || 0) - millis());
@@ -50,6 +75,23 @@
 
     if (hurt > 0) drawRunnerStars(hurt / 900);
   };
+
+  const previousDrawParts = drawParts;
+  drawParts = function drawRunnerPartsAndBubbles() {
+    drawRunnerBubbles();
+    previousDrawParts();
+  };
+
+  function drawRunnerBubbles() {
+    push();
+    noFill();
+    strokeWeight(1.5 * s);
+    for (const bubble of bubbles) {
+      stroke(180, 238, 255, constrain(bubble.life, 0, 1) * 210);
+      ellipse(bubble.x, bubble.y, bubble.r * 2, bubble.r * 2);
+    }
+    pop();
+  }
 
   function drawRunnerStars(alpha) {
     push();
