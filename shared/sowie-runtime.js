@@ -1,4 +1,4 @@
-// Drobne zabezpieczenia wspólnego rdzenia: throttling zapisu, audio i obsługa modali.
+// Drobne zabezpieczenia wspólnego rdzenia: throttling zapisu, audio, układ UI i obsługa modali.
 (() => {
   const core = window.SowieCore;
   if (!core) return;
@@ -6,11 +6,27 @@
   let adapter = null;
   let pausedBeforeModal = false;
 
+  function applySharedLayout() {
+    const toolbar = document.querySelector(".sowie-toolbar");
+    if (toolbar) toolbar.style.flexDirection = "column";
+
+    const hud = document.querySelector(".hud");
+    if (hud && hud.children.length >= 4) {
+      hud.style.gridTemplateColumns = window.innerWidth <= 700
+        ? "repeat(4, minmax(0, 1fr))"
+        : "repeat(4, minmax(70px, auto))";
+    }
+  }
+
   const originalRegisterGame = core.registerGame;
   core.registerGame = function registerGameWithRuntime(gameAdapter) {
     adapter = gameAdapter || null;
-    return originalRegisterGame(gameAdapter);
+    const result = originalRegisterGame(gameAdapter);
+    applySharedLayout();
+    return result;
   };
+
+  window.addEventListener("resize", applySharedLayout);
 
   // Kilka nakładających się modułów może zgłosić ten sam efekt w jednej klatce.
   // Krótki debounce usuwa zdublowane dźwięki bez blokowania kolejnych zdarzeń.
