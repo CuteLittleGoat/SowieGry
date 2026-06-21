@@ -6,8 +6,15 @@
   let windActive = 0;
   let windStrength = 0;
 
+  function uiPaused() {
+    const badge = document.querySelector(".sowie-paused-badge");
+    const modal = document.querySelector(".sowie-modal-backdrop");
+    return Boolean((badge && !badge.hidden) || (modal && !modal.hidden));
+  }
+
   const previousUpdateRun = updateRun;
   updateRun = function runnerUpdateWithWind(dt) {
+    if (uiPaused()) return;
     previousUpdateRun(dt);
     if (mode !== SCREEN.RUN) return;
 
