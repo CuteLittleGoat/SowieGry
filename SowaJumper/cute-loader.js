@@ -4,7 +4,16 @@
   const timer = window.setInterval(() => {
     attempts += 1;
     const ready = typeof resetJumperSafetyState === "function" && typeof drawJumperHeart === "function" && typeof startBonus === "function";
-    if (!ready && attempts < 200) return;
+
+    if (!ready) {
+      if (attempts >= 200) {
+        window.clearInterval(timer);
+        console.error("SowaJumper: nie załadowano wymaganych modułów extra-lives, bonus-fix lub safety-balance.");
+        window.SowieCore?.toast("Błąd ładowania modułów SowaJumper");
+      }
+      return;
+    }
+
     window.clearInterval(timer);
 
     const cute = document.createElement("script");
