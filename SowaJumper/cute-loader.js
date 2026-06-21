@@ -18,6 +18,12 @@
         const animation = document.createElement("script");
         animation.src = "animation-polish.js";
         animation.async = false;
+        animation.addEventListener("load", () => {
+          const expansion = document.createElement("script");
+          expansion.src = "platform-expansion.js";
+          expansion.async = false;
+          document.body.appendChild(expansion);
+        });
         document.body.appendChild(animation);
       });
       document.body.appendChild(lanes);
