@@ -1,81 +1,157 @@
 # SowaRunner — dokumentacja techniczna
 
-## Zakres
-`SowaRunner` jest bocznym endless runnerem zrealizowanym w p5.js. Gra ma ekran tytułowy, poziomy trudności, game over, mobilne one-tap sterowanie, proceduralne spawnowanie obiektów, mini-grę z humbakiem, mechanikę dodatkowych żyć oraz dodatkowy balans odstępów między przeszkodami.
+## Architektura
 
-## Pliki
-- `index.html` — ładuje `p5.js`, `p5.sound.min.js`, `style.css`, `sketch.js`, `render-fix.js`, `extra-lives.js` oraz `obstacle-balance.js`.
-- `style.css` — blokuje scrollowanie, ustawia pełnoekranowy canvas i `touch-action: none`.
-- `sketch.js` — główna logika gry w kompaktowej formie.
-- `render-fix.js` — hotfix renderowania; nadpisuje `drawBg()`, aby każda klatka była w pełni czyszczona i zamalowywana pełnym gradientem.
-- `extra-lives.js` — serduszka jako pickupy dodatkowych żyć.
-- `obstacle-balance.js` — bezpieczniejszy spawn przeszkód i większe minimalne odstępy między przeszkodami blokującymi.
-- `docs/README.md` — instrukcja dla gracza.
-- `docs/Documentation.md` — dokumentacja techniczna.
+`SowaRunner` jest grą p5.js. Bazowa logika pozostaje w `sketch.js`, a systemy reworku są ładowane warstwowo w określonej kolejności.
 
-## Ekrany gry
-Stała `SCREEN` definiuje tryby:
-- `TITLE` — ekran tytułowy, wybór trudności i instrukcja.
-- `RUN` — właściwa gra.
-- `WHALE` — mini-gra z humbakiem.
-- `OVER` — ekran wyniku po utracie żyć.
+## Kolejność plików
 
-## Trudności
-`LEVELS` zawiera konfiguracje `Chill`, `Arcade` i `Chaos`. Każda trudność ustawia maksymalną prędkość, tempo narastania prędkości oraz bazowe odstępy między przeszkodami.
+1. `p5.js`
+2. `p5.sound.min.js`
+3. `sketch.js`
+4. `render-fix.js`
+5. `extra-lives.js`
+6. `obstacle-balance.js`
+7. `../shared/sowie-core.js`
+8. `../shared/sowie-runtime.js`
+9. `cute-rework.js`
+10. `animation-polish.js`
 
-## Balans przeszkód
-`obstacle-balance.js` nadpisuje `spawnStuff()`. Moduł:
-- zwiększa minimalny odstęp między przeszkodami blokującymi,
-- dodatkowo zwiększa odstęp po szerokich albo trudniejszych przeszkodach,
-- ogranicza powtarzanie tego samego typu przeszkody kilka razy z rzędu,
-- utrzymuje różne wartości balansu dla `Chill`, `Arcade` i `Chaos`.
+Dodatkowo w `<head>` ładowane są:
 
-Celem jest uniknięcie sytuacji, w której przy dużej prędkości gracz nie ma realnego czasu na reakcję.
+- `../shared/sowie-smoke-hook.js`,
+- `style.css`,
+- `../shared/cute-ui.css`.
 
-## Dodatkowe życia
-`extra-lives.js` dodaje `runnerLifePickups`. Serduszka pojawiają się co pewien czas podczas właściwego biegu. Zebranie serduszka:
-- dodaje 1 życie, jeśli gracz ma mniej niż 5 żyć,
-- daje punkty, jeśli gracz ma już 5 żyć.
+## Odpowiedzialność plików
 
-Częstotliwość serduszek zależy od wybranego poziomu trudności.
+### `sketch.js`
 
-## Główne zmienne i kolekcje
-- `mode` — aktualny ekran.
-- `level` — wybrany poziom trudności.
-- `score`, `distM`, `lives` — wynik, dystans i życia.
-- `bestScore`, `bestDist` — rekordy zapisane w `localStorage`.
-- `owl` — gracz: pozycja, promień, prędkość pionowa, liczba skoków, coyote time i jump buffer.
-- `holes`, `walls`, `pracu`, `amic`, `plats`, `leaves`, `goats`, `whales` — obiekty runnera.
-- `bLeaves`, `bPracu` — obiekty mini-gry z humbakiem.
-- `parts` — cząsteczki i krótkie etykiety punktów.
-- `clouds`, `hills` — tło.
+- główna pętla p5,
+- fizyka,
+- skoki,
+- podstawowe przeszkody,
+- bazowy HUD,
+- mini-gra humbaka,
+- rysowanie świata.
 
-## Sterowanie
-- `touchStarted()` i `mousePressed()` wywołują `trigger()`.
-- Na ekranie tytułowym klik/tap w kartę trudności zmienia poziom.
-- `keyPressed()` obsługuje `1/2/3`, `Spację`, `Enter` i `strzałkę w górę`.
+### `render-fix.js`
 
-## Fizyka i obiekty
-`updateRun(dt)` zwiększa czas, dystans, prędkość i wynik. `updateOwl(dt)` obsługuje grawitację, lądowanie, skoki, dziury, platformy, dachy Amic i kozy. `hit()` odejmuje życie i kończy grę po spadku życia do zera.
+Pełne czyszczenie i zamalowanie tła każdej klatki. Eliminuje smużenie na części urządzeń mobilnych.
 
-Obiekty obowiązkowe:
-- liście monstery,
+### `extra-lives.js`
+
 - serduszka,
-- skaczące kozy,
-- humbak,
-- napisy „Pracu Pracu”,
+- limit pięciu żyć,
+- zamiana nadmiarowego życia na punkty.
+
+### `obstacle-balance.js`
+
+Nadpisuje `spawnStuff()` i kontroluje:
+
+- minimalny odstęp,
+- dodatkowy margines po szerokich przeszkodach,
+- powtarzanie typu przeszkody,
+- osobny balans dla trzech trudności.
+
+### `cute-rework.js`
+
+- combo,
+- near miss,
+- złote i tęczowe liście,
+- gorączka monster,
+- wydarzenia czasowe,
+- zmiana pory dnia,
+- perfekcyjne lądowania,
+- kosmetyki,
+- piórka,
+- integracja misji,
+- integracja wspólnego profilu,
+- dodatkowy HUD,
+- debug.
+
+### `animation-polish.js`
+
+- squash-and-stretch,
+- przechylenie w locie,
+- gwiazdki po obrażeniu,
+- dźwięki skoku i obrażenia.
+
+## Wspólna warstwa
+
+`SowieCore` udostępnia:
+
+- `registerGame()` — pauza i motyw muzyczny,
+- `progressMission()` — misje,
+- `recordStat()` — statystyki,
+- `play()` — efekty,
+- `startMusic()` — proceduralna muzyka,
+- `drawCanvasCosmetic()` — dodatki sowy,
+- `toast()` i `maybeQuip()` — komunikaty,
+- `setDebugData()` — panel diagnostyczny.
+
+## Combo
+
+Stan combo jest lokalny dla biegu. Progi:
+
+- 5 akcji — `×2`,
+- 12 akcji — `×3`,
+- 22 akcje — `×4`,
+- 35 akcji — `×5`.
+
+Obrażenie resetuje serię.
+
+## Near miss
+
+Kontrolowane są:
+
+- ściany,
+- dziury,
+- napisy `Pracu Pracu`,
 - stacje Amic.
 
-## Mini-gra z humbakiem
-`startWhale()` przełącza ekran na `WHALE`. W tym trybie sowa unosi się po tapnięciu, monstery dają punkty, a „Pracu Pracu” odejmuje punkty.
+Każdy obiekt może przyznać premię tylko raz.
 
-## Renderowanie
-Kod rysuje wszystko proceduralnie w p5.js. `render-fix.js` jest ładowany po `sketch.js`, więc jego definicja `drawBg()` zastępuje wcześniejszą wersję i eliminuje smużenie na mobile.
+## Wydarzenia
 
-## Rekordy
-Gra zapisuje rekordy w `localStorage`:
-- `sowaRunnerBestScore`
-- `sowaRunnerBestDistance`
+`cute-rework.js` obsługuje:
 
-## Zasady utrzymania
-Przy zmianach mechaniki, sterowania, UI lub obiektów aktualizuj `docs/README.md` oraz `docs/Documentation.md`.
+- `monsterRain`,
+- `goatParade`.
+
+Wydarzenia nie zwiększają bazowej liczby przeszkód blokujących i nie omijają `obstacle-balance.js`.
+
+## Audio
+
+Audio jest generowane przez Web Audio API we wspólnej warstwie. p5.sound pozostaje dostępne, ale nowe efekty nie wymagają plików dźwiękowych.
+
+## Profil i zapis
+
+Rekordy gry:
+
+- `sowaRunnerBestScore`,
+- `sowaRunnerBestDistance`.
+
+Profil wspólny:
+
+- `sowieGryProfile`.
+
+## Diagnostyka
+
+`?debug=1` pokazuje:
+
+- tryb,
+- prędkość,
+- liczbę przeszkód,
+- combo,
+- czas gorączki,
+- aktywne wydarzenie.
+
+## Testy
+
+- `tests/smoke.html`,
+- `.github/workflows/js-check.yml`.
+
+## Utrzymanie
+
+Nowe przeszkody muszą respektować `obstacle-balance.js`. Nowe elementy punktowe mogą pojawiać się podczas gorączki, ale nie powinny zmieniać bezpiecznych odstępów między przeszkodami.
