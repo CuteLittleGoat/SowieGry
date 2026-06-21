@@ -1,38 +1,77 @@
 # SowaRunner — instrukcja gry
 
 ## Cel gry
-`SowaRunner` to boczny endless runner arcade. Sowa biegnie automatycznie, a gracz skacze, używa podwójnego skoku, zbiera liście monstery, odbija się od kóz, zdobywa dodatkowe życia i próbuje przeżyć jak najdłużej.
 
-## Uruchomienie
-1. Otwórz `SowaRunner/index.html` w przeglądarce.
-2. Wybierz poziom trudności: `1`, `2`, `3` albo klik/tap w kartę trudności.
-3. Naciśnij **Spację**, kliknij albo dotknij ekranu, aby rozpocząć.
-
-Gra jest przygotowana pod urządzenia mobilne: jedno tapnięcie służy do startu i skoku.
+Sowa biegnie automatycznie. Gracz skacze, wykonuje podwójny skok, zbiera liście, korzysta z kóz i dachów Amic oraz próbuje uzyskać jak największy dystans i wynik.
 
 ## Sterowanie
-- **Spacja / klik / tap** — start, skok, podwójny skok.
-- **Strzałka w górę / Enter** — alternatywny skok na klawiaturze.
-- **1 / 2 / 3** — wybór poziomu trudności na ekranie tytułowym.
 
-W mini-grze z humbakiem tapnięcie unosi sowę, a brak tapnięcia pozwala jej opadać.
+- **Tap / klik / Spacja** — skok i podwójny skok.
+- **Enter / strzałka w górę** — alternatywny skok.
+- **1 / 2 / 3** — `Chill`, `Arcade`, `Chaos`.
+- Przyciski po lewej stronie ekranu — pauza, garderoba, misje i ustawienia.
 
-## Obiekty i zasady
-- **Liście monstery** — punkty.
-- **Serduszka** — dodatkowe życia. Jeżeli masz już maksymalnie 5 żyć, serduszko daje punkty zamiast kolejnego życia.
-- **Skaczące kozy** — można je „stompnąć” z góry, żeby dostać mocny boost i punkty. Kontakt z boku zabiera życie.
-- **Humbak** — specjalny bonus. Złapanie humbaka uruchamia mini-grę.
-- **Napisy „Pracu Pracu”** — przeszkody; kontakt zabiera życie lub w mini-grze odejmuje punkty.
-- **Stacje paliw Amic** — przeszkody z bezpiecznym dachem. Lądowanie na dachu wybija sowę jak katapulta, ale zderzenie z bokiem szkodzi.
-- **Dziury i ściany** — klasyczne przeszkody runnera.
+## Nowe systemy „Cute Polish”
 
-## Balans przeszkód
-Gra ma dodatkowy moduł balansu przeszkód. Wymusza on większy odstęp między kolejnymi przeszkodami blokującymi, ogranicza powtarzanie tego samego typu przeszkody i daje więcej czasu na reakcję, szczególnie na wyższych prędkościach.
+### Combo
 
-## Poziomy trudności
-- **Chill** — spokojniejszy rozbieg.
-- **Arcade** — główny tryb.
-- **Chaos** — większa prędkość i ciaśniejsze odstępy, ale nadal z minimalnym odstępem między przeszkodami.
+Kolejne dobre akcje zwiększają mnożnik od `×1` do `×5`. Combo rośnie przez:
 
-## Koniec gry i rekordy
-Startujesz z **3 życiami**. W trakcie gry możesz zdobywać kolejne życia przez zbieranie serduszek, maksymalnie do **5 żyć**. Po utracie wszystkich żyć pojawia się ekran wyniku. Najlepszy dystans i najlepszy wynik są zapisywane lokalnie w przeglądarce.
+- zbieranie liści,
+- bliskie uniki „O włos!”,
+- perfekcyjne lądowania.
+
+Utrata życia resetuje combo.
+
+### „O włos!”
+
+Bardzo bliskie minięcie dziury, ściany, stacji Amic lub napisu „Pracu Pracu” daje punkty i podtrzymuje combo.
+
+### Liście
+
+- zwykłe — podstawowe punkty,
+- złote — większa premia,
+- tęczowe — uruchamiają gorączkę monster.
+
+Po dłuższej serii zbierania może rozpocząć się **gorączka monster**, podczas której pojawia się więcej liści, ale nie więcej przeszkód.
+
+### Wydarzenia
+
+- **Deszcz monster** — krótka seria dodatkowych liści.
+- **Kozi maraton** — częstsze kozy.
+- Zmieniająca się pora dnia.
+
+### Dodatkowe życia
+
+Serduszko dodaje jedno życie do limitu pięciu. Przy pełnym limicie zostaje zamienione na punkty.
+
+## Obiekty
+
+- **Kozy** — stomp z góry daje mocne wybicie.
+- **Amic** — dach działa jak katapulta, bok jest niebezpieczny.
+- **Humbak** — uruchamia mini-grę bonusową.
+- **Pracu Pracu**, ściany i dziury — przeszkody.
+
+## Profil, kosmetyki i misje
+
+Wspólny profil działa we wszystkich trzech grach. Z poziomu garderoby można wybierać odblokowane dodatki, m.in. kokardkę, okulary, wianek, kapelusz, czapkę, szalik i plecak.
+
+Misje odblokowują kolejne kosmetyki. Postęp jest zapisywany automatycznie.
+
+## Audio i pauza
+
+- muzykę, efekty i komentarze sowy można wyłączyć,
+- gra ma pauzę,
+- dźwięk jest aktywowany dopiero po interakcji użytkownika.
+
+## Rekordy
+
+Zapisywane są:
+
+- najlepszy dystans,
+- najlepszy wynik,
+- statystyki wspólnego profilu.
+
+## Diagnostyka
+
+Dodaj `?debug=1` do adresu gry, aby zobaczyć liczbę przeszkód, prędkość, combo i aktywne wydarzenie.
