@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>SowieGry — Start</title>
+    <link rel="stylesheet" href="shared/cute-ui.css" />
     <style>
       :root {
         font-family: "Trebuchet MS", "Comic Sans MS", "Segoe UI", sans-serif;
@@ -40,6 +41,8 @@
         justify-content: space-between;
         gap: 24px;
         flex-wrap: wrap;
+        position: relative;
+        z-index: 2;
       }
 
       h1 {
@@ -54,11 +57,45 @@
         color: #5a5a70;
       }
 
+      .menu-actions {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+
+      .menu-button {
+        min-height: 52px;
+        padding: 12px 18px;
+        border: 0;
+        border-radius: 17px;
+        color: #2c2a32;
+        background: linear-gradient(145deg, #fff7d6, #ffe4ef);
+        box-shadow: 0 12px 26px rgba(70, 65, 98, 0.15), inset 0 0 0 2px rgba(255,255,255,.62);
+        font: 800 0.98rem/1.15 inherit;
+        cursor: pointer;
+        transition: transform 0.18s ease, box-shadow 0.18s ease;
+      }
+
+      .menu-button:hover,
+      .menu-button:focus-visible {
+        transform: translateY(-3px);
+        box-shadow: 0 17px 32px rgba(70, 65, 98, 0.22), inset 0 0 0 2px rgba(255,255,255,.8);
+      }
+
+      .menu-button span:first-child {
+        display: inline-block;
+        margin-right: 7px;
+        font-size: 1.25rem;
+        vertical-align: middle;
+      }
+
       .cards {
         margin-top: 36px;
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
         gap: 20px;
+        position: relative;
+        z-index: 2;
       }
 
       .game-card {
@@ -137,10 +174,25 @@
         text-align: center;
         font-size: 0.95rem;
         color: #7a7a8f;
+        position: relative;
+        z-index: 2;
+      }
+
+      .sowie-modal-intro {
+        margin: -4px 0 16px;
+        color: #656174;
+      }
+
+      @media (max-width: 640px) {
+        body { align-items: flex-start; }
+        .start-screen { width: 100%; min-height: 100svh; padding: 30px 18px 38px; border-radius: 0; }
+        header { align-items: stretch; }
+        .menu-actions, .menu-button { width: 100%; }
+        .cards { margin-top: 28px; }
       }
     </style>
   </head>
-  <body>
+  <body class="sowie-main-menu">
     <main class="start-screen">
       <div class="floating-band" aria-hidden="true">
         <span class="creature owl">🦉</span>
@@ -158,6 +210,12 @@
         <div>
           <h1>SowieGry</h1>
           <p class="subtitle">Wybierz swoją przygodę — słodkie zwierzaki już czekają!</p>
+        </div>
+        <div class="menu-actions">
+          <button id="cosmeticsButton" class="menu-button" type="button">
+            <span data-cosmetic-icon aria-hidden="true">🎀</span>
+            <span data-cosmetic-label>Garderoba sowy</span>
+          </button>
         </div>
       </header>
 
@@ -178,5 +236,8 @@
 
       <p class="footer-note">Miłej zabawy! ✨</p>
     </main>
+
+    <script src="shared/progress-reset.js"></script>
+    <script src="shared/main-menu.js"></script>
   </body>
 </html>
