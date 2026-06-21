@@ -1,66 +1,154 @@
-# Sowa Jumper — dokumentacja techniczna
+# SowaJumper — dokumentacja techniczna
 
-## Zakres
-`SowaJumper` jest samodzielną grą HTML/CSS/JavaScript bez frameworka. Główna logika, renderowanie i sterowanie znajdują się w `script.js`; `difficulty.js` dodaje poziomy trudności i ładuje moduły dodatkowe.
+## Architektura
 
-## Pliki
-- `index.html` — canvas gry, HUD, komunikat sterowania oraz ładowanie `script.js` i `difficulty.js`.
-- `styles.css` — pełnoekranowy layout, safe-area, blokada scrollowania, HUD i podpowiedzi sterowania dotykowego.
-- `script.js` — pętla gry, fizyka, generowanie świata, kolizje, bazowa mini-gra z humbakiem, rysowanie obiektów i rekordy.
-- `difficulty.js` — poziomy trudności, panel wyboru, skróty `1 / 2 / 3`, zapis wyboru oraz dynamiczne ładowanie modułów dodatkowych.
-- `extra-lives.js` — serduszka jako pickupy dodatkowych żyć.
-- `bonus-fix.js` — poprawiona mini-gra z humbakiem.
-- `safety-balance.js` — dodatkowe zabezpieczenie generowania platform i przeszkód.
-- `docs/README.md` — instrukcja dla gracza.
-- `docs/Documentation.md` — dokumentacja techniczna.
+`SowaJumper` jest grą Canvas 2D bez frameworka. Bazowy silnik znajduje się w `script.js`. `difficulty.js` dynamicznie ładuje wcześniejsze moduły, a `cute-loader.js` czeka na ich gotowość przed uruchomieniem reworku.
 
-## Stany gry
-- `title` — ekran tytułowy.
-- `playing` — właściwa gra.
-- `bonus` — mini-gra z humbakiem.
-- `gameover` — ekran końca gry.
+## Kolejność ładowania
+
+### Statyczna
+
+1. `script.js`
+2. `../shared/sowie-core.js`
+3. `../shared/sowie-runtime.js`
+4. `difficulty.js`
+5. `cute-loader.js`
+
+### Dynamiczna z `difficulty.js`
+
+1. `extra-lives.js`
+2. `bonus-fix.js`
+3. `safety-balance.js`
+
+### Dynamiczna z `cute-loader.js`
+
+1. `cute-rework.js`
+2. `bonus-lanes.js`
+3. `animation-polish.js`
+
+W `<head>` ładowane są także `styles.css`, `../shared/cute-ui.css` i `../shared/sowie-smoke-hook.js`.
 
 ## Poziomy trudności
-`difficulty.js` definiuje `chill`, `arcade` i `chaos`. Poziomy zmieniają liczbę żyć na starcie, grawitację, moc wybić oraz odstępy między platformami. Wybór jest zapisywany w `localStorage` pod kluczem `sowaJumperDifficulty`.
 
-## Balans bezpieczeństwa
-`safety-balance.js` nadpisuje `createPlatform()`, `spawnOnPlatform()`, `startGame()` i `initTitle()`.
+`JUMPER_DIFFICULTIES` zmienia:
 
-Moduł:
-- ogranicza maksymalne poziome przesunięcie między kolejnymi platformami,
-- wymusza normalną platformę po zbyt długiej serii trudnych platform,
-- usuwa nowy napis „Pracu Pracu”, jeśli pojawiłby się zbyt blisko lądowania,
-- usuwa nowy napis „Pracu Pracu”, jeśli pojawiłby się zbyt blisko poprzedniego napisu.
+- grawitację,
+- zwykłe wybicie,
+- wybicie kozy,
+- wybicie Amic,
+- liczbę żyć,
+- mnożnik odstępu platform.
 
-Celem jest ograniczenie sytuacji, w której układ platform i przeszkód wymaga nierealnego manewru.
+Wybór jest zapisany w `sowaJumperDifficulty`.
+
+## Bezpieczeństwo platform
+
+`safety-balance.js` kontroluje:
+
+- maksymalny poziomy skok między środkami platform,
+- serię platform ruchomych i kruszących się,
+- pozycję `Pracu Pracu`,
+- odległość kolejnych napisów.
+
+## Nowe platformy
+
+`cute-rework.js` rozszerza wyniki `createPlatform()` o:
+
+- `cushion`,
+- `cloud`,
+- `leafpad`,
+- `balcony`,
+- `rest`.
+
+`collidePlatforms()` jest opakowane tak, aby po standardowej detekcji zastosować dodatkowe wybicie i premie konkretnego typu.
+
+## Strefy wysokości
+
+`drawBackground()` jest rozszerzone o warstwy:
+
+- miasto poniżej 100 m,
+- dachy 100–250 m,
+- chmury 250–450 m,
+- noc 450–700 m,
+- sowie niebo powyżej 700 m.
+
+Są to warstwy dekoracyjne i nie wpływają na kolizje.
+
+## Combo i near miss
+
+- combo ma progi `×1`–`×5`,
+- perfekcyjne lądowanie jest wykrywane po odbiciu,
+- near miss dotyczy `Pracu Pracu`,
+- obrażenie resetuje serię,
+- statystyki trafiają do wspólnego profilu.
+
+## Liście
+
+Każdy nowy liść otrzymuje wariant:
+
+- `normal`,
+- `gold`,
+- `rainbow`.
+
+Tęczowy liść albo seria ośmiu zbiórek aktywuje gorączkę monster. Gorączka dodaje liście nad istniejącymi platformami.
 
 ## Dodatkowe życia
-`extra-lives.js` dodaje kolekcję serduszek. Serduszka pojawiają się nad platformami po osiągnięciu pewnej wysokości. Zebranie serduszka:
-- dodaje 1 życie, jeżeli gracz nie ma limitu,
-- daje punkty, jeżeli gracz ma już maksymalną liczbę żyć.
 
-Limit żyć jest oparty o `state.maxLives` i poziom trudności.
+`extra-lives.js` tworzy `jumperLifePickups`. Limit jest oparty na `state.maxLives`. Nadmiarowy pickup daje punkty.
 
-## Mini-gra z humbakiem
-`bonus-fix.js` nadpisuje funkcje mini-gry z humbakiem. Poprawiona wersja działa tak:
-- sowa jest przy dole ekranu i porusza się lewo/prawo,
-- monstery oraz napisy „Pracu Pracu” spadają z góry na dół,
-- gracz może realnie zbierać monstery i omijać przeszkody,
-- „Pracu Pracu” odejmuje punkty z bonusu,
-- po końcu bonusu gracz wraca do głównej gry z wybiciem i chwilową nietykalnością.
+## Mini-gra humbaka
 
-## Obiekty
-- Liście monstery — punkty.
-- Serduszka — dodatkowe życia albo punkty przy limicie.
-- Skaczące kozy — boost w górę.
-- Humbak — wejście do mini-gry.
-- „Pracu Pracu” — przeszkoda.
-- Amic — katapulta.
+### `bonus-fix.js`
+
+- obiekty spadają pionowo,
+- sowa porusza się poziomo,
+- wynik zależy od gracza.
+
+### `bonus-lanes.js`
+
+- trzy pasy,
+- spawn liści i przeszkód na środkach pasów,
+- kontrola pionowych grup przeszkód,
+- brak blokady wszystkich pasów,
+- ostrzeżenia u góry ekranu.
+
+## Animacja
+
+`animation-polish.js` dodaje:
+
+- squash-and-stretch,
+- wydłużenie podczas wybicia,
+- przechylenie zależne od `owl.vx`,
+- gwiazdki po obrażeniu,
+- efekty dźwiękowe.
+
+Kosmetyki rysuje wspólny `SowieCore`.
+
+## Profil i misje
+
+Gra raportuje:
+
+- liście,
+- dodatkowe życia,
+- near missy,
+- maksymalne combo,
+- wysokość,
+- wynik mini-gry.
+
+Misja 250 m odblokowuje plecak.
+
+## Pauza i audio
+
+Adapter przekazany do `SowieCore.registerGame()` zatrzymuje aktualizacje `title`, `playing` i `bonus`. Muzyka używa motywu `jumper`.
+
+## Diagnostyka i testy
+
+- `?debug=1`,
+- `tests/smoke.html`,
+- `.github/workflows/js-check.yml`.
 
 ## Rekordy
-Gra zapisuje rekordy w `localStorage`:
-- `sowaJumperBestScore`
-- `sowaJumperBestHeight`
 
-## Zasady utrzymania
-Przy zmianach mechaniki, sterowania, UI lub obiektów aktualizuj `docs/README.md` oraz `docs/Documentation.md`.
+- `sowaJumperBestScore`,
+- `sowaJumperBestHeight`,
+- wspólny `sowieGryProfile`.
