@@ -26,6 +26,7 @@
 2. `bonus-lanes.js`
 3. `animation-polish.js`
 4. `platform-expansion.js`
+5. `pause-final.js`
 
 W `<head>` ładowane są również `styles.css`, `../shared/cute-ui.css` i `../shared/sowie-smoke-hook.js`.
 
@@ -54,6 +55,10 @@ Punkty odpoczynku pojawiają się w kolejnych przedziałach wysokości i dają c
 - `springGoat` — kozia trampolina z mocnym wybiciem.
 
 Moduł opakowuje `createPlatform()`, `updateGame()`, `collidePlatforms()` i `drawPlatform()` po załadowaniu wcześniejszych systemów.
+
+## `pause-final.js`
+
+Ostatnia warstwa `updateGame()`, `updateBonus()` i `updateTitle()`. Zatrzymuje także animację platform tymczasowych, bąbelki oraz pozostałe późne systemy podczas pauzy.
 
 ## Strefy wysokości
 
