@@ -2,7 +2,7 @@
 
 ## Cel gry
 
-`Sowa3` to trzytorowy runner w perspektywie wgłąb ekranu. Sowa biegnie przez trzy różne plansze, zbiera liście, zdobywa życia i omija przeszkody, aż dotrze do ogródka działkowego z basenem.
+`Sowa3` to trzytorowy runner w perspektywie wgłąb ekranu. Sowa biegnie przez cztery różne plansze, zbiera liście, zdobywa życia i omija przeszkody, aż dotrze do ogródka działkowego z basenem.
 
 ## Sterowanie
 
@@ -40,6 +40,16 @@ Polski dyskont bez kopiowania konkretnego logo:
 - kot wysoko na balkonie,
 - gołębie w górnej części ekranu,
 - dziki jako przeszkody.
+
+### Stacja paliw Amic
+
+Plansza jest wzorowana na jasnych stacjach Amic z białym zadaszeniem, zielonym pasem, żółtym akcentem i czerwonym logo:
+
+- sklep i pełna stacja stanowią scenografię w tle,
+- środkowy korytarz biegnie po asfaltowym podjeździe pod zadaszeniem,
+- na tej planszy nie pojawia się miniaturowa stacja Amic jako przeszkoda,
+- przeszkodami są wyłącznie dystrybutory paliwa, samochody i worki ze śmieciami,
+- liście oraz serduszka nadal działają jak na pozostałych planszach.
 
 ## Czytelność trasy
 
@@ -107,7 +117,7 @@ Wspólny profil działa również w `SowaRunner` i `SowaJumper`. Garderoba pozwa
 
 ## Audio i pauza
 
-- osobna muzyka dla każdej planszy,
+- motyw muzyczny zmienia się między planszami,
 - efekty dla liści, telefonów, dzików, obrażeń i plusku,
 - możliwość wyłączenia muzyki, efektów i komentarzy,
 - pauza zatrzymuje również animację finałową.
