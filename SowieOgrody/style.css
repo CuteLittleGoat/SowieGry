@@ -1,0 +1,139 @@
+:root {
+  color: #2b2733;
+  background: #eafbea;
+  font-family: "Trebuchet MS", "Comic Sans MS", "Segoe UI", system-ui, sans-serif;
+  --garden-card: rgba(255, 255, 255, .86);
+  --garden-line: rgba(43, 39, 51, .09);
+  --garden-shadow: 0 20px 50px rgba(75, 91, 83, .18);
+}
+
+* { box-sizing: border-box; }
+html, body { min-height: 100%; }
+body {
+  margin: 0;
+  min-height: 100svh;
+  overflow-x: hidden;
+  background:
+    radial-gradient(circle at 20% 0%, rgba(255, 244, 214, .9), transparent 30%),
+    radial-gradient(circle at 85% 12%, rgba(191, 231, 255, .95), transparent 34%),
+    linear-gradient(145deg, #ecffe6, #dff6ff 52%, #fff1f7);
+}
+button { font: inherit; -webkit-tap-highlight-color: transparent; }
+.garden-shell {
+  width: min(1440px, 100%);
+  min-height: 100svh;
+  margin: 0 auto;
+  padding: max(14px, env(safe-area-inset-top)) max(14px, env(safe-area-inset-right)) max(18px, env(safe-area-inset-bottom)) max(14px, env(safe-area-inset-left));
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(360px, 430px);
+  gap: 16px;
+}
+.hero-panel, .management-panel {
+  min-width: 0;
+  border-radius: 30px;
+  background: rgba(255, 255, 255, .62);
+  box-shadow: var(--garden-shadow), inset 0 0 0 2px rgba(255,255,255,.55);
+  backdrop-filter: blur(10px);
+}
+.hero-panel {
+  display: grid;
+  grid-template-rows: auto auto minmax(360px, 1fr) auto;
+  gap: 12px;
+  padding: 18px;
+}
+.garden-title { display: flex; justify-content: space-between; align-items: flex-start; gap: 14px; }
+.eyebrow { margin: 0 0 4px; color: #53825d; font-size: .76rem; font-weight: 900; letter-spacing: .12em; text-transform: uppercase; }
+h1 { margin: 0; font-size: clamp(2rem, 4vw, 3.4rem); line-height: .95; }
+.garden-log {
+  max-width: min(48vw, 440px);
+  margin: 0;
+  padding: 10px 14px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, .72);
+  color: #53605b;
+  font-weight: 800;
+  font-size: .95rem;
+  box-shadow: inset 0 0 0 1px var(--garden-line);
+}
+.hud { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px; }
+.hud-card { min-width: 0; padding: 10px 12px; border-radius: 18px; background: var(--garden-card); box-shadow: inset 0 0 0 1px var(--garden-line); }
+.hud-card span { display: block; color: #69786f; font-size: .75rem; font-weight: 900; text-transform: uppercase; letter-spacing: .04em; }
+.hud-card strong { display: block; min-width: 0; overflow: hidden; text-overflow: ellipsis; color: #2b2733; font-size: clamp(1rem, 1.7vw, 1.3rem); line-height: 1.25; white-space: nowrap; }
+.canvas-card { min-height: 360px; overflow: hidden; border-radius: 28px; background: rgba(255,255,255,.58); box-shadow: inset 0 0 0 2px rgba(255,255,255,.72), 0 12px 32px rgba(75,91,83,.13); }
+#gardenCanvas { display: block; width: 100%; height: 100%; min-height: 360px; cursor: pointer; touch-action: manipulation; }
+.quick-actions { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.quick-actions button, .tab-bar button, .shop-card button, .modal-actions button, .danger-action {
+  border: 0;
+  border-radius: 18px;
+  color: #2b2733;
+  background: linear-gradient(145deg, #fff8d7, #ffe7f0);
+  box-shadow: 0 12px 25px rgba(75, 91, 83, .16), inset 0 0 0 2px rgba(255,255,255,.55);
+  cursor: pointer;
+  font-weight: 900;
+}
+.quick-actions button { min-height: 58px; display: flex; justify-content: center; align-items: center; gap: 9px; }
+.quick-actions button span { font-size: 1.35rem; }
+button:disabled { cursor: not-allowed; opacity: .48; filter: grayscale(.25); }
+button:not(:disabled):active { transform: translateY(1px) scale(.99); }
+.management-panel { display: grid; grid-template-rows: auto minmax(0, 1fr); max-height: calc(100svh - 32px); overflow: hidden; }
+.tab-bar { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; padding: 12px; border-bottom: 1px solid var(--garden-line); }
+.tab-bar button { min-height: 48px; padding: 8px 6px; border-radius: 15px; background: rgba(255,255,255,.74); font-size: .8rem; }
+.tab-bar button span { display: block; font-size: 1.1rem; line-height: 1; }
+.tab-bar button.is-active { background: linear-gradient(145deg, #dfffee, #fff4d6); box-shadow: inset 0 0 0 2px rgba(79, 175, 104, .32), 0 10px 20px rgba(75, 91, 83, .12); }
+.panel-content { min-height: 0; overflow: auto; padding: 12px; scrollbar-width: thin; }
+.panel-intro { display: grid; gap: 4px; margin-bottom: 10px; padding: 12px; border-radius: 18px; background: rgba(255,255,255,.72); box-shadow: inset 0 0 0 1px var(--garden-line); }
+.panel-intro strong { font-size: .98rem; }
+.panel-intro span { color: #65746c; font-size: .88rem; line-height: 1.35; }
+.shop-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(176px, 1fr)); gap: 10px; }
+.shop-grid.compact { grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); }
+.shop-card { min-width: 0; display: grid; gap: 9px; padding: 12px; border-radius: 20px; background: rgba(255,255,255,.78); box-shadow: inset 0 0 0 1px var(--garden-line), 0 10px 22px rgba(75,91,83,.08); }
+.shop-card.is-locked { opacity: .62; }
+.shop-card.is-bought { background: rgba(223, 255, 238, .76); }
+.card-title { min-width: 0; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 7px; }
+.card-title span { font-size: 1.25rem; }
+.card-title strong { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.card-title em { color: #4faf68; font-style: normal; font-weight: 900; }
+.shop-card p { margin: 0; color: #68746f; font-size: .86rem; line-height: 1.3; }
+.mini-table, .data-table { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 5px 10px; align-items: center; }
+.mini-table { padding: 8px; border-radius: 14px; background: rgba(247, 250, 245, .72); }
+.mini-table span, .data-table span { min-width: 0; color: #6b786f; font-size: .78rem; font-weight: 800; }
+.mini-table strong, .data-table strong { min-width: 0; overflow: hidden; text-align: right; text-overflow: ellipsis; white-space: nowrap; }
+.button-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.button-row.wide { grid-template-columns: repeat(2, minmax(0, 1fr)); margin-bottom: 10px; }
+.shop-card button, .danger-action { min-height: 40px; padding: 8px 10px; font-size: .86rem; }
+.upgrade-section h3, .panel-content h3 { margin: 16px 4px 8px; font-size: 1rem; }
+.data-table { margin-bottom: 12px; padding: 12px; border-radius: 18px; background: rgba(255,255,255,.76); box-shadow: inset 0 0 0 1px var(--garden-line); }
+.data-table > div { display: contents; }
+.danger-action { width: 100%; margin-bottom: 10px; background: linear-gradient(145deg, #ffe3e3, #fff4d6); }
+.garden-modal-backdrop { position: fixed; z-index: 7000; inset: 0; display: grid; place-items: center; padding: 18px; background: rgba(28, 31, 39, .48); backdrop-filter: blur(8px); }
+.garden-modal-backdrop[hidden] { display: none; }
+.garden-modal { width: min(92vw, 520px); padding: 22px; border-radius: 28px; background: linear-gradient(160deg, rgba(255,255,255,.98), rgba(235,255,230,.96)); box-shadow: 0 24px 70px rgba(20, 22, 30, .32); }
+.garden-modal h2 { margin: 0 0 10px; }
+.garden-modal p { color: #59685f; line-height: 1.45; }
+.modal-actions { display: flex; justify-content: flex-end; gap: 9px; margin-top: 16px; }
+.modal-actions button { min-height: 44px; min-width: 118px; padding: 10px 16px; }
+.sowie-toolbar { top: max(18px, env(safe-area-inset-top)) !important; }
+.sowie-toast-stack { top: max(70px, calc(env(safe-area-inset-top) + 62px)) !important; }
+@media (max-width: 1060px) {
+  .garden-shell { grid-template-columns: 1fr; }
+  .management-panel { max-height: none; }
+  .panel-content { max-height: 56svh; }
+}
+@media (max-width: 720px) {
+  .garden-shell { padding: 8px; gap: 10px; }
+  .hero-panel, .management-panel { border-radius: 22px; }
+  .hero-panel { padding: 12px; grid-template-rows: auto auto minmax(290px, 46svh) auto; }
+  .garden-title { display: grid; }
+  .garden-log { max-width: none; font-size: .85rem; }
+  .hud { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .hud-card { padding: 8px; border-radius: 14px; }
+  .hud-card span { font-size: .66rem; }
+  .canvas-card, #gardenCanvas { min-height: 290px; }
+  .quick-actions { grid-template-columns: 1fr; }
+  .quick-actions button { min-height: 50px; }
+  .tab-bar { grid-template-columns: repeat(5, minmax(0, 1fr)); padding: 8px; gap: 4px; }
+  .tab-bar button { min-height: 44px; font-size: .68rem; padding: 5px 3px; }
+  .panel-content { padding: 8px; max-height: 62svh; }
+  .shop-grid, .shop-grid.compact { grid-template-columns: 1fr; }
+  .shop-card { border-radius: 17px; }
+}
