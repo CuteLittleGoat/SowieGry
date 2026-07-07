@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no" />
+  <meta name="theme-color" content="#dfffee" />
+  <title>Sowie Ogrody — idle incremental</title>
+  <script src="../shared/progress-reset.js"></script>
+  <script src="../shared/sowie-smoke-hook.js"></script>
+  <link rel="stylesheet" href="../shared/cute-ui.css" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="garden-shell" aria-label="Sowie Ogrody">
+    <section class="hero-panel" aria-label="Ogród sowy">
+      <div class="garden-title">
+        <div>
+          <p class="eyebrow">idle / incremental</p>
+          <h1>Sowie Ogrody</h1>
+        </div>
+        <p id="gardenLog" class="garden-log" aria-live="polite">Sadzenie w toku…</p>
+      </div>
+
+      <section class="hud" aria-label="Zasoby">
+        <div class="hud-card"><span>Liście</span><strong id="leavesValue">0</strong></div>
+        <div class="hud-card"><span>Liście/s</span><strong id="lpsValue">0/s</strong></div>
+        <div class="hud-card"><span>Woda</span><strong id="waterValue">0</strong></div>
+        <div class="hud-card"><span>Woda/s</span><strong id="wpsValue">0/s</strong></div>
+        <div class="hud-card"><span>Strefa</span><strong id="zoneValue">Parapet</strong></div>
+        <div class="hud-card"><span>Zapis</span><strong id="saveValue">Gotowe</strong></div>
+      </section>
+
+      <div class="canvas-card">
+        <canvas id="gardenCanvas" aria-label="Animowany ogród sowy" role="img"></canvas>
+      </div>
+
+      <section class="quick-actions" aria-label="Szybkie akcje">
+        <button id="clickButton" type="button"><span>🍃</span><strong>Zbierz liście</strong></button>
+        <button id="waterButton" type="button"><span>🚿</span><strong>Podlej (0/3)</strong></button>
+        <button id="prestigeButton" type="button" hidden><span>🌰</span><strong>Przesadzanie</strong></button>
+      </section>
+    </section>
+
+    <aside class="management-panel" aria-label="Panel zarządzania ogrodem">
+      <nav id="tabBar" class="tab-bar" aria-label="Zakładki"></nav>
+      <section id="panelContent" class="panel-content" aria-live="polite"></section>
+    </aside>
+  </main>
+
+  <section id="offlineModal" class="garden-modal-backdrop" hidden>
+    <article class="garden-modal">
+      <h2>Offline progress 🦉</h2>
+      <p id="offlineText"></p>
+      <div class="modal-actions"><button id="offlineClose" type="button">Odbierz</button></div>
+    </article>
+  </section>
+
+  <section id="prestigeModal" class="garden-modal-backdrop" hidden>
+    <article class="garden-modal danger-modal">
+      <h2>Wielkie Przesadzanie 🌰</h2>
+      <p id="prestigeText"></p>
+      <div class="modal-actions">
+        <button id="prestigeCancel" type="button">Jeszcze nie</button>
+        <button id="prestigeConfirm" type="button" class="danger-action">Przesadź ogród</button>
+      </div>
+    </article>
+  </section>
+
+  <script src="../shared/sowie-core.js"></script>
+  <script src="../shared/sowie-runtime.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
