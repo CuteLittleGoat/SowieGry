@@ -62,7 +62,7 @@ h1 { margin: 0; font-size: clamp(2rem, 4vw, 3.4rem); line-height: .95; }
 .canvas-card { min-height: 360px; overflow: hidden; border-radius: 28px; background: rgba(255,255,255,.58); box-shadow: inset 0 0 0 2px rgba(255,255,255,.72), 0 12px 32px rgba(75,91,83,.13); }
 #gardenCanvas { display: block; width: 100%; height: 100%; min-height: 360px; cursor: pointer; touch-action: manipulation; }
 .quick-actions { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
-.quick-actions button, .tab-bar button, .shop-card button, .modal-actions button, .danger-action {
+.quick-actions button, .tab-bar button, .shop-card button, .skill-node button, .prestige-node button, .modal-actions button, .danger-action {
   border: 0;
   border-radius: 18px;
   color: #2b2733;
@@ -86,22 +86,53 @@ button:not(:disabled):active { transform: translateY(1px) scale(.99); }
 .panel-intro span { color: #65746c; font-size: .88rem; line-height: 1.35; }
 .shop-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(176px, 1fr)); gap: 10px; }
 .shop-grid.compact { grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); }
-.shop-card { min-width: 0; display: grid; gap: 9px; padding: 12px; border-radius: 20px; background: rgba(255,255,255,.78); box-shadow: inset 0 0 0 1px var(--garden-line), 0 10px 22px rgba(75,91,83,.08); }
-.shop-card.is-locked { opacity: .62; }
-.shop-card.is-bought { background: rgba(223, 255, 238, .76); }
+.shop-card, .skill-node, .prestige-node { min-width: 0; display: grid; gap: 9px; padding: 12px; border-radius: 20px; background: rgba(255,255,255,.78); box-shadow: inset 0 0 0 1px var(--garden-line), 0 10px 22px rgba(75,91,83,.08); }
+.shop-card.is-locked, .skill-node.is-locked, .prestige-node.is-locked { opacity: .62; }
+.shop-card.is-bought, .skill-node.is-bought, .prestige-node.is-bought { background: rgba(223, 255, 238, .76); box-shadow: inset 0 0 0 2px rgba(79, 175, 104, .25), 0 10px 22px rgba(75,91,83,.08); }
 .card-title { min-width: 0; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 7px; }
 .card-title span { font-size: 1.25rem; }
 .card-title strong { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .card-title em { color: #4faf68; font-style: normal; font-weight: 900; }
-.shop-card p { margin: 0; color: #68746f; font-size: .86rem; line-height: 1.3; }
+.shop-card p, .skill-node p, .prestige-node p { margin: 0; color: #68746f; font-size: .86rem; line-height: 1.3; }
 .mini-table, .data-table { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 5px 10px; align-items: center; }
 .mini-table { padding: 8px; border-radius: 14px; background: rgba(247, 250, 245, .72); }
 .mini-table span, .data-table span { min-width: 0; color: #6b786f; font-size: .78rem; font-weight: 800; }
 .mini-table strong, .data-table strong { min-width: 0; overflow: hidden; text-align: right; text-overflow: ellipsis; white-space: nowrap; }
 .button-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
 .button-row.wide { grid-template-columns: repeat(2, minmax(0, 1fr)); margin-bottom: 10px; }
-.shop-card button, .danger-action { min-height: 40px; padding: 8px 10px; font-size: .86rem; }
+.shop-card button, .skill-node button, .prestige-node button, .danger-action { min-height: 40px; padding: 8px 10px; font-size: .86rem; }
 .upgrade-section h3, .panel-content h3 { margin: 16px 4px 8px; font-size: 1rem; }
+.skill-tree, .prestige-tree {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 10px;
+  padding-left: 12px;
+}
+.skill-tree::before, .prestige-tree::before {
+  content: "";
+  position: absolute;
+  left: 3px;
+  top: 12px;
+  bottom: 12px;
+  width: 4px;
+  border-radius: 999px;
+  background: linear-gradient(#8fd36b, #ffd65a, #ffb1c7);
+  opacity: .55;
+}
+.skill-node, .prestige-node { position: relative; }
+.skill-node::before, .prestige-node::before {
+  content: "";
+  position: absolute;
+  left: -12px;
+  top: 28px;
+  width: 12px;
+  height: 4px;
+  border-radius: 999px;
+  background: rgba(79, 175, 104, .35);
+}
+.prestige-node { background: linear-gradient(160deg, rgba(255,255,255,.82), rgba(255,244,214,.78)); }
+.prestige-node.is-bought { background: linear-gradient(160deg, rgba(223,255,238,.88), rgba(255,244,214,.82)); }
 .data-table { margin-bottom: 12px; padding: 12px; border-radius: 18px; background: rgba(255,255,255,.76); box-shadow: inset 0 0 0 1px var(--garden-line); }
 .data-table > div { display: contents; }
 .danger-action { width: 100%; margin-bottom: 10px; background: linear-gradient(145deg, #ffe3e3, #fff4d6); }
@@ -134,6 +165,6 @@ button:not(:disabled):active { transform: translateY(1px) scale(.99); }
   .tab-bar { grid-template-columns: repeat(5, minmax(0, 1fr)); padding: 8px; gap: 4px; }
   .tab-bar button { min-height: 44px; font-size: .68rem; padding: 5px 3px; }
   .panel-content { padding: 8px; max-height: 62svh; }
-  .shop-grid, .shop-grid.compact { grid-template-columns: 1fr; }
-  .shop-card { border-radius: 17px; }
+  .shop-grid, .shop-grid.compact, .skill-tree, .prestige-tree { grid-template-columns: 1fr; }
+  .shop-card, .skill-node, .prestige-node { border-radius: 17px; }
 }
