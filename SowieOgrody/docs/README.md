@@ -4,7 +4,7 @@
 
 `Sowie Ogrody` to rozbudowany clicker / idle incremental. Sowa zaczyna od małego parapetu i stopniowo rozwija balkon, działkę, basen z humbakiem, szklarnię, centrum ogrodnicze oraz prestiżowe arboretum.
 
-Celem jest zbieranie liści monster, kupowanie roślin, odblokowywanie automatyzacji, używanie konewki, korzystanie z eventów i wykonywanie **Wielkiego Przesadzania**, czyli prestiżu.
+Celem jest zbieranie liści monster, kupowanie roślin, rozwijanie zwykłych drzewek skilli, odblokowywanie automatyzacji, używanie konewki, korzystanie z eventów i wykonywanie **Wielkiego Przesadzania**, czyli prestiżu.
 
 ## Sterowanie
 
@@ -12,7 +12,7 @@ Celem jest zbieranie liści monster, kupowanie roślin, odblokowywanie automatyz
 - **Przycisk „Zbierz liście”** — alternatywne ręczne zbieranie.
 - **Przycisk „Podlej”** — używa konewki i daje czasowy mnożnik produkcji.
 - **Klik / tap na aktywny event na canvasie** — odbiera złoty liść, plusk, dostawę lub inny bonus.
-- **Zakładki panelu** — rośliny, ulepszenia, automatyzacja, prestiż, statystyki.
+- **Zakładki panelu** — rośliny, rozwój, automatyzacja, prestiż, statystyki.
 - **Wspólne przyciski SowieCore** — pauza, garderoba, misje i ustawienia.
 
 ## Główna pętla
@@ -20,18 +20,19 @@ Celem jest zbieranie liści monster, kupowanie roślin, odblokowywanie automatyz
 1. Klikaj ogród, żeby zebrać pierwsze liście.
 2. Kup pierwsze rośliny.
 3. Rośliny zaczynają produkować liście na sekundę.
-4. Kup ulepszenia produkcji i kliknięć.
+4. Kup skille w zwykłych drzewkach rozwoju.
 5. Odblokuj konewkę i podlewaj rośliny.
 6. Kup automatyzację, żeby ograniczyć ręczne klikanie.
 7. Wracaj po offline progress.
 8. Odblokuj wodę, humbaka, eventy i centrum ogrodnicze.
-9. Po osiągnięciu wysokiego progu wykonaj Wielkie Przesadzanie.
+9. W obecnym cyklu wypracuj nasiona prestiżu.
+10. Wykonaj Wielkie Przesadzanie i kup stałe ulepszenia w drzewku prestiżu.
 
 ## Zasoby
 
 ### Liście
 
-Podstawowa waluta gry. Służy do kupowania roślin i ulepszeń.
+Podstawowa waluta gry. Służy do kupowania roślin i zwykłych ulepszeń danego cyklu.
 
 ### Woda
 
@@ -39,7 +40,18 @@ Drugi zasób. Pojawia się po zakupie zraszaczy i basenu humbaka. Jest używana 
 
 ### Nasiona prestiżu
 
-Stała waluta zdobywana przez Wielkie Przesadzanie. Służy do kupowania ulepszeń prestiżowych.
+Stała waluta zdobywana przez Wielkie Przesadzanie. Ich liczba zależy od liści wypracowanych w obecnym cyklu. Po prestiżu można je wydawać na stałe ulepszenia, które zostają na zawsze.
+
+## Zwykłe drzewka rozwoju
+
+Zakładka **Rozwój** zawiera zwykłe drzewka skilli obecnego cyklu:
+
+- **Drzewko ręcznych zbiorów** — wzmacnia kliknięcia.
+- **Drzewko produkcji** — wzmacnia rośliny i konkretne strefy.
+- **Drzewko konewki i wody** — odblokowuje podlewanie, zraszacze, wodę i humbaka.
+- **Drzewko automatyzacji cyklu** — odblokowuje auto-zbiory, auto-kliknięcia, kozę, dostawy i auto-buy.
+
+Te skille są celowo **zwykłe**: Wielkie Przesadzanie je resetuje, tak jak rośliny i aktualne zasoby.
 
 ## Konewka
 
@@ -52,7 +64,7 @@ Podlewanie:
 - tworzy efekty plusku,
 - zwiększa statystykę podlewania.
 
-Ładunki konewki odnawiają się wolno, a zraszacze przyspieszają regenerację.
+Ładunki konewki odnawiają się wolno, a zraszacze i prestiżowe ulepszenia wodne przyspieszają regenerację.
 
 ## Sowa w szklarni
 
@@ -89,26 +101,37 @@ Eventy nie są obowiązkowe, ale aktywny gracz może dzięki nim przyspieszyć r
 
 Gra zapisuje czas ostatniej sesji. Po powrocie nalicza produkcję offline i pokazuje modal z podsumowaniem.
 
-Offline progress ma limit i skuteczność. Ulepszenia zwiększają oba parametry.
+Offline progress ma limit i skuteczność. Zwykłe oraz prestiżowe ulepszenia mogą zwiększać oba parametry.
 
-## Prestiż
+## Prestiż i stałe drzewko prestiżu
 
-Po zebraniu dużej liczby liści lifetime można wykonać **Wielkie Przesadzanie**.
+Po zebraniu dużej liczby liści w obecnym cyklu można wykonać **Wielkie Przesadzanie**.
 
 Resetuje:
 
 - aktualne liście,
 - wodę,
 - zwykłe rośliny,
-- zwykłe ulepszenia.
+- zwykłe ulepszenia,
+- zwykłe drzewka rozwoju,
+- aktywne eventy.
 
 Zachowuje:
 
 - nasiona prestiżu,
-- ulepszenia prestiżowe,
-- statystyki,
+- poziomy w drzewku prestiżu,
+- statystyki lifetime,
 - osiągnięcia,
 - wspólny profil i kosmetyki.
+
+Drzewko prestiżu ma stałe gałęzie:
+
+- **Korzenie** — globalna produkcja, szybszy start, więcej nasion w kolejnych cyklach.
+- **Woda** — mocniejsza woda, lepsza konewka, silniejsze pluski humbaka.
+- **Idle** — skuteczniejszy i dłuższy offline progress.
+- **Auto** — lepsza koza, częstsze dostawy i skuteczniejszy auto-buy.
+
+Te ulepszenia są permanentne i przyspieszają każdy nowy cykl po prestiżu.
 
 ## Zapis
 
