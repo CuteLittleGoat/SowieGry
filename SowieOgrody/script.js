@@ -1,12 +1,13 @@
 (() => {
   "use strict";
+
   const KEY = "sowieOgrodySave";
-  const VERSION = 1;
+  const VERSION = 2;
   const core = window.SowieCore;
   const $ = (id) => document.getElementById(id);
+
   const canvas = $("gardenCanvas");
   const ctx = canvas.getContext("2d");
-  const hud = { leaves: $("leavesValue"), lps: $("lpsValue"), water: $("waterValue"), wps: $("wpsValue"), zone: $("zoneValue"), save: $("saveValue") };
   const panel = $("panelContent");
   const tabsNode = $("tabBar");
   const logNode = $("gardenLog");
@@ -16,150 +17,281 @@
   const offlineText = $("offlineText");
   const prestigeModal = $("prestigeModal");
   const prestigeText = $("prestigeText");
+  const hud = {
+    leaves: $("leavesValue"),
+    lps: $("lpsValue"),
+    water: $("waterValue"),
+    wps: $("wpsValue"),
+    zone: $("zoneValue"),
+    save: $("saveValue"),
+  };
 
-  const zones = [
-    ["parapet", "Parapet", 0, 0, 0], ["balcony", "Balkon", 1000, 0, 0], ["plot", "Działka", 50000, 0, 0],
-    ["pool", "Basen", 250000, 0, 0], ["greenhouse", "Szklarnia", 2000000, 1000, 0], ["center", "Centrum", 50000000, 0, 0], ["arboretum", "Arboretum", 0, 0, 1]
+  const ZONES = [
+    { id: "parapet", name: "Parapet", leaves: 0, water: 0, prestige: 0 },
+    { id: "balcony", name: "Balkon", leaves: 1000, water: 0, prestige: 0 },
+    { id: "plot", name: "Działka", leaves: 50000, water: 0, prestige: 0 },
+    { id: "pool", name: "Basen", leaves: 250000, water: 0, prestige: 0 },
+    { id: "greenhouse", name: "Szklarnia", leaves: 2000000, water: 1000, prestige: 0 },
+    { id: "center", name: "Centrum", leaves: 50000000, water: 0, prestige: 0 },
+    { id: "arboretum", name: "Arboretum", leaves: 0, water: 0, prestige: 1 },
   ];
-  const plants = [
-    { id: "monstera", name: "Monstera", zone: "parapet", icon: "🌿", cost: 10, prod: .1, grow: 1.12, color: "#55a96b" },
-    { id: "pilea", name: "Pilea", zone: "parapet", icon: "🪴", cost: 75, prod: .8, grow: 1.13, color: "#72bd68" },
+
+  const PLANTS = [
+    { id: "monstera", name: "Monstera", zone: "parapet", icon: "🌿", cost: 10, prod: 0.1, grow: 1.12, color: "#55a96b" },
+    { id: "pilea", name: "Pilea", zone: "parapet", icon: "🪴", cost: 75, prod: 0.8, grow: 1.13, color: "#72bd68" },
     { id: "fern", name: "Paproć", zone: "balcony", icon: "🌱", cost: 450, prod: 4, grow: 1.14, color: "#4b9e72" },
     { id: "alocasia", name: "Alokazja", zone: "balcony", icon: "🍃", cost: 2500, prod: 18, grow: 1.15, color: "#417b64" },
     { id: "cactus", name: "Kaktus Pracu", zone: "plot", icon: "🌵", cost: 15000, prod: 90, grow: 1.15, color: "#5ba760" },
     { id: "orchid", name: "Storczyk pluskowy", zone: "pool", icon: "🌸", cost: 120000, prod: 650, grow: 1.16, color: "#d96faf" },
     { id: "bonsai", name: "Bonsai cierpliwości", zone: "greenhouse", icon: "🌳", cost: 1000000, prod: 5000, grow: 1.16, color: "#3f8b5b" },
     { id: "mutant", name: "Mutant monstera", zone: "greenhouse", icon: "🪴", cost: 8000000, prod: 42000, grow: 1.17, color: "#276f4f" },
-    { id: "goldTree", name: "Drzewko złotych liści", zone: "center", icon: "🍂", cost: 75000000, prod: 420000, grow: 1.18, color: "#caa34a" }
+    { id: "goldTree", name: "Drzewko złotych liści", zone: "center", icon: "🍂", cost: 75000000, prod: 420000, grow: 1.18, color: "#caa34a" },
   ];
-  const upgrades = [
-    ["softGloves", "click", "🧤", "Miękkie rękawiczki", 25, "Kliknięcia x2.", { click: 2 }],
-    ["leafBasket", "click", "🧺", "Koszyk na liście", 250, "Kliknięcia x3.", { click: 3 }],
-    ["fastBeak", "click", "🦉", "Szybki dzióbek", 2000, "Kliknięcia x5.", { click: 5 }],
-    ["gardenRhythm", "click", "🎵", "Rytm ogrodu", 20000, "Kliknięcie daje 1% LPS.", { clickLps: .01 }],
-    ["betterSoil", "production", "🟫", "Lepsza ziemia", 150, "Wszystkie rośliny x1.5.", { global: 1.5 }],
-    ["cuteLabels", "production", "🏷️", "Urocze etykietki", 1000, "Monstera i Pilea x2.", { plant: { monstera: 2, pilea: 2 } }],
-    ["balconyShelves", "production", "🪟", "Półki balkonowe", 8000, "Rośliny balkonowe x2.", { zone: "balcony", zoneMult: { balcony: 2 } }],
-    ["compostBox", "production", "🪱", "Kompostownik", 45000, "Globalna produkcja x2.", { zone: "plot", global: 2 }],
-    ["greenhouseLamps", "production", "💡", "Lampy szklarniowe", 1500000, "Szklarnia x3.", { zone: "greenhouse", zoneMult: { greenhouse: 3 } }],
-    ["monsterFertilizer", "production", "✨", "Nawóz monster", 12000000, "Globalna produkcja x2.", { zone: "greenhouse", global: 2 }],
-    ["wateringCan", "water", "🚿", "Konewka sowy", 300, "Odblokowuje podlewanie. Sowa w szklarni nosi słomkowy kapelusz.", { can: 1 }],
-    ["smallSprinkler", "water", "💧", "Mały zraszacz", 5000, "+0.1 wody/s i ładowanie konewki.", { zone: "balcony", wps: .1, canRegen: .018 }],
-    ["bigSprinkler", "water", "💦", "Duży zraszacz", 80000, "+1 wody/s i lepszy offline.", { zone: "plot", wps: 1, off: .15, cap: 14400, canRegen: .05 }],
-    ["whalePool", "water", "🐋", "Basen humbaka", 250000, "+2 wody/s i event plusku.", { zone: "pool", wps: 2, whale: 1 }],
-    ["autoHarvestI", "automation", "🪣", "Pomocna konewka", 3500, "Auto-zbiory co 5 s.", { zone: "balcony", harvest: 5 }],
-    ["autoHarvestII", "automation", "🌧️", "Pracowity zraszacz", 65000, "Auto-zbiory co 2 s.", { zone: "plot", harvest: 2 }],
-    ["autoClicker", "automation", "⏱️", "Sowie tykanie", 120000, "Auto-kliknięcie 1/s.", { zone: "plot", autoClick: 1 }],
-    ["goatAssistant", "automation", "🐐", "Koza asystentka", 420000, "Zbiera część złotych liści.", { zone: "plot", goat: .5 }],
-    ["deliveryManager", "automation", "🚚", "Kierownik dostaw Amic", 9000000, "Odbiera zwykłe dostawy.", { zone: "center", delivery: 1 }],
-    ["smartBuyerPlants", "automation", "🛒", "Sowa zakupowa", 18000000, "Auto-buy opłacalnych roślin.", { zone: "greenhouse", autobuy: 1 }],
-    ["offlineGardeners", "automation", "🌙", "Nocni ogrodnicy", 25000000, "Offline +25%, limit +4 h.", { zone: "greenhouse", off: .25, cap: 14400 }]
-  ].map(([id, group, icon, name, cost, desc, effect]) => ({ id, group, icon, name, cost, desc, effect }));
-  const prestiges = [
-    ["roots", "Starożytne korzenie", 1, "+25% produkcji/poziom"], ["waterMemory", "Pamięć plusku", 2, "+20% wody/poziom"],
-    ["sleepy", "Senni ogrodnicy", 2, "+10% offline/poziom"], ["fastStart", "Szybszy parapet", 3, "Start z Monsterą i Pileą"],
-    ["goatWisdom", "Mądrość kozy", 5, "Lepsze auto-eventy"], ["amic", "Stała umowa Amic", 5, "Częstsze dostawy"]
-  ].map(([id, name, cost, desc]) => ({ id, name, cost, desc }));
-  const tabList = [["plants", "Rośliny", "🌿"], ["upgrades", "Ulepszenia", "✨"], ["automation", "Auto", "⚙️"], ["prestige", "Prestiż", "🌰"], ["stats", "Statystyki", "📊"]];
+
+  const UPGRADES = [
+    { id: "softGloves", group: "click", icon: "🧤", name: "Miękkie rękawiczki", cost: 25, desc: "Kliknięcia x2.", effect: { click: 2 } },
+    { id: "leafBasket", group: "click", icon: "🧺", name: "Koszyk na liście", cost: 250, req: ["softGloves"], desc: "Kliknięcia x3.", effect: { click: 3 } },
+    { id: "fastBeak", group: "click", icon: "🦉", name: "Szybki dzióbek", cost: 2000, req: ["leafBasket"], desc: "Kliknięcia x5.", effect: { click: 5 } },
+    { id: "gardenRhythm", group: "click", icon: "🎵", name: "Rytm ogrodu", cost: 20000, req: ["fastBeak"], desc: "Kliknięcie daje 1% LPS.", effect: { clickLps: 0.01 } },
+    { id: "betterSoil", group: "production", icon: "🟫", name: "Lepsza ziemia", cost: 150, desc: "Wszystkie rośliny x1.5.", effect: { global: 1.5 } },
+    { id: "cuteLabels", group: "production", icon: "🏷️", name: "Urocze etykietki", cost: 1000, req: ["betterSoil"], desc: "Monstera i Pilea x2.", effect: { plant: { monstera: 2, pilea: 2 } } },
+    { id: "balconyShelves", group: "production", icon: "🪟", name: "Półki balkonowe", cost: 8000, zone: "balcony", req: ["cuteLabels"], desc: "Rośliny balkonowe x2.", effect: { zoneMult: { balcony: 2 } } },
+    { id: "compostBox", group: "production", icon: "🪱", name: "Kompostownik", cost: 45000, zone: "plot", req: ["balconyShelves"], desc: "Globalna produkcja x2.", effect: { global: 2 } },
+    { id: "greenhouseLamps", group: "production", icon: "💡", name: "Lampy szklarniowe", cost: 1500000, zone: "greenhouse", req: ["compostBox"], desc: "Szklarnia x3.", effect: { zoneMult: { greenhouse: 3 } } },
+    { id: "monsterFertilizer", group: "production", icon: "✨", name: "Nawóz monster", cost: 12000000, zone: "greenhouse", req: ["greenhouseLamps"], desc: "Globalna produkcja x2.", effect: { global: 2 } },
+    { id: "wateringCan", group: "water", icon: "🚿", name: "Konewka sowy", cost: 300, desc: "Odblokowuje podlewanie. Sowa w szklarni nosi słomkowy kapelusz.", effect: { can: 1 } },
+    { id: "smallSprinkler", group: "water", icon: "💧", name: "Mały zraszacz", cost: 5000, zone: "balcony", req: ["wateringCan"], desc: "+0.1 wody/s i ładowanie konewki.", effect: { wps: 0.1, canRegen: 0.018 } },
+    { id: "bigSprinkler", group: "water", icon: "💦", name: "Duży zraszacz", cost: 80000, zone: "plot", req: ["smallSprinkler"], desc: "+1 wody/s i lepszy offline.", effect: { wps: 1, off: 0.15, cap: 14400, canRegen: 0.05 } },
+    { id: "whalePool", group: "water", icon: "🐋", name: "Basen humbaka", cost: 250000, zone: "pool", req: ["bigSprinkler"], desc: "+2 wody/s i event plusku.", effect: { wps: 2, whale: 1 } },
+    { id: "autoHarvestI", group: "automation", icon: "🪣", name: "Pomocna konewka", cost: 3500, zone: "balcony", desc: "Auto-zbiory co 5 s.", effect: { harvest: 5 } },
+    { id: "autoHarvestII", group: "automation", icon: "🌧️", name: "Pracowity zraszacz", cost: 65000, zone: "plot", req: ["autoHarvestI"], desc: "Auto-zbiory co 2 s.", effect: { harvest: 2 } },
+    { id: "autoClicker", group: "automation", icon: "⏱️", name: "Sowie tykanie", cost: 120000, zone: "plot", req: ["autoHarvestII"], desc: "Auto-kliknięcie 1/s.", effect: { autoClick: 1 } },
+    { id: "goatAssistant", group: "automation", icon: "🐐", name: "Koza asystentka", cost: 420000, zone: "plot", req: ["autoClicker"], desc: "Zbiera część złotych liści.", effect: { goat: 0.5 } },
+    { id: "deliveryManager", group: "automation", icon: "🚚", name: "Kierownik dostaw Amic", cost: 9000000, zone: "center", req: ["goatAssistant"], desc: "Odbiera zwykłe dostawy.", effect: { delivery: 1 } },
+    { id: "smartBuyerPlants", group: "automation", icon: "🛒", name: "Sowa zakupowa", cost: 18000000, zone: "greenhouse", req: ["deliveryManager"], desc: "Auto-buy opłacalnych roślin.", effect: { autobuy: 1 } },
+    { id: "offlineGardeners", group: "automation", icon: "🌙", name: "Nocni ogrodnicy", cost: 25000000, zone: "greenhouse", req: ["smartBuyerPlants"], desc: "Offline +25%, limit +4 h.", effect: { off: 0.25, cap: 14400 } },
+  ];
+
+  const PRESTIGE_TREE = [
+    { id: "roots", branch: "Korzenie", icon: "🌳", name: "Starożytne korzenie", cost: 1, max: 20, desc: "+25% globalnej produkcji za poziom.", effect: "+25% produkcji / poziom" },
+    { id: "fastStart", branch: "Korzenie", icon: "🌱", name: "Szybszy parapet", cost: 3, max: 5, req: ["roots"], desc: "Nowy cykl startuje z roślinami i liśćmi.", effect: "mocniejszy start" },
+    { id: "seedMemory", branch: "Korzenie", icon: "🌰", name: "Pamięć nasion", cost: 6, max: 10, req: ["fastStart"], desc: "Więcej nasion z kolejnych prestiży.", effect: "+8% nasion / poziom" },
+    { id: "waterMemory", branch: "Woda", icon: "💧", name: "Pamięć plusku", cost: 2, max: 20, desc: "+20% produkcji wody za poziom.", effect: "+20% wody / poziom" },
+    { id: "waterStart", branch: "Woda", icon: "🚿", name: "Zapisana konewka", cost: 4, max: 5, req: ["waterMemory"], desc: "Konewka ładuje się szybciej i ma większy zapas po prestiżu.", effect: "lepsza konewka" },
+    { id: "whaleEcho", branch: "Woda", icon: "🐋", name: "Echo humbaka", cost: 7, max: 6, req: ["waterStart"], desc: "Pluski humbaka są częstsze i mocniejsze.", effect: "mocniejsze pluski" },
+    { id: "sleepy", branch: "Idle", icon: "🌙", name: "Senni ogrodnicy", cost: 2, max: 20, desc: "+10% skuteczności offline za poziom.", effect: "+10% offline / poziom" },
+    { id: "deepSleep", branch: "Idle", icon: "🛌", name: "Głęboki sen ogrodu", cost: 4, max: 10, req: ["sleepy"], desc: "Wydłuża limit offline po prestiżu.", effect: "+2h limitu / poziom" },
+    { id: "nightShift", branch: "Idle", icon: "🦉", name: "Nocna zmiana sowy", cost: 8, max: 5, req: ["deepSleep"], desc: "Auto-zbiory działają lepiej po powrocie.", effect: "większy offline harvest" },
+    { id: "goatWisdom", branch: "Auto", icon: "🐐", name: "Mądrość kozy", cost: 5, max: 10, desc: "Koza skuteczniej zbiera eventy.", effect: "+10% auto-eventów / poziom" },
+    { id: "amic", branch: "Auto", icon: "🚚", name: "Stała umowa Amic", cost: 5, max: 10, req: ["goatWisdom"], desc: "Dostawy pojawiają się częściej.", effect: "częstsze dostawy" },
+    { id: "smartRoots", branch: "Auto", icon: "🛒", name: "Pamięć zakupów", cost: 9, max: 5, req: ["amic"], desc: "Auto-buy jest skuteczniejszy w nowych cyklach.", effect: "lepszy auto-buy" },
+  ];
+
+  const TABS = [
+    ["plants", "Rośliny", "🌿"],
+    ["upgrades", "Rozwój", "✨"],
+    ["automation", "Auto", "⚙️"],
+    ["prestige", "Prestiż", "🌰"],
+    ["stats", "Statystyki", "📊"],
+  ];
 
   let state = load();
-  let tab = "plants", paused = false, dirty = true, last = performance.now(), tick = 0, auto = 0, saveTimer = 0, eventTimer = 0, pulse = 0;
-  let particles = [], texts = [], events = [], meter = null;
+  let tab = "plants";
+  let paused = false;
+  let dirty = true;
+  let last = performance.now();
+  let hudTimer = 0;
+  let autoTimer = 0;
+  let saveTimer = 0;
+  let eventTimer = 0;
+  let pulse = 0;
+  let particles = [];
+  let texts = [];
+  let events = [];
+  let meter = null;
 
-  function blank() {
-    const t = Date.now();
-    return { version: VERSION, createdAt: t, lastSavedAt: t, leaves: 0, water: 0, prestigeSeeds: 0, lifetimeLeaves: 0, lifetimeWater: 0, zone: "parapet", unlocked: ["parapet"], plants: {}, upgrades: {}, prestige: {}, automation: { autoBuy: false }, effects: { fever: 0, watered: 0, pracu: 0, penalty: 0 }, can: { charges: 3, max: 3, progress: 0 }, stats: { clicks: 0, buys: 0, offlineLeaves: 0, offlineWater: 0, golden: 0, deliveries: 0, watering: 0, prestiges: 0, bestLps: 0 }, achievements: {} };
+  function defaultSave() {
+    const now = Date.now();
+    return {
+      version: VERSION,
+      createdAt: now,
+      lastSavedAt: now,
+      leaves: 0,
+      water: 0,
+      prestigeSeeds: 0,
+      lifetimeLeaves: 0,
+      lifetimeWater: 0,
+      currentRunLeaves: 0,
+      currentRunWater: 0,
+      zone: "parapet",
+      unlocked: ["parapet"],
+      plants: {},
+      upgrades: {},
+      prestige: {},
+      automation: { autoBuy: false },
+      effects: { fever: 0, watered: 0, pracu: 0, penalty: 0 },
+      can: { charges: 3, max: 3, progress: 0 },
+      stats: { clicks: 0, buys: 0, offlineLeaves: 0, offlineWater: 0, golden: 0, deliveries: 0, watering: 0, prestiges: 0, bestLps: 0, totalPrestigeSeeds: 0 },
+      achievements: {},
+    };
   }
-  function merge(raw) {
-    const b = blank();
-    if (!raw || typeof raw !== "object") return b;
-    return { ...b, ...raw, plants: { ...b.plants, ...(raw.plants || {}) }, upgrades: { ...b.upgrades, ...(raw.upgrades || {}) }, prestige: { ...b.prestige, ...(raw.prestige || {}) }, automation: { ...b.automation, ...(raw.automation || {}) }, effects: { ...b.effects, ...(raw.effects || {}) }, can: { ...b.can, ...(raw.can || {}) }, stats: { ...b.stats, ...(raw.stats || {}) }, achievements: { ...b.achievements, ...(raw.achievements || {}) }, unlocked: Array.isArray(raw.unlocked) ? raw.unlocked : b.unlocked, version: VERSION };
+
+  function mergeSave(raw) {
+    const base = defaultSave();
+    if (!raw || typeof raw !== "object") return base;
+    const merged = { ...base, ...raw, plants: { ...base.plants, ...(raw.plants || {}) }, upgrades: { ...base.upgrades, ...(raw.upgrades || {}) }, prestige: { ...base.prestige, ...(raw.prestige || {}) }, automation: { ...base.automation, ...(raw.automation || {}) }, effects: { ...base.effects, ...(raw.effects || {}) }, can: { ...base.can, ...(raw.can || {}) }, stats: { ...base.stats, ...(raw.stats || {}) }, achievements: { ...base.achievements, ...(raw.achievements || {}) }, unlocked: Array.isArray(raw.unlocked) ? raw.unlocked : base.unlocked, version: VERSION };
+    if (!Number.isFinite(merged.currentRunLeaves)) merged.currentRunLeaves = merged.lifetimeLeaves || 0;
+    if (!Number.isFinite(merged.currentRunWater)) merged.currentRunWater = merged.lifetimeWater || 0;
+    return merged;
   }
-  function load() { try { return merge(JSON.parse(localStorage.getItem(KEY) || "null")); } catch { return blank(); } }
-  function save(reason = "auto") { state.lastSavedAt = Date.now(); try { localStorage.setItem(KEY, JSON.stringify(state)); hud.save.textContent = reason === "manual" ? "Zapisano ręcznie" : "Zapisano"; } catch { hud.save.textContent = "Błąd zapisu"; } }
+
+  function load() { try { return mergeSave(JSON.parse(localStorage.getItem(KEY) || "null")); } catch (_error) { return defaultSave(); } }
+  function save(reason = "auto") { state.lastSavedAt = Date.now(); try { localStorage.setItem(KEY, JSON.stringify(state)); hud.save.textContent = reason === "manual" ? "Zapisano ręcznie" : "Zapisano"; } catch (_error) { hud.save.textContent = "Błąd zapisu"; } }
   function queueSave(reason = "auto") { hud.save.textContent = "Zapisywanie…"; clearTimeout(saveTimer); saveTimer = setTimeout(() => save(reason), 250); }
-  function has(id) { return !!state.upgrades[id]; }
-  function lvl(id) { return Number(state.prestige[id] || 0); }
+
+  function hasUpgrade(id) { return Boolean(state.upgrades[id]); }
+  function prestigeLevel(id) { return Number(state.prestige[id] || 0); }
   function unlockedZone(id) { return state.unlocked.includes(id); }
-  function zoneName(id = state.zone) { return (zones.find(z => z[0] === id) || zones[0])[1]; }
-  function plant(id) { return plants.find(p => p.id === id); }
-  function fmt(v) { if (!isFinite(v)) return "0"; const s = v < 0 ? "-" : ""; let n = Math.abs(v); if (n < 1000) return s + (n < 10 && n % 1 ? n.toFixed(1) : Math.floor(n)); const suf = ["", "K", "M", "B", "T", "Qa", "Qi", "Sx", "Sp", "Oc", "No", "Dc"]; let i = 0; while (n >= 1000 && i < suf.length - 1) { n /= 1000; i++; } return s + n.toFixed(n >= 100 ? 0 : n >= 10 ? 1 : 2).replace(/\.0+$/, "") + suf[i]; }
-  function time(s) { s = Math.max(0, Math.floor(s)); const h = Math.floor(s / 3600), m = Math.floor(s % 3600 / 60); return h ? `${h}h ${m}m` : m ? `${m}m ${s % 60}s` : `${s}s`; }
-  function cost(id, amount = 1) { const p = plant(id); let owned = state.plants[id] || 0, total = 0; for (let i = 0; i < amount; i++) total += p.cost * Math.pow(p.grow, owned + i); return Math.floor(total); }
-  function maxBuy(id) { let amount = 0, c = 0; while (amount < 1000 && cost(id, amount + 1) <= state.leaves) { amount++; c = cost(id, amount); } return { amount, cost: c }; }
-  function milestone(n) { let m = 1; if (n >= 10) m *= 2; if (n >= 25) m *= 2; if (n >= 50) m *= 1.5; if (n >= 100) m *= 3; if (n >= 200) m *= 1.5; if (n >= 300) m *= 2; if (n >= 500) m *= 2; return m; }
+  function zoneById(id) { return ZONES.find((zone) => zone.id === id) || ZONES[0]; }
+  function zoneName(id = state.zone) { return zoneById(id).name; }
+  function plantById(id) { return PLANTS.find((plant) => plant.id === id); }
+  function upgradeById(id) { return UPGRADES.find((upgrade) => upgrade.id === id); }
+  function prestigeById(id) { return PRESTIGE_TREE.find((upgrade) => upgrade.id === id); }
+
+  function formatNumber(value) {
+    if (!Number.isFinite(value)) return "0";
+    const sign = value < 0 ? "-" : "";
+    let amount = Math.abs(value);
+    if (amount < 1000) return sign + (amount < 10 && amount % 1 ? amount.toFixed(1) : Math.floor(amount));
+    const suffixes = ["", "K", "M", "B", "T", "Qa", "Qi", "Sx", "Sp", "Oc", "No", "Dc"];
+    let index = 0;
+    while (amount >= 1000 && index < suffixes.length - 1) { amount /= 1000; index += 1; }
+    return sign + amount.toFixed(amount >= 100 ? 0 : amount >= 10 ? 1 : 2).replace(/\.0+$/, "") + suffixes[index];
+  }
+
+  function formatTime(seconds) {
+    const value = Math.max(0, Math.floor(seconds));
+    const hours = Math.floor(value / 3600);
+    const minutes = Math.floor((value % 3600) / 60);
+    if (hours) return `${hours}h ${minutes}m`;
+    if (minutes) return `${minutes}m ${value % 60}s`;
+    return `${value}s`;
+  }
+
+  function plantCost(id, amount = 1) { const plant = plantById(id); let owned = state.plants[id] || 0, total = 0; for (let index = 0; index < amount; index += 1) total += plant.cost * Math.pow(plant.grow, owned + index); return Math.floor(total); }
+  function maxAffordablePlant(id) { let amount = 0, total = 0; while (amount < 1000 && plantCost(id, amount + 1) <= state.leaves) { amount += 1; total = plantCost(id, amount); } return { amount, cost: total }; }
+  function milestoneMultiplier(owned) { let multiplier = 1; if (owned >= 10) multiplier *= 2; if (owned >= 25) multiplier *= 2; if (owned >= 50) multiplier *= 1.5; if (owned >= 100) multiplier *= 3; if (owned >= 200) multiplier *= 1.5; if (owned >= 300) multiplier *= 2; if (owned >= 500) multiplier *= 2; return multiplier; }
+  function upgradeAvailable(upgrade) { if (upgrade.zone && !unlockedZone(upgrade.zone)) return false; return (upgrade.req || []).every(hasUpgrade); }
+  function prestigeAvailable(upgrade) { return (upgrade.req || []).every((id) => prestigeLevel(id) > 0); }
+  function prestigeCost(upgrade) { return Math.ceil(upgrade.cost * Math.pow(1.55, prestigeLevel(upgrade.id))); }
+
   function metrics() {
-    let global = 1, click = 1, clickLps = 0, wps = 0, off = .25, cap = 7200, canRegen = .006, harvest = 0, autoClick = 0, goat = 0, delivery = 0, autobuy = 0, pMult = {}, zMult = {};
-    for (const u of upgrades) if (has(u.id)) {
-      const e = u.effect; if (e.global) global *= e.global; if (e.click) click *= e.click; if (e.clickLps) clickLps += e.clickLps; if (e.wps) wps += e.wps; if (e.off) off += e.off; if (e.cap) cap += e.cap; if (e.canRegen) canRegen += e.canRegen; if (e.harvest) harvest = harvest ? Math.min(harvest, e.harvest) : e.harvest; if (e.autoClick) autoClick += e.autoClick; if (e.goat) goat += e.goat; if (e.delivery) delivery += e.delivery; if (e.autobuy) autobuy += e.autobuy; if (e.plant) for (const k in e.plant) pMult[k] = (pMult[k] || 1) * e.plant[k]; if (e.zoneMult) for (const k in e.zoneMult) zMult[k] = (zMult[k] || 1) * e.zoneMult[k];
+    let globalMultiplier = 1, clickMultiplier = 1, clickLps = 0, waterPerSecond = 0, offlineEfficiency = 0.25, offlineCap = 7200, canRegen = 0.006, harvestInterval = 0, autoClick = 0, goat = 0, delivery = 0, autobuy = 0;
+    const plantMultipliers = {}, zoneMultipliers = {};
+    for (const upgrade of UPGRADES) {
+      if (!hasUpgrade(upgrade.id)) continue;
+      const effect = upgrade.effect;
+      if (effect.global) globalMultiplier *= effect.global;
+      if (effect.click) clickMultiplier *= effect.click;
+      if (effect.clickLps) clickLps += effect.clickLps;
+      if (effect.wps) waterPerSecond += effect.wps;
+      if (effect.off) offlineEfficiency += effect.off;
+      if (effect.cap) offlineCap += effect.cap;
+      if (effect.canRegen) canRegen += effect.canRegen;
+      if (effect.harvest) harvestInterval = harvestInterval ? Math.min(harvestInterval, effect.harvest) : effect.harvest;
+      if (effect.autoClick) autoClick += effect.autoClick;
+      if (effect.goat) goat += effect.goat;
+      if (effect.delivery) delivery += effect.delivery;
+      if (effect.autobuy) autobuy += effect.autobuy;
+      if (effect.plant) for (const [id, value] of Object.entries(effect.plant)) plantMultipliers[id] = (plantMultipliers[id] || 1) * value;
+      if (effect.zoneMult) for (const [id, value] of Object.entries(effect.zoneMult)) zoneMultipliers[id] = (zoneMultipliers[id] || 1) * value;
     }
-    global *= 1 + lvl("roots") * .25; wps *= 1 + lvl("waterMemory") * .2; off += lvl("sleepy") * .1;
-    const now = Date.now(); if (state.effects.fever > now) global *= 3; if (state.effects.watered > now) global *= 2; if (state.effects.pracu > now) global *= 4; if (state.effects.penalty > now) global *= .5;
-    const perPlant = {}; let lps = 0;
-    for (const p of plants) { const owned = state.plants[p.id] || 0; const prod = owned * p.prod * global * (pMult[p.id] || 1) * (zMult[p.zone] || 1) * milestone(owned); perPlant[p.id] = prod; lps += prod; }
-    return { global, lps, wps, clickPower: Math.max(1, click + lps * clickLps), harvest, autoClick, goat: Math.min(.95, goat + lvl("goatWisdom") * .1), delivery, autobuy, off: Math.min(1.5, off), cap, canRegen, perPlant };
+    globalMultiplier *= 1 + prestigeLevel("roots") * 0.25;
+    globalMultiplier *= 1 + prestigeLevel("fastStart") * 0.08;
+    waterPerSecond *= 1 + prestigeLevel("waterMemory") * 0.2;
+    waterPerSecond += prestigeLevel("waterStart") * 0.2;
+    canRegen += prestigeLevel("waterStart") * 0.015;
+    offlineEfficiency += prestigeLevel("sleepy") * 0.1;
+    offlineCap += prestigeLevel("deepSleep") * 7200;
+    goat += prestigeLevel("goatWisdom") * 0.1;
+    delivery += prestigeLevel("amic") ? 1 : 0;
+    autobuy += prestigeLevel("smartRoots") ? 1 : 0;
+    const now = Date.now();
+    if (state.effects.fever > now) globalMultiplier *= 3;
+    if (state.effects.watered > now) globalMultiplier *= 2;
+    if (state.effects.pracu > now) globalMultiplier *= 4;
+    if (state.effects.penalty > now) globalMultiplier *= 0.5;
+    const perPlant = {};
+    let leavesPerSecond = 0;
+    for (const plant of PLANTS) {
+      const owned = state.plants[plant.id] || 0;
+      const production = owned * plant.prod * globalMultiplier * (plantMultipliers[plant.id] || 1) * (zoneMultipliers[plant.zone] || 1) * milestoneMultiplier(owned);
+      perPlant[plant.id] = production;
+      leavesPerSecond += production;
+    }
+    return { globalMultiplier, leavesPerSecond, waterPerSecond, clickPower: Math.max(1, clickMultiplier + leavesPerSecond * clickLps), harvestInterval, autoClick, goat: Math.min(0.98, goat), delivery, autobuy, offlineEfficiency: Math.min(1.75, offlineEfficiency), offlineCap, canRegen, perPlant };
   }
-  function unlockZones() {
-    let changed = false;
-    for (const z of zones) if ((!z[2] || state.lifetimeLeaves >= z[2]) && (!z[3] || state.lifetimeWater >= z[3]) && (!z[4] || state.stats.prestiges >= z[4]) && !unlockedZone(z[0])) { state.unlocked.push(z[0]); log(`Odblokowano: ${z[1]}!`); changed = true; }
-    const best = state.unlocked[state.unlocked.length - 1] || "parapet"; if (best !== state.zone) { state.zone = best; changed = true; }
-    if (changed) { dirty = true; queueSave("unlock"); }
-  }
-  function buyPlant(id, amount = 1) { if (amount === "max") amount = maxBuy(id).amount; const p = plant(id); if (!p || !unlockedZone(p.zone) || amount <= 0) return; const c = cost(id, amount); if (state.leaves < c) return log("Za mało liści."); state.leaves -= c; state.plants[id] = (state.plants[id] || 0) + amount; state.stats.buys += amount; pop(`+${amount} ${p.name}`, .62, .37, p.color); core?.play?.("leaf"); dirty = true; queueSave("plant"); }
-  function buyUpgrade(id) { const u = upgrades.find(x => x.id === id); if (!u || has(id) || (u.effect.zone && !unlockedZone(u.effect.zone))) return; if (state.leaves < u.cost) return log("Za mało liści na ulepszenie."); state.leaves -= u.cost; state.upgrades[id] = 1; state.stats.buys++; if (id === "wateringCan") state.can.max = Math.max(state.can.max, 3); log(`Kupiono: ${u.name}.`); core?.play?.("unlock"); dirty = true; queueSave("upgrade"); }
-  function click(manual = true) { const m = meter || metrics(); const gain = m.clickPower; state.leaves += gain; state.lifetimeLeaves += gain; if (manual) { state.stats.clicks++; core?.play?.("leaf"); } pulse = 1; pop(`+${fmt(gain)}`, .5, .42, "#3f8b5b"); burst(.5, .46, 8, "#8fd36b"); dirty = true; }
-  function water() { if (!has("wateringCan")) return log("Najpierw kup konewkę sowy."); if (state.can.charges < 1 && state.water < 10) return log("Konewka jest pusta."); if (state.can.charges >= 1) state.can.charges--; else state.water -= 10; state.effects.watered = Date.now() + 45000; state.stats.watering++; pop("Podlane! x2", .5, .34, "#2784a5"); burst(.52, .38, 24, "#55c7dd"); log("Sowa podlała rośliny konewką. Produkcja x2 przez 45 s."); core?.play?.("splash"); dirty = true; queueSave("water"); }
-  function prod(dt) { meter = metrics(); const l = meter.lps * dt, w = meter.wps * dt; state.leaves += l; state.water += w; state.lifetimeLeaves += l; state.lifetimeWater += w; state.stats.bestLps = Math.max(state.stats.bestLps, meter.lps); state.can.progress += dt * meter.canRegen; while (state.can.progress >= 1 && state.can.charges < state.can.max) { state.can.progress--; state.can.charges++; } unlockZones(); }
-  function automate(dt) { const m = meter || metrics(); auto += dt; if (m.autoClick) { const g = m.clickPower * m.autoClick * dt; state.leaves += g; state.lifetimeLeaves += g; } if (m.harvest && auto >= m.harvest) { const g = m.lps * 5; state.leaves += g; state.lifetimeLeaves += g; pop(`Auto +${fmt(g)}`, .58, .48, "#58a76a"); auto = 0; } if ((m.autobuy || state.automation.autoBuy) && auto < .1) autoBuy(); if (m.goat) for (const e of events) if (e.type === "golden" && Math.random() < m.goat * dt * .35) collect(e.id, true); if (m.delivery) for (const e of events) if (e.type === "delivery") collect(e.id, true); }
-  function autoBuy() { let best = null; for (const p of plants) if (unlockedZone(p.zone)) { const c = cost(p.id, 1); if (c <= state.leaves) { const v = p.prod * milestone((state.plants[p.id] || 0) + 1) / c; if (!best || v > best.v) best = { p, v }; } } if (best) buyPlant(best.p.id, 1); }
-  function spawn(dt) { eventTimer += dt; if (eventTimer < Math.max(8, 20 / (1 + lvl("amic") * .15))) return; eventTimer = 0; const r = Math.random(); let type = r < .45 ? "golden" : r < .58 ? "rainbow" : r < .72 && has("whalePool") ? "splash" : r < .88 && unlockedZone("center") ? "delivery" : unlockedZone("plot") ? "goat" : "golden"; if ((meter || metrics()).lps > 1000000 && Math.random() < .12) type = "pracu"; if (events.some(e => e.type === type) && type !== "golden") return; events.push({ id: `${type}_${Date.now()}`, type, end: Date.now() + (type === "delivery" || type === "pracu" ? 22000 : 9000), x: .2 + Math.random() * .6, y: .23 + Math.random() * .45 }); dirty = true; }
-  function collect(id, autoCollect = false) { const e = events.find(x => x.id === id); if (!e) return; const m = meter || metrics(); if (e.type === "golden") { const g = Math.max(50, m.lps * 30) * (autoCollect ? .8 : 1); state.leaves += g; state.lifetimeLeaves += g; state.stats.golden++; pop(`Złoty +${fmt(g)}`, e.x, e.y, "#caa34a"); core?.play?.("combo"); }
-    if (e.type === "rainbow") { state.effects.fever = Date.now() + 20000; pop("Gorączka monster!", e.x, e.y, "#b45ad6"); core?.play?.("unlock"); }
-    if (e.type === "splash") { const wg = Math.max(20, m.wps * 60), lg = m.lps * 15; state.water += wg; state.lifetimeWater += wg; state.leaves += lg; state.lifetimeLeaves += lg; pop(`Plusk +${fmt(wg)} wody`, e.x, e.y, "#2784a5"); core?.play?.("splash"); }
-    if (e.type === "delivery") { const g = m.lps * 120 + 1000; state.leaves += g; state.lifetimeLeaves += g; state.water += Math.max(25, m.wps * 120); state.stats.deliveries++; pop(`Amic +${fmt(g)}`, e.x, e.y, "#39a949"); core?.play?.("mission"); }
-    if (e.type === "goat") { state.effects.watered = Math.max(state.effects.watered, Date.now() + 30000); pop("Koza pomogła!", e.x, e.y, "#6c9f4a"); core?.play?.("goat"); }
-    if (e.type === "pracu") { state.effects.pracu = Date.now() + 60000; state.effects.penalty = Date.now() + 90000; pop("Pracu x4!", e.x, e.y, "#ff5f82"); core?.play?.("phone"); }
-    burst(e.x, e.y, 18, color(e.type)); events = events.filter(x => x.id !== id); dirty = true; queueSave("event"); }
-  function color(t) { return { golden: "#f2c94c", rainbow: "#c477ff", splash: "#55c7dd", delivery: "#39a949", goat: "#8fd36b", pracu: "#ff5f82" }[t] || "#8fd36b"; }
-  function icon(t) { return { golden: "🍂", rainbow: "🌈", splash: "🐋", delivery: "🚚", goat: "🐐", pracu: "📱" }[t] || "✨"; }
-  function prestigeGain() { return state.lifetimeLeaves < 100000000 ? 0 : Math.max(0, Math.floor(Math.sqrt(state.lifetimeLeaves / 10000000)) - Math.floor(state.stats.prestiges * 1.5)); }
-  function openPrestige() { const g = prestigeGain(); if (g <= 0) return log("Prestiż wymaga 100M liści lifetime."); prestigeText.innerHTML = `Dostaniesz <strong>${fmt(g)}</strong> nasion prestiżu. Resetujesz liście, wodę, rośliny i zwykłe ulepszenia, ale zachowujesz statystyki, kosmetyki i ulepszenia prestiżowe.`; prestigeModal.hidden = false; }
-  function doPrestige() { const g = prestigeGain(); if (g <= 0) return; const keep = { seeds: state.prestigeSeeds + g, p: { ...state.prestige }, stats: { ...state.stats, prestiges: state.stats.prestiges + 1 }, ach: { ...state.achievements } }; state = blank(); state.prestigeSeeds = keep.seeds; state.prestige = keep.p; state.stats = { ...state.stats, ...keep.stats }; state.achievements = keep.ach; if (lvl("fastStart")) { state.plants.monstera = 1; state.plants.pilea = 1; } events = []; prestigeModal.hidden = true; log(`Wielkie Przesadzanie! +${g} nasion.`); burst(.5, .5, 80, "#d6a94a"); save("prestige"); dirty = true; }
-  function buyPrestige(id) { const u = prestiges.find(x => x.id === id), l = lvl(id), c = Math.ceil(u.cost * Math.pow(1.55, l)); if (state.prestigeSeeds < c) return log("Za mało nasion prestiżu."); state.prestigeSeeds -= c; state.prestige[id] = l + 1; dirty = true; queueSave("prestigeUpgrade"); }
-  function offline() { const elapsed = Math.max(0, (Date.now() - (state.lastSavedAt || Date.now())) / 1000); if (elapsed < 60) return; const m = metrics(), used = Math.min(elapsed, m.cap), l = m.lps * used * m.off, w = m.wps * used * Math.min(1, m.off * .6); state.leaves += l; state.water += w; state.lifetimeLeaves += l; state.lifetimeWater += w; state.stats.offlineLeaves += l; state.stats.offlineWater += w; offlineText.innerHTML = `Sowa doglądała ogrodu przez <strong>${time(elapsed)}</strong>.<br>Zebrano <strong>${fmt(l)}</strong> liści i <strong>${fmt(w)}</strong> wody.<br>Skuteczność offline: <strong>${Math.round(m.off * 100)}%</strong>. Limit: <strong>${time(m.cap)}</strong>.`; offlineModal.hidden = false; save("offline"); }
-  function achievement() { const a = [["firstPlant", "Pierwszy listek", Object.values(state.plants).some(Boolean)], ["auto", "Nie klikam, samo rośnie", has("autoHarvestI")], ["goat", "Koza pracownik miesiąca", has("goatAssistant")], ["whale", "Humbak podlewacz", has("whalePool")], ["prestige", "Przesadzanie bez strachu", state.stats.prestiges > 0]]; for (const [id, label, ok] of a) if (ok && !state.achievements[id]) { state.achievements[id] = Date.now(); log(`Osiągnięcie: ${label}`); core?.play?.("mission"); } core?.recordStat?.("ogrodyLeaves", state.lifetimeLeaves, "max"); core?.recordStat?.("ogrodyGardenLevel", state.unlocked.length, "max"); }
-  function render() { tabsNode.innerHTML = tabList.map(t => `<button type="button" data-tab="${t[0]}" class="${tab === t[0] ? "is-active" : ""}"><span>${t[2]}</span>${t[1]}</button>`).join(""); if (tab === "plants") renderPlants(); else if (tab === "upgrades") renderUpgrades(); else if (tab === "automation") renderAuto(); else if (tab === "prestige") renderPrestige(); else renderStats(); }
-  function renderPlants() { const m = meter || metrics(); panel.innerHTML = `<div class="panel-intro"><strong>Rośliny produkują liście samodzielnie.</strong><span>Kupuj generatory, pilnuj progów i później pozwól automatyzacji działać za Ciebie.</span></div><div class="shop-grid">${plants.map(p => { const u = unlockedZone(p.zone), n = state.plants[p.id] || 0, c = cost(p.id), mb = maxBuy(p.id), next = [10,25,50,100,150,200,300,500].find(x => n < x) || "max"; return `<article class="shop-card ${u ? "" : "is-locked"}"><div class="card-title"><span>${p.icon}</span><strong>${p.name}</strong><em>${n}</em></div><div class="mini-table"><span>Produkcja</span><strong>${fmt(m.perPlant[p.id] || 0)}/s</strong><span>Koszt</span><strong>${fmt(c)}</strong><span>Próg</span><strong>${next}</strong></div><div class="button-row"><button data-buy-plant="${p.id}" data-amount="1" ${!u || state.leaves < c ? "disabled" : ""}>Kup 1</button><button data-buy-plant="${p.id}" data-amount="10" ${!u || state.leaves < cost(p.id, 10) ? "disabled" : ""}>Kup 10</button><button data-buy-plant="${p.id}" data-amount="max" ${!u || mb.amount < 1 ? "disabled" : ""}>Max</button></div></article>`; }).join("")}</div>`; }
-  function card(u) { const bought = has(u.id), ok = !u.effect.zone || unlockedZone(u.effect.zone); return `<article class="shop-card ${ok ? "" : "is-locked"} ${bought ? "is-bought" : ""}"><div class="card-title"><span>${u.icon}</span><strong>${u.name}</strong></div><p>${u.desc}</p><div class="mini-table"><span>Koszt</span><strong>${fmt(u.cost)}</strong><span>Status</span><strong>${bought ? "Kupione" : ok ? "Dostępne" : "Zablokowane"}</strong></div><button data-buy-upgrade="${u.id}" ${bought || !ok || state.leaves < u.cost ? "disabled" : ""}>${bought ? "Kupione" : "Kup"}</button></article>`; }
-  function renderUpgrades() { const groups = [["click", "Klikanie"], ["production", "Produkcja"], ["water", "Woda i konewka"], ["automation", "Automatyzacja"]]; panel.innerHTML = `<div class="panel-intro"><strong>Ulepszenia rozbudowują ogród.</strong><span>Konewka odblokowuje podlewanie, a automatyzacja usuwa konieczność ręcznego klikania.</span></div>` + groups.map(g => `<section class="upgrade-section"><h3>${g[1]}</h3><div class="shop-grid compact">${upgrades.filter(u => u.group === g[0]).map(card).join("")}</div></section>`).join(""); }
-  function renderAuto() { const m = meter || metrics(); panel.innerHTML = `<div class="panel-intro"><strong>Automatyzacja to główna nagroda progresji.</strong><span>Ogród stopniowo przechodzi od clickera do idle management.</span></div><div class="data-table"><div><span>Auto-zbiory</span><strong>${m.harvest ? `co ${m.harvest}s` : "brak"}</strong></div><div><span>Auto-kliknięcia</span><strong>${fmt(m.autoClick)}/s</strong></div><div><span>Koza zbiera eventy</span><strong>${Math.round(m.goat * 100)}%</strong></div><div><span>Auto-dostawy</span><strong>${m.delivery ? "tak" : "nie"}</strong></div><div><span>Auto-buy roślin</span><strong>${m.autobuy || state.automation.autoBuy ? "aktywny" : "brak"}</strong></div></div><div class="button-row wide"><button data-toggle-autobuy ${!has("smartBuyerPlants") ? "disabled" : ""}>${state.automation.autoBuy ? "Wyłącz auto-buy" : "Włącz auto-buy"}</button><button data-save-manual>Zapisz teraz</button></div><div class="shop-grid compact">${upgrades.filter(u => u.group === "automation").map(card).join("")}</div>`; }
-  function renderPrestige() { const g = prestigeGain(); panel.innerHTML = `<div class="panel-intro"><strong>Wielkie Przesadzanie resetuje cykl i daje stałe bonusy.</strong><span>Aktualny zysk: ${fmt(g)} nasion. Posiadasz: ${fmt(state.prestigeSeeds)}.</span></div><button class="danger-action" data-open-prestige ${g <= 0 ? "disabled" : ""}>Wielkie Przesadzanie</button><div class="shop-grid compact">${prestiges.map(u => { const l = lvl(u.id), c = Math.ceil(u.cost * Math.pow(1.55, l)); return `<article class="shop-card prestige-card"><div class="card-title"><span>🌰</span><strong>${u.name}</strong><em>poz. ${l}</em></div><p>${u.desc}</p><div class="mini-table"><span>Koszt</span><strong>${c}</strong><span>Nasiona</span><strong>${fmt(state.prestigeSeeds)}</strong></div><button data-buy-prestige="${u.id}" ${state.prestigeSeeds < c ? "disabled" : ""}>Kup</button></article>`; }).join("")}</div>`; }
-  function renderStats() { const m = meter || metrics(); const a = [["Pierwszy listek", "firstPlant"], ["Nie klikam, samo rośnie", "auto"], ["Koza pracownik miesiąca", "goat"], ["Humbak podlewacz", "whale"], ["Przesadzanie bez strachu", "prestige"]].map(x => `<div><span>${x[0]}</span><strong>${state.achievements[x[1]] ? "✅" : "—"}</strong></div>`).join(""); panel.innerHTML = `<div class="panel-intro"><strong>Statystyki ogrodu.</strong><span>Dane są w kompaktowych tabelach i dobrze mieszczą się na ekranie.</span></div><div class="data-table"><div><span>Liście lifetime</span><strong>${fmt(state.lifetimeLeaves)}</strong></div><div><span>Woda lifetime</span><strong>${fmt(state.lifetimeWater)}</strong></div><div><span>Najlepsze LPS</span><strong>${fmt(state.stats.bestLps)}/s</strong></div><div><span>Kliknięcia ręczne</span><strong>${fmt(state.stats.clicks)}</strong></div><div><span>Offline liście</span><strong>${fmt(state.stats.offlineLeaves)}</strong></div><div><span>Podlania konewką</span><strong>${fmt(state.stats.watering)}</strong></div><div><span>Prestiże</span><strong>${fmt(state.stats.prestiges)}</strong></div><div><span>Offline limit</span><strong>${time(m.cap)}</strong></div></div><h3>Osiągnięcia</h3><div class="data-table">${a}</div>`; }
-  function hudRender() { const m = meter || metrics(); hud.leaves.textContent = fmt(state.leaves); hud.lps.textContent = `${fmt(m.lps)}/s`; hud.water.textContent = fmt(state.water); hud.wps.textContent = `${fmt(m.wps)}/s`; hud.zone.textContent = zoneName(); const c = state.can; waterButton.querySelector("strong").textContent = `Podlej (${Math.floor(c.charges)}/${c.max})`; waterButton.disabled = !has("wateringCan") || (c.charges < 1 && state.water < 10); prestigeButton.hidden = prestigeGain() <= 0; }
-  function bind() { tabsNode.addEventListener("click", e => { const b = e.target.closest("[data-tab]"); if (b) { tab = b.dataset.tab; dirty = true; } }); panel.addEventListener("click", e => { const p = e.target.closest("[data-buy-plant]"); if (p) return buyPlant(p.dataset.buyPlant, p.dataset.amount === "max" ? "max" : Number(p.dataset.amount)); const u = e.target.closest("[data-buy-upgrade]"); if (u) return buyUpgrade(u.dataset.buyUpgrade); const pr = e.target.closest("[data-buy-prestige]"); if (pr) return buyPrestige(pr.dataset.buyPrestige); if (e.target.closest("[data-open-prestige]")) openPrestige(); if (e.target.closest("[data-toggle-autobuy]")) { state.automation.autoBuy = !state.automation.autoBuy; dirty = true; queueSave("autobuy"); } if (e.target.closest("[data-save-manual]")) save("manual"); }); $("clickButton").addEventListener("click", () => click(true)); waterButton.addEventListener("click", water); prestigeButton.addEventListener("click", openPrestige); $("offlineClose").addEventListener("click", () => offlineModal.hidden = true); $("prestigeCancel").addEventListener("click", () => prestigeModal.hidden = true); $("prestigeConfirm").addEventListener("click", doPrestige); canvas.addEventListener("pointerdown", e => { const r = canvas.getBoundingClientRect(), x = (e.clientX - r.left) / r.width, y = (e.clientY - r.top) / r.height; const ev = events.find(v => Math.abs(v.x - x) < .12 && Math.abs(v.y - y) < .13); ev ? collect(ev.id) : click(true); }, { passive: true }); document.addEventListener("visibilitychange", () => { if (document.hidden) save("hidden"); }); window.addEventListener("pagehide", () => save("pagehide")); window.addEventListener("resize", resize); }
-  function log(t) { logNode.textContent = t; core?.toast?.(t); }
+
+  function unlockZones() { let changed = false; for (const zone of ZONES) { const canUnlock = state.lifetimeLeaves >= zone.leaves && state.lifetimeWater >= zone.water && state.stats.prestiges >= zone.prestige; if (canUnlock && !unlockedZone(zone.id)) { state.unlocked.push(zone.id); log(`Odblokowano: ${zone.name}!`); changed = true; } } const best = state.unlocked[state.unlocked.length - 1] || "parapet"; if (best !== state.zone) { state.zone = best; changed = true; } if (changed) { dirty = true; queueSave("unlock"); } }
+  function buyPlant(id, amount = 1) { if (amount === "max") amount = maxAffordablePlant(id).amount; const plant = plantById(id); if (!plant || !unlockedZone(plant.zone) || amount <= 0) return; const price = plantCost(id, amount); if (state.leaves < price) return log("Za mało liści."); state.leaves -= price; state.plants[id] = (state.plants[id] || 0) + amount; state.stats.buys += amount; pop(`+${amount} ${plant.name}`, 0.62, 0.37, plant.color); core?.play?.("leaf"); dirty = true; queueSave("plant"); }
+  function buyUpgrade(id) { const upgrade = upgradeById(id); if (!upgrade || hasUpgrade(id) || !upgradeAvailable(upgrade)) return; if (state.leaves < upgrade.cost) return log("Za mało liści na ulepszenie."); state.leaves -= upgrade.cost; state.upgrades[id] = 1; state.stats.buys += 1; if (id === "wateringCan") state.can.max = Math.max(state.can.max, 3 + prestigeLevel("waterStart")); log(`Kupiono: ${upgrade.name}.`); core?.play?.("unlock"); dirty = true; queueSave("upgrade"); }
+  function buyPrestigeUpgrade(id) { const upgrade = prestigeById(id); if (!upgrade || !prestigeAvailable(upgrade)) return; if (prestigeLevel(id) >= upgrade.max) return log("To ulepszenie jest już na maksymalnym poziomie."); const price = prestigeCost(upgrade); if (state.prestigeSeeds < price) return log("Za mało nasion prestiżu."); state.prestigeSeeds -= price; state.prestige[id] = prestigeLevel(id) + 1; log(`Stałe ulepszenie: ${upgrade.name} poz. ${prestigeLevel(id)}.`); core?.play?.("unlock"); dirty = true; queueSave("prestigeUpgrade"); }
+  function addLeaves(amount) { state.leaves += amount; state.lifetimeLeaves += amount; state.currentRunLeaves += amount; }
+  function addWater(amount) { state.water += amount; state.lifetimeWater += amount; state.currentRunWater += amount; }
+  function manualClick(isManual = true) { const current = meter || metrics(); const gain = current.clickPower; addLeaves(gain); if (isManual) { state.stats.clicks += 1; core?.play?.("leaf"); } pulse = 1; pop(`+${formatNumber(gain)}`, 0.5, 0.42, "#3f8b5b"); burst(0.5, 0.46, 8, "#8fd36b"); dirty = true; }
+  function waterPlants() { if (!hasUpgrade("wateringCan")) return log("Najpierw kup konewkę sowy."); if (state.can.charges < 1 && state.water < 10) return log("Konewka jest pusta."); if (state.can.charges >= 1) state.can.charges -= 1; else state.water -= 10; state.effects.watered = Date.now() + 45000; state.stats.watering += 1; pop("Podlane! x2", 0.5, 0.34, "#2784a5"); burst(0.52, 0.38, 24, "#55c7dd"); log("Sowa podlała rośliny konewką. Produkcja x2 przez 45 s."); core?.play?.("splash"); dirty = true; queueSave("water"); }
+
+  function productionTick(delta) { meter = metrics(); const leaves = meter.leavesPerSecond * delta, water = meter.waterPerSecond * delta; addLeaves(leaves); addWater(water); state.stats.bestLps = Math.max(state.stats.bestLps, meter.leavesPerSecond); state.can.max = Math.max(3, 3 + prestigeLevel("waterStart")); state.can.progress += delta * meter.canRegen; while (state.can.progress >= 1 && state.can.charges < state.can.max) { state.can.progress -= 1; state.can.charges += 1; } unlockZones(); }
+  function automationTick(delta) { const current = meter || metrics(); autoTimer += delta; if (current.autoClick) addLeaves(current.clickPower * current.autoClick * delta); if (current.harvestInterval && autoTimer >= current.harvestInterval) { const gain = current.leavesPerSecond * (5 + prestigeLevel("nightShift")); addLeaves(gain); pop(`Auto +${formatNumber(gain)}`, 0.58, 0.48, "#58a76a"); autoTimer = 0; } if ((current.autobuy || state.automation.autoBuy) && autoTimer < 0.1) autoBuyPlant(); if (current.goat) for (const event of events) if (event.type === "golden" && Math.random() < current.goat * delta * 0.35) collectEvent(event.id, true); if (current.delivery) for (const event of events) if (event.type === "delivery") collectEvent(event.id, true); }
+  function autoBuyPlant() { let best = null; for (const plant of PLANTS) { if (!unlockedZone(plant.zone)) continue; const price = plantCost(plant.id, 1); if (price > state.leaves) continue; const value = plant.prod * milestoneMultiplier((state.plants[plant.id] || 0) + 1) / price; if (!best || value > best.value) best = { plant, value }; } if (best) buyPlant(best.plant.id, 1); }
+
+  function spawnEvent(delta) { eventTimer += delta; const interval = Math.max(6, 20 / (1 + prestigeLevel("amic") * 0.15 + prestigeLevel("whaleEcho") * 0.08)); if (eventTimer < interval) return; eventTimer = 0; const roll = Math.random(); let type = roll < 0.43 ? "golden" : roll < 0.57 ? "rainbow" : roll < 0.72 && hasUpgrade("whalePool") ? "splash" : roll < 0.88 && unlockedZone("center") ? "delivery" : unlockedZone("plot") ? "goat" : "golden"; if ((meter || metrics()).leavesPerSecond > 1000000 && Math.random() < 0.12) type = "pracu"; if (events.some((event) => event.type === type) && type !== "golden") return; events.push({ id: `${type}_${Date.now()}_${Math.random().toString(16).slice(2)}`, type, end: Date.now() + (type === "delivery" || type === "pracu" ? 22000 : 9000), x: 0.2 + Math.random() * 0.6, y: 0.23 + Math.random() * 0.45 }); dirty = true; }
+  function eventColor(type) { return { golden: "#f2c94c", rainbow: "#c477ff", splash: "#55c7dd", delivery: "#39a949", goat: "#8fd36b", pracu: "#ff5f82" }[type] || "#8fd36b"; }
+  function eventIcon(type) { return { golden: "🍂", rainbow: "🌈", splash: "🐋", delivery: "🚚", goat: "🐐", pracu: "📱" }[type] || "✨"; }
+  function collectEvent(id, autoCollect = false) { const event = events.find((item) => item.id === id); if (!event) return; const current = meter || metrics(); if (event.type === "golden") { const gain = Math.max(50, current.leavesPerSecond * 30) * (autoCollect ? 0.8 : 1); addLeaves(gain); state.stats.golden += 1; pop(`Złoty +${formatNumber(gain)}`, event.x, event.y, "#caa34a"); core?.play?.("combo"); } else if (event.type === "rainbow") { state.effects.fever = Date.now() + 20000; pop("Gorączka monster!", event.x, event.y, "#b45ad6"); core?.play?.("unlock"); } else if (event.type === "splash") { const water = Math.max(20, current.waterPerSecond * 60) * (1 + prestigeLevel("whaleEcho") * 0.2); const leaves = current.leavesPerSecond * 15; addWater(water); addLeaves(leaves); pop(`Plusk +${formatNumber(water)} wody`, event.x, event.y, "#2784a5"); core?.play?.("splash"); } else if (event.type === "delivery") { const leaves = current.leavesPerSecond * 120 + 1000; const water = Math.max(25, current.waterPerSecond * 120); addLeaves(leaves); addWater(water); state.stats.deliveries += 1; pop(`Amic +${formatNumber(leaves)}`, event.x, event.y, "#39a949"); core?.play?.("mission"); } else if (event.type === "goat") { state.effects.watered = Math.max(state.effects.watered, Date.now() + 30000); pop("Koza pomogła!", event.x, event.y, "#6c9f4a"); core?.play?.("goat"); } else if (event.type === "pracu") { state.effects.pracu = Date.now() + 60000; state.effects.penalty = Date.now() + 90000; pop("Pracu x4!", event.x, event.y, "#ff5f82"); core?.play?.("phone"); } burst(event.x, event.y, 18, eventColor(event.type)); events = events.filter((item) => item.id !== id); dirty = true; queueSave("event"); }
+
+  function potentialPrestigeSeeds() { if (state.currentRunLeaves < 100000000) return 0; const base = Math.floor(Math.sqrt(state.currentRunLeaves / 10000000)); const bonus = 1 + prestigeLevel("seedMemory") * 0.08; return Math.max(0, Math.floor(base * bonus)); }
+  function openPrestige() { const gain = potentialPrestigeSeeds(); if (gain <= 0) return log("Prestiż wymaga 100M liści w obecnym cyklu."); prestigeText.innerHTML = `Ten cykl wypracował <strong>${formatNumber(gain)}</strong> nasion prestiżu.<br><br>Resetujesz zwykłe rośliny, zwykłe ulepszenia, liście, wodę i aktywne eventy. Zachowujesz <strong>drzewko prestiżu</strong>, nasiona, osiągnięcia i statystyki lifetime. Nowy cykl zacznie się szybciej dzięki stałym ulepszeniom.`; prestigeModal.hidden = false; }
+  function performPrestige() { const gain = potentialPrestigeSeeds(); if (gain <= 0) return; const keep = { prestigeSeeds: state.prestigeSeeds + gain, prestige: { ...state.prestige }, stats: { ...state.stats, prestiges: state.stats.prestiges + 1, totalPrestigeSeeds: (state.stats.totalPrestigeSeeds || 0) + gain }, achievements: { ...state.achievements }, lifetimeLeaves: state.lifetimeLeaves, lifetimeWater: state.lifetimeWater }; state = defaultSave(); state.prestigeSeeds = keep.prestigeSeeds; state.prestige = keep.prestige; state.stats = { ...state.stats, ...keep.stats }; state.achievements = keep.achievements; state.lifetimeLeaves = keep.lifetimeLeaves; state.lifetimeWater = keep.lifetimeWater; const fastStart = prestigeLevel("fastStart"); if (fastStart) { state.leaves = 25 * fastStart; state.plants.monstera = fastStart; state.plants.pilea = Math.max(0, fastStart - 2); } if (prestigeLevel("waterStart")) { state.upgrades.wateringCan = 1; state.can.max = 3 + prestigeLevel("waterStart"); state.can.charges = state.can.max; } events = []; prestigeModal.hidden = true; log(`Wielkie Przesadzanie! +${gain} nasion prestiżu.`); burst(0.5, 0.5, 80, "#d6a94a"); save("prestige"); dirty = true; }
+  function applyOfflineProgress() { const elapsed = Math.max(0, (Date.now() - (state.lastSavedAt || Date.now())) / 1000); if (elapsed < 60) return; const current = metrics(); const used = Math.min(elapsed, current.offlineCap); const leaves = current.leavesPerSecond * used * current.offlineEfficiency; const water = current.waterPerSecond * used * Math.min(1, current.offlineEfficiency * 0.6); addLeaves(leaves); addWater(water); state.stats.offlineLeaves += leaves; state.stats.offlineWater += water; offlineText.innerHTML = `Sowa doglądała ogrodu przez <strong>${formatTime(elapsed)}</strong>.<br>Zebrano <strong>${formatNumber(leaves)}</strong> liści i <strong>${formatNumber(water)}</strong> wody.<br>Skuteczność offline: <strong>${Math.round(current.offlineEfficiency * 100)}%</strong>. Limit: <strong>${formatTime(current.offlineCap)}</strong>.`; offlineModal.hidden = false; save("offline"); }
+  function checkAchievements() { const list = [["firstPlant", "Pierwszy listek", Object.values(state.plants).some(Boolean)], ["auto", "Nie klikam, samo rośnie", hasUpgrade("autoHarvestI")], ["goat", "Koza pracownik miesiąca", hasUpgrade("goatAssistant")], ["whale", "Humbak podlewacz", hasUpgrade("whalePool")], ["prestige", "Przesadzanie bez strachu", state.stats.prestiges > 0]]; for (const [id, label, ok] of list) if (ok && !state.achievements[id]) { state.achievements[id] = Date.now(); log(`Osiągnięcie: ${label}`); core?.play?.("mission"); } core?.recordStat?.("ogrodyLeaves", state.lifetimeLeaves, "max"); core?.recordStat?.("ogrodyGardenLevel", state.unlocked.length, "max"); }
+
+  function render() { tabsNode.innerHTML = TABS.map(([id, label, icon]) => `<button type="button" data-tab="${id}" class="${tab === id ? "is-active" : ""}"><span>${icon}</span>${label}</button>`).join(""); if (tab === "plants") renderPlants(); else if (tab === "upgrades") renderUpgrades(); else if (tab === "automation") renderAutomation(); else if (tab === "prestige") renderPrestige(); else renderStats(); }
+  function renderPlants() { const current = meter || metrics(); panel.innerHTML = `<div class="panel-intro"><strong>Rośliny produkują liście samodzielnie.</strong><span>Kupuj generatory, pilnuj progów i później pozwól automatyzacji działać za Ciebie.</span></div><div class="shop-grid">${PLANTS.map((plant) => { const isUnlocked = unlockedZone(plant.zone); const owned = state.plants[plant.id] || 0; const price = plantCost(plant.id); const max = maxAffordablePlant(plant.id); const next = [10, 25, 50, 100, 150, 200, 300, 500].find((value) => owned < value) || "max"; return `<article class="shop-card ${isUnlocked ? "" : "is-locked"}"><div class="card-title"><span>${plant.icon}</span><strong>${plant.name}</strong><em>${owned}</em></div><div class="mini-table"><span>Produkcja</span><strong>${formatNumber(current.perPlant[plant.id] || 0)}/s</strong><span>Koszt</span><strong>${formatNumber(price)}</strong><span>Próg</span><strong>${next}</strong></div><div class="button-row"><button data-buy-plant="${plant.id}" data-amount="1" ${!isUnlocked || state.leaves < price ? "disabled" : ""}>Kup 1</button><button data-buy-plant="${plant.id}" data-amount="10" ${!isUnlocked || state.leaves < plantCost(plant.id, 10) ? "disabled" : ""}>Kup 10</button><button data-buy-plant="${plant.id}" data-amount="max" ${!isUnlocked || max.amount < 1 ? "disabled" : ""}>Max</button></div></article>`; }).join("")}</div>`; }
+  function renderUpgradeCard(upgrade) { const bought = hasUpgrade(upgrade.id), available = upgradeAvailable(upgrade); const missing = (upgrade.req || []).filter((id) => !hasUpgrade(id)).map((id) => upgradeById(id)?.name || id); const lockText = available ? "Dostępne" : missing.length ? `Wymaga: ${missing.join(", ")}` : `Wymaga: ${zoneName(upgrade.zone)}`; return `<article class="skill-node ${bought ? "is-bought" : ""} ${available ? "" : "is-locked"}"><div class="card-title"><span>${upgrade.icon}</span><strong>${upgrade.name}</strong></div><p>${upgrade.desc}</p><div class="mini-table"><span>Koszt</span><strong>${formatNumber(upgrade.cost)}</strong><span>Status</span><strong>${bought ? "Kupione" : lockText}</strong></div><button data-buy-upgrade="${upgrade.id}" ${bought || !available || state.leaves < upgrade.cost ? "disabled" : ""}>${bought ? "Kupione" : "Kup"}</button></article>`; }
+  function renderUpgrades() { const groups = [["click", "Drzewko ręcznych zbiorów"], ["production", "Drzewko produkcji"], ["water", "Drzewko konewki i wody"], ["automation", "Drzewko automatyzacji cyklu"]]; panel.innerHTML = `<div class="panel-intro"><strong>Zwykłe drzewka rozwoju działają tylko w obecnym cyklu.</strong><span>Wielkie Przesadzanie resetuje te skille, ale stałe drzewko prestiżu zostaje.</span></div>${groups.map(([group, title]) => `<section class="upgrade-section"><h3>${title}</h3><div class="skill-tree">${UPGRADES.filter((upgrade) => upgrade.group === group).map(renderUpgradeCard).join("")}</div></section>`).join("")}`; }
+  function renderAutomation() { const current = meter || metrics(); panel.innerHTML = `<div class="panel-intro"><strong>Automatyzacja to główna nagroda progresji.</strong><span>Ogród stopniowo przechodzi od clickera do idle management.</span></div><div class="data-table"><div><span>Auto-zbiory</span><strong>${current.harvestInterval ? `co ${current.harvestInterval}s` : "brak"}</strong></div><div><span>Auto-kliknięcia</span><strong>${formatNumber(current.autoClick)}/s</strong></div><div><span>Koza zbiera eventy</span><strong>${Math.round(current.goat * 100)}%</strong></div><div><span>Auto-dostawy</span><strong>${current.delivery ? "tak" : "nie"}</strong></div><div><span>Auto-buy roślin</span><strong>${current.autobuy || state.automation.autoBuy ? "aktywny" : "brak"}</strong></div></div><div class="button-row wide"><button data-toggle-autobuy ${!hasUpgrade("smartBuyerPlants") && !prestigeLevel("smartRoots") ? "disabled" : ""}>${state.automation.autoBuy ? "Wyłącz auto-buy" : "Włącz auto-buy"}</button><button data-save-manual>Zapisz teraz</button></div><div class="skill-tree">${UPGRADES.filter((upgrade) => upgrade.group === "automation").map(renderUpgradeCard).join("")}</div>`; }
+  function renderPrestigeNode(upgrade) { const level = prestigeLevel(upgrade.id), available = prestigeAvailable(upgrade), maxed = level >= upgrade.max, price = prestigeCost(upgrade); const missing = (upgrade.req || []).filter((id) => prestigeLevel(id) <= 0).map((id) => prestigeById(id)?.name || id); return `<article class="prestige-node ${level ? "is-bought" : ""} ${available ? "" : "is-locked"}"><div class="card-title"><span>${upgrade.icon}</span><strong>${upgrade.name}</strong><em>${level}/${upgrade.max}</em></div><p>${upgrade.desc}</p><div class="mini-table"><span>Gałąź</span><strong>${upgrade.branch}</strong><span>Efekt</span><strong>${upgrade.effect}</strong><span>Koszt</span><strong>${maxed ? "max" : `${price} 🌰`}</strong><span>Status</span><strong>${available ? maxed ? "Maks." : "Dostępne" : `Wymaga: ${missing.join(", ")}`}</strong></div><button data-buy-prestige="${upgrade.id}" ${!available || maxed || state.prestigeSeeds < price ? "disabled" : ""}>${maxed ? "Maks." : "Kup stały poziom"}</button></article>`; }
+  function renderPrestige() { const gain = potentialPrestigeSeeds(); const branches = [...new Set(PRESTIGE_TREE.map((upgrade) => upgrade.branch))]; panel.innerHTML = `<div class="panel-intro"><strong>Drzewko prestiżu zostaje na zawsze.</strong><span>Ten cykl da teraz ${formatNumber(gain)} nasion. Posiadasz ${formatNumber(state.prestigeSeeds)} nasion. Zwykłe drzewka rozwoju zostaną zresetowane po przesadzaniu.</span></div><button class="danger-action" data-open-prestige ${gain <= 0 ? "disabled" : ""}>Wielkie Przesadzanie</button>${branches.map((branch) => `<section class="upgrade-section"><h3>Gałąź: ${branch}</h3><div class="prestige-tree">${PRESTIGE_TREE.filter((upgrade) => upgrade.branch === branch).map(renderPrestigeNode).join("")}</div></section>`).join("")}`; }
+  function renderStats() { const current = meter || metrics(); const achievements = [["Pierwszy listek", "firstPlant"], ["Nie klikam, samo rośnie", "auto"], ["Koza pracownik miesiąca", "goat"], ["Humbak podlewacz", "whale"], ["Przesadzanie bez strachu", "prestige"]].map(([label, id]) => `<div><span>${label}</span><strong>${state.achievements[id] ? "✅" : "—"}</strong></div>`).join(""); panel.innerHTML = `<div class="panel-intro"><strong>Statystyki ogrodu.</strong><span>Dane są w kompaktowych tabelach i mieszczą się na ekranie.</span></div><div class="data-table"><div><span>Liście lifetime</span><strong>${formatNumber(state.lifetimeLeaves)}</strong></div><div><span>Liście cyklu</span><strong>${formatNumber(state.currentRunLeaves)}</strong></div><div><span>Woda lifetime</span><strong>${formatNumber(state.lifetimeWater)}</strong></div><div><span>Najlepsze LPS</span><strong>${formatNumber(state.stats.bestLps)}/s</strong></div><div><span>Kliknięcia ręczne</span><strong>${formatNumber(state.stats.clicks)}</strong></div><div><span>Offline liście</span><strong>${formatNumber(state.stats.offlineLeaves)}</strong></div><div><span>Podlania konewką</span><strong>${formatNumber(state.stats.watering)}</strong></div><div><span>Prestiże</span><strong>${formatNumber(state.stats.prestiges)}</strong></div><div><span>Nasiona łącznie</span><strong>${formatNumber(state.stats.totalPrestigeSeeds || 0)}</strong></div><div><span>Potencjał prestiżu</span><strong>${formatNumber(potentialPrestigeSeeds())}</strong></div><div><span>Offline limit</span><strong>${formatTime(current.offlineCap)}</strong></div></div><h3>Osiągnięcia</h3><div class="data-table">${achievements}</div>`; }
+  function renderHud() { const current = meter || metrics(); hud.leaves.textContent = formatNumber(state.leaves); hud.lps.textContent = `${formatNumber(current.leavesPerSecond)}/s`; hud.water.textContent = formatNumber(state.water); hud.wps.textContent = `${formatNumber(current.waterPerSecond)}/s`; hud.zone.textContent = zoneName(); waterButton.querySelector("strong").textContent = `Podlej (${Math.floor(state.can.charges)}/${state.can.max})`; waterButton.disabled = !hasUpgrade("wateringCan") || (state.can.charges < 1 && state.water < 10); prestigeButton.hidden = potentialPrestigeSeeds() <= 0; }
+
+  function bindEvents() { tabsNode.addEventListener("click", (event) => { const button = event.target.closest("[data-tab]"); if (!button) return; tab = button.dataset.tab; dirty = true; }); panel.addEventListener("click", (event) => { const plantButton = event.target.closest("[data-buy-plant]"); if (plantButton) return buyPlant(plantButton.dataset.buyPlant, plantButton.dataset.amount === "max" ? "max" : Number(plantButton.dataset.amount)); const upgradeButton = event.target.closest("[data-buy-upgrade]"); if (upgradeButton) return buyUpgrade(upgradeButton.dataset.buyUpgrade); const prestigeUpgradeButton = event.target.closest("[data-buy-prestige]"); if (prestigeUpgradeButton) return buyPrestigeUpgrade(prestigeUpgradeButton.dataset.buyPrestige); if (event.target.closest("[data-open-prestige]")) return openPrestige(); if (event.target.closest("[data-toggle-autobuy]")) { state.automation.autoBuy = !state.automation.autoBuy; dirty = true; queueSave("autobuy"); } if (event.target.closest("[data-save-manual]")) save("manual"); }); $("clickButton").addEventListener("click", () => manualClick(true)); waterButton.addEventListener("click", waterPlants); prestigeButton.addEventListener("click", openPrestige); $("offlineClose").addEventListener("click", () => { offlineModal.hidden = true; }); $("prestigeCancel").addEventListener("click", () => { prestigeModal.hidden = true; }); $("prestigeConfirm").addEventListener("click", performPrestige); canvas.addEventListener("pointerdown", (event) => { const rect = canvas.getBoundingClientRect(); const x = (event.clientX - rect.left) / rect.width; const y = (event.clientY - rect.top) / rect.height; const activeEvent = events.find((item) => Math.abs(item.x - x) < 0.12 && Math.abs(item.y - y) < 0.13); if (activeEvent) collectEvent(activeEvent.id); else manualClick(true); }, { passive: true }); document.addEventListener("visibilitychange", () => { if (document.hidden) save("hidden"); }); window.addEventListener("pagehide", () => save("pagehide")); window.addEventListener("resize", resizeCanvas); }
+  function log(text) { logNode.textContent = text; core?.toast?.(text); }
   function pop(text, x, y, color) { texts.push({ text, x, y, color, life: 1.1, age: 0 }); }
-  function burst(x, y, n, color) { const reduced = core?.settings?.().reducedEffects; for (let i = 0; i < (reduced ? Math.ceil(n / 3) : n); i++) particles.push({ x, y, vx: (Math.random() - .5) * .18, vy: -.05 - Math.random() * .18, age: 0, life: .7 + Math.random() * .5, color }); }
-  function resize() { const d = Math.min(2, window.devicePixelRatio || 1), r = canvas.getBoundingClientRect(); canvas.width = Math.max(480, Math.floor(r.width * d)); canvas.height = Math.max(320, Math.floor(r.height * d)); ctx.setTransform(d, 0, 0, d, 0, 0); }
-  function draw() { const w = canvas.clientWidth, h = canvas.clientHeight; ctx.clearRect(0, 0, w, h); bg(w, h); garden(w, h); drawEvents(w, h); drawFx(w, h); badges(w, h); }
-  function bg(w, h) { const g = ctx.createLinearGradient(0, 0, 0, h); const greenhouse = ["greenhouse", "center", "arboretum"].includes(state.zone); g.addColorStop(0, greenhouse ? "#dfffee" : "#fff4fa"); g.addColorStop(.55, state.zone === "pool" ? "#bfe7ff" : greenhouse ? "#b9efd3" : "#dff6ff"); g.addColorStop(1, "#e7ffe6"); ctx.fillStyle = g; ctx.fillRect(0, 0, w, h); if (greenhouse) greenhouseBg(w, h); else if (state.zone === "balcony") balcony(w, h); else if (["plot", "pool"].includes(state.zone)) plot(w, h); else windowBg(w, h); }
-  function rr(x, y, w, h, r, fill = true) { ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); if (fill) ctx.fill(); else ctx.stroke(); }
-  function windowBg(w, h) { ctx.fillStyle = "rgba(255,255,255,.72)"; rr(w * .15, h * .08, w * .7, h * .42, 28); ctx.strokeStyle = "rgba(86,120,150,.28)"; ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(w * .5, h * .09); ctx.lineTo(w * .5, h * .5); ctx.moveTo(w * .16, h * .3); ctx.lineTo(w * .84, h * .3); ctx.stroke(); ctx.fillStyle = "#f4d7a0"; rr(w * .08, h * .58, w * .84, h * .13, 18); }
-  function balcony(w, h) { ctx.fillStyle = "rgba(255,255,255,.55)"; for (let i = 0; i < 6; i++) rr(i * w / 5 - 20, h * .12, 80, 120, 10); ctx.fillStyle = "#cad6e5"; rr(w * .05, h * .55, w * .9, h * .18, 18); ctx.strokeStyle = "rgba(66,82,100,.45)"; ctx.lineWidth = 3; for (let x = w * .09; x < w * .93; x += 42) { ctx.beginPath(); ctx.moveTo(x, h * .54); ctx.lineTo(x, h * .74); ctx.stroke(); } }
-  function plot(w, h) { ctx.fillStyle = "#a0d47b"; rr(w * .05, h * .42, w * .9, h * .28, 26); ctx.fillStyle = "#cda974"; rr(w * .08, h * .62, w * .84, h * .18, 22); if (unlockedZone("pool")) pool(w, h); }
-  function greenhouseBg(w, h) { ctx.fillStyle = "rgba(255,255,255,.48)"; rr(w * .08, h * .09, w * .84, h * .56, 34); ctx.strokeStyle = "rgba(78,130,105,.42)"; ctx.lineWidth = 3; for (let x = w * .15; x <= w * .85; x += w * .14) { ctx.beginPath(); ctx.moveTo(x, h * .12); ctx.lineTo(x, h * .66); ctx.stroke(); } for (let y = h * .22; y <= h * .6; y += h * .12) { ctx.beginPath(); ctx.moveTo(w * .1, y); ctx.lineTo(w * .9, y); ctx.stroke(); } ctx.fillStyle = "rgba(160,212,123,.58)"; rr(w * .05, h * .55, w * .9, h * .22, 24); }
-  function pool(w, h) { ctx.fillStyle = "#7aaed4"; ctx.beginPath(); ctx.ellipse(w * .78, h * .58, w * .12, h * .055, 0, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = "#66d1e7"; ctx.beginPath(); ctx.ellipse(w * .78, h * .57, w * .105, h * .042, 0, 0, Math.PI * 2); ctx.fill(); }
-  function garden(w, h) { plants.filter(p => state.plants[p.id] > 0).forEach((p, i) => plantDraw(w * (.18 + i % 6 * .115), h * .62 - Math.floor(i / 6) * 48, Math.min(1.8, .7 + Math.log10((state.plants[p.id] || 0) + 1) * .45), p)); if (unlockedZone("plot")) goat(w, h); if (has("whalePool")) whale(w, h); if (unlockedZone("center")) truck(w, h); owl(w, h); }
-  function plantDraw(x, y, s, p) { const n = state.plants[p.id] || 0; ctx.save(); ctx.translate(x, y); ctx.scale(s, s); ctx.fillStyle = "#b87b4c"; rr(-17, 16, 34, 24, 7); ctx.fillStyle = p.color; for (let i = 0; i < Math.min(8, 3 + Math.floor(Math.log10(n + 1) * 4)); i++) { ctx.save(); ctx.rotate((i - 3) * .27); ctx.beginPath(); ctx.ellipse(0, -6 - i * 4, 7, 20, 0, 0, Math.PI * 2); ctx.fill(); ctx.restore(); } ctx.fillStyle = "rgba(255,255,255,.9)"; ctx.font = "12px system-ui"; ctx.textAlign = "center"; ctx.fillText(p.icon, 0, 36); ctx.restore(); }
-  function owl(w, h) { const x = w * .5, y = h * .45 + pulse * 6, hat = ["greenhouse", "center", "arboretum"].includes(state.zone); ctx.save(); ctx.translate(x, y); ctx.fillStyle = "#8d6e63"; ctx.beginPath(); ctx.ellipse(0, 12, 42, 54, 0, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = "#f2d09b"; ctx.beginPath(); ctx.ellipse(0, 18, 27, 35, 0, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.arc(-15, -8, 13, 0, Math.PI * 2); ctx.arc(15, -8, 13, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = "#2b2733"; ctx.beginPath(); ctx.arc(-15, -8, 5, 0, Math.PI * 2); ctx.arc(15, -8, 5, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = "#ffd65a"; ctx.beginPath(); ctx.moveTo(0, 3); ctx.lineTo(-8, 13); ctx.lineTo(8, 13); ctx.fill(); if (hat) strawHat(); else core?.drawCanvasCosmetic?.(ctx, 0, -42, .72, 0); ctx.restore(); pulse = Math.max(0, pulse - .08); }
-  function strawHat() { ctx.fillStyle = "#e7c46b"; ctx.beginPath(); ctx.ellipse(0, -43, 48, 10, 0, 0, Math.PI * 2); ctx.fill(); ctx.fillRect(-24, -63, 48, 20); ctx.beginPath(); ctx.ellipse(0, -63, 24, 9, 0, Math.PI, 0); ctx.fill(); ctx.fillStyle = "#7fbf62"; ctx.fillRect(-26, -49, 52, 6); }
-  function goat(w, h) { ctx.save(); ctx.translate(w * .2, h * .58); ctx.fillStyle = "#fff6e8"; rr(-28, -18, 56, 35, 16); ctx.fillStyle = "#f6e7d1"; rr(20, -36, 28, 28, 12); ctx.fillStyle = "#2b2733"; ctx.beginPath(); ctx.arc(31, -25, 3, 0, Math.PI * 2); ctx.fill(); ctx.restore(); }
-  function whale(w, h) { ctx.save(); ctx.translate(w * .79, h * .55); ctx.fillStyle = "#508cc0"; ctx.beginPath(); ctx.ellipse(0, -12, 54, 25, 0, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = "#e4f8ff"; ctx.beginPath(); ctx.ellipse(5, -4, 35, 12, 0, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = "#2b2733"; ctx.beginPath(); ctx.arc(-22, -19, 3, 0, Math.PI * 2); ctx.fill(); ctx.restore(); }
-  function truck(w, h) { ctx.save(); ctx.translate(w * .82, h * .72); ctx.fillStyle = "#f9fbf8"; rr(-50, -32, 82, 40, 8); ctx.fillStyle = "#39a949"; ctx.fillRect(-50, -6, 82, 10); ctx.fillStyle = "#d62f3d"; ctx.font = "bold 13px sans-serif"; ctx.fillText("amic", -38, -13); ctx.fillStyle = "#2b2733"; ctx.beginPath(); ctx.arc(-30, 12, 9, 0, Math.PI * 2); ctx.arc(18, 12, 9, 0, Math.PI * 2); ctx.fill(); ctx.restore(); }
-  function drawEvents(w, h) { for (const e of events) { const s = 1 + Math.sin(performance.now() / 180) * .08; ctx.save(); ctx.translate(e.x * w, e.y * h); ctx.scale(s, s); ctx.fillStyle = color(e.type); ctx.beginPath(); ctx.arc(0, 0, 24, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = "#fff"; ctx.font = "22px system-ui"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(icon(e.type), 0, 1); ctx.restore(); } }
-  function drawFx(w, h) { for (const p of particles) { p.age += .016; p.x += p.vx; p.y += p.vy; p.vy += .004; ctx.globalAlpha = Math.max(0, 1 - p.age / p.life); ctx.fillStyle = p.color; ctx.beginPath(); ctx.arc(p.x * w, p.y * h, 4, 0, Math.PI * 2); ctx.fill(); } particles = particles.filter(p => p.age < p.life); for (const t of texts) { t.age += .016; ctx.globalAlpha = Math.max(0, 1 - t.age / t.life); ctx.fillStyle = t.color; ctx.font = "900 18px system-ui"; ctx.textAlign = "center"; ctx.fillText(t.text, t.x * w, (t.y - t.age * .08) * h); } texts = texts.filter(t => t.age < t.life); ctx.globalAlpha = 1; }
-  function badges(w, h) { const b = []; const n = Date.now(); if (state.effects.fever > n) b.push(["🌈 Gorączka monster", "#b45ad6"]); if (state.effects.watered > n) b.push(["🚿 Podlane x2", "#2784a5"]); if (state.effects.pracu > n) b.push(["📱 Pracu x4", "#ff5f82"]); b.forEach((x, i) => { ctx.fillStyle = "rgba(255,255,255,.86)"; rr(14, 14 + i * 38, 170, 30, 15); ctx.fillStyle = x[1]; ctx.font = "800 13px system-ui"; ctx.textAlign = "left"; ctx.fillText(x[0], 26, 34 + i * 38); }); }
-  function step(t) { const dt = Math.min(.08, (t - last) / 1000 || 0); last = t; if (!paused) { tick += dt; prod(dt); automate(dt); spawn(dt); events = events.filter(e => e.end > Date.now()); achievement(); if (tick > .25) { hudRender(); tick = 0; } if (dirty) { render(); dirty = false; } } draw(); core?.setDebugData?.({ leaves: fmt(state.leaves), lps: `${fmt((meter || metrics()).lps)}/s`, water: fmt(state.water), zone: state.zone, events: events.length, prestige: prestigeGain() }); requestAnimationFrame(step); }
-  function init() { resize(); bind(); render(); hudRender(); offline(); unlockZones(); log("Sowie Ogrody gotowe. Klikaj, sadź, podlewaj i automatyzuj!"); core?.registerGame?.({ getPaused: () => paused, setPaused: v => { paused = !!v; }, musicTheme: () => state.zone === "greenhouse" ? "flowers" : "market" }); setInterval(() => queueSave("interval"), 5000); requestAnimationFrame(step); }
+  function burst(x, y, amount, color) { const count = core?.settings?.().reducedEffects ? Math.ceil(amount / 3) : amount; for (let index = 0; index < count; index += 1) particles.push({ x, y, vx: (Math.random() - 0.5) * 0.18, vy: -0.05 - Math.random() * 0.18, age: 0, life: 0.7 + Math.random() * 0.5, color }); }
+  function resizeCanvas() { const scale = Math.min(2, window.devicePixelRatio || 1); const rect = canvas.getBoundingClientRect(); canvas.width = Math.max(480, Math.floor(rect.width * scale)); canvas.height = Math.max(320, Math.floor(rect.height * scale)); ctx.setTransform(scale, 0, 0, scale, 0, 0); }
+  function roundedRect(x, y, w, h, r, fill = true) { ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); if (fill) ctx.fill(); else ctx.stroke(); }
+  function draw() { const w = canvas.clientWidth, h = canvas.clientHeight; ctx.clearRect(0, 0, w, h); drawBackground(w, h); drawGarden(w, h); drawEvents(w, h); drawEffects(w, h); drawBadges(w, h); }
+  function drawBackground(w, h) { const greenhouse = ["greenhouse", "center", "arboretum"].includes(state.zone); const gradient = ctx.createLinearGradient(0, 0, 0, h); gradient.addColorStop(0, greenhouse ? "#dfffee" : "#fff4fa"); gradient.addColorStop(0.55, state.zone === "pool" ? "#bfe7ff" : greenhouse ? "#b9efd3" : "#dff6ff"); gradient.addColorStop(1, "#e7ffe6"); ctx.fillStyle = gradient; ctx.fillRect(0, 0, w, h); if (greenhouse) drawGreenhouse(w, h); else if (state.zone === "balcony") drawBalcony(w, h); else if (["plot", "pool"].includes(state.zone)) drawPlot(w, h); else drawWindow(w, h); }
+  function drawWindow(w, h) { ctx.fillStyle = "rgba(255,255,255,.72)"; roundedRect(w * 0.15, h * 0.08, w * 0.7, h * 0.42, 28); ctx.strokeStyle = "rgba(86,120,150,.28)"; ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(w * 0.5, h * 0.09); ctx.lineTo(w * 0.5, h * 0.5); ctx.moveTo(w * 0.16, h * 0.3); ctx.lineTo(w * 0.84, h * 0.3); ctx.stroke(); ctx.fillStyle = "#f4d7a0"; roundedRect(w * 0.08, h * 0.58, w * 0.84, h * 0.13, 18); }
+  function drawBalcony(w, h) { ctx.fillStyle = "rgba(255,255,255,.55)"; for (let index = 0; index < 6; index += 1) roundedRect(index * w / 5 - 20, h * 0.12, 80, 120, 10); ctx.fillStyle = "#cad6e5"; roundedRect(w * 0.05, h * 0.55, w * 0.9, h * 0.18, 18); ctx.strokeStyle = "rgba(66,82,100,.45)"; ctx.lineWidth = 3; for (let x = w * 0.09; x < w * 0.93; x += 42) { ctx.beginPath(); ctx.moveTo(x, h * 0.54); ctx.lineTo(x, h * 0.74); ctx.stroke(); } }
+  function drawPlot(w, h) { ctx.fillStyle = "#a0d47b"; roundedRect(w * 0.05, h * 0.42, w * 0.9, h * 0.28, 26); ctx.fillStyle = "#cda974"; roundedRect(w * 0.08, h * 0.62, w * 0.84, h * 0.18, 22); if (unlockedZone("pool")) drawPool(w, h); }
+  function drawGreenhouse(w, h) { ctx.fillStyle = "rgba(255,255,255,.48)"; roundedRect(w * 0.08, h * 0.09, w * 0.84, h * 0.56, 34); ctx.strokeStyle = "rgba(78,130,105,.42)"; ctx.lineWidth = 3; for (let x = w * 0.15; x <= w * 0.85; x += w * 0.14) { ctx.beginPath(); ctx.moveTo(x, h * 0.12); ctx.lineTo(x, h * 0.66); ctx.stroke(); } for (let y = h * 0.22; y <= h * 0.6; y += h * 0.12) { ctx.beginPath(); ctx.moveTo(w * 0.1, y); ctx.lineTo(w * 0.9, y); ctx.stroke(); } ctx.fillStyle = "rgba(160,212,123,.58)"; roundedRect(w * 0.05, h * 0.55, w * 0.9, h * 0.22, 24); }
+  function drawPool(w, h) { ctx.fillStyle = "#7aaed4"; ctx.beginPath(); ctx.ellipse(w * 0.78, h * 0.58, w * 0.12, h * 0.055, 0, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = "#66d1e7"; ctx.beginPath(); ctx.ellipse(w * 0.78, h * 0.57, w * 0.105, h * 0.042, 0, 0, Math.PI * 2); ctx.fill(); }
+  function drawGarden(w, h) { PLANTS.filter((plant) => state.plants[plant.id] > 0).forEach((plant, index) => drawPlant(w * (0.18 + (index % 6) * 0.115), h * 0.62 - Math.floor(index / 6) * 48, Math.min(1.8, 0.7 + Math.log10((state.plants[plant.id] || 0) + 1) * 0.45), plant)); if (unlockedZone("plot")) drawGoat(w, h); if (hasUpgrade("whalePool")) drawWhale(w, h); if (unlockedZone("center")) drawTruck(w, h); drawOwl(w, h); }
+  function drawPlant(x, y, scale, plant) { const owned = state.plants[plant.id] || 0; ctx.save(); ctx.translate(x, y); ctx.scale(scale, scale); ctx.fillStyle = "#b87b4c"; roundedRect(-17, 16, 34, 24, 7); ctx.fillStyle = plant.color; for (let index = 0; index < Math.min(8, 3 + Math.floor(Math.log10(owned + 1) * 4)); index += 1) { ctx.save(); ctx.rotate((index - 3) * 0.27); ctx.beginPath(); ctx.ellipse(0, -6 - index * 4, 7, 20, 0, 0, Math.PI * 2); ctx.fill(); ctx.restore(); } ctx.fillStyle = "rgba(255,255,255,.9)"; ctx.font = "12px system-ui"; ctx.textAlign = "center"; ctx.fillText(plant.icon, 0, 36); ctx.restore(); }
+  function drawOwl(w, h) { const x = w * 0.5, y = h * 0.45 + pulse * 6, hat = ["greenhouse", "center", "arboretum"].includes(state.zone); ctx.save(); ctx.translate(x, y); ctx.fillStyle = "#8d6e63"; ctx.beginPath(); ctx.ellipse(0, 12, 42, 54, 0, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = "#f2d09b"; ctx.beginPath(); ctx.ellipse(0, 18, 27, 35, 0, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.arc(-15, -8, 13, 0, Math.PI * 2); ctx.arc(15, -8, 13, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = "#2b2733"; ctx.beginPath(); ctx.arc(-15, -8, 5, 0, Math.PI * 2); ctx.arc(15, -8, 5, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = "#ffd65a"; ctx.beginPath(); ctx.moveTo(0, 3); ctx.lineTo(-8, 13); ctx.lineTo(8, 13); ctx.fill(); if (hat) drawStrawHat(); else core?.drawCanvasCosmetic?.(ctx, 0, -42, 0.72, 0); ctx.restore(); pulse = Math.max(0, pulse - 0.08); }
+  function drawStrawHat() { ctx.fillStyle = "#e7c46b"; ctx.beginPath(); ctx.ellipse(0, -43, 48, 10, 0, 0, Math.PI * 2); ctx.fill(); ctx.fillRect(-24, -63, 48, 20); ctx.beginPath(); ctx.ellipse(0, -63, 24, 9, 0, Math.PI, 0); ctx.fill(); ctx.fillStyle = "#7fbf62"; ctx.fillRect(-26, -49, 52, 6); }
+  function drawGoat(w, h) { ctx.save(); ctx.translate(w * 0.2, h * 0.58); ctx.fillStyle = "#fff6e8"; roundedRect(-28, -18, 56, 35, 16); ctx.fillStyle = "#f6e7d1"; roundedRect(20, -36, 28, 28, 12); ctx.fillStyle = "#2b2733"; ctx.beginPath(); ctx.arc(31, -25, 3, 0, Math.PI * 2); ctx.fill(); ctx.restore(); }
+  function drawWhale(w, h) { ctx.save(); ctx.translate(w * 0.79, h * 0.55); ctx.fillStyle = "#508cc0"; ctx.beginPath(); ctx.ellipse(0, -12, 54, 25, 0, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = "#e4f8ff"; ctx.beginPath(); ctx.ellipse(5, -4, 35, 12, 0, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = "#2b2733"; ctx.beginPath(); ctx.arc(-22, -19, 3, 0, Math.PI * 2); ctx.fill(); ctx.restore(); }
+  function drawTruck(w, h) { ctx.save(); ctx.translate(w * 0.82, h * 0.72); ctx.fillStyle = "#f9fbf8"; roundedRect(-50, -32, 82, 40, 8); ctx.fillStyle = "#39a949"; ctx.fillRect(-50, -6, 82, 10); ctx.fillStyle = "#d62f3d"; ctx.font = "bold 13px sans-serif"; ctx.fillText("amic", -38, -13); ctx.fillStyle = "#2b2733"; ctx.beginPath(); ctx.arc(-30, 12, 9, 0, Math.PI * 2); ctx.arc(18, 12, 9, 0, Math.PI * 2); ctx.fill(); ctx.restore(); }
+  function drawEvents(w, h) { for (const event of events) { const scale = 1 + Math.sin(performance.now() / 180) * 0.08; ctx.save(); ctx.translate(event.x * w, event.y * h); ctx.scale(scale, scale); ctx.fillStyle = eventColor(event.type); ctx.beginPath(); ctx.arc(0, 0, 24, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = "#fff"; ctx.font = "22px system-ui"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(eventIcon(event.type), 0, 1); ctx.restore(); } }
+  function drawEffects(w, h) { for (const particle of particles) { particle.age += 0.016; particle.x += particle.vx; particle.y += particle.vy; particle.vy += 0.004; ctx.globalAlpha = Math.max(0, 1 - particle.age / particle.life); ctx.fillStyle = particle.color; ctx.beginPath(); ctx.arc(particle.x * w, particle.y * h, 4, 0, Math.PI * 2); ctx.fill(); } particles = particles.filter((particle) => particle.age < particle.life); for (const text of texts) { text.age += 0.016; ctx.globalAlpha = Math.max(0, 1 - text.age / text.life); ctx.fillStyle = text.color; ctx.font = "900 18px system-ui"; ctx.textAlign = "center"; ctx.fillText(text.text, text.x * w, (text.y - text.age * 0.08) * h); } texts = texts.filter((text) => text.age < text.life); ctx.globalAlpha = 1; }
+  function drawBadges(w, _h) { const now = Date.now(); const badges = []; if (state.effects.fever > now) badges.push(["🌈 Gorączka monster", "#b45ad6"]); if (state.effects.watered > now) badges.push(["🚿 Podlane x2", "#2784a5"]); if (state.effects.pracu > now) badges.push(["📱 Pracu x4", "#ff5f82"]); badges.forEach(([label, color], index) => { ctx.fillStyle = "rgba(255,255,255,.86)"; roundedRect(14, 14 + index * 38, Math.min(190, w - 28), 30, 15); ctx.fillStyle = color; ctx.font = "800 13px system-ui"; ctx.textAlign = "left"; ctx.fillText(label, 26, 34 + index * 38); }); }
+
+  function step(now) { const delta = Math.min(0.08, (now - last) / 1000 || 0); last = now; if (!paused) { hudTimer += delta; productionTick(delta); automationTick(delta); spawnEvent(delta); events = events.filter((event) => event.end > Date.now()); checkAchievements(); if (hudTimer > 0.25) { renderHud(); hudTimer = 0; } if (dirty) { render(); dirty = false; } } draw(); core?.setDebugData?.({ leaves: formatNumber(state.leaves), lps: `${formatNumber((meter || metrics()).leavesPerSecond)}/s`, water: formatNumber(state.water), zone: state.zone, events: events.length, prestige: potentialPrestigeSeeds() }); requestAnimationFrame(step); }
+  function init() { resizeCanvas(); bindEvents(); render(); renderHud(); applyOfflineProgress(); unlockZones(); log("Sowie Ogrody gotowe. Klikaj, sadź, podlewaj i automatyzuj!"); core?.registerGame?.({ getPaused: () => paused, setPaused: (value) => { paused = Boolean(value); }, musicTheme: () => state.zone === "greenhouse" ? "flowers" : "market" }); setInterval(() => queueSave("interval"), 5000); requestAnimationFrame(step); }
+
   init();
 })();
