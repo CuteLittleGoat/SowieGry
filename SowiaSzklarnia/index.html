@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no" />
+  <meta name="theme-color" content="#e8fff3" />
+  <title>Sowia Szklarnia</title>
+  <script src="../shared/progress-reset.js"></script>
+  <script src="../shared/sowie-smoke-hook.js"></script>
+  <link rel="stylesheet" href="../shared/cute-ui.css" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="greenhouse-shell" aria-label="Sowia Szklarnia">
+    <section class="greenhouse-hero" aria-label="Widok szklarni">
+      <header class="greenhouse-title">
+        <div>
+          <p class="eyebrow">cute shelter / botanic idle</p>
+          <h1>Sowia Szklarnia</h1>
+        </div>
+        <p id="greenhouseLog" class="greenhouse-log" aria-live="polite">Sowa rozkłada doniczki…</p>
+      </header>
+
+      <section class="hud" aria-label="Zasoby">
+        <div class="hud-card"><span>Liście</span><strong id="leavesValue">0</strong></div>
+        <div class="hud-card"><span>Liście/s</span><strong id="lpsValue">0/s</strong></div>
+        <div class="hud-card"><span>Woda</span><strong id="waterValue">0</strong></div>
+        <div class="hud-card"><span>Nasiona</span><strong id="seedsValue">0</strong></div>
+        <div class="hud-card"><span>Pyłek</span><strong id="pollenValue">0</strong></div>
+        <div class="hud-card"><span>Kozy</span><strong id="goatsValue">Spokój</strong></div>
+        <div class="hud-card"><span>Kompost</span><strong id="compostValue">0</strong></div>
+        <div class="hud-card"><span>Radość</span><strong id="joyValue">50</strong></div>
+        <div class="hud-card"><span>Zapis</span><strong id="saveValue">Gotowe</strong></div>
+      </section>
+
+      <div class="canvas-card">
+        <canvas id="greenhouseCanvas" role="img" aria-label="Przekrój uroczej szklarni sowy z pomieszczeniami, roślinami i kozami"></canvas>
+      </div>
+
+      <section class="quick-actions" aria-label="Szybkie akcje">
+        <button id="clickButton" type="button"><span>🍃</span><strong>Zbierz liście</strong></button>
+        <button id="waterAllButton" type="button"><span>💦</span><strong>Podlej wszystko</strong></button>
+        <button id="sioButton" type="button"><span>🐐</span><strong>SIO! SIO!</strong></button>
+      </section>
+    </section>
+
+    <aside class="management-panel" aria-label="Panel zarządzania szklarnią">
+      <nav id="tabBar" class="tab-bar" aria-label="Zakładki"></nav>
+      <section id="panelContent" class="panel-content" aria-live="polite"></section>
+    </aside>
+  </main>
+
+  <section id="offlineModal" class="greenhouse-modal-backdrop" hidden>
+    <article class="greenhouse-modal">
+      <h2>Sowa doglądała szklarni 🦉</h2>
+      <p id="offlineText"></p>
+      <div class="modal-actions"><button id="offlineClose" type="button">Odbierz</button></div>
+    </article>
+  </section>
+
+  <section id="resetModal" class="greenhouse-modal-backdrop" hidden>
+    <article class="greenhouse-modal danger-modal">
+      <h2>Reset szklarni?</h2>
+      <p>To usunie lokalny zapis Sowiej Szklarni w tej przeglądarce. Tej akcji nie da się cofnąć.</p>
+      <div class="modal-actions">
+        <button id="resetCancel" type="button">Nie teraz</button>
+        <button id="resetConfirm" type="button" class="danger-action">Resetuj</button>
+      </div>
+    </article>
+  </section>
+
+  <script src="../shared/sowie-core.js"></script>
+  <script src="../shared/sowie-runtime.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
