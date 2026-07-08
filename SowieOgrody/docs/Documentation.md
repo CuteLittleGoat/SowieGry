@@ -20,7 +20,8 @@ Główna logika znajduje się w `script.js`. Gra jest napisana jako jeden moduł
 4. `style.css`
 5. `../shared/sowie-core.js`
 6. `../shared/sowie-runtime.js`
-7. `script.js`
+7. `ogrody-runtime.js`
+8. `script.js`
 
 ## Pliki
 
@@ -28,6 +29,7 @@ Główna logika znajduje się w `script.js`. Gra jest napisana jako jeden moduł
 SowieOgrody/
   index.html
   style.css
+  ogrody-runtime.js
   script.js
   docs/
     README.md
@@ -46,19 +48,48 @@ Najważniejsze pola:
 
 - `leaves` — aktualne liście,
 - `water` — aktualna woda,
-- `prestigeSeeds` — nasiona prestiżu,
+- `prestigeSeeds` — niewydane nasiona prestiżu,
 - `lifetimeLeaves` — liście lifetime,
 - `lifetimeWater` — woda lifetime,
+- `currentRunLeaves` — liście zdobyte w obecnym cyklu prestiżu,
+- `currentRunWater` — woda zdobyta w obecnym cyklu prestiżu,
 - `zone` — aktualna strefa,
 - `unlocked` — odblokowane strefy,
 - `plants` — liczba roślin danego typu,
-- `upgrades` — kupione ulepszenia,
-- `prestige` — ulepszenia prestiżowe,
+- `upgrades` — zwykłe ulepszenia cyklu,
+- `prestige` — stałe poziomy drzewka prestiżu,
 - `automation` — ustawienia automatyzacji,
 - `effects` — aktywne efekty czasowe,
 - `can` — stan konewki,
 - `stats` — statystyki lokalne,
 - `achievements` — osiągnięcia lokalne.
+
+## Zwykłe drzewka rozwoju
+
+Zwykłe skille są przechowywane w `upgrades` i resetują się przy prestiżu. Dane są w tablicy `UPGRADES`.
+
+Każdy wpis może mieć:
+
+```txt
+id
+group
+icon
+name
+cost
+zone
+req
+desc
+effect
+```
+
+Grupy zwykłych drzewek:
+
+- `click` — ręczne zbiory,
+- `production` — produkcja roślin,
+- `water` — konewka, zraszacze, woda i humbak,
+- `automation` — auto-zbiory, auto-kliknięcia, koza, dostawy i auto-buy.
+
+Wymagania zwykłych skilli są walidowane przez `upgradeAvailable(upgrade)`, która sprawdza strefę oraz listę `req`.
 
 ## System ekonomii
 
@@ -116,19 +147,21 @@ Użycie podlewania:
 - ustawia `effects.watered` na 45 sekund,
 - produkcja jest mnożona x2.
 
-Zraszacze zwiększają `canRegen` i produkcję wody.
+Zraszacze zwiększają `canRegen` i produkcję wody. Stałe ulepszenie prestiżowe `waterStart` zwiększa startową wartość konewki i przyspiesza jej regenerację.
 
 ## Automatyzacja
 
-Automatyzacja jest liczona w `metrics()` na podstawie kupionych ulepszeń.
+Automatyzacja jest liczona w `metrics()` na podstawie zwykłych ulepszeń oraz stałego drzewka prestiżu.
 
 Systemy:
 
-- `harvest` — okresowy bonus auto-zbiorów,
+- `harvestInterval` — okresowy bonus auto-zbiorów,
 - `autoClick` — generowanie kliknięć na sekundę,
 - `goat` — automatyczne zbieranie części złotych liści,
 - `delivery` — automatyczne odbieranie zwykłych dostaw,
 - `autobuy` — auto-buy najbardziej opłacalnych roślin.
+
+Stałe ulepszenia prestiżowe mogą wzmacniać automatyzację, np. `goatWisdom`, `amic`, `smartRoots` i `nightShift`.
 
 ## Eventy
 
@@ -143,22 +176,63 @@ Typy:
 - `goat`,
 - `pracu`.
 
-## Prestiż
+## Prestiż i stałe drzewko prestiżu
 
-Prestiż odblokowuje się przy 100M liści lifetime.
+Prestiż odblokowuje się przy 100M liści zdobytych w obecnym cyklu, czyli `currentRunLeaves >= 100_000_000`.
 
-Wzór:
+Wzór nasion:
 
 ```txt
-prestigeGain = floor(sqrt(lifetimeLeaves / 10_000_000)) - floor(prestigeCount * 1.5)
+base = floor(sqrt(currentRunLeaves / 10_000_000))
+prestigeGain = floor(base * (1 + seedMemoryLevel * 0.08))
 ```
+
+Reset prestiżowy kasuje:
+
+- `leaves`,
+- `water`,
+- `currentRunLeaves`,
+- `currentRunWater`,
+- `plants`,
+- `upgrades`,
+- aktywne eventy,
+- aktywne efekty cyklu.
 
 Reset zachowuje:
 
 - `prestigeSeeds`,
 - `prestige`,
 - `stats`,
-- `achievements`.
+- `achievements`,
+- `lifetimeLeaves`,
+- `lifetimeWater`.
+
+Drzewko prestiżu jest zdefiniowane w `PRESTIGE_TREE`. Każdy węzeł ma:
+
+```txt
+id
+branch
+icon
+name
+cost
+max
+req
+desc
+effect
+```
+
+Gałęzie drzewka prestiżu:
+
+- `Korzenie` — produkcja, szybszy start i więcej nasion,
+- `Woda` — woda, konewka i pluski humbaka,
+- `Idle` — offline progress,
+- `Auto` — koza, dostawy i auto-buy.
+
+Zakup stałego ulepszenia wykonuje `buyPrestigeUpgrade(id)`. Zależności są sprawdzane przez `prestigeAvailable(upgrade)`. Koszt skaluje się przez:
+
+```txt
+cost = ceil(baseCost * 1.55 ^ currentLevel)
+```
 
 ## Renderer
 
@@ -182,6 +256,17 @@ Nie używa zewnętrznych obrazków.
 
 `style.css` używa układu dwukolumnowego na desktopie i jednokolumnowego na mniejszych ekranach. Panel danych ma przewijanie, a karty/tabele są kompaktowe, żeby mieściły się na telefonie.
 
+Dla drzewek rozwoju dodane są klasy:
+
+```txt
+.skill-tree
+.skill-node
+.prestige-tree
+.prestige-node
+```
+
+Na telefonie drzewka przechodzą do jednej kolumny.
+
 ## Integracja z menu
 
 Główne `index.html` zawiera kartę:
@@ -200,16 +285,21 @@ Główne `index.html` zawiera kartę:
 3. Rośliny można kupić po uzbieraniu kosztu.
 4. LPS rośnie po zakupie roślin.
 5. Save przetrwa reload.
-6. Konewka odblokowuje podlewanie.
-7. Podlewanie daje boost x2.
-8. Offline progress pokazuje modal po przerwie.
-9. Automatyzacja działa po zakupie odpowiednich ulepszeń.
-10. Sowa w szklarni ma słomkowy kapelusz.
-11. Prestiż pojawia się po spełnieniu warunku.
+6. Zakładka `Rozwój` pokazuje zwykłe drzewka skilli.
+7. Zależności zwykłych skilli działają.
+8. Konewka odblokowuje podlewanie.
+9. Podlewanie daje boost x2.
+10. Offline progress pokazuje modal po przerwie.
+11. Automatyzacja działa po zakupie odpowiednich ulepszeń.
+12. Sowa w szklarni ma słomkowy kapelusz.
+13. Prestiż pojawia się po spełnieniu warunku obecnego cyklu.
+14. Prestiż resetuje zwykłe skille, rośliny i zasoby.
+15. Drzewko prestiżu zostaje po resetach.
+16. Stałe ulepszenia prestiżowe przyspieszają nowy cykl.
 
 ## Utrzymanie
 
 - Dane ekonomii są na początku `script.js`.
-- Zmiany balansu najlepiej robić przez wartości w `plants`, `upgrades` i `prestiges`.
+- Zmiany balansu najlepiej robić przez wartości w `PLANTS`, `UPGRADES` i `PRESTIGE_TREE`.
 - Nie dodawać Firebase bez wyraźnej potrzeby.
 - Nie kasować `sowieOgrodySave` przez globalne resety bez świadomej decyzji.
