@@ -44,11 +44,12 @@ test("każda gra ładuje instrukcję, Akademię, rozszerzenie i wspólne style",
 
 test("Akademia ma wersjonowany zapis i idempotentne nagrody", () => {
   const source = read("shared/sowie-academy.js");
-  assert.match(source, /const VERSION = 1/);
+  assert.match(source, /const VERSION = 2/);
   assert.match(source, /academy\.awards\[id\]/);
   assert.match(source, /daily:/);
   assert.match(source, /weekly:/);
   assert.match(source, /feathers/);
+  assert.match(source, /daily\.metrics/);
 });
 
 test("rozszerzenia zawierają mechanikę dla każdej gry", () => {
