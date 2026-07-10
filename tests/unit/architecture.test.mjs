@@ -18,6 +18,19 @@ test("centralny rejestr zawiera dokładnie pięć gier", async () => {
   assert.deepEqual(ids, ["runner", "jumper", "sowa3", "ogrody", "szklarnia"]);
 });
 
+test("menu główne jest generowane wyłącznie z centralnego rejestru", async () => {
+  const html = await read("index.html");
+  const compatibility = await read("shared/progress-reset.js");
+  const menu = await read("shared/main-menu.js");
+
+  assert.match(html, /data-game-cards/);
+  assert.match(html, /shared\/sowie-platform\.js/);
+  assert.doesNotMatch(html, /<a[^>]+class="game-card"/);
+  assert.match(menu, /platform\.GAME_REGISTRY\.map/);
+  assert.doesNotMatch(compatibility, /document\.write/);
+  assert.doesNotMatch(menu, /document\.write/);
+});
+
 test("wszystkie gry ładują platformę i wspólny menedżer powiadomień", async () => {
   for (const path of gamePages) {
     const html = await read(path);
