@@ -2,7 +2,7 @@
   "use strict";
 
   const KEY = "sowieGryAcademy";
-  const VERSION = 1;
+  const VERSION = 2;
   const MISSION_POOL = Object.freeze([
     { id: "runner-distance", game: "runner", metric: "runnerDistance", type: "max", target: 500, label: "Przebiegnij 500 m w SowaRunner" },
     { id: "runner-score", game: "runner", metric: "runnerScore", type: "max", target: 1200, label: "Zdobądź 1200 pkt w SowaRunner" },
@@ -62,6 +62,7 @@
       return {
         ...defaultState(),
         ...raw,
+        version: VERSION,
         metrics: { ...(raw.metrics || {}) },
         awards: { ...(raw.awards || {}) },
       };
@@ -73,10 +74,12 @@
   let academy = load();
 
   function save() {
+    academy.version = VERSION;
     academy.updatedAt = Date.now();
     localStorage.setItem(KEY, JSON.stringify(academy));
-    for (const listener of listeners) listener(snapshot());
-    window.dispatchEvent(new CustomEvent("sowie:academy-changed", { detail: snapshot() }));
+    const data = snapshot();
+    for (const listener of listeners) listener(data);
+    window.dispatchEvent(new CustomEvent("sowie:academy-changed", { detail: data }));
   }
 
   function levelInfo(xp = academy.xp) {
@@ -112,7 +115,7 @@
         rewarded: false,
       });
     }
-    return { day, missions: selected };
+    return { day, metrics: {}, missions: selected };
   }
 
   function createWeekly() {
@@ -126,13 +129,25 @@
   }
 
   function ensurePeriods() {
-    if (!academy.daily || academy.daily.day !== dayKey()) academy.daily = createDaily();
-    if (!academy.weekly || academy.weekly.week !== weekKey()) academy.weekly = createWeekly();
+    let changed = false;
+    if (!academy.daily || academy.daily.day !== dayKey()) {
+      academy.daily = createDaily();
+      changed = true;
+    } else if (!academy.daily.metrics || typeof academy.daily.metrics !== "object") {
+      academy.daily.metrics = {};
+      changed = true;
+    }
+    if (!academy.weekly || academy.weekly.week !== weekKey()) {
+      academy.weekly = createWeekly();
+      changed = true;
+    }
+    return changed;
   }
 
   function missionProgress(mission) {
+    if (mission.type === "max") return Math.max(0, Number(academy.daily?.metrics?.[mission.metric] || 0));
     const value = Number(academy.metrics[mission.metric] || 0);
-    return Math.max(0, mission.type === "delta" ? value - Number(mission.baseline || 0) : value);
+    return Math.max(0, value - Number(mission.baseline || 0));
   }
 
   function notify(title, detail, reward = "") {
@@ -175,24 +190,42 @@
   }
 
   function record(gameId, metric, value = 1, mode = "max") {
-    ensurePeriods();
+    let changed = ensurePeriods();
     const numeric = Number(value) || 0;
     const previous = Number(academy.metrics[metric] || 0);
-    if (mode === "add") academy.metrics[metric] = previous + numeric;
-    else if (mode === "set") academy.metrics[metric] = numeric;
-    else academy.metrics[metric] = Math.max(previous, numeric);
+    let next = previous;
+    if (mode === "add") next = previous + numeric;
+    else if (mode === "set") next = numeric;
+    else next = Math.max(previous, numeric);
+    if (next !== previous) {
+      academy.metrics[metric] = next;
+      changed = true;
+    }
 
-    if (gameId && !academy.weekly.games.includes(gameId)) academy.weekly.games.push(gameId);
-    evaluate();
-    save();
+    const dailyMetrics = academy.daily.metrics;
+    const dailyPrevious = Number(dailyMetrics[metric] || 0);
+    let dailyNext = dailyPrevious;
+    if (mode === "add") dailyNext = dailyPrevious + numeric;
+    else if (mode === "set") dailyNext = numeric;
+    else dailyNext = Math.max(dailyPrevious, numeric);
+    if (dailyNext !== dailyPrevious) {
+      dailyMetrics[metric] = dailyNext;
+      changed = true;
+    }
+
+    if (gameId && !academy.weekly.games.includes(gameId)) {
+      academy.weekly.games.push(gameId);
+      changed = true;
+    }
+    changed = evaluate() || changed;
+    if (changed) save();
     return snapshot();
   }
 
   function award(id, xp = 25, feathers = 3, message = "Nagroda dodatkowa") {
-    ensurePeriods();
-    const changed = grant(id, xp, feathers, message);
+    const changed = ensurePeriods() || grant(id, xp, feathers, message);
     if (changed) save();
-    return changed;
+    return Boolean(academy.awards[id]);
   }
 
   function snapshot() {
@@ -227,7 +260,8 @@
 
   function render() {
     if (!modal) return;
-    evaluate();
+    const changed = evaluate();
+    if (changed) save();
     const data = snapshot();
     const info = levelInfo();
     const content = modal.querySelector("[data-academy-content]");
@@ -301,9 +335,8 @@
     button.addEventListener("click", () => open(button));
   }
 
-  ensurePeriods();
-  evaluate();
-  save();
+  const initialized = ensurePeriods() || evaluate();
+  if (initialized || !localStorage.getItem(KEY)) save();
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", attachButton, { once: true });
   else attachButton();
 
