@@ -75,7 +75,7 @@ test("panel szklarni zachowuje fokus podczas cyklicznego odświeżania", async (
 test("modal wspólny przechwytuje fokus, zamyka się Escape i przywraca fokus", async ({ page }) => {
   const errors = watchRuntimeErrors(page);
   await page.goto("/SowaJumper/?seed=modal", { waitUntil: "load" });
-  const opener = page.locator("[data-settings]");
+  const opener = page.getByRole("button", { name: "Ustawienia i zapis" });
   await opener.click();
 
   const dialog = page.getByRole("dialog");
