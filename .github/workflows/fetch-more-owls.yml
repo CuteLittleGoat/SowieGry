@@ -1,0 +1,78 @@
+name: Fetch more owl gallery assets
+
+on:
+  push:
+    branches:
+      - feature/large-owl-gallery
+    paths:
+      - .github/workflows/fetch-more-owls.yml
+
+permissions:
+  contents: write
+
+jobs:
+  fetch-images:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+        with:
+          ref: feature/large-owl-gallery
+
+      - name: Install Pillow
+        run: python -m pip install --disable-pip-version-check pillow
+
+      - name: Download and optimize owl photographs
+        run: |
+          python - <<'PY'
+          from io import BytesIO
+          from pathlib import Path
+          from urllib.request import Request, urlopen
+          from PIL import Image, ImageOps
+
+          photos = [
+              ("sowa-09-w-koszyku.jpg", "https://images.pexels.com/photos/5237476/pexels-photo-5237476.jpeg?auto=compress&cs=tinysrgb&w=1800"),
+              ("sowa-10-na-galezi.jpg", "https://images.pexels.com/photos/23654842/pexels-photo-23654842/free-photo-of-owlet-perching-on-branch.jpeg?auto=compress&cs=tinysrgb&w=1800"),
+              ("sowa-11-dwie-uszate.jpg", "https://images.pexels.com/photos/4823989/pexels-photo-4823989.jpeg?auto=compress&cs=tinysrgb&w=1800"),
+              ("sowa-12-dwie-puchate.jpg", "https://images.pexels.com/photos/4823986/pexels-photo-4823986.jpeg?auto=compress&cs=tinysrgb&w=1800"),
+              ("sowa-13-mloda-puszczykowata.jpg", "https://images.pexels.com/photos/27067203/pexels-photo-27067203/free-photo-of-barred-owl-on-tree.jpeg?auto=compress&cs=tinysrgb&w=1800"),
+              ("sowa-14-w-promieniach.jpg", "https://images.pexels.com/photos/17817497/pexels-photo-17817497/free-photo-of-close-up-of-tawny-owl.jpeg?auto=compress&cs=tinysrgb&w=1800"),
+              ("sowa-15-w-zieleni.jpg", "https://images.pexels.com/photos/23490342/pexels-photo-23490342/free-photo-of-close-up-of-a-brown-owl-perched-on-a-branch.jpeg?auto=compress&cs=tinysrgb&w=1800"),
+              ("sowa-16-keila.jpg", "https://images.pexels.com/photos/15994322/pexels-photo-15994322/free-photo-of-owl-perching-on-tree-branch.jpeg?auto=compress&cs=tinysrgb&w=1800"),
+              ("sowa-17-uralska.jpg", "https://images.pexels.com/photos/3848270/pexels-photo-3848270.jpeg?auto=compress&cs=tinysrgb&w=1800"),
+              ("sowa-18-na-konarku.jpg", "https://images.pexels.com/photos/24012047/pexels-photo-24012047/free-photo-of-tawny-owl-standing-on-a-tree-branch.jpeg?auto=compress&cs=tinysrgb&w=1800"),
+              ("sowa-19-puszczyk.jpg", "https://images.pexels.com/photos/19892683/pexels-photo-19892683/free-photo-of-tawny-owl-in-nature.jpeg?auto=compress&cs=tinysrgb&w=1800"),
+              ("sowa-20-na-trawie.jpg", "https://images.pexels.com/photos/19065539/pexels-photo-19065539/free-photo-of-owlet-with-yellow-eyes-on-grass.jpeg?auto=compress&cs=tinysrgb&w=1800"),
+              ("sowa-21-ciekawska.jpg", "https://images.pexels.com/photos/31330685/pexels-photo-31330685/free-photo-of-close-up-of-a-curious-young-owl-in-tree-branches.jpeg?auto=compress&cs=tinysrgb&w=1800"),
+              ("sowa-22-mloda-w-lesie.jpg", "https://images.pexels.com/photos/23654832/pexels-photo-23654832/free-photo-of-owl-sitting-on-a-branch.jpeg?auto=compress&cs=tinysrgb&w=1800"),
+              ("sowa-23-uszata-na-ziemi.jpg", "https://images.pexels.com/photos/19065545/pexels-photo-19065545/free-photo-of-owl-on-ground.jpeg?auto=compress&cs=tinysrgb&w=1800"),
+              ("sowa-24-lesny-maluch.jpg", "https://images.pexels.com/photos/7190228/pexels-photo-7190228.jpeg?auto=compress&cs=tinysrgb&w=1800"),
+              ("sowa-25-biala-w-koszyku.jpg", "https://images.pexels.com/photos/5237543/pexels-photo-5237543.jpeg?auto=compress&cs=tinysrgb&w=1800"),
+              ("sowa-26-mloda-z-bliska.jpg", "https://images.pexels.com/photos/23490352/pexels-photo-23490352/free-photo-of-close-up-of-a-brown-owl-perched-on-a-branch.jpeg?auto=compress&cs=tinysrgb&w=1800"),
+              ("sowa-27-kolumbijska.jpg", "https://images.pexels.com/photos/28699294/pexels-photo-28699294/free-photo-of-juvenile-owl-in-colombian-foliage.jpeg?auto=compress&cs=tinysrgb&w=1800"),
+              ("sowa-28-puszczykowata-na-drzewie.jpg", "https://images.pexels.com/photos/24012038/pexels-photo-24012038/free-photo-of-barred-owl-on-tree.jpeg?auto=compress&cs=tinysrgb&w=1800"),
+              ("sowa-29-norkowa-na-lace.jpg", "https://images.pexels.com/photos/5651223/pexels-photo-5651223.jpeg?auto=compress&cs=tinysrgb&w=1800"),
+              ("sowa-30-wiosenna-rodzina.jpg", "https://images.pexels.com/photos/31922777/pexels-photo-31922777/free-photo-of-charming-owls-perched-on-spring-tree-branches.jpeg?auto=compress&cs=tinysrgb&w=1800"),
+          ]
+
+          output = Path("Obrazki")
+          output.mkdir(exist_ok=True)
+          for filename, url in photos:
+              request = Request(url, headers={"User-Agent": "SowieGry asset fetcher/2.0"})
+              with urlopen(request, timeout=90) as response:
+                  image = Image.open(BytesIO(response.read()))
+                  image = ImageOps.exif_transpose(image).convert("RGB")
+                  image = ImageOps.fit(image, (1200, 900), method=Image.Resampling.LANCZOS)
+                  image.save(output / filename, "JPEG", quality=82, optimize=True, progressive=True)
+                  print(filename, (output / filename).stat().st_size)
+          PY
+
+      - name: Commit photographs
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add Obrazki/*.jpg
+          git commit -m "Rozbuduj Galerię Sów do 30 fotografii"
+          git push origin HEAD:feature/large-owl-gallery
