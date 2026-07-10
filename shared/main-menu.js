@@ -2,9 +2,23 @@
 (() => {
   "use strict";
 
+  const scriptUrl = document.currentScript?.src;
+  if (!window.SowiePlatform && scriptUrl) {
+    document.write(`<script src="${new URL("sowie-platform.js", scriptUrl).href}"><\/script>`);
+  }
+  if (!window.SowieCore && scriptUrl) {
+    document.write(`<script src="${new URL("sowie-core.js", scriptUrl).href}"><\/script>`);
+  }
+  if (!window.SowieNotifications && scriptUrl) {
+    document.write(`<script src="${new URL("notification-manager.js", scriptUrl).href}"><\/script>`);
+  }
+
   const platform = window.SowiePlatform;
   const core = window.SowieCore;
-  if (!platform || !core) return;
+  if (!platform || !core) {
+    console.error("Menu SowieGry nie mogło załadować wspólnych modułów.");
+    return;
+  }
 
   const descriptions = {
     runner: "Dynamiczny endless runner z sówką, kozami i humbakami.",
@@ -32,8 +46,9 @@
   function refreshButton() {
     const profile = core.getProfile();
     const selected = platform.COSMETICS[profile.selectedCosmetic] || platform.COSMETICS.none;
-    button.querySelector("[data-cosmetic-icon]")?.replaceChildren(selected.icon);
+    const icon = button.querySelector("[data-cosmetic-icon]");
     const label = button.querySelector("[data-cosmetic-label]");
+    if (icon) icon.textContent = selected.icon;
     if (label) label.textContent = `Garderoba: ${selected.label}`;
   }
 
