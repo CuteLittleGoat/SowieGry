@@ -3,7 +3,7 @@
 
   const scriptUrl = document.currentScript?.src;
   const KEY = "sowieOwlGallery";
-  const VERSION = 1;
+  const VERSION = 2;
 
   const PHOTOS = Object.freeze([
     {
@@ -86,6 +86,232 @@
       requirement: "Osiągnij 5. poziom Akademii i zdobądź 30 piórek.",
       unlockedBy: (academy) => academy.level >= 5 && academy.feathers >= 30,
     },
+    {
+      id: "owl-09",
+      file: "sowa-09-w-koszyku.jpg",
+      title: "Koszykowa kruszynka",
+      alt: "Puchata młoda sowa siedząca w plecionym koszyku.",
+      photographer: "Twórca w serwisie Pexels",
+      sourceUrl: "https://www.pexels.com/photo/5237476/",
+      requirement: "Osiągnij 3. poziom Sowiej Akademii.",
+      unlockedBy: (academy) => academy.level >= 3,
+    },
+    {
+      id: "owl-10",
+      file: "sowa-10-na-galezi.jpg",
+      title: "Gałązkowa ciekawska",
+      alt: "Młoda sówka siedząca na gałęzi pośród zielonych liści.",
+      photographer: "Twórca w serwisie Pexels",
+      sourceUrl: "https://www.pexels.com/photo/23654842/",
+      requirement: "Zdobądź 12 piórek w Sowiej Akademii.",
+      unlockedBy: (academy) => academy.feathers >= 12,
+    },
+    {
+      id: "owl-11",
+      file: "sowa-11-dwie-uszate.jpg",
+      title: "Uszate rodzeństwo",
+      alt: "Dwie młode uszatki siedzące razem na konarze.",
+      photographer: "Twórca w serwisie Pexels",
+      sourceUrl: "https://www.pexels.com/photo/4823989/",
+      requirement: "Zdobądź 1800 punktów w SowaRunner.",
+      unlockedBy: (academy) => Number(academy.metrics.runnerScore || 0) >= 1800,
+    },
+    {
+      id: "owl-12",
+      file: "sowa-12-dwie-puchate.jpg",
+      title: "Puchaty duet",
+      alt: "Dwie puchate młode sowy przytulone na gałęzi.",
+      photographer: "Twórca w serwisie Pexels",
+      sourceUrl: "https://www.pexels.com/photo/4823986/",
+      requirement: "Zbuduj serię 5 liści w SowaRunner.",
+      unlockedBy: (academy) => Number(academy.metrics.runnerLeafChain || 0) >= 5,
+    },
+    {
+      id: "owl-13",
+      file: "sowa-13-mloda-puszczykowata.jpg",
+      title: "Leśna młodziutka",
+      alt: "Młoda puszczykowata sowa wspinająca się po pniu.",
+      photographer: "Twórca w serwisie Pexels",
+      sourceUrl: "https://www.pexels.com/photo/27067203/",
+      requirement: "Zdobądź 1200 punktów w SowaJumper.",
+      unlockedBy: (academy) => Number(academy.metrics.jumperScore || 0) >= 1200,
+    },
+    {
+      id: "owl-14",
+      file: "sowa-14-w-promieniach.jpg",
+      title: "Promyk puszczyka",
+      alt: "Młody puszczyk oświetlony miękkim światłem w lesie.",
+      photographer: "Twórca w serwisie Pexels",
+      sourceUrl: "https://www.pexels.com/photo/17817497/",
+      requirement: "Wykonaj serię 4 precyzyjnych lądowań w SowaJumper.",
+      unlockedBy: (academy) => Number(academy.metrics.jumperStreak || 0) >= 4,
+    },
+    {
+      id: "owl-15",
+      file: "sowa-15-w-zieleni.jpg",
+      title: "Zielony kamuflaż",
+      alt: "Młoda brązowa sowa ukryta pośród zielonych liści.",
+      photographer: "Twórca w serwisie Pexels",
+      sourceUrl: "https://www.pexels.com/photo/23490342/",
+      requirement: "Zdobądź 1500 punktów w Sowa3.",
+      unlockedBy: (academy) => Number(academy.metrics.sowa3Score || 0) >= 1500,
+    },
+    {
+      id: "owl-16",
+      file: "sowa-16-keila.jpg",
+      title: "Cicha obserwatorka",
+      alt: "Młoda sowa spokojnie obserwująca las z gałęzi.",
+      photographer: "Twórca w serwisie Pexels",
+      sourceUrl: "https://www.pexels.com/photo/15994322/",
+      requirement: "Ukończ przynajmniej jedną trasę w Sowa3.",
+      unlockedBy: (academy) => Number(academy.metrics.sowa3Finishes || 0) >= 1,
+    },
+    {
+      id: "owl-17",
+      file: "sowa-17-uralska.jpg",
+      title: "Mała uralska",
+      alt: "Puchata młoda sowa uralska odpoczywająca na konarze.",
+      photographer: "Twórca w serwisie Pexels",
+      sourceUrl: "https://www.pexels.com/photo/3848270/",
+      requirement: "Zbierz liście ręcznie 75 razy w Sowich Ogrodach.",
+      unlockedBy: (academy) => Number(academy.metrics.ogrodyClicks || 0) >= 75,
+    },
+    {
+      id: "owl-18",
+      file: "sowa-18-na-konarku.jpg",
+      title: "Konarkowa dama",
+      alt: "Młody puszczyk siedzący na cienkim konarze.",
+      photographer: "Twórca w serwisie Pexels",
+      sourceUrl: "https://www.pexels.com/photo/24012047/",
+      requirement: "Posiadaj 18 roślin w Sowich Ogrodach.",
+      unlockedBy: (academy) => Number(academy.metrics.ogrodyPlants || 0) >= 18,
+    },
+    {
+      id: "owl-19",
+      file: "sowa-19-puszczyk.jpg",
+      title: "Puszczyk o zmierzchu",
+      alt: "Puszczyk w miękkim leśnym świetle.",
+      photographer: "Twórca w serwisie Pexels",
+      sourceUrl: "https://www.pexels.com/photo/19892683/",
+      requirement: "Podlej ogród 8 razy.",
+      unlockedBy: (academy) => Number(academy.metrics.ogrodyWatering || 0) >= 8,
+    },
+    {
+      id: "owl-20",
+      file: "sowa-20-na-trawie.jpg",
+      title: "Trawiasta kulka",
+      alt: "Puchata młoda sowa o żółtych oczach siedząca na trawie.",
+      photographer: "Twórca w serwisie Pexels",
+      sourceUrl: "https://www.pexels.com/photo/19065539/",
+      requirement: "Zbierz 5000 liści łącznie w Sowich Ogrodach.",
+      unlockedBy: (academy) => Number(academy.metrics.ogrodyLeaves || 0) >= 5000,
+    },
+    {
+      id: "owl-21",
+      file: "sowa-21-ciekawska.jpg",
+      title: "Ciekawska zza gałęzi",
+      alt: "Młoda sowa wyglądająca ciekawie spomiędzy gałęzi.",
+      photographer: "Twórca w serwisie Pexels",
+      sourceUrl: "https://www.pexels.com/photo/31330685/",
+      requirement: "Posiadaj 6 roślin w Sowiej Szklarni.",
+      unlockedBy: (academy) => Number(academy.metrics.szklarniaPlants || 0) >= 6,
+    },
+    {
+      id: "owl-22",
+      file: "sowa-22-mloda-w-lesie.jpg",
+      title: "Leśny podlot",
+      alt: "Młoda sowa siedząca na gałęzi w jasnym lesie.",
+      photographer: "Twórca w serwisie Pexels",
+      sourceUrl: "https://www.pexels.com/photo/23654832/",
+      requirement: "Przegoń 3 kozy w Sowiej Szklarni.",
+      unlockedBy: (academy) => Number(academy.metrics.szklarniaGoats || 0) >= 3,
+    },
+    {
+      id: "owl-23",
+      file: "sowa-23-uszata-na-ziemi.jpg",
+      title: "Uszata na spacerze",
+      alt: "Puchata młoda uszatka stojąca na leśnej ziemi.",
+      photographer: "Twórca w serwisie Pexels",
+      sourceUrl: "https://www.pexels.com/photo/19065545/",
+      requirement: "Odkryj pierwszą hybrydę w Sowiej Szklarni.",
+      unlockedBy: (academy) => Number(academy.metrics.szklarniaHybrids || 0) >= 1,
+    },
+    {
+      id: "owl-24",
+      file: "sowa-24-lesny-maluch.jpg",
+      title: "Leśny maluszek",
+      alt: "Mała sowa stojąca na leśnym podłożu pośród zieleni.",
+      photographer: "Twórca w serwisie Pexels",
+      sourceUrl: "https://www.pexels.com/photo/7190228/",
+      requirement: "Osiągnij 5. poziom Sowiej Akademii.",
+      unlockedBy: (academy) => academy.level >= 5,
+    },
+    {
+      id: "owl-25",
+      file: "sowa-25-biala-w-koszyku.jpg",
+      title: "Biała koszykarka",
+      alt: "Jasna młoda płomykówka odpoczywająca w koszyku.",
+      photographer: "Twórca w serwisie Pexels",
+      sourceUrl: "https://www.pexels.com/photo/5237543/",
+      requirement: "Zdobądź 40 piórek w Sowiej Akademii.",
+      unlockedBy: (academy) => academy.feathers >= 40,
+    },
+    {
+      id: "owl-26",
+      file: "sowa-26-mloda-z-bliska.jpg",
+      title: "Portret młodej sowy",
+      alt: "Bliski portret młodej brązowej sowy o spokojnym spojrzeniu.",
+      photographer: "Twórca w serwisie Pexels",
+      sourceUrl: "https://www.pexels.com/photo/23490352/",
+      requirement: "Odwiedź każdą z pięciu gier przynajmniej raz.",
+      unlockedBy: (academy) =>
+        ["runnerVisits", "jumperVisits", "sowa3Visits", "ogrodyVisits", "szklarniaVisits"].every(
+          (metric) => Number(academy.metrics[metric] || 0) >= 1,
+        ),
+    },
+    {
+      id: "owl-27",
+      file: "sowa-27-kolumbijska.jpg",
+      title: "Kolumbijska maskotka",
+      alt: "Młoda sowa ukryta w bujnych kolumbijskich liściach.",
+      photographer: "Twórca w serwisie Pexels",
+      sourceUrl: "https://www.pexels.com/photo/28699294/",
+      requirement: "Osiągnij 6. poziom Akademii i zdobądź 50 piórek.",
+      unlockedBy: (academy) => academy.level >= 6 && academy.feathers >= 50,
+    },
+    {
+      id: "owl-28",
+      file: "sowa-28-puszczykowata-na-drzewie.jpg",
+      title: "Puszczykowata strażniczka",
+      alt: "Młoda puszczykowata sowa siedząca wysoko na drzewie.",
+      photographer: "Twórca w serwisie Pexels",
+      sourceUrl: "https://www.pexels.com/photo/24012038/",
+      requirement: "Przebiegnij 2500 m w Runnerze i osiągnij 400 m w Jumperze.",
+      unlockedBy: (academy) =>
+        Number(academy.metrics.runnerDistance || 0) >= 2500 && Number(academy.metrics.jumperHeight || 0) >= 400,
+    },
+    {
+      id: "owl-29",
+      file: "sowa-29-norkowa-na-lace.jpg",
+      title: "Łąkowa norka",
+      alt: "Mała sowa ziemna stojąca w słonecznej trawie.",
+      photographer: "Twórca w serwisie Pexels",
+      sourceUrl: "https://www.pexels.com/photo/5651223/",
+      requirement: "Osiągnij combo 12 w Sowa3 i wykonaj pierwsze przesadzanie Ogrodów.",
+      unlockedBy: (academy) =>
+        Number(academy.metrics.sowa3Combo || 0) >= 12 && Number(academy.metrics.ogrodyPrestiges || 0) >= 1,
+    },
+    {
+      id: "owl-30",
+      file: "sowa-30-wiosenna-rodzina.jpg",
+      title: "Wiosenna rodzina",
+      alt: "Kilka uroczych sów siedzących razem pośród wiosennych gałęzi.",
+      photographer: "Twórca w serwisie Pexels",
+      sourceUrl: "https://www.pexels.com/photo/31922777/",
+      requirement: "Osiągnij 8. poziom Akademii, zdobądź 80 piórek i zbuduj 5 pomieszczeń Szklarni.",
+      unlockedBy: (academy) =>
+        academy.level >= 8 && academy.feathers >= 80 && Number(academy.metrics.szklarniaRooms || 0) >= 5,
+    },
   ]);
 
   let state = load();
@@ -111,7 +337,9 @@
         ...defaultState(),
         ...raw,
         version: VERSION,
-        unlocked: Array.isArray(raw.unlocked) ? raw.unlocked.filter((id) => PHOTOS.some((photo) => photo.id === id)) : ["owl-01"],
+        unlocked: Array.isArray(raw.unlocked)
+          ? raw.unlocked.filter((id) => PHOTOS.some((photo) => photo.id === id))
+          : ["owl-01"],
         viewed: Array.isArray(raw.viewed) ? raw.viewed.filter((id) => PHOTOS.some((photo) => photo.id === id)) : [],
       };
     } catch (_error) {
@@ -149,7 +377,8 @@
       if (notify) {
         window.SowieNotifications?.toast?.({
           title: "Nowa fotografia w Galerii Sów!",
-          detail: newlyUnlocked.length === 1 ? newlyUnlocked[0].title : `Odblokowano ${newlyUnlocked.length} fotografie`,
+          detail:
+            newlyUnlocked.length === 1 ? newlyUnlocked[0].title : `Odblokowano ${newlyUnlocked.length} fotografie`,
           reward: "Otwórz Galerię przyciskiem 🖼️",
           kind: "important",
         });
@@ -160,17 +389,21 @@
 
   function snapshot() {
     const unlocked = PHOTOS.filter((photo) => state.unlocked.includes(photo.id)).map((photo) => photo.id);
-    return JSON.parse(JSON.stringify({
-      ...state,
-      total: PHOTOS.length,
-      unlockedCount: unlocked.length,
-      unlocked,
-    }));
+    return JSON.parse(
+      JSON.stringify({
+        ...state,
+        total: PHOTOS.length,
+        unlockedCount: unlocked.length,
+        unlocked,
+      }),
+    );
   }
 
   function focusableElements() {
     if (!modal) return [];
-    return [...modal.querySelectorAll('a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])')].filter((element) => !element.hidden);
+    return [...modal.querySelectorAll('a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])')].filter(
+      (element) => !element.hidden,
+    );
   }
 
   function trapFocus(event) {
@@ -325,7 +558,8 @@
       button.id = "galleryButton";
       button.className = "sowie-gallery-button";
       button.textContent = "🖼️ Galeria Sów";
-      const actions = document.querySelector(".sowie-header-actions") || document.querySelector("header") || document.body;
+      const actions =
+        document.querySelector(".sowie-header-actions") || document.querySelector("header") || document.body;
       actions.appendChild(button);
     } else {
       button.className = "sowie-tool-button";
