@@ -24,9 +24,9 @@ test("Galeria Sów pokazuje nagrody, źródło i zapisuje ulubioną fotografię"
 
   const dialog = page.getByRole("dialog", { name: "🖼️ Galeria Sów" });
   await expect(dialog).toBeVisible();
-  await expect(dialog.locator("[data-gallery-progress]")).toHaveText("1/8 odblokowanych");
-  await expect(dialog.locator("[data-gallery-photo]")).toHaveCount(8);
-  await expect(dialog.locator(".sowie-gallery-card.is-locked")).toHaveCount(7);
+  await expect(dialog.locator("[data-gallery-progress]")).toHaveText("1/30 odblokowanych");
+  await expect(dialog.locator("[data-gallery-photo]")).toHaveCount(30);
+  await expect(dialog.locator(".sowie-gallery-card.is-locked")).toHaveCount(29);
   await expect(dialog.locator(".sowie-gallery-thumb img")).toHaveCount(1);
 
   await dialog.locator("[data-gallery-open='owl-01']").click();
@@ -44,20 +44,39 @@ test("Galeria Sów pokazuje nagrody, źródło i zapisuje ulubioną fotografię"
   expect(errors).toEqual([]);
 });
 
-test("osiągnięcia Akademii trwale odblokowują komplet ośmiu fotografii", async ({ page }) => {
+test("osiągnięcia Akademii trwale odblokowują komplet trzydziestu fotografii", async ({ page }) => {
   await page.addInitScript(() => {
     localStorage.setItem(
       "sowieGryAcademy",
       JSON.stringify({
         version: 2,
-        xp: 1000,
-        feathers: 30,
+        xp: 6000,
+        feathers: 150,
         metrics: {
-          runnerDistance: 1200,
-          jumperHeight: 300,
-          sowa3Combo: 10,
-          ogrodyBuys: 25,
-          szklarniaRooms: 5,
+          runnerDistance: 6000,
+          runnerScore: 6000,
+          runnerLeafChain: 20,
+          runnerVisits: 1,
+          jumperHeight: 1000,
+          jumperScore: 5000,
+          jumperStreak: 20,
+          jumperVisits: 1,
+          sowa3Score: 6000,
+          sowa3Combo: 20,
+          sowa3Finishes: 3,
+          sowa3Visits: 1,
+          ogrodyLeaves: 50000,
+          ogrodyClicks: 500,
+          ogrodyBuys: 100,
+          ogrodyWatering: 50,
+          ogrodyPlants: 100,
+          ogrodyPrestiges: 2,
+          ogrodyVisits: 1,
+          szklarniaRooms: 10,
+          szklarniaPlants: 30,
+          szklarniaGoats: 20,
+          szklarniaHybrids: 5,
+          szklarniaVisits: 1,
         },
         daily: null,
         weekly: null,
@@ -71,12 +90,12 @@ test("osiągnięcia Akademii trwale odblokowują komplet ośmiu fotografii", asy
   await page.getByRole("button", { name: "Otwórz Galerię Sów" }).click();
   const dialog = page.getByRole("dialog", { name: "🖼️ Galeria Sów" });
 
-  await expect(dialog.locator("[data-gallery-progress]")).toHaveText("8/8 odblokowanych");
+  await expect(dialog.locator("[data-gallery-progress]")).toHaveText("30/30 odblokowanych");
   await expect(dialog.locator(".sowie-gallery-card.is-locked")).toHaveCount(0);
-  await expect(dialog.locator(".sowie-gallery-thumb img")).toHaveCount(8);
+  await expect(dialog.locator(".sowie-gallery-thumb img")).toHaveCount(30);
 
   const saved = await page.evaluate(() => JSON.parse(localStorage.getItem("sowieOwlGallery") || "null"));
-  expect(saved.unlocked).toHaveLength(8);
+  expect(saved.unlocked).toHaveLength(30);
   expect(errors).toEqual([]);
 });
 
@@ -91,7 +110,7 @@ test("Galeria Sów jest dostępna bezpośrednio z każdej gry", async ({ page })
     await opener.click();
     const dialog = page.getByRole("dialog", { name: "🖼️ Galeria Sów" });
     await expect(dialog).toBeVisible();
-    await expect(dialog.locator("[data-gallery-photo]")).toHaveCount(8);
+    await expect(dialog.locator("[data-gallery-photo]")).toHaveCount(30);
     await page.keyboard.press("Escape");
     await expect(dialog).toBeHidden();
   }
