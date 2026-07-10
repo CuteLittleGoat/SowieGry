@@ -1,0 +1,275 @@
+.sowie-tool-dock {
+  position: fixed;
+  top: max(12px, env(safe-area-inset-top));
+  right: max(12px, env(safe-area-inset-right));
+  z-index: 9000;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sowie-tool-button,
+.sowie-card-guide,
+.sowie-academy-button,
+.sowie-feature-button {
+  border: 2px solid rgba(87, 58, 112, 0.2);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.94);
+  color: #382946;
+  box-shadow: 0 6px 20px rgba(64, 37, 81, 0.18);
+  font: 700 0.92rem/1.1 system-ui, sans-serif;
+  cursor: pointer;
+  min-height: 42px;
+  padding: 0.65rem 0.9rem;
+}
+
+.sowie-tool-button {
+  min-width: 48px;
+  padding: 0.65rem;
+  font-size: 1.1rem;
+}
+
+.sowie-tool-button:hover,
+.sowie-tool-button:focus-visible,
+.sowie-card-guide:hover,
+.sowie-card-guide:focus-visible,
+.sowie-academy-button:hover,
+.sowie-academy-button:focus-visible,
+.sowie-feature-button:hover,
+.sowie-feature-button:focus-visible {
+  transform: translateY(-1px);
+  border-color: rgba(87, 58, 112, 0.48);
+  outline: 3px solid rgba(151, 101, 190, 0.24);
+  outline-offset: 2px;
+}
+
+.sowie-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 12000;
+  display: grid;
+  place-items: center;
+  padding: max(18px, env(safe-area-inset-top)) max(18px, env(safe-area-inset-right)) max(18px, env(safe-area-inset-bottom)) max(18px, env(safe-area-inset-left));
+  background: rgba(35, 24, 46, 0.64);
+  backdrop-filter: blur(7px);
+}
+
+.sowie-modal-backdrop[hidden] {
+  display: none;
+}
+
+.sowie-modal-card {
+  width: min(680px, 100%);
+  max-height: min(84vh, 760px);
+  overflow: auto;
+  border: 3px solid rgba(120, 82, 148, 0.22);
+  border-radius: 28px;
+  background: #fffdfd;
+  color: #30253a;
+  box-shadow: 0 22px 70px rgba(24, 13, 34, 0.34);
+  padding: clamp(1.1rem, 3vw, 2rem);
+}
+
+.sowie-modal-card h2,
+.sowie-modal-card h3 {
+  margin-top: 0;
+  color: #513765;
+}
+
+.sowie-modal-card h3 {
+  margin-bottom: 0.35rem;
+  margin-top: 1.1rem;
+  font-size: 1rem;
+}
+
+.sowie-modal-card p,
+.sowie-modal-card li {
+  line-height: 1.55;
+}
+
+.sowie-modal-card ul,
+.sowie-modal-card ol {
+  padding-left: 1.35rem;
+}
+
+.sowie-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.7rem;
+  margin-top: 1.25rem;
+}
+
+.sowie-modal-actions button {
+  border: 0;
+  border-radius: 999px;
+  background: #6d4a82;
+  color: white;
+  font-weight: 800;
+  padding: 0.75rem 1.15rem;
+  cursor: pointer;
+}
+
+.sowie-guide-summary {
+  border-radius: 18px;
+  background: #f5edff;
+  padding: 0.9rem 1rem;
+}
+
+.game-card-shell {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.game-card-shell .game-card {
+  flex: 1;
+}
+
+.sowie-card-guide {
+  width: 100%;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.82);
+}
+
+.sowie-header-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.6rem;
+}
+
+.sowie-academy-button {
+  background: linear-gradient(135deg, #fff7cc, #f0e5ff);
+}
+
+.sowie-academy-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 0.7rem;
+  margin: 0.8rem 0 1rem;
+}
+
+.sowie-academy-stat,
+.sowie-mission-card,
+.sowie-feature-card {
+  border: 2px solid rgba(96, 65, 119, 0.13);
+  border-radius: 18px;
+  background: #fbf8ff;
+  padding: 0.85rem;
+}
+
+.sowie-academy-stat strong {
+  display: block;
+  font-size: 1.35rem;
+  color: #5d3c72;
+}
+
+.sowie-progress {
+  height: 10px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #e8dfef;
+  margin-top: 0.55rem;
+}
+
+.sowie-progress > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #8a5fb0, #ef8eb8);
+}
+
+.sowie-mission-list,
+.sowie-feature-list {
+  display: grid;
+  gap: 0.7rem;
+}
+
+.sowie-mission-card[data-complete="true"] {
+  background: #effcef;
+  border-color: rgba(56, 147, 73, 0.3);
+}
+
+.sowie-feature-button {
+  margin-top: 0.55rem;
+  border-radius: 14px;
+  background: #fff;
+}
+
+.sowie-feature-button:disabled {
+  cursor: default;
+  opacity: 0.56;
+  transform: none;
+}
+
+.sowie-expansion-hud {
+  position: fixed;
+  left: max(12px, env(safe-area-inset-left));
+  bottom: max(12px, env(safe-area-inset-bottom));
+  z-index: 8500;
+  max-width: min(320px, calc(100vw - 24px));
+  border: 2px solid rgba(83, 54, 104, 0.2);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.9);
+  color: #392b43;
+  box-shadow: 0 8px 26px rgba(47, 27, 60, 0.2);
+  padding: 0.65rem 0.8rem;
+  font: 800 0.82rem/1.25 system-ui, sans-serif;
+  pointer-events: none;
+}
+
+.sowie-daily-badge {
+  display: inline-block;
+  margin-left: 0.35rem;
+  border-radius: 999px;
+  background: #ffe783;
+  color: #5f4813;
+  padding: 0.2rem 0.45rem;
+  font-size: 0.72rem;
+}
+
+.sowie-trait-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.sowie-trait-chip {
+  border-radius: 999px;
+  background: #eaf8ed;
+  padding: 0.4rem 0.65rem;
+  font-weight: 700;
+}
+
+@media (max-width: 720px) {
+  .sowie-tool-dock {
+    top: max(8px, env(safe-area-inset-top));
+    right: max(8px, env(safe-area-inset-right));
+    gap: 6px;
+  }
+
+  .sowie-tool-button {
+    min-width: 42px;
+    min-height: 38px;
+    padding: 0.5rem;
+  }
+
+  .sowie-modal-card {
+    border-radius: 22px;
+    padding: 1rem;
+  }
+
+  .sowie-expansion-hud {
+    bottom: max(8px, env(safe-area-inset-bottom));
+    left: max(8px, env(safe-area-inset-left));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sowie-tool-button,
+  .sowie-card-guide,
+  .sowie-academy-button,
+  .sowie-feature-button {
+    transition: none;
+  }
+}
