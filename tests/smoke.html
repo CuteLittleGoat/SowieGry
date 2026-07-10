@@ -1,126 +1,68 @@
 <!doctype html>
 <html lang="pl">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>SowieGry — smoke test</title>
+  <script src="../shared/sowie-platform.js"></script>
   <style>
-    body { margin: 0; padding: 24px; font-family: system-ui, sans-serif; color: #2b2733; background: #dff6ff; }
+    body { margin: 0; padding: 24px; color: #eef8f1; background: #17211b; font: 15px/1.5 system-ui, sans-serif; }
     h1 { margin-top: 0; }
-    .grid { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit,minmax(260px,1fr)); }
-    article { padding: 16px; border-radius: 18px; background: rgba(255,255,255,.9); box-shadow: 0 12px 28px rgba(40,70,90,.14); }
-    .pending { color: #836a16; }
-    .ok { color: #237b3d; }
-    .bad { color: #b2273b; }
-    pre { white-space: pre-wrap; font-size: 12px; }
-    iframe { position: fixed; width: 390px; height: 760px; left: -2000px; top: 0; border: 0; }
+    .summary, .result { padding: 12px 14px; border-radius: 12px; background: #223129; }
+    .results { display: grid; gap: 10px; margin-top: 16px; }
+    .pass { border-left: 5px solid #68d391; }
+    .fail { border-left: 5px solid #fc8181; }
+    iframe { position: fixed; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
   </style>
 </head>
 <body>
   <h1>SowieGry — test uruchomieniowy</h1>
-  <p>Strona ładuje trzy gry i sprawdza najważniejsze moduły. Najlepiej otworzyć ją przez lokalny serwer HTTP albo GitHub Pages.</p>
-  <div class="grid" id="results"></div>
+  <p class="summary" id="summary">Sprawdzam pięć gier…</p>
+  <section class="results" id="results" aria-live="polite"></section>
   <script>
-    const games = [
-      {
-        id: "runner",
-        name: "SowaRunner",
-        url: "../SowaRunner/",
-        checks: [
-          ["trzy poziomy trudności", "typeof LEVELS !== 'undefined' && LEVELS.length === 3"],
-          ["główna funkcja start", "typeof start === 'function'"],
-          ["dodatkowe życia", "typeof runnerLifePickups !== 'undefined'"],
-          ["balans przeszkód", "typeof runnerBalancedGap === 'function'"],
-          ["wspólny profil", "typeof SowieCore === 'object'"],
-        ],
-      },
-      {
-        id: "jumper",
-        name: "SowaJumper",
-        url: "../SowaJumper/",
-        checks: [
-          ["trzy poziomy trudności", "typeof JUMPER_DIFFICULTIES !== 'undefined' && Object.keys(JUMPER_DIFFICULTIES).length === 3"],
-          ["główna funkcja start", "typeof startGame === 'function'"],
-          ["dodatkowe życia", "typeof drawJumperHeart === 'function'"],
-          ["balans platform", "typeof resetJumperSafetyState === 'function'"],
-          ["bonus humbaka", "typeof drawThreeLaneBonus === 'function' || typeof drawBonus === 'function'"],
-          ["wspólny profil", "typeof SowieCore === 'object'"],
-        ],
-      },
-      {
-        id: "sowa3",
-        name: "Sowa3",
-        url: "../Sowa3/",
-        checks: [
-          ["trzy poziomy trudności", "typeof SOWA3_DIFFICULTIES !== 'undefined' && Object.keys(SOWA3_DIFFICULTIES).length === 3"],
-          ["główna funkcja start", "typeof startGame === 'function'"],
-          ["dodatkowe życia", "typeof drawSowa3Heart === 'function'"],
-          ["balans torów", "typeof pickSowa3SafeBlockerLane === 'function'"],
-          ["czysty korytarz", "typeof drawSowa3GameplayCorridor === 'function'"],
-          ["basen i humbak", "typeof drawReferencePool === 'function' && typeof drawFinishWhale === 'function'"],
-          ["wspólny profil", "typeof SowieCore === 'object'"],
-        ],
-      },
-    ];
+    const checks = {
+      runner: (frame) => frame.document.querySelector("canvas") && frame.SowieCore,
+      jumper: (frame) => frame.document.querySelector("#game") && frame.SowieCore,
+      sowa3: (frame) => frame.document.querySelector("#game") && frame.SowieCore,
+      ogrody: (frame) => frame.document.querySelector("#gardenCanvas") && frame.SowieIdleSave,
+      szklarnia: (frame) => frame.document.querySelector("#greenhouseCanvas") && frame.SowieIdleSave,
+    };
 
-    const resultRoot = document.getElementById("results");
-    const frames = new Map();
-    const errors = new Map();
+    const results = document.getElementById("results");
+    const summary = document.getElementById("summary");
+    let completed = 0;
+    let passed = 0;
 
-    for (const game of games) {
-      const article = document.createElement("article");
-      article.id = `result-${game.id}`;
-      article.innerHTML = `<h2>${game.name}</h2><p class="pending">Ładowanie…</p><pre></pre>`;
-      resultRoot.appendChild(article);
-      errors.set(game.id, []);
-
-      const frame = document.createElement("iframe");
-      frame.title = game.name;
-      frame.src = `${game.url}?smoke=1`;
-      frame.dataset.game = game.id;
-      document.body.appendChild(frame);
-      frames.set(game.id, frame);
+    function finish(game, ok, details) {
+      const row = document.createElement("article");
+      row.className = `result ${ok ? "pass" : "fail"}`;
+      row.textContent = `${ok ? "PASS" : "FAIL"}: ${game.name}${details ? ` — ${details}` : ""}`;
+      results.appendChild(row);
+      completed += 1;
+      if (ok) passed += 1;
+      summary.textContent = completed === window.SowiePlatform.GAME_REGISTRY.length
+        ? `Zakończono: ${passed}/${completed} testów zaliczonych.`
+        : `Postęp: ${completed}/${window.SowiePlatform.GAME_REGISTRY.length}`;
     }
 
-    function gameFromPath(path) {
-      return games.find((game) => path.includes(`/${game.name}/`) || (game.id === "sowa3" && path.includes("/Sowa3/")));
+    for (const game of window.SowiePlatform.GAME_REGISTRY) {
+      const iframe = document.createElement("iframe");
+      iframe.title = `Test ${game.name}`;
+      iframe.src = `../${game.path}?seed=manual-smoke&testNow=1783656000000`;
+      iframe.addEventListener("load", () => {
+        window.setTimeout(() => {
+          try {
+            const ok = Boolean(checks[game.id]?.(iframe.contentWindow));
+            finish(game, ok, ok ? "uruchomiona" : "brak oczekiwanego API lub elementu");
+          } catch (error) {
+            finish(game, false, error.message);
+          } finally {
+            iframe.remove();
+          }
+        }, 900);
+      });
+      document.body.appendChild(iframe);
     }
-
-    function runChecks(game) {
-      const frame = frames.get(game.id);
-      const article = document.getElementById(`result-${game.id}`);
-      const lines = [];
-      let passed = 0;
-      for (const [label, expression] of game.checks) {
-        let ok = false;
-        try { ok = Boolean(frame.contentWindow.eval(expression)); } catch (error) { errors.get(game.id).push(String(error)); }
-        lines.push(`${ok ? "✅" : "❌"} ${label}`);
-        if (ok) passed += 1;
-      }
-      const gameErrors = errors.get(game.id);
-      if (gameErrors.length) lines.push("", "Błędy:", ...gameErrors);
-      const allOk = passed === game.checks.length && gameErrors.length === 0;
-      article.querySelector("p").className = allOk ? "ok" : "bad";
-      article.querySelector("p").textContent = allOk ? "Wszystkie kontrole zaliczone" : `${passed}/${game.checks.length} kontroli zaliczonych`;
-      article.querySelector("pre").textContent = lines.join("\n");
-    }
-
-    window.addEventListener("message", (event) => {
-      if (event.origin !== location.origin || event.data?.source !== "sowie-smoke") return;
-      const game = gameFromPath(event.data.game || "");
-      if (!game) return;
-      if (event.data.type === "error") {
-        errors.get(game.id).push(`${event.data.message} ${event.data.file || ""}:${event.data.line || ""}`);
-      }
-      if (event.data.type === "loaded") window.setTimeout(() => runChecks(game), 900);
-    });
-
-    window.setTimeout(() => {
-      for (const game of games) {
-        const article = document.getElementById(`result-${game.id}`);
-        if (article.querySelector("p").textContent === "Ładowanie…") runChecks(game);
-      }
-    }, 6000);
   </script>
 </body>
 </html>

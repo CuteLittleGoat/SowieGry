@@ -1,49 +1,13 @@
 (() => {
   "use strict";
 
-  const STORAGE_KEY = "sowieGryProfile";
-  const DEFAULT_PROFILE = {
-    version: 1,
-    unlockedCosmetics: ["none", "bow"],
-    selectedCosmetic: "none",
-    settings: {
-      music: true,
-      sfx: true,
-      quips: true,
-      reducedEffects: false,
-    },
-    missions: {
-      leaves20: { progress: 0, target: 20, done: false, reward: "glasses" },
-      extraLife: { progress: 0, target: 1, done: false, reward: "flowerCrown" },
-      nearMiss3: { progress: 0, target: 3, done: false, reward: "scarf" },
-      chaosFinish: { progress: 0, target: 1, done: false, reward: "gardenerHat" },
-      combo4: { progress: 0, target: 1, done: false, reward: "bubbleTrail" },
-      runner1000: { progress: 0, target: 1000, done: false, reward: "cap" },
-      jumper250: { progress: 0, target: 250, done: false, reward: "backpack" },
-    },
-    stats: {
-      leaves: 0,
-      nearMisses: 0,
-      extraLives: 0,
-      finishes: 0,
-      maxCombo: 1,
-      runnerDistance: 0,
-      jumperHeight: 0,
-    },
-  };
+  const platform = window.SowiePlatform;
+  if (!platform) {
+    console.error("Brak SowiePlatform. Załaduj shared/sowie-platform.js przed sowie-core.js.");
+    return;
+  }
 
-  const COSMETICS = {
-    none: { label: "Bez dodatku", icon: "🦉" },
-    bow: { label: "Kokardka", icon: "🎀" },
-    glasses: { label: "Okulary", icon: "😎" },
-    flowerCrown: { label: "Wianek", icon: "🌸" },
-    gardenerHat: { label: "Kapelusz ogrodnika", icon: "👒" },
-    cap: { label: "Czapka z daszkiem", icon: "🧢" },
-    scarf: { label: "Szalik", icon: "🧣" },
-    backpack: { label: "Plecak", icon: "🎒" },
-    bubbleTrail: { label: "Ślad bąbelków", icon: "🫧" },
-  };
-
+  const COSMETICS = platform.COSMETICS;
   const MISSION_LABELS = {
     leaves20: "Zbierz 20 liści monster",
     extraLife: "Zdobądź dodatkowe życie",
@@ -53,7 +17,6 @@
     runner1000: "Przebiegnij 1000 m w SowaRunner",
     jumper250: "Osiągnij 250 m w SowaJumper",
   };
-
   const QUIPS = [
     "Hu-hu! Ale lot!",
     "Pracu Pracu? Nie dzisiaj!",
@@ -62,94 +25,117 @@
     "Basen już blisko!",
   ];
 
-  let profile = loadProfile();
+  let profile = platform.readProfile();
   let gameAdapter = null;
   let audioContext = null;
-  let musicTimer = null;
+  let musicTimer = 0;
   let musicStep = 0;
   let debugNode = null;
   let lastQuipAt = 0;
+  let modalReturnFocus = null;
+  let pausedBeforeModal = false;
+  const lastSoundAt = new Map();
+  const pendingStats = new Map();
 
-  function clone(value) {
-    return JSON.parse(JSON.stringify(value));
+  function persistProfile() {
+    profile = platform.writeProfile(profile);
   }
 
-  function mergeProfile(raw) {
-    const result = clone(DEFAULT_PROFILE);
-    if (!raw || typeof raw !== "object") return result;
-    result.version = 1;
-    result.unlockedCosmetics = Array.from(new Set([
-      ...DEFAULT_PROFILE.unlockedCosmetics,
-      ...(Array.isArray(raw.unlockedCosmetics) ? raw.unlockedCosmetics : []),
-    ])).filter((key) => COSMETICS[key]);
-    result.selectedCosmetic = COSMETICS[raw.selectedCosmetic] ? raw.selectedCosmetic : "none";
-    result.settings = { ...result.settings, ...(raw.settings || {}) };
-    result.stats = { ...result.stats, ...(raw.stats || {}) };
-    for (const [key, mission] of Object.entries(result.missions)) {
-      const saved = raw.missions?.[key];
-      if (saved) result.missions[key] = { ...mission, ...saved };
-    }
-    return result;
+  function reloadProfile() {
+    profile = platform.readProfile();
+    return profile;
   }
 
-  function loadProfile() {
-    try {
-      return mergeProfile(JSON.parse(localStorage.getItem(STORAGE_KEY) || "null"));
-    } catch (_error) {
-      return clone(DEFAULT_PROFILE);
-    }
+  function getProfile() {
+    return profile;
   }
 
-  function saveProfile() {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(profile));
+  function settings() {
+    return profile.settings;
+  }
+
+  function selectedCosmetic() {
+    return profile.selectedCosmetic;
   }
 
   function unlockCosmetic(key, announce = true) {
     if (!COSMETICS[key] || profile.unlockedCosmetics.includes(key)) return false;
     profile.unlockedCosmetics.push(key);
-    saveProfile();
+    persistProfile();
+    platform.emit("cosmetic:unlocked", { key });
     if (announce) toast(`Odblokowano: ${COSMETICS[key].label}!`);
     play("unlock");
     return true;
   }
 
   function selectCosmetic(key) {
-    if (!profile.unlockedCosmetics.includes(key)) return false;
+    if (!profile.unlockedCosmetics.includes(key) || !COSMETICS[key]) return false;
     profile.selectedCosmetic = key;
-    saveProfile();
+    persistProfile();
     renderWardrobe();
     toast(`Wybrano: ${COSMETICS[key].label}`);
+    platform.emit("cosmetic:selected", { key });
     return true;
   }
 
   function progressMission(key, amount = 1) {
     const mission = profile.missions[key];
     if (!mission || mission.done) return false;
-    mission.progress = Math.min(mission.target, Number(mission.progress || 0) + amount);
+    const throttleMs = key === "runner1000" || key === "jumper250" ? 500 : 0;
+    if (throttleMs && !platform.shouldRun(`mission:${key}`, throttleMs)) return false;
+    mission.progress = Math.min(mission.target, Number(mission.progress || 0) + Number(amount || 0));
     if (mission.progress >= mission.target) {
       mission.done = true;
       unlockCosmetic(mission.reward, false);
-      toast(`Misja ukończona: ${MISSION_LABELS[key]}`);
-      toast(`Nagroda: ${COSMETICS[mission.reward]?.label || mission.reward}`);
+      toast({
+        title: "Misja ukończona",
+        detail: MISSION_LABELS[key] || key,
+        reward: `Nagroda: ${COSMETICS[mission.reward]?.label || mission.reward}`,
+        kind: "important",
+        mergeKey: `mission:${key}`,
+      });
       play("mission");
     }
-    saveProfile();
+    persistProfile();
     renderMissions();
+    platform.emit("mission:progress", { key, mission: { ...mission } });
     return mission.done;
   }
 
+  function statThrottle(key) {
+    if (key === "runnerDistance" || key === "jumperHeight") return 750;
+    if (String(key).startsWith("ogrody") || String(key).startsWith("szklarnia")) return 3000;
+    return 0;
+  }
+
   function recordStat(key, value, mode = "add") {
+    const number = Number(value);
+    if (!Number.isFinite(number)) return false;
     if (!(key in profile.stats)) profile.stats[key] = 0;
-    if (mode === "max") profile.stats[key] = Math.max(Number(profile.stats[key] || 0), value);
-    else profile.stats[key] = Number(profile.stats[key] || 0) + value;
-    saveProfile();
+    if (mode === "max") profile.stats[key] = Math.max(Number(profile.stats[key] || 0), number);
+    else profile.stats[key] = Number(profile.stats[key] || 0) + number;
+
+    pendingStats.set(key, profile.stats[key]);
+    const interval = statThrottle(key);
+    if (!interval || platform.shouldRun(`stat:${key}`, interval)) {
+      persistProfile();
+      pendingStats.delete(key);
+    }
+    platform.emit("stat:recorded", { key, value: profile.stats[key], mode });
+    return true;
+  }
+
+  function flushPendingStats() {
+    if (!pendingStats.size) return;
+    persistProfile();
+    pendingStats.clear();
   }
 
   function ensureAudio() {
     if (audioContext) return audioContext;
-    const Ctx = window.AudioContext || window.webkitAudioContext;
-    if (!Ctx) return null;
-    audioContext = new Ctx();
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContextClass) return null;
+    audioContext = new AudioContextClass();
     return audioContext;
   }
 
@@ -176,24 +162,34 @@
   }
 
   function play(name) {
-    if (!profile.settings.sfx) return;
+    if (!profile.settings.sfx) return false;
+    const now = performance.now();
+    const previous = lastSoundAt.get(name) ?? -Infinity;
+    if (now - previous < 90) return false;
+    lastSoundAt.set(name, now);
     resumeAudio();
-    const map = {
-      leaf: [[660, .08, .035, "sine", 0], [880, .10, .03, "sine", .055]],
-      heart: [[520, .11, .04, "triangle", 0], [780, .15, .04, "triangle", .07]],
-      jump: [[330, .08, .025, "triangle", 0]],
-      hurt: [[150, .18, .05, "sawtooth", 0]],
-      near: [[920, .08, .035, "sine", 0]],
-      combo: [[620, .08, .03, "triangle", 0], [820, .10, .03, "triangle", .06]],
-      goat: [[210, .12, .035, "square", 0], [260, .12, .025, "square", .08]],
-      whale: [[180, .22, .04, "sine", 0], [130, .28, .03, "sine", .06]],
-      phone: [[740, .08, .03, "square", 0], [620, .08, .03, "square", .11]],
-      boar: [[95, .25, .04, "sawtooth", 0]],
-      splash: [[280, .16, .035, "sine", 0], [420, .12, .025, "sine", .04]],
-      mission: [[520, .10, .04, "triangle", 0], [660, .10, .04, "triangle", .08], [880, .16, .04, "triangle", .16]],
-      unlock: [[740, .10, .04, "triangle", 0], [980, .18, .04, "triangle", .08]],
+    const sounds = {
+      leaf: [[660, 0.08, 0.035, "sine", 0], [880, 0.1, 0.03, "sine", 0.055]],
+      heart: [[520, 0.11, 0.04, "triangle", 0], [780, 0.15, 0.04, "triangle", 0.07]],
+      jump: [[330, 0.08, 0.025, "triangle", 0]],
+      hurt: [[150, 0.18, 0.05, "sawtooth", 0]],
+      near: [[920, 0.08, 0.035, "sine", 0]],
+      combo: [[620, 0.08, 0.03, "triangle", 0], [820, 0.1, 0.03, "triangle", 0.06]],
+      goat: [[210, 0.12, 0.035, "square", 0], [260, 0.12, 0.025, "square", 0.08]],
+      whale: [[180, 0.22, 0.04, "sine", 0], [130, 0.28, 0.03, "sine", 0.06]],
+      phone: [[740, 0.08, 0.03, "square", 0], [620, 0.08, 0.03, "square", 0.11]],
+      boar: [[95, 0.25, 0.04, "sawtooth", 0]],
+      splash: [[280, 0.16, 0.035, "sine", 0], [420, 0.12, 0.025, "sine", 0.04]],
+      mission: [[520, 0.1, 0.04, "triangle", 0], [660, 0.1, 0.04, "triangle", 0.08], [880, 0.16, 0.04, "triangle", 0.16]],
+      unlock: [[740, 0.1, 0.04, "triangle", 0], [980, 0.18, 0.04, "triangle", 0.08]],
     };
-    for (const args of map[name] || map.leaf) tone(...args);
+    for (const args of sounds[name] || sounds.leaf) tone(...args);
+    return true;
+  }
+
+  function stopMusic() {
+    if (musicTimer) window.clearInterval(musicTimer);
+    musicTimer = 0;
   }
 
   function startMusic(theme = "default") {
@@ -216,27 +212,22 @@
       if (!context || context.state !== "running") return;
       const frequency = melody[musicStep % melody.length];
       musicStep += 1;
-      const previousSfx = profile.settings.sfx;
-      profile.settings.sfx = true;
       tone(frequency, 0.19, 0.012, "triangle", 0);
-      profile.settings.sfx = previousSfx;
     }, 430);
   }
 
-  function stopMusic() {
-    if (musicTimer) window.clearInterval(musicTimer);
-    musicTimer = null;
-  }
-
-  function toast(text) {
+  function toast(input) {
     ensureUi();
     const stack = document.querySelector(".sowie-toast-stack");
     if (!stack) return;
     const node = document.createElement("div");
     node.className = "sowie-toast";
-    node.textContent = text;
+    node.setAttribute("role", "status");
+    node.textContent = typeof input === "string"
+      ? input
+      : [input?.title, input?.detail, input?.reward].filter(Boolean).join(" — ");
     stack.appendChild(node);
-    window.setTimeout(() => node.remove(), 2850);
+    window.setTimeout(() => node.remove(), Number(input?.duration) || 2850);
   }
 
   function maybeQuip(text = null) {
@@ -250,7 +241,8 @@
   function toggleSetting(key) {
     if (!(key in profile.settings)) return;
     profile.settings[key] = !profile.settings[key];
-    saveProfile();
+    if (key === "reducedEffects") document.documentElement.classList.toggle("sowie-reduced-effects", profile.settings[key]);
+    persistProfile();
     if (key === "music") {
       if (profile.settings.music) startMusic(gameAdapter?.musicTheme?.() || "default");
       else stopMusic();
@@ -262,6 +254,7 @@
     gameAdapter = adapter || null;
     ensureUi();
     if (profile.settings.music) startMusic(adapter?.musicTheme?.() || "default");
+    platform.emit("game:registered", { adapter: gameAdapter });
   }
 
   function togglePause() {
@@ -270,47 +263,76 @@
     gameAdapter.setPaused(next);
     const badge = document.querySelector(".sowie-paused-badge");
     if (badge) badge.hidden = !next;
+    platform.emit(next ? "game:pause" : "game:resume");
   }
 
-  function openModal(tab = "wardrobe") {
+  function focusableElements(root) {
+    return Array.from(root.querySelectorAll(
+      "button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex='-1'])",
+    )).filter((element) => !element.hidden && element.getClientRects().length > 0);
+  }
+
+  function setBackgroundInert(enabled) {
+    const backdrop = document.querySelector(".sowie-modal-backdrop");
+    for (const child of document.body.children) {
+      if (child === backdrop) continue;
+      if (enabled) child.setAttribute("inert", "");
+      else child.removeAttribute("inert");
+    }
+  }
+
+  function openModal(tab = "wardrobe", opener = document.activeElement) {
     ensureUi();
     const backdrop = document.querySelector(".sowie-modal-backdrop");
     if (!backdrop) return;
-    backdrop.hidden = false;
-    backdrop.dataset.tab = tab;
-    renderModal(tab);
+    modalReturnFocus = opener instanceof HTMLElement ? opener : null;
+    pausedBeforeModal = Boolean(gameAdapter?.getPaused?.());
     if (gameAdapter?.setPaused) gameAdapter.setPaused(true);
-    const badge = document.querySelector(".sowie-paused-badge");
-    if (badge) badge.hidden = true;
+    backdrop.dataset.tab = tab;
+    backdrop.hidden = false;
+    setBackgroundInert(true);
+    renderModal(tab);
+    window.setTimeout(() => focusableElements(backdrop)[0]?.focus(), 0);
+    platform.emit("modal:open", { tab });
   }
 
   function closeModal() {
     const backdrop = document.querySelector(".sowie-modal-backdrop");
-    if (backdrop) backdrop.hidden = true;
+    if (!backdrop || backdrop.hidden) return;
+    backdrop.hidden = true;
+    setBackgroundInert(false);
+    if (gameAdapter?.setPaused) gameAdapter.setPaused(pausedBeforeModal);
+    const badge = document.querySelector(".sowie-paused-badge");
+    if (badge) badge.hidden = !pausedBeforeModal;
+    modalReturnFocus?.focus?.();
+    platform.emit("modal:close");
   }
 
   function renderModal(tab) {
-    const modal = document.querySelector(".sowie-modal");
-    if (!modal) return;
     if (tab === "settings") renderSettings();
     else if (tab === "missions") renderMissions();
     else renderWardrobe();
+  }
+
+  function modalShell(title, body) {
+    return `<h2 id="sowieModalTitle">${title}</h2>${body}<div class="sowie-modal-actions"><button type="button" data-close>Zamknij</button></div>`;
   }
 
   function renderWardrobe() {
     const backdrop = document.querySelector(".sowie-modal-backdrop");
     const modal = document.querySelector(".sowie-modal");
     if (!modal || backdrop?.dataset.tab !== "wardrobe") return;
-    modal.innerHTML = `<h2>Garderoba sowy</h2><div class="sowie-modal-grid"></div><div class="sowie-modal-actions"><button data-close>Zamknij</button></div>`;
-    const grid = modal.querySelector(".sowie-modal-grid");
+    modal.innerHTML = modalShell("Garderoba sowy", `<p>Wybrany element jest używany we wszystkich ${platform.GAME_REGISTRY.length} grach.</p><div class="sowie-modal-grid" data-cosmetics></div>`);
+    const grid = modal.querySelector("[data-cosmetics]");
     for (const [key, item] of Object.entries(COSMETICS)) {
       const unlocked = profile.unlockedCosmetics.includes(key);
       const card = document.createElement("div");
       card.className = `sowie-cosmetic-card${profile.selectedCosmetic === key ? " is-selected" : ""}`;
       card.innerHTML = `<strong>${item.icon} ${item.label}</strong><div>${unlocked ? "Odblokowane" : "🔒 Zablokowane"}</div>`;
       const button = document.createElement("button");
+      button.type = "button";
       button.textContent = profile.selectedCosmetic === key ? "Wybrane" : "Wybierz";
-      button.disabled = !unlocked;
+      button.disabled = !unlocked || profile.selectedCosmetic === key;
       button.addEventListener("click", () => selectCosmetic(key));
       card.appendChild(button);
       grid.appendChild(card);
@@ -322,24 +344,31 @@
     const backdrop = document.querySelector(".sowie-modal-backdrop");
     const modal = document.querySelector(".sowie-modal");
     if (!modal || backdrop?.dataset.tab !== "settings") return;
-    modal.innerHTML = `<h2>Ustawienia</h2><div data-settings></div><div class="sowie-modal-actions"><button data-close>Zamknij</button></div>`;
+    modal.innerHTML = modalShell("Ustawienia i zapis", `<div data-settings></div><div class="sowie-save-tools"><button type="button" data-export>Eksportuj zapis</button><label class="sowie-import-label">Importuj zapis<input type="file" accept="application/json,.json" data-import></label></div>`);
     const holder = modal.querySelector("[data-settings]");
-    const rows = [
-      ["music", "Muzyka"],
-      ["sfx", "Efekty dźwiękowe"],
-      ["quips", "Komentarze sowy"],
-      ["reducedEffects", "Ograniczone efekty"],
-    ];
-    for (const [key, label] of rows) {
+    for (const [key, label] of [["music", "Muzyka"], ["sfx", "Efekty dźwiękowe"], ["quips", "Komentarze sowy"], ["reducedEffects", "Ograniczone efekty"]]) {
       const row = document.createElement("div");
       row.className = "sowie-setting-row";
       row.innerHTML = `<strong>${label}</strong>`;
       const button = document.createElement("button");
+      button.type = "button";
       button.textContent = profile.settings[key] ? "Włączone" : "Wyłączone";
+      button.setAttribute("aria-pressed", String(Boolean(profile.settings[key])));
       button.addEventListener("click", () => toggleSetting(key));
       row.appendChild(button);
       holder.appendChild(row);
     }
+    modal.querySelector("[data-export]")?.addEventListener("click", () => platform.downloadExport());
+    modal.querySelector("[data-import]")?.addEventListener("change", async (event) => {
+      try {
+        await platform.importFile(event.target.files?.[0]);
+        reloadProfile();
+        toast("Zapis zaimportowany. Odświeżam grę.");
+        window.setTimeout(() => location.reload(), 450);
+      } catch (error) {
+        toast(error.message || "Nie udało się zaimportować zapisu.");
+      }
+    });
     modal.querySelector("[data-close]")?.addEventListener("click", closeModal);
   }
 
@@ -347,13 +376,13 @@
     const backdrop = document.querySelector(".sowie-modal-backdrop");
     const modal = document.querySelector(".sowie-modal");
     if (!modal || backdrop?.dataset.tab !== "missions") return;
-    modal.innerHTML = `<h2>Misje</h2><div data-missions></div><div class="sowie-modal-actions"><button data-close>Zamknij</button></div>`;
+    modal.innerHTML = modalShell("Misje", `<div data-missions></div>`);
     const holder = modal.querySelector("[data-missions]");
     for (const [key, mission] of Object.entries(profile.missions)) {
       const card = document.createElement("div");
       card.className = "sowie-mission-card";
-      const pct = Math.round((mission.progress / mission.target) * 100);
-      card.innerHTML = `<strong>${mission.done ? "✅" : "⭐"} ${MISSION_LABELS[key]}</strong><div>${Math.floor(mission.progress)} / ${mission.target} • nagroda: ${COSMETICS[mission.reward]?.label || mission.reward}</div><div class="sowie-progress"><span style="width:${Math.min(100, pct)}%"></span></div>`;
+      const percentage = Math.round((mission.progress / mission.target) * 100);
+      card.innerHTML = `<strong>${mission.done ? "✅" : "⭐"} ${MISSION_LABELS[key] || key}</strong><div>${Math.floor(mission.progress)} / ${mission.target} • nagroda: ${COSMETICS[mission.reward]?.label || mission.reward}</div><div class="sowie-progress"><span style="width:${Math.min(100, percentage)}%"></span></div>`;
       holder.appendChild(card);
     }
     modal.querySelector("[data-close]")?.addEventListener("click", closeModal);
@@ -363,22 +392,19 @@
     if (document.querySelector(".sowie-toolbar")) return;
     const toolbar = document.createElement("div");
     toolbar.className = "sowie-toolbar";
-    toolbar.innerHTML = `
-      <button type="button" data-pause aria-label="Pauza">⏸</button>
-      <button type="button" data-wardrobe aria-label="Garderoba">🎀</button>
-      <button type="button" data-missions aria-label="Misje">⭐</button>
-      <button type="button" data-settings aria-label="Ustawienia">⚙</button>
-    `;
+    toolbar.setAttribute("aria-label", "Narzędzia SowieGry");
+    toolbar.innerHTML = `<button type="button" data-pause aria-label="Pauza">⏸</button><button type="button" data-wardrobe aria-label="Garderoba">🎀</button><button type="button" data-missions aria-label="Misje">⭐</button><button type="button" data-settings aria-label="Ustawienia i zapis">⚙</button>`;
     document.body.appendChild(toolbar);
 
     const stack = document.createElement("div");
     stack.className = "sowie-toast-stack";
+    stack.setAttribute("aria-live", "polite");
     document.body.appendChild(stack);
 
     const backdrop = document.createElement("div");
     backdrop.className = "sowie-modal-backdrop";
     backdrop.hidden = true;
-    backdrop.innerHTML = `<section class="sowie-modal" role="dialog" aria-modal="true"></section>`;
+    backdrop.innerHTML = `<section class="sowie-modal" role="dialog" aria-modal="true" aria-labelledby="sowieModalTitle"></section>`;
     backdrop.addEventListener("pointerdown", (event) => {
       if (event.target === backdrop) closeModal();
     });
@@ -391,14 +417,13 @@
     document.body.appendChild(paused);
 
     toolbar.querySelector("[data-pause]").addEventListener("click", togglePause);
-    toolbar.querySelector("[data-wardrobe]").addEventListener("click", () => openModal("wardrobe"));
-    toolbar.querySelector("[data-missions]").addEventListener("click", () => openModal("missions"));
-    toolbar.querySelector("[data-settings]").addEventListener("click", () => openModal("settings"));
+    toolbar.querySelector("[data-wardrobe]").addEventListener("click", (event) => openModal("wardrobe", event.currentTarget));
+    toolbar.querySelector("[data-missions]").addEventListener("click", (event) => openModal("missions", event.currentTarget));
+    toolbar.querySelector("[data-settings]").addEventListener("click", (event) => openModal("settings", event.currentTarget));
 
     if (new URLSearchParams(location.search).get("debug") === "1") {
       debugNode = document.createElement("div");
       debugNode.className = "sowie-debug";
-      debugNode.textContent = "debug";
       document.body.appendChild(debugNode);
     }
   }
@@ -410,86 +435,98 @@
       : Object.entries(data || {}).map(([key, value]) => `${key}: ${value}`).join("\n");
   }
 
-  function drawCanvasCosmetic(ctx, x, y, scale = 1, rotation = 0, key = profile.selectedCosmetic) {
-    if (!ctx || key === "none") return;
-    ctx.save();
-    ctx.translate(x, y);
-    ctx.rotate(rotation);
-    ctx.scale(scale, scale);
-
+  function drawCanvasCosmetic(context, x, y, scale = 1, rotation = 0, key = profile.selectedCosmetic) {
+    if (!context || key === "none") return;
+    context.save();
+    context.translate(x, y);
+    context.rotate(rotation);
+    context.scale(scale, scale);
     if (key === "bow") {
-      ctx.fillStyle = "#ff5f82";
-      ctx.beginPath();
-      ctx.ellipse(-10, 0, 12, 8, -0.35, 0, Math.PI * 2);
-      ctx.ellipse(10, 0, 12, 8, 0.35, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.fillStyle = "#ffd65a";
-      ctx.beginPath();
-      ctx.arc(0, 0, 5, 0, Math.PI * 2);
-      ctx.fill();
+      context.fillStyle = "#ff5f82";
+      context.beginPath();
+      context.ellipse(-10, 0, 12, 8, -0.35, 0, Math.PI * 2);
+      context.ellipse(10, 0, 12, 8, 0.35, 0, Math.PI * 2);
+      context.fill();
+      context.fillStyle = "#ffd65a";
+      context.beginPath();
+      context.arc(0, 0, 5, 0, Math.PI * 2);
+      context.fill();
     } else if (key === "glasses") {
-      ctx.strokeStyle = "#26242c";
-      ctx.lineWidth = 3;
-      ctx.beginPath();
-      ctx.arc(-13, 0, 10, 0, Math.PI * 2);
-      ctx.arc(13, 0, 10, 0, Math.PI * 2);
-      ctx.moveTo(-3, 0);
-      ctx.lineTo(3, 0);
-      ctx.stroke();
+      context.strokeStyle = "#26242c";
+      context.lineWidth = 3;
+      context.beginPath();
+      context.arc(-13, 0, 10, 0, Math.PI * 2);
+      context.arc(13, 0, 10, 0, Math.PI * 2);
+      context.moveTo(-3, 0);
+      context.lineTo(3, 0);
+      context.stroke();
     } else if (key === "flowerCrown") {
       ["#ff7aa2", "#ffd65a", "#8fd36b", "#b58cff", "#ff9d5c"].forEach((color, index) => {
-        const px = (index - 2) * 9;
-        ctx.fillStyle = color;
-        ctx.beginPath();
-        ctx.arc(px, Math.abs(index - 2) * 2, 6, 0, Math.PI * 2);
-        ctx.fill();
+        context.fillStyle = color;
+        context.beginPath();
+        context.arc((index - 2) * 9, Math.abs(index - 2) * 2, 6, 0, Math.PI * 2);
+        context.fill();
       });
     } else if (key === "gardenerHat") {
-      ctx.fillStyle = "#e5bd64";
-      ctx.beginPath();
-      ctx.ellipse(0, 3, 34, 8, 0, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.fillRect(-16, -14, 32, 17);
-      ctx.fillStyle = "#4faf68";
-      ctx.fillRect(-16, -2, 32, 5);
+      context.fillStyle = "#e5bd64";
+      context.beginPath();
+      context.ellipse(0, 3, 34, 8, 0, 0, Math.PI * 2);
+      context.fill();
+      context.fillRect(-16, -14, 32, 17);
+      context.fillStyle = "#4faf68";
+      context.fillRect(-16, -2, 32, 5);
     } else if (key === "cap") {
-      ctx.fillStyle = "#4d8fd6";
-      ctx.beginPath();
-      ctx.arc(0, 0, 19, Math.PI, Math.PI * 2);
-      ctx.fill();
-      ctx.fillRect(-3, -2, 29, 7);
+      context.fillStyle = "#4d8fd6";
+      context.beginPath();
+      context.arc(0, 0, 19, Math.PI, Math.PI * 2);
+      context.fill();
+      context.fillRect(-3, -2, 29, 7);
     } else if (key === "scarf") {
-      ctx.fillStyle = "#ff5f82";
-      ctx.fillRect(-22, -3, 44, 8);
-      ctx.fillRect(10, 2, 9, 25);
+      context.fillStyle = "#ff5f82";
+      context.fillRect(-22, -3, 44, 8);
+      context.fillRect(10, 2, 9, 25);
     } else if (key === "backpack") {
-      ctx.fillStyle = "#6d4e9b";
-      ctx.beginPath();
-      ctx.roundRect?.(-12, -10, 24, 31, 7);
-      if (ctx.roundRect) ctx.fill();
-      else ctx.fillRect(-12, -10, 24, 31);
+      context.fillStyle = "#6d4e9b";
+      if (context.roundRect) {
+        context.beginPath();
+        context.roundRect(-12, -10, 24, 31, 7);
+        context.fill();
+      } else context.fillRect(-12, -10, 24, 31);
     }
-
-    ctx.restore();
+    context.restore();
   }
 
-  function selectedCosmetic() {
-    return profile.selectedCosmetic;
-  }
-
-  function settings() {
-    return profile.settings;
-  }
-
-  function getProfile() {
-    return profile;
-  }
-
+  document.documentElement.classList.toggle("sowie-reduced-effects", Boolean(profile.settings.reducedEffects));
   window.addEventListener("pointerdown", resumeAudio, { once: true, passive: true });
   window.addEventListener("keydown", resumeAudio, { once: true });
+  window.addEventListener("pagehide", flushPendingStats);
   document.addEventListener("visibilitychange", () => {
-    if (document.hidden) return;
+    if (document.hidden) {
+      flushPendingStats();
+      return;
+    }
     if (profile.settings.music && gameAdapter) startMusic(gameAdapter.musicTheme?.() || "default");
+  });
+  window.addEventListener("keydown", (event) => {
+    const backdrop = document.querySelector(".sowie-modal-backdrop");
+    if (!backdrop || backdrop.hidden) return;
+    if (event.key === "Escape") {
+      event.preventDefault();
+      closeModal();
+      return;
+    }
+    if (event.key !== "Tab") return;
+    const focusable = focusableElements(backdrop);
+    if (!focusable.length) return;
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first.focus();
+    }
   });
 
   window.SowieCore = {
@@ -509,5 +546,11 @@
     maybeQuip,
     setDebugData,
     drawCanvasCosmetic,
+    openModal,
+    closeModal,
+    emit: platform.emit,
+    on: platform.on,
+    exportData: platform.exportData,
+    importData: platform.importData,
   };
 })();

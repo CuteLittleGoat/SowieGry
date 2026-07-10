@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no" />
   <meta name="theme-color" content="#e8fff3" />
   <title>Sowia Szklarnia</title>
+  <script src="../shared/sowie-platform.js"></script>
   <script src="../shared/progress-reset.js"></script>
   <script src="../shared/sowie-smoke-hook.js"></script>
   <link rel="stylesheet" href="../shared/cute-ui.css" />
@@ -20,7 +21,6 @@
         </div>
         <p id="greenhouseLog" class="greenhouse-log" aria-live="polite">Sowa rozkłada doniczki…</p>
       </header>
-
       <section class="hud" aria-label="Zasoby">
         <div class="hud-card"><span>Liście</span><strong id="leavesValue">0</strong></div>
         <div class="hud-card"><span>Liście/s</span><strong id="lpsValue">0/s</strong></div>
@@ -32,24 +32,18 @@
         <div class="hud-card"><span>Radość</span><strong id="joyValue">50</strong></div>
         <div class="hud-card"><span>Zapis</span><strong id="saveValue">Gotowe</strong></div>
       </section>
-
-      <div class="canvas-card">
-        <canvas id="greenhouseCanvas" role="img" aria-label="Przekrój uroczej szklarni sowy z pomieszczeniami, roślinami i kozami"></canvas>
-      </div>
-
+      <div class="canvas-card"><canvas id="greenhouseCanvas" role="img" aria-label="Przekrój uroczej szklarni sowy z pomieszczeniami, roślinami i kozami"></canvas></div>
       <section class="quick-actions" aria-label="Szybkie akcje">
         <button id="clickButton" type="button"><span>🍃</span><strong>Zbierz liście</strong></button>
         <button id="waterAllButton" type="button"><span>💦</span><strong>Podlej wszystko</strong></button>
         <button id="sioButton" type="button"><span>🐐</span><strong>SIO! SIO!</strong></button>
       </section>
     </section>
-
     <aside class="management-panel" aria-label="Panel zarządzania szklarnią">
       <nav id="tabBar" class="tab-bar" aria-label="Zakładki"></nav>
       <section id="panelContent" class="panel-content" aria-live="polite"></section>
     </aside>
   </main>
-
   <section id="offlineModal" class="greenhouse-modal-backdrop" hidden>
     <article class="greenhouse-modal">
       <h2>Sowa doglądała szklarni 🦉</h2>
@@ -57,7 +51,6 @@
       <div class="modal-actions"><button id="offlineClose" type="button">Odbierz</button></div>
     </article>
   </section>
-
   <section id="resetModal" class="greenhouse-modal-backdrop" hidden>
     <article class="greenhouse-modal danger-modal">
       <h2>Reset szklarni?</h2>
@@ -68,9 +61,12 @@
       </div>
     </article>
   </section>
-
+  <script src="../shared/stable-panel.js"></script>
   <script src="../shared/sowie-core.js"></script>
+  <script src="../shared/notification-manager.js"></script>
   <script src="../shared/sowie-runtime.js"></script>
   <script src="script.js"></script>
+  <script src="../shared/idle-save-bridge.js"></script>
+  <script src="../shared/modal-accessibility.js"></script>
 </body>
 </html>

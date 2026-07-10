@@ -1,65 +1,30 @@
-// Jednorazowy reset postępu testowego wykonany 2026-06-21.
-// Zachowuje ustawienia użytkownika i wybór poziomu trudności.
+// Warstwa zgodności. Właściwe migracje i kopie zapasowe obsługuje SowiePlatform.
 (() => {
   "use strict";
 
-  const RESET_KEY = "sowieGryProgressReset20260621";
-  const PROFILE_KEY = "sowieGryProfile";
+  const scriptUrl = document.currentScript?.src;
 
-  if (localStorage.getItem(RESET_KEY) === "1") return;
+  function loadPlatform() {
+    if (window.SowiePlatform) return Promise.resolve(window.SowiePlatform);
+    if (!scriptUrl) return Promise.reject(new Error("Brak adresu skryptu zgodności."));
 
-  const defaultSettings = {
-    music: true,
-    sfx: true,
-    quips: true,
-    reducedEffects: false,
-  };
-
-  let preservedSettings = { ...defaultSettings };
-  try {
-    const previous = JSON.parse(localStorage.getItem(PROFILE_KEY) || "null");
-    if (previous?.settings && typeof previous.settings === "object") {
-      preservedSettings = { ...defaultSettings, ...previous.settings };
-    }
-  } catch (_error) {
-    // Uszkodzony profil również zostaje zastąpiony czystym stanem.
+    return new Promise((resolve, reject) => {
+      const script = document.createElement("script");
+      script.src = new URL("sowie-platform.js", scriptUrl).href;
+      script.async = false;
+      script.addEventListener("load", () => resolve(window.SowiePlatform), { once: true });
+      script.addEventListener("error", () => reject(new Error("Nie udało się pobrać SowiePlatform.")), { once: true });
+      document.head.appendChild(script);
+    });
   }
 
-  const cleanProfile = {
-    version: 1,
-    unlockedCosmetics: ["none", "bow"],
-    selectedCosmetic: "none",
-    settings: preservedSettings,
-    missions: {
-      leaves20: { progress: 0, target: 20, done: false, reward: "glasses" },
-      extraLife: { progress: 0, target: 1, done: false, reward: "flowerCrown" },
-      nearMiss3: { progress: 0, target: 3, done: false, reward: "scarf" },
-      chaosFinish: { progress: 0, target: 1, done: false, reward: "gardenerHat" },
-      combo4: { progress: 0, target: 1, done: false, reward: "bubbleTrail" },
-      runner1000: { progress: 0, target: 1000, done: false, reward: "cap" },
-      jumper250: { progress: 0, target: 250, done: false, reward: "backpack" },
-    },
-    stats: {
-      leaves: 0,
-      nearMisses: 0,
-      extraLives: 0,
-      finishes: 0,
-      maxCombo: 1,
-      runnerDistance: 0,
-      jumperHeight: 0,
-    },
-  };
-
-  localStorage.setItem(PROFILE_KEY, JSON.stringify(cleanProfile));
-
-  [
-    "sowaRunnerBestScore",
-    "sowaRunnerBestDistance",
-    "sowaJumperBestScore",
-    "sowaJumperBestHeight",
-    "sowa3Best",
-    "sowa3FinishSeen",
-  ].forEach((key) => localStorage.removeItem(key));
-
-  localStorage.setItem(RESET_KEY, "1");
+  const ready = window.SowiePlatformReady || loadPlatform();
+  window.SowiePlatformReady = ready;
+  ready
+    .then((platform) => {
+      if (!platform) throw new Error("SowiePlatform nie zainicjalizował API.");
+      platform.migrateLegacyStorage();
+      return platform;
+    })
+    .catch((error) => console.error(error.message));
 })();
