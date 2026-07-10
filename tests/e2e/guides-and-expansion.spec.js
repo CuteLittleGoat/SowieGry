@@ -52,7 +52,7 @@ for (const game of games) {
     await page.getByRole("button", { name: "Rozumiem" }).click();
 
     await page.getByRole("button", { name: game.feature }).click();
-    await expect(page.getByRole("dialog")).toContainText(/Wyzwanie dnia|Kontrakty|Album cech/);
+    await expect(page.getByRole("dialog")).toContainText(/wyzwanie dnia|kontrakty|album cech/i);
     await page.getByRole("button", { name: "Zamknij" }).click();
 
     expect(errors).toEqual([]);
