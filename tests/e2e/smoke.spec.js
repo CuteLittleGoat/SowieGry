@@ -42,10 +42,10 @@ async function openGame(page, game) {
 test("menu główne jest generowane z rejestru pięciu gier", async ({ page }) => {
   const errors = watchRuntimeErrors(page);
   await page.goto("/?seed=menu-audit", { waitUntil: "load" });
-  await expect(page.locator(".game-card")).toHaveCount(5);
-  await expect(page.locator(".game-card").allTextContents()).resolves.toEqual(
-    expect.arrayContaining(games.map((game) => expect.stringContaining(game.name))),
-  );
+  const cards = page.locator(".game-card");
+  await expect(cards).toHaveCount(5);
+  const menuText = (await cards.allTextContents()).join(" ");
+  for (const game of games) expect(menuText).toContain(game.name);
   await expect(page.locator("#cosmeticsButton")).toBeVisible();
   expect(errors).toEqual([]);
 });
