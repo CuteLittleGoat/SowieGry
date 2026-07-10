@@ -26,7 +26,7 @@ test("katalog instrukcji obejmuje dokładnie pięć gier", () => {
 
 test("menu główne tworzy przycisk instrukcji przy każdej karcie", () => {
   const menu = read("shared/main-menu.js");
-  assert.match(menu, /data\.gameGuide = game\.id/);
+  assert.match(menu, /dataset\.gameGuide = game\.id/);
   assert.match(menu, /Jak grać w/);
   assert.match(read("index.html"), /shared\/game-guides\.js/);
   assert.match(read("index.html"), /shared\/sowie-academy\.js/);
