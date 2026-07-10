@@ -2,15 +2,29 @@
 (() => {
   "use strict";
 
-  if (!window.SowiePlatform && document.currentScript?.src) {
-    const platformUrl = new URL("sowie-platform.js", document.currentScript.src).href;
-    document.write(`<script src="${platformUrl}"><\/script>`);
+  const scriptUrl = document.currentScript?.src;
+
+  function loadPlatform() {
+    if (window.SowiePlatform) return Promise.resolve(window.SowiePlatform);
+    if (!scriptUrl) return Promise.reject(new Error("Brak adresu skryptu zgodności."));
+
+    return new Promise((resolve, reject) => {
+      const script = document.createElement("script");
+      script.src = new URL("sowie-platform.js", scriptUrl).href;
+      script.async = false;
+      script.addEventListener("load", () => resolve(window.SowiePlatform), { once: true });
+      script.addEventListener("error", () => reject(new Error("Nie udało się pobrać SowiePlatform.")), { once: true });
+      document.head.appendChild(script);
+    });
   }
 
-  if (!window.SowiePlatform) {
-    console.error("Nie udało się załadować SowiePlatform.");
-    return;
-  }
-
-  window.SowiePlatform.migrateLegacyStorage();
+  const ready = window.SowiePlatformReady || loadPlatform();
+  window.SowiePlatformReady = ready;
+  ready
+    .then((platform) => {
+      if (!platform) throw new Error("SowiePlatform nie zainicjalizował API.");
+      platform.migrateLegacyStorage();
+      return platform;
+    })
+    .catch((error) => console.error(error.message));
 })();
