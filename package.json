@@ -1,0 +1,24 @@
+{
+  "name": "sowie-gry",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Zestaw pięciu przeglądarkowych gier SowieGry",
+  "scripts": {
+    "serve": "http-server . -p 4173 -c-1",
+    "syntax": "bash scripts/check-syntax.sh",
+    "lint": "eslint .",
+    "format:check": "prettier --check package.json .prettierrc.json .htmlvalidate.json playwright.config.js eslint.config.js tests/e2e tests/unit scripts .github/workflows/js-check.yml",
+    "html": "html-validate index.html SowaRunner/index.html SowaJumper/index.html Sowa3/index.html SowieOgrody/index.html SowiaSzklarnia/index.html tests/smoke.html",
+    "test:unit": "node --test tests/unit/*.test.mjs",
+    "test:e2e": "playwright test",
+    "test": "npm run syntax && npm run lint && npm run format:check && npm run html && npm run test:unit && npm run test:e2e"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.52.0",
+    "eslint": "^9.28.0",
+    "globals": "^16.2.0",
+    "html-validate": "^9.7.1",
+    "http-server": "^14.1.1",
+    "prettier": "^3.5.3"
+  }
+}
