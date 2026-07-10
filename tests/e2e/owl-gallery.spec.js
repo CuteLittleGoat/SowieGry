@@ -4,7 +4,8 @@ function watchRuntimeErrors(page) {
   const errors = [];
   page.on("pageerror", (error) => errors.push(`pageerror: ${error.message}`));
   page.on("console", (message) => {
-    if (message.type() === "error" && !message.text().includes("favicon.ico")) errors.push(`console: ${message.text()}`);
+    if (message.type() === "error" && !message.text().includes("favicon.ico"))
+      errors.push(`console: ${message.text()}`);
   });
   page.on("response", (response) => {
     if (response.status() >= 400 && !response.url().includes("favicon.ico")) {

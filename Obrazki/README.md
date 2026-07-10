@@ -17,16 +17,16 @@ Galeria pokazuje autora lub informację o twórcy w serwisie Pexels oraz odnośn
 
 ## Źródła
 
-| Plik | Autor / identyfikator Pexels | Strona źródłowa |
-|---|---|---|
-| `sowa-01-puchata.jpg` | tkirkgoz | https://www.pexels.com/photo/13681325/ |
-| `sowa-02-lesna.jpg` | tkirkgoz | https://www.pexels.com/photo/17213746/ |
-| `sowa-03-na-pniu.jpg` | Erik Karits | https://www.pexels.com/photo/25559342/ |
-| `sowa-04-portret.jpg` | Regan Dsouza | https://www.pexels.com/photo/29082522/ |
-| `sowa-05-na-dachu.jpg` | Erik Karits | https://www.pexels.com/photo/10586311/ |
-| `sowa-06-zielone-tlo.jpg` | tkirkgoz | https://www.pexels.com/photo/17103408/ |
-| `sowa-07-spojrzenie.jpg` | petraryan | https://www.pexels.com/photo/33228723/ |
-| `sowa-08-na-trawie.jpg` | Marian Havenga | https://www.pexels.com/photo/25728668/ |
+| Plik                      | Autor / identyfikator Pexels | Strona źródłowa                        |
+| ------------------------- | ---------------------------- | -------------------------------------- |
+| `sowa-01-puchata.jpg`     | tkirkgoz                     | https://www.pexels.com/photo/13681325/ |
+| `sowa-02-lesna.jpg`       | tkirkgoz                     | https://www.pexels.com/photo/17213746/ |
+| `sowa-03-na-pniu.jpg`     | Erik Karits                  | https://www.pexels.com/photo/25559342/ |
+| `sowa-04-portret.jpg`     | Regan Dsouza                 | https://www.pexels.com/photo/29082522/ |
+| `sowa-05-na-dachu.jpg`    | Erik Karits                  | https://www.pexels.com/photo/10586311/ |
+| `sowa-06-zielone-tlo.jpg` | tkirkgoz                     | https://www.pexels.com/photo/17103408/ |
+| `sowa-07-spojrzenie.jpg`  | petraryan                    | https://www.pexels.com/photo/33228723/ |
+| `sowa-08-na-trawie.jpg`   | Marian Havenga               | https://www.pexels.com/photo/25728668/ |
 
 | `sowa-09-w-koszyku.jpg` | Pexels — twórca na stronie źródłowej | https://www.pexels.com/photo/5237476/ |
 | `sowa-10-na-galezi.jpg` | Pexels — twórca na stronie źródłowej | https://www.pexels.com/photo/23654842/ |
