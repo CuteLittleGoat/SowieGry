@@ -26,15 +26,15 @@ module.exports = [
       "no-duplicate-case": "error",
       "no-unreachable": "error",
       "no-unexpected-multiline": "error",
-      "valid-typeof": "error"
-    }
+      "valid-typeof": "error",
+    },
   },
   {
     files: ["**/*.mjs"],
     languageOptions: {
       ecmaVersion: "latest",
       sourceType: "module",
-      globals: globals.node
-    }
-  }
+      globals: globals.node,
+    },
+  },
 ];
