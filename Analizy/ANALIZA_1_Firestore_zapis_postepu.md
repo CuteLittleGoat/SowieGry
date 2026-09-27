@@ -26,7 +26,7 @@ Pozostałe rekomendacje z pierwszej wersji analizy zostały zaakceptowane bez zm
 1. **Dziś nic nie zapisuje się na GitHubie.** GitHub (Pages) tylko udostępnia pliki gry. Cały postęp leży w `localStorage` przeglądarki: osobno na każdym urządzeniu i w każdej przeglądarce. Znika po wyczyszczeniu danych strony i nie działa między telefonem a komputerem. Jedyną formą przeniesienia jest ręczny eksport/import pliku JSON w oknie „Ustawienia i zapis”.
 2. Zapis jest rozproszony: **12 plików JS** samodzielnie czyta i pisze `localStorage` pod **18 rodzajami kluczy**. Część z nich to klucze dzienne, które przybywają codziennie i nigdy nie są sprzątane.
 3. Wprowadzamy **jeden nowy moduł `shared/sowie-cloud.js`**: magazyn danych w pamięci plus Firestore jako trwały zapis. Tylko ten moduł rozmawia z bazą. Gry i moduły wspólne przestają dotykać `localStorage`.
-4. Wszystkie dane trafiają do **jednej kolekcji `sowiegry`**: `sowiegry/meta` oraz `sowiegry/profil` (jedyny profil) z podkolekcją `gry/{gameId}` i historią `gry/{gameId}/historia`.
+4. Wszystkie dane trafiają do **jednej kolekcji `sowiegry`**: `sowiegry/meta` oraz `sowiegry/profil` (jedyny profil) z podkolekcją `sowiegry_gry/{gameId}` i historią `sowiegry_gry/{gameId}/sowiegry_historia`.
 5. Wejście do gier wymaga **hasła `huhu`** podanego raz na urządzeniu. To wygodna bramka, a nie zabezpieczenie: hasło jest w publicznym kodzie strony.
 6. SDK: **Firebase JS SDK 12.19.0 (modularny) z CDN gstatic**, ładowany dynamicznie, z trwałym cache w IndexedDB. Gra działa offline, a zapisy wysyłają się, gdy wróci sieć. To ważne na telefonie (metro, słaby zasięg).
 7. Reguły: obecne `allow read, write: if true` zostawiają całą bazę (również **drugi projekt**) otwartą na zapis i kasowanie przez każdego. Rozdział 9 zawiera reguły, które **nie zmieniają zachowania drugiego projektu**, a dla `sowiegry` dodają walidację.
@@ -92,7 +92,7 @@ Wszystkie poniższe klucze zostaną **skasowane** (decyzja 2). Ostatnia kolumna 
 - **Baza jest współdzielona z innym projektem**, co oznacza:
   - wspólne limity. Na darmowym planie Spark jest to dziennie ok. 50 000 odczytów, 20 000 zapisów i 20 000 usunięć oraz 1 GiB danych. Plan i limity trzeba sprawdzić w konsoli Firebase;
   - wspólny plik reguł. Każda zmiana reguł musi zachować dostęp drugiego projektu;
-  - wspólny obszar nazw grup kolekcji. Funkcje działające „po nazwie podkolekcji” (zapytania `collectionGroup`, polityki TTL, wyjątki indeksów) obejmują całą bazę. Projekt SowieGry **ich nie używa**, bo nazwy typu `gry` czy `historia` mogą istnieć także w drugim projekcie. Zwykłe ścieżki pod `sowiegry/...` nie kolidują z niczym.
+  - wspólny obszar nazw grup kolekcji. Funkcje działające „po nazwie podkolekcji” (zapytania `collectionGroup`, polityki TTL, wyjątki indeksów) obejmują całą bazę. Projekt SowieGry **ich nie używa**, a jego podkolekcje mają unikalne nazwy z przedrostkiem `sowiegry_`, żeby nie kolidować z nazwami drugiego projektu (także w regułach, rozdział 9).
 - **W Firestore nie tworzy się pustych kolekcji.** Kolekcja `sowiegry` pojawi się sama przy pierwszym zapisie dokumentu. Pierwszy start nowej wersji wykona idempotentny zapis `sowiegry/meta` (`setDoc(..., { merge: true })`). To jest „utworzenie kolekcji”.
 - Podczas tej analizy **nic nie zostało zapisane do bazy**.
 
@@ -208,16 +208,18 @@ sowiegry                                   (kolekcja — jedyna używana przez S
 │     games: ["runner","jumper","sowa3","ogrody","szklarnia"]
 │
 └── profil                                 (dokument — jedyny profil gracza)
-      └── gry                              (podkolekcja: jeden dokument na grę)
+      └── sowiegry_gry                     (podkolekcja: jeden dokument na grę)
             ├── runner
-            │     └── historia             (podkolekcja: ostatnie rozgrywki, max 50)
+            │     └── sowiegry_historia    (podkolekcja: ostatnie rozgrywki, max 50)
             ├── jumper
-            │     └── historia
+            │     └── sowiegry_historia
             ├── sowa3
-            │     └── historia
+            │     └── sowiegry_historia
             ├── ogrody
             └── szklarnia
 ```
+
+**Nazwy podkolekcji mają przedrostek `sowiegry_`**, bo reguły (rozdział 9.2) rozpoznają dane SowieGry po nazwie kolekcji. Ogólne nazwy `gry` czy `historia` mogłyby istnieć w drugim projekcie. W dalszej części dokumentów skrót `gry/{gameId}` oznacza `sowiegry/profil/sowiegry_gry/{gameId}`, a `historia` — podkolekcję `sowiegry_historia`.
 
 Historia jest podkolekcją dokumentu gry, a nie profilu. Dzięki temu zapytanie „ostatnie 10 rozgrywek w Runnerze” (`orderBy("at", "desc").limit(10)`) nie wymaga ręcznie tworzonego indeksu złożonego.
 
@@ -260,7 +262,7 @@ Uwagi:
 - `academy.awards` rośnie codziennie (klucze typu `daily:2026-09-27:runner-distance`). Przy zapisie przycinamy wpisy dzienne starsze niż 30 dni. Nagrody trwałe (`trait:*`, `weekly:*`) zostają.
 - Wielkość profilu: kilka–kilkanaście KB. Limit dokumentu Firestore to 1 MiB.
 
-### 4.2 Dokumenty gier `sowiegry/profil/gry/{gameId}`
+### 4.2 Dokumenty gier `sowiegry/profil/sowiegry_gry/{gameId}`
 
 Gry arcade (ustawienia, top 10, wyzwanie dnia):
 
@@ -304,7 +306,7 @@ Gry idle (pełny stan):
 
 Pola, które chcemy oglądać w konsoli (`summary`), zostają zwykłymi polami.
 
-### 4.3 Historia rozgrywek `sowiegry/profil/gry/{gameId}/historia/{autoId}`
+### 4.3 Historia rozgrywek `sowiegry/profil/sowiegry_gry/{gameId}/sowiegry_historia/{autoId}`
 
 ```json
 { "score": 4210, "distance": 1180, "leaves": 96, "difficulty": "arcade",
@@ -385,7 +387,7 @@ index.html / gra
                                      tak
  5. connectFirestore(); setDoc(sowiegry/meta, merge)
  6. getDoc(sowiegry/profil)  (najpierw cache, potem sieć; brak → wartości domyślne)
- 7. w grze: getDoc(sowiegry/profil/gry/{gameId})
+ 7. w grze: getDoc(sowiegry/profil/sowiegry_gry/{gameId})
  8. SowieCloud.ready ✔  → SowieCore, SowieAcademy, SowieOwlGallery → init() gry
 ```
 
@@ -411,7 +413,7 @@ Jeden gracz, więc nie ma rankingu między graczami. W zamian:
 |---|---|---|
 | Karta gry w menu: najlepszy wynik | `profil.records.{gra}` | 0 dodatkowych odczytów |
 | „🏆 Rekordy” w grze: top 10 dla wybranego poziomu trudności | `gry/{gra}.top10.{poziom}` | 1 odczyt (zwykle z cache) |
-| „Ostatnie gry” + prosty wykres postępu | `gry/{gra}/historia` (`orderBy("at","desc").limit(10)`) | 10 odczytów |
+| „Ostatnie gry” + prosty wykres postępu | `gry/{gra}/sowiegry_historia` (`orderBy("at","desc").limit(10)`) | 10 odczytów |
 | Wyzwanie dnia: dzisiejszy rekord i poprzednie dni | `gry/{gra}.dailyBest` | 0 dodatkowych odczytów |
 | Ekran końca gry | „Nowy rekord!” / „3. miejsce w Twoim top 10” | liczone w pamięci |
 
@@ -427,9 +429,11 @@ match /{document=**} { allow read, write: if true; }
 
 Każdy, kto zna konfigurację (jest w publicznym kodzie strony), może czytać, zmieniać i **kasować wszystko**: dane SowieGry i dane drugiego projektu.
 
-**Ważne:** reguły Firestore się sumują. Jeśli *którakolwiek* pasująca reguła pozwala, dostęp jest przyznany. Dopisanie ostrzejszego bloku dla `sowiegry` obok powyższej reguły **nic nie zmieni**. Trzeba wyłączyć `sowiegry` z reguły ogólnej.
+**Ważne:** reguły Firestore się sumują. Jeśli *którakolwiek* pasująca reguła pozwala, dostęp jest przyznany. Dopisanie ostrzejszego bloku dla `sowiegry` obok powyższej reguły **nic nie zmieni**. Trzeba wyłączyć kolekcje SowieGry z reguły ogólnej.
 
 ### 9.2 Reguły do wdrożenia (drugi projekt działa bez zmian)
+
+Kolekcje drugiego projektu (2026-09-27): `audio`, `character_builder`, `dataslate`. Reguła ogólna nie wymienia ich z nazwy. Rozpoznaje dane SowieGry **po nazwie kolekcji, w której leży dokument**, więc drugi projekt działa jak dotąd, także po dodaniu nowych kolekcji i także przy zapytaniach `collectionGroup`.
 
 ```
 rules_version = '2';
@@ -437,16 +441,14 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // 1) Wszystko POZA kolekcją „sowiegry” działa dokładnie jak dotąd (drugi projekt).
-    match /{kolekcja}/{dokument=**} {
-      allow read, write: if kolekcja != "sowiegry";
+    // 1) Drugi projekt (audio, character_builder, dataslate i każda inna kolekcja):
+    //    pełny dostęp jak dotąd, także zapytania collectionGroup.
+    //    Wyjątek: trzy kolekcje SowieGry.
+    match /{sciezka=**}/{kolekcja}/{dokument} {
+      allow read, write: if !(kolekcja in ["sowiegry", "sowiegry_gry", "sowiegry_historia"]);
     }
 
     // 2) SowieGry
-    function gryIds() {
-      return ["runner", "jumper", "sowa3", "ogrody", "szklarnia"];
-    }
-
     match /sowiegry/meta {
       allow read: if true;
       allow create, update: if request.resource.data.schemaVersion is int;
@@ -459,14 +461,14 @@ service cloud.firestore {
                             && request.resource.data.size() <= 30;
       allow delete: if false;
 
-      match /gry/{gameId} {
+      match /sowiegry_gry/{gra} {
         allow read: if true;
-        allow create, update, delete: if gameId in gryIds();
+        allow create, update, delete: if gra in ["runner", "jumper", "sowa3", "ogrody", "szklarnia"];
 
-        match /historia/{wpisId} {
+        match /sowiegry_historia/{wpis} {
           allow read: if true;
           allow create: if request.resource.data.score is number;
-          allow delete: if true;          // przycinanie do 50 wpisów
+          allow delete: if true;          // przycinanie historii do 50 wpisów
           allow update: if false;
         }
       }
@@ -475,9 +477,33 @@ service cloud.firestore {
 }
 ```
 
-Co to daje: drugi projekt ma dostęp jak dziś; w `sowiegry` da się zapisać tylko przewidziane dokumenty (inne ścieżki są odrzucane); profilu nie da się skasować. Czego to **nie** daje: osoba znająca kod nadal może zmienić wyniki. Dla gier rodzinnych to akceptowalne.
+Jak to działa:
 
-Kopia reguł trafi do repo jako `firestore.rules` (źródło prawdy dla testów). Publikacja w konsoli: Firebase → Firestore Database → Rules → wklej → sprawdź w „Rules Playground” (odczyt `/sowiegry/meta`, zapis do dowolnej ścieżki drugiego projektu, zapis do `/sowiegry/cokolwiek` = odrzucony) → Publish. **Tę czynność wykonuje właściciel projektu Firebase** (plan prac, etap 1).
+- `{sciezka=**}` pasuje do zera lub więcej segmentów ścieżki, więc reguła 1 obejmuje każdy dokument w bazie: `audio/favorites`, dokumenty w podkolekcjach i tak dalej. Warunek zależy tylko od nazwy kolekcji, więc działa także dla zapytań `collectionGroup`.
+- Dokumenty w kolekcjach `sowiegry`, `sowiegry_gry` i `sowiegry_historia` nie przechodzą przez regułę 1 i podlegają wyłącznie regułom z części 2.
+- Wszystkie ścieżki SowieGry spoza tej listy (np. `sowiegry/cokolwiek`) są odrzucane.
+- **Jedyny przypadek, w którym drugi projekt coś straci:** gdyby sam miał kolekcję o nazwie `sowiegry`, `sowiegry_gry` albo `sowiegry_historia` (dziś nie ma).
+- **Znane ograniczenie:** podkolekcję o innej nazwie da się dopisać pod dokumentem SowieGry (np. `sowiegry/profil/smieci/x`). Nie narusza to danych SowieGry (nie da się nią nic zmienić ani skasować), najwyżej zaśmieca bazę.
+- **Sprawdzone na emulatorze Firestore** (firebase-tools 15.31, SDK 12.19.0), 26 scenariuszy, wszystkie zgodne z oczekiwaniem: odczyt, zapis, kasowanie, lista i zagnieżdżony zapis w drugim projekcie, zapytanie `collectionGroup`, nowa kolekcja drugiego projektu; po stronie SowieGry walidacja `schemaVersion`, limit 30 pól, zakaz kasowania profilu i meta, lista dozwolonych gier, zasady historii.
+
+Co to daje: drugi projekt ma dostęp jak dziś; danych SowieGry nie da się skasować ani zapisać w nieprzewidzianym kształcie. Czego to **nie** daje: osoba znająca kod nadal może zmienić wyniki. Dla gier rodzinnych to akceptowalne.
+
+Reguły **Realtime Database** to osobny plik w innym miejscu konsoli. Nie zmieniamy ich.
+
+Kopia reguł trafi do repo jako `firestore.rules` (źródło prawdy dla testów). Publikacja: Firebase → Firestore Database → zakładka **Rules** → wklej → **Rules Playground** → **Publish**. Poprzednie wersje reguł zostają w historii zakładki Rules, więc powrót jest prosty.
+
+Test w Rules Playground przed publikacją (bez logowania):
+
+| Symulacja | Ścieżka | Dane | Oczekiwany wynik |
+|---|---|---|---|
+| get | `audio/favorites` | — | ✅ dozwolone |
+| update | `dataslate/test` | `{"x": 1}` | ✅ dozwolone |
+| create | `sowiegry/meta` | `{"schemaVersion": 1}` | ✅ dozwolone |
+| create | `sowiegry/meta` | `{"x": 1}` | ❌ odrzucone |
+| delete | `sowiegry/profil` | — | ❌ odrzucone |
+| create | `sowiegry/cokolwiek` | `{"schemaVersion": 1}` | ❌ odrzucone |
+| create | `sowiegry/profil/sowiegry_gry/runner` | `{"difficulty": "arcade"}` | ✅ dozwolone |
+| create | `sowiegry/profil/sowiegry_gry/tetris` | `{"x": 1}` | ❌ odrzucone |
 
 ### 9.3 Dalsze zaostrzenie (opcjonalnie, później)
 

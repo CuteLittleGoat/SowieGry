@@ -92,7 +92,7 @@ E0 Przygotowanie
 
 **Gotowe, gdy:**
 
-- po wpisaniu `huhu` na telefonie i jednej grze w konsoli są `sowiegry/meta`, `sowiegry/profil` i `sowiegry/profil/gry/…`;
+- po wpisaniu `huhu` na telefonie i jednej grze w konsoli są `sowiegry/meta`, `sowiegry/profil` i `sowiegry/profil/sowiegry_gry/…`;
 - rekord zrobiony na telefonie widać na komputerze (i odwrotnie);
 - w `localStorage` zostaje tylko `sowiegry:urzadzenie`, a dane innych stron z tej domeny są nietknięte;
 - gra idle robi ≤ 120 zapisów na godzinę;
