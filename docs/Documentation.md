@@ -21,6 +21,13 @@ shared/
   sowie-smoke-hook.js
 tests/
   smoke.html
+  e2e/            (testy Playwright; telefon/ — testy na profilach telefonów)
+  unit/           (testy node --test)
+config/
+  firebase-config.js
+firebase.json     (tylko emulator Firestore)
+firestore.rules   (kopia reguł opublikowanych 2026-09-27)
+playwright.config.js
 SowaRunner/
 SowaJumper/
 Sowa3/
@@ -186,26 +193,70 @@ Ruch ludzi i dzików jest dodatkowo kontrolowany przez `moving-obstacle-safety.j
 
 ## Testy
 
-### Kontrola składni
+### `npm test`
 
-`.github/workflows/js-check.yml` wykonuje:
+Pełny zestaw uruchamiany przed każdym wypchnięciem na `main` i w CI (`.github/workflows/js-check.yml`):
 
-```bash
-node --check
-```
+| Krok | Skrypt | Co sprawdza |
+|---|---|---|
+| składnia | `npm run syntax` (`scripts/check-syntax.sh`) | `node --check` dla każdego pliku `.js` poza `node_modules/`, `.git/`, `playwright-report/` |
+| lint | `npm run lint` | ESLint 9 (`eslint.config.js`) |
+| formatowanie | `npm run format:check` | Prettier 3 (`.prettierrc.json`: szerokość 120, 2 spacje, średniki, cudzysłowy podwójne, przecinki końcowe) dla plików konfiguracyjnych, `firebase.json`, workflow i katalogów `tests/e2e`, `tests/unit` |
+| HTML | `npm run html` | `html-validate` (`.htmlvalidate.json`) dla `index.html`, stron pięciu gier i `tests/smoke.html` |
+| jednostkowe | `npm run test:unit` | `node --test tests/unit/*.test.mjs` |
+| przeglądarkowe | `npm run test:e2e` | Playwright uruchomiony wewnątrz emulatora Firestore: `firebase emulators:exec --only firestore --project demo-sowiegry "playwright test"` |
 
-dla wszystkich plików JavaScript podczas push i pull request.
+Zależności deweloperskie są przypięte tam, gdzie wersja wpływa na przeglądarki i emulator: `@playwright/test` **1.56.1** (Chromium 141, rewizja 1194) oraz `firebase-tools` **15.31.0**. Pozostałe (`eslint`, `globals`, `html-validate`, `http-server`, `prettier`) mają zakresy `^`. `package-lock.json` nie jest wersjonowany (`.gitignore`).
 
-### Test uruchomieniowy
+### Playwright (`playwright.config.js`)
 
-`tests/smoke.html` ładuje gry w ukrytych ramkach i sprawdza:
+- serwer: `npm run serve` (`http-server . -p 4173 -c-1`), adres bazowy `http://127.0.0.1:4173`;
+- `fullyParallel: false`, w CI 2 procesy i 1 ponowienie, raport `list` + `html` (`playwright-report/`), ślad, zrzut ekranu i wideo zachowywane tylko przy błędzie;
+- projekt `desktop-chromium` (`devices["Desktop Chrome"]`) uruchamia testy obecnych gier z `tests/e2e/*.spec.js` (bez katalogu `telefon/`);
+- projekty telefonów uruchamiają testy z `tests/e2e/telefon/`. Każdy profil biegnie w dwóch silnikach — Chromium i WebKit (Safari) — więc powstaje 10 projektów o nazwach `telefon-<profil>-<silnik>`:
 
-- poziomy trudności,
-- główne funkcje startowe,
-- dodatkowe życia,
-- systemy balansu,
-- wspólny profil,
-- kluczowe systemy `Sowa3`.
+| Profil | Źródło | Ekran CSS |
+|---|---|---|
+| `iphone-se` | `devices["iPhone SE"]` | 320 × 568 |
+| `iphone-13` | `devices["iPhone 13"]` | 390 × 664 (okno przeglądarki) |
+| `pixel-7` | `devices["Pixel 7"]` | 412 × 839 |
+| `android-360x800` | własny: 360 × 800, DPR 3, `isMobile`, `hasTouch`, UA Androida 14 | 360 × 800 |
+| `iphone-13-poziomo` | `devices["iPhone 13 landscape"]` | 750 × 342 |
+
+- zmienna `SOWIE_E2E_BEZ_WEBKIT=1` pomija projekty WebKit **tylko lokalnie** (np. w środowisku bez przeglądarki WebKit) i wypisuje ostrzeżenie; przy ustawionym `CI` zmienna jest ignorowana, więc w CI WebKit biegnie zawsze.
+
+### Wspólne fikstury (`tests/e2e/fixtures.js`)
+
+- `test` — rozszerzony `test` Playwright z automatyczną fiksturą `productionRequests`: w każdym kontekście przeglądarki przerywa żądania do `firestore.googleapis.com`, `firebaseinstallations.googleapis.com`, `identitytoolkit.googleapis.com` i `securetoken.googleapis.com`, a po teście sprawdza, że żadne takie żądanie nie wystąpiło. To bezpiecznik: testy nigdy nie łączą się z produkcyjną bazą (współdzieloną z innym projektem);
+- `blockProduction(context, lista)` — ta sama blokada dla dodatkowych kontekstów tworzonych w teście;
+- `watchErrors(page)` — zbiera `pageerror`, błędy konsoli i odpowiedzi HTTP ≥ 400 (bez `favicon.ico`).
+
+### Testy na telefonach (`tests/e2e/telefon/start.spec.js`)
+
+- menu główne i każda z pięciu gier otwiera się bez błędów (znacznik strony widoczny, brak błędów po 0,5 s);
+- menu główne mieści się w szerokości ekranu (`scrollWidth ≤ innerWidth`).
+
+### Emulator Firestore
+
+- `firebase.json` konfiguruje **wyłącznie emulator**: reguły z `firestore.rules`, emulator Firestore na `127.0.0.1:8080`, wyłączony interfejs emulatora (`ui.enabled: false`), `singleProjectMode: false`. Nie ma pliku `.firebaserc`, więc narzędzie nie ma domyślnego projektu produkcyjnego; reguły produkcyjne publikuje właściciel ręcznie w konsoli;
+- `npm run emulator -- "<polecenie>"` uruchamia dowolne polecenie z działającym emulatorem projektu `demo-sowiegry` (projekty z przedrostkiem `demo-` nigdy nie łączą się z usługami Google);
+- emulator stosuje reguły z `firestore.rules` do każdego identyfikatora projektu, co pozwala izolować testy osobnymi projektami `demo-sowiegry-…`;
+- emulator wymaga Javy 11+ (w CI: `actions/setup-java`, Temurin 21) i przy pierwszym uruchomieniu pobiera plik JAR do `~/.cache/firebase/emulators` (w CI ten katalog jest w `actions/cache`);
+- logi emulatora trafiają do `firestore-debug.log` (ignorowany przez git, dołączany do artefaktów CI przy błędzie).
+
+### Testy jednostkowe konfiguracji (`tests/unit/firestore-rules.test.mjs`)
+
+- `firestore.rules` musi być znak w znak identyczny z blokiem reguł z `Analizy/ANALIZA_1_Firestore_zapis_postepu.md`, rozdział 9.2 (reguły opublikowane 2026-09-27);
+- `firebase.json` ma tylko klucze `firestore` i `emulators`, emulator na `127.0.0.1:8080`;
+- `test:e2e` uruchamia Playwright w emulatorze projektu `demo-sowiegry`.
+
+### CI (`.github/workflows/js-check.yml`)
+
+Uruchamiany przy `push` na `main` i `audit/**` oraz przy `pull_request`, limit 40 minut. Kroki: checkout, Node 22, Java 21 (Temurin), cache emulatora, `npm install`, `npx playwright install --with-deps chromium webkit`, składnia, lint, formatowanie, HTML, testy jednostkowe, testy przeglądarkowe na emulatorze, raport Playwright (zawsze) i `test-results` + `firestore-debug.log` (przy błędzie).
+
+### Test uruchomieniowy w przeglądarce
+
+`tests/smoke.html` ładuje gry w ukrytych ramkach i po 0,9 s sprawdza, czy każda gra ma swój element i API.
 
 ### Tryb debug
 
@@ -282,7 +333,7 @@ Zasada działania:
 
 Dodanie nowej gry wymaga dopisania jej identyfikatora do listy w regule `sowiegry_gry/{gra}` i ponownej publikacji reguł. Właściciel przewiduje taką rozbudowę w przyszłości; wtedy zostanie też uporządkowany sposób nadawania identyfikatorów (opis: Analiza 1, rozdział 9.2).
 
-Reguły sprawdzono na emulatorze Firestore (26 scenariuszy zgodnych z oczekiwaniem). Kolekcja `sowiegry` jeszcze nie istnieje w bazie; powstanie przy pierwszym uruchomieniu wersji z etapu E1. Każda zmiana reguł wymaga edycji pliku `firestore.rules` w repo (dodawanego w etapie E0) i ponownej publikacji w konsoli przez właściciela.
+Reguły sprawdzono na emulatorze Firestore (26 scenariuszy zgodnych z oczekiwaniem). Kolekcja `sowiegry` jeszcze nie istnieje w bazie; powstanie przy pierwszym uruchomieniu wersji z etapu E1. Kopia reguł jest w pliku `firestore.rules` (etap E0; test `tests/unit/firestore-rules.test.mjs` pilnuje zgodności z Analizą 1). Każda zmiana reguł wymaga edycji `firestore.rules` i ponownej publikacji w konsoli przez właściciela.
 
 ## Dokumentacja planu
 

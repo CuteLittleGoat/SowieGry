@@ -107,6 +107,9 @@ test("eksport i import zapisu odtwarza profil", async ({ page }) => {
 test("preferencja ograniczenia ruchu wyłącza animacje", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/", { waitUntil: "load" });
-  const duration = await page.locator(".creature").first().evaluate((element) => getComputedStyle(element).animationDuration);
+  const duration = await page
+    .locator(".creature")
+    .first()
+    .evaluate((element) => getComputedStyle(element).animationDuration);
   expect(Number.parseFloat(duration)).toBeLessThanOrEqual(0.01);
 });

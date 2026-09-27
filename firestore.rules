@@ -1,0 +1,39 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // 1) Drugi projekt (audio, character_builder, dataslate i każda inna kolekcja):
+    //    pełny dostęp jak dotąd, także zapytania collectionGroup.
+    //    Wyjątek: trzy kolekcje SowieGry.
+    match /{sciezka=**}/{kolekcja}/{dokument} {
+      allow read, write: if !(kolekcja in ["sowiegry", "sowiegry_gry", "sowiegry_historia"]);
+    }
+
+    // 2) SowieGry
+    match /sowiegry/meta {
+      allow read: if true;
+      allow create, update: if request.resource.data.schemaVersion is int;
+      allow delete: if false;
+    }
+
+    match /sowiegry/profil {
+      allow read: if true;
+      allow create, update: if request.resource.data.schemaVersion is int
+                            && request.resource.data.size() <= 30;
+      allow delete: if false;
+
+      match /sowiegry_gry/{gra} {
+        allow read: if true;
+        allow create, update, delete: if gra in ["runner", "jumper", "sowa3", "ogrody", "szklarnia"];
+
+        match /sowiegry_historia/{wpis} {
+          allow read: if true;
+          allow create: if request.resource.data.score is number;
+          allow delete: if true;          // przycinanie historii do 50 wpisów
+          allow update: if false;
+        }
+      }
+    }
+  }
+}

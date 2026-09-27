@@ -37,20 +37,18 @@ Każda gra ma:
 
 ## Testy
 
-- `tests/smoke.html` — przeglądarkowy test uruchomieniowy wszystkich gier.
-- `.github/workflows/js-check.yml` — automatyczna kontrola składni JavaScript przez `node --check`.
+Test uruchomieniowy w przeglądarce: otwórz `tests/smoke.html` przez lokalny serwer (np. `npm run serve`, potem `http://127.0.0.1:4173/tests/smoke.html`).
 
-Test przeglądarkowy najlepiej otworzyć przez lokalny serwer:
+Pełne testy automatyczne (dla osoby rozwijającej gry):
 
-```bash
-python -m http.server 8000
-```
+1. Zainstaluj Node.js 22 i Javę 21 (potrzebna emulatorowi bazy Firestore).
+2. `npm install`
+3. `npx playwright install --with-deps chromium webkit`
+4. `npm test`
 
-Następnie otwórz:
+`npm test` sprawdza składnię, styl, HTML, testy jednostkowe i testy w przeglądarce. Testy w przeglądarce działają na **emulatorze** bazy (projekt testowy `demo-sowiegry`) i na profilach telefonów (iPhone SE, iPhone 13 w pionie i poziomie, Pixel 7, Android 360 × 800) w Chromium i Safari (WebKit). Testy nigdy nie zapisują niczego w prawdziwej bazie.
 
-```text
-http://localhost:8000/tests/smoke.html
-```
+Jeśli na komputerze nie da się uruchomić WebKit, można jednorazowo pominąć go poleceniem `SOWIE_E2E_BEZ_WEBKIT=1 npm test` (w automatycznych testach na GitHubie WebKit działa zawsze).
 
 ## Wspólny profil
 

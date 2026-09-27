@@ -33,9 +33,7 @@ async function openGame(page, game) {
   const errors = watchRuntimeErrors(page);
   await page.goto(`${game.path}?seed=${game.id}-audit&testNow=1783656000000`, { waitUntil: "load" });
   await expect(page.locator(game.marker).first()).toBeVisible({ timeout: 15_000 });
-  await expect
-    .poll(() => page.evaluate(() => Boolean(window.SowiePlatform && window.SowieCore)))
-    .toBe(true);
+  await expect.poll(() => page.evaluate(() => Boolean(window.SowiePlatform && window.SowieCore))).toBe(true);
   return errors;
 }
 
