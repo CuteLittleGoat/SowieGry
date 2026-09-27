@@ -280,6 +280,8 @@ Zasada działania:
 - `…/sowiegry_historia/{wpis}` — tworzenie tylko z liczbowym `score`, kasowanie dozwolone (przycinanie historii), bez edycji;
 - każda inna ścieżka pod `sowiegry` jest odrzucana.
 
+Dodanie nowej gry wymaga dopisania jej identyfikatora do listy w regule `sowiegry_gry/{gra}` i ponownej publikacji reguł. Właściciel przewiduje taką rozbudowę w przyszłości; wtedy zostanie też uporządkowany sposób nadawania identyfikatorów (opis: Analiza 1, rozdział 9.2).
+
 Reguły sprawdzono na emulatorze Firestore (26 scenariuszy zgodnych z oczekiwaniem). Kolekcja `sowiegry` jeszcze nie istnieje w bazie; powstanie przy pierwszym uruchomieniu wersji z etapu E1. Każda zmiana reguł wymaga edycji pliku `firestore.rules` w repo (dodawanego w etapie E0) i ponownej publikacji w konsoli przez właściciela.
 
 ## Dokumentacja planu

@@ -274,3 +274,4 @@ Czytelne moduły zamiast obecnego `script.js`; nowy format stanu z migracją ze 
 - Ranking między wieloma graczami (jest jeden profil).
 - Ograniczenie klucza API i App Check (opcjonalnie później; ograniczenie klucza musi uwzględnić domenę drugiego projektu).
 - Reklamy, płatności, konta — gry pozostają prywatne i darmowe.
+- Nowe gry (poza obecnymi pięcioma) — możliwe w przyszłości. Wymagają aktualizacji reguł Firestore; przy tej rozbudowie porządkujemy też identyfikatory gier i sposób ich zapisu w regułach (Analiza 1, rozdział 9.2).
