@@ -217,10 +217,78 @@ Parametr:
 
 wyświetla dane diagnostyczne konkretnej gry.
 
+## Firebase / Firestore — stan konfiguracji (2026-09-27)
+
+### `config/firebase-config.js`
+
+Ustawia globalny obiekt `window.firebaseConfig` (bez `export`, żeby działał także z bibliotekami `firebase-*-compat`) dla projektu Firebase `rpg-dataslate-relay`. Projekt i baza Firestore są **współdzielone z innym projektem właściciela** (kolekcje `audio`, `character_builder`, `dataslate`; projekt ma też Realtime Database z osobnymi regułami, których SowieGry nie dotykają).
+
+Stan na 2026-09-27: **żadna strona SowieGry nie ładuje jeszcze tego pliku**. Gry nadal zapisują postęp w `localStorage` (opis w sekcjach „Profil” i „Kosmetyki” oraz w dokumentacji gier). Przeniesienie zapisu do Firestore opisuje `Analizy/ANALIZA_1_Firestore_zapis_postepu.md` i etap E1 w `Analizy/ANALIZA_3_Plan_prac.md`.
+
+### Reguły Firestore
+
+2026-09-27 właściciel opublikował w konsoli Firebase poniższe reguły (wcześniej obowiązywało `allow read, write: if true` dla całej bazy):
+
+```
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // 1) Drugi projekt (audio, character_builder, dataslate i każda inna kolekcja):
+    //    pełny dostęp jak dotąd, także zapytania collectionGroup.
+    //    Wyjątek: trzy kolekcje SowieGry.
+    match /{sciezka=**}/{kolekcja}/{dokument} {
+      allow read, write: if !(kolekcja in ["sowiegry", "sowiegry_gry", "sowiegry_historia"]);
+    }
+
+    // 2) SowieGry
+    match /sowiegry/meta {
+      allow read: if true;
+      allow create, update: if request.resource.data.schemaVersion is int;
+      allow delete: if false;
+    }
+
+    match /sowiegry/profil {
+      allow read: if true;
+      allow create, update: if request.resource.data.schemaVersion is int
+                            && request.resource.data.size() <= 30;
+      allow delete: if false;
+
+      match /sowiegry_gry/{gra} {
+        allow read: if true;
+        allow create, update, delete: if gra in ["runner", "jumper", "sowa3", "ogrody", "szklarnia"];
+
+        match /sowiegry_historia/{wpis} {
+          allow read: if true;
+          allow create: if request.resource.data.score is number;
+          allow delete: if true;          // przycinanie historii do 50 wpisów
+          allow update: if false;
+        }
+      }
+    }
+  }
+}
+```
+
+Zasada działania:
+
+- reguła ogólna daje pełny dostęp do każdego dokumentu, którego kolekcja nie nazywa się `sowiegry`, `sowiegry_gry` ani `sowiegry_historia`. Drugi projekt działa więc jak wcześniej, także przy zapytaniach `collectionGroup`;
+- `sowiegry/meta` — odczyt dla wszystkich; zapis tylko z polem `schemaVersion` typu całkowitego; bez kasowania;
+- `sowiegry/profil` — jedyny profil gracza; zapis tylko z `schemaVersion` i maksymalnie 30 polami; bez kasowania;
+- `sowiegry/profil/sowiegry_gry/{gra}` — tylko identyfikatory `runner`, `jumper`, `sowa3`, `ogrody`, `szklarnia` (stałe, niezależne od nazw gier i folderów);
+- `…/sowiegry_historia/{wpis}` — tworzenie tylko z liczbowym `score`, kasowanie dozwolone (przycinanie historii), bez edycji;
+- każda inna ścieżka pod `sowiegry` jest odrzucana.
+
+Reguły sprawdzono na emulatorze Firestore (26 scenariuszy zgodnych z oczekiwaniem). Kolekcja `sowiegry` jeszcze nie istnieje w bazie; powstanie przy pierwszym uruchomieniu wersji z etapu E1. Każda zmiana reguł wymaga edycji pliku `firestore.rules` w repo (dodawanego w etapie E0) i ponownej publikacji w konsoli przez właściciela.
+
 ## Dokumentacja planu
 
-- `docs/PLAN_ROZWOJU_CUTE_POLISH.md` — plan reworku.
-- `docs/WDROZENIE_CUTE_POLISH.md` — faktyczny stan implementacji i lista testów wymagających wykonania ręcznego.
+- `Analizy/ANALIZA_1_Firestore_zapis_postepu.md` — przeniesienie zapisu postępu do Firestore (model danych, hasło, reguły).
+- `Analizy/ANALIZA_2_Przebudowa_gier.md` — przebudowa gier, menu główne, telefon jako główne urządzenie.
+- `Analizy/ANALIZA_3_Plan_prac.md` — kolejność prac (etapy E0–E9).
+- `docs/PLAN_ROZWOJU_CUTE_POLISH.md` — poprzedni plan reworku (do usunięcia w etapie E0).
+- `docs/WDROZENIE_CUTE_POLISH.md` — poprzedni stan implementacji i lista testów ręcznych (do usunięcia w etapie E0).
 
 ## Dług techniczny
 

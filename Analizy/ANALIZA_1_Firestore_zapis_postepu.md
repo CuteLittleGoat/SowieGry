@@ -1,6 +1,6 @@
 # Analiza 1 — przeniesienie zapisu postępu SowieGry do Firestore
 
-> Data: 2026-09-27 · Wersja 2 (po decyzjach właściciela) · Zakres: wszystkie gry i moduły `shared/` · Status: **analiza**, bez zmian w kodzie i bez zapisów do bazy.
+> Data: 2026-09-27 · Wersja 3 (po decyzjach właściciela; reguły Firestore opublikowane) · Zakres: wszystkie gry i moduły `shared/` · Status: **analiza**, bez zmian w kodzie i bez zapisów do bazy.
 > Kolejność prac: [`ANALIZA_3_Plan_prac.md`](ANALIZA_3_Plan_prac.md).
 
 ---
@@ -11,7 +11,7 @@
 |---|---|---|
 | 1 | Tożsamość gracza | **Jeden profil gracza**, chroniony hasłem **`huhu`**. Hasło może być jawne w kodzie aplikacji. |
 | 2 | Obecne wyniki z `localStorage` | **Kasujemy.** Bez przenoszenia do Firestore. |
-| 3 | Reguły Firestore | Wdrażamy wersję z rozdziału 9 (drugi projekt działa bez zmian). |
+| 3 | Reguły Firestore | ✅ **Opublikowane przez właściciela 2026-09-27** — wersja z rozdziału 9.2 (drugi projekt działa bez zmian). |
 | 4 | Historia rozgrywek | Tak, max 50 wpisów na grę. |
 | 5 | Rankingi | Jeden gracz, więc zamiast rankingu między graczami są **rekordy osobiste**: top 10 wyników na grę i poziom trudności oraz rekordy wyzwania dnia. |
 | 6 | Pamiętanie urządzenia | Tak: po podaniu hasła urządzenie zapamiętuje odblokowanie (1 klucz `localStorage`, bez postępu gry). |
@@ -29,7 +29,7 @@ Pozostałe rekomendacje z pierwszej wersji analizy zostały zaakceptowane bez zm
 4. Wszystkie dane trafiają do **jednej kolekcji `sowiegry`**: `sowiegry/meta` oraz `sowiegry/profil` (jedyny profil) z podkolekcją `sowiegry_gry/{gameId}` i historią `sowiegry_gry/{gameId}/sowiegry_historia`.
 5. Wejście do gier wymaga **hasła `huhu`** podanego raz na urządzeniu. To wygodna bramka, a nie zabezpieczenie: hasło jest w publicznym kodzie strony.
 6. SDK: **Firebase JS SDK 12.19.0 (modularny) z CDN gstatic**, ładowany dynamicznie, z trwałym cache w IndexedDB. Gra działa offline, a zapisy wysyłają się, gdy wróci sieć. To ważne na telefonie (metro, słaby zasięg).
-7. Reguły: obecne `allow read, write: if true` zostawiają całą bazę (również **drugi projekt**) otwartą na zapis i kasowanie przez każdego. Rozdział 9 zawiera reguły, które **nie zmieniają zachowania drugiego projektu**, a dla `sowiegry` dodają walidację.
+7. Reguły: **od 2026-09-27 obowiązują reguły z rozdziału 9.2**, opublikowane przez właściciela. Drugi projekt działa jak wcześniej, a kolekcje `sowiegry`, `sowiegry_gry` i `sowiegry_historia` mają walidację. Poprzednie reguły (`allow read, write: if true` dla całej bazy) zostały zastąpione.
 8. Do usunięcia: `shared/progress-reset.js`, `shared/idle-save-bridge.js`, migracje i kopie `sowieGryBackup:*`, eksport/import JSON oraz wszystkie `localStorage.getItem/setItem` w grach i modułach wspólnych. Stare klucze kasujemy **tylko po nazwach SowieGry**, nigdy przez `localStorage.clear()` (rozdział 12).
 
 ---
@@ -88,6 +88,8 @@ Wszystkie poniższe klucze zostaną **skasowane** (decyzja 2). Ostatnia kolumna 
 ## 2. Firebase — stan wyjściowy
 
 - `config/firebase-config.js` ustawia `window.firebaseConfig` dla projektu **`rpg-dataslate-relay`**, tego samego, którego używa drugi projekt. Komentarz w pliku wspomina `GM.html` i `DataSlate.html`, bo został skopiowany z tamtego projektu. Przy wdrożeniu poprawiamy go.
+- **Stan bazy (2026-09-27):** kolekcje drugiego projektu `audio`, `character_builder`, `dataslate`; kolekcji `sowiegry` jeszcze nie ma (powstanie przy pierwszym uruchomieniu nowej wersji). Projekt ma też Realtime Database z osobnymi regułami, których SowieGry nie dotykają.
+- **Reguły Firestore (2026-09-27):** opublikowane reguły z rozdziału 9.2 (poprzednio `allow read, write: if true` dla całej bazy).
 - `apiKey` w kodzie klienta to nic złego. W Firebase klucz nie jest tajny, a o bezpieczeństwie decydują reguły (rozdział 9).
 - **Baza jest współdzielona z innym projektem**, co oznacza:
   - wspólne limity. Na darmowym planie Spark jest to dziennie ok. 50 000 odczytów, 20 000 zapisów i 20 000 usunięć oraz 1 GiB danych. Plan i limity trzeba sprawdzić w konsoli Firebase;
@@ -218,6 +220,8 @@ sowiegry                                   (kolekcja — jedyna używana przez S
             ├── ogrody
             └── szklarnia
 ```
+
+**Identyfikatory gier (`runner`, `jumper`, `sowa3`, `ogrody`, `szklarnia`) są stałe.** Nie zmieniają się przy zmianie nazw gier ani folderów w repo (Analiza 2), bo lista dozwolonych gier jest w opublikowanych regułach (rozdział 9.2).
 
 **Nazwy podkolekcji mają przedrostek `sowiegry_`**, bo reguły (rozdział 9.2) rozpoznają dane SowieGry po nazwie kolekcji. Ogólne nazwy `gry` czy `historia` mogłyby istnieć w drugim projekcie. W dalszej części dokumentów skrót `gry/{gameId}` oznacza `sowiegry/profil/sowiegry_gry/{gameId}`, a `historia` — podkolekcję `sowiegry_historia`.
 
@@ -421,17 +425,19 @@ Jeden gracz, więc nie ma rankingu między graczami. W zamian:
 
 ## 9. Reguły bezpieczeństwa
 
-### 9.1 Co oznaczają obecne reguły
+### 9.1 Poprzednie reguły (obowiązywały do 2026-09-27)
 
 ```
 match /{document=**} { allow read, write: if true; }
 ```
 
-Każdy, kto zna konfigurację (jest w publicznym kodzie strony), może czytać, zmieniać i **kasować wszystko**: dane SowieGry i dane drugiego projektu.
+Każdy, kto znał konfigurację (jest w publicznym kodzie strony), mógł czytać, zmieniać i **kasować wszystko**: dane SowieGry i dane drugiego projektu.
 
 **Ważne:** reguły Firestore się sumują. Jeśli *którakolwiek* pasująca reguła pozwala, dostęp jest przyznany. Dopisanie ostrzejszego bloku dla `sowiegry` obok powyższej reguły **nic nie zmieni**. Trzeba wyłączyć kolekcje SowieGry z reguły ogólnej.
 
-### 9.2 Reguły do wdrożenia (drugi projekt działa bez zmian)
+### 9.2 Obowiązujące reguły — opublikowane 2026-09-27 (drugi projekt działa bez zmian)
+
+> **Stan:** właściciel opublikował poniższe reguły w konsoli Firebase 2026-09-27. Kopia w repo (`firestore.rules`, etap E0) musi być z nimi identyczna. Każda późniejsza zmiana reguł = zmiana w `firestore.rules` + ponowna publikacja w konsoli przez właściciela.
 
 Kolekcje drugiego projektu (2026-09-27): `audio`, `character_builder`, `dataslate`. Reguła ogólna nie wymienia ich z nazwy. Rozpoznaje dane SowieGry **po nazwie kolekcji, w której leży dokument**, więc drugi projekt działa jak dotąd, także po dodaniu nowych kolekcji i także przy zapytaniach `collectionGroup`.
 
@@ -490,9 +496,9 @@ Co to daje: drugi projekt ma dostęp jak dziś; danych SowieGry nie da się skas
 
 Reguły **Realtime Database** to osobny plik w innym miejscu konsoli. Nie zmieniamy ich.
 
-Kopia reguł trafi do repo jako `firestore.rules` (źródło prawdy dla testów). Publikacja: Firebase → Firestore Database → zakładka **Rules** → wklej → **Rules Playground** → **Publish**. Poprzednie wersje reguł zostają w historii zakładki Rules, więc powrót jest prosty.
+Kopia reguł trafi do repo jako `firestore.rules` (źródło prawdy dla testów). Publikacja (wykonana 2026-09-27): Firebase → Firestore Database → zakładka **Rules** → wklej → **Rules Playground** → **Publish**. Poprzednie wersje reguł zostają w historii zakładki Rules, więc powrót jest prosty.
 
-Test w Rules Playground przed publikacją (bez logowania):
+Test w Rules Playground (bez logowania) — do powtórzenia przy każdej zmianie reguł:
 
 | Symulacja | Ścieżka | Dane | Oczekiwany wynik |
 |---|---|---|---|
@@ -545,7 +551,7 @@ Test w Rules Playground przed publikacją (bez logowania):
 | Gry | start po `SowieCloud.ready`, `submitRun()` na końcu rozgrywki, `saveGameState()` w grach idle, postęp offline także po powrocie z tła |
 | `eslint.config.js` | globalne `SowieCloud` (jeśli potrzebne) |
 | `.github/workflows/js-check.yml` | krok `actions/setup-java` + emulator Firestore dla testów e2e (rozdział 13) |
-| `firebase.json`, `firestore.rules` (nowe) | konfiguracja emulatora i kopia reguł z rozdziału 9.2 w repo |
+| `firebase.json`, `firestore.rules` (nowe) | konfiguracja emulatora i **dokładna kopia opublikowanych reguł** z rozdziału 9.2 |
 
 ---
 
@@ -592,7 +598,7 @@ Szczegółowa kolejność, zależności i kryteria ukończenia są w [`ANALIZA_3
 3. E1: przepięcie modułów wspólnych (`SowieCore`, `SowieAcademy`, `SowieOwlGallery`, `gameplay-expansion`) i usunięcie migracji oraz eksportu/importu.
 4. E1: przepięcie obecnych gier (rekordy, stany idle, ustawienia trudności) — minimalnymi zmianami, bo gry i tak zostaną przebudowane.
 5. E1: okno „🏆 Rekordy”.
-6. E1: publikacja reguł w konsoli (właściciel) i aktualizacja dokumentacji zgodnie z `AGENTS.md`.
+6. E1: aktualizacja dokumentacji zgodnie z `AGENTS.md`. Publikacja reguł w konsoli — ✅ wykonana przez właściciela 2026-09-27.
 
 ---
 
@@ -601,7 +607,7 @@ Szczegółowa kolejność, zależności i kryteria ukończenia są w [`ANALIZA_3
 | Ryzyko | Skutek | Ograniczenie |
 |---|---|---|
 | Wspólne limity z drugim projektem | Przekroczenie dziennego limitu blokuje oba projekty do północy (czasu pacyficznego) | Opóźnianie zapisów, zapisy tylko przy końcu gry, obserwacja zużycia w konsoli |
-| Otwarte reguły | Każdy może zmienić lub skasować dane (również drugiego projektu) | Reguły z 9.2; później Auth |
+| Reguły bez logowania | Osoba znająca kod może zmienić wyniki SowieGry; dane drugiego projektu nadal są otwarte (jak przed zmianą) | Reguły z 9.2 opublikowane 2026-09-27 (walidacja SowieGry, zakaz kasowania profilu); później ewentualnie Auth |
 | Jawne hasło | Osoba czytająca kod wejdzie do gier | Świadoma decyzja; hasło to tylko bramka |
 | Brak zasięgu przy pierwszej wizycie | Nie da się załadować SDK | `MemoryBackend` + komunikat; PWA z service workerem (Analiza 2) |
 | Uśpienie karty na telefonie przed wysłaniem zapisu | Opóźniony zapis | Cache IndexedDB wysyła zapis przy następnym otwarciu |

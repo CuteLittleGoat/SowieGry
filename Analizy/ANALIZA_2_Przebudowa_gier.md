@@ -1,6 +1,6 @@
 # Analiza 2 — przebudowa gier SowieGry
 
-> Data: 2026-09-27 · Wersja 2 (po decyzjach właściciela) · Zakres: SowaRunner, SowaJumper, Sowa3, Sowie Ogrody, Sowia Szklarnia oraz menu główne i meta-postęp · Status: **analiza**, bez zmian w kodzie.
+> Data: 2026-09-27 · Wersja 3 (po decyzjach właściciela) · Zakres: SowaRunner, SowaJumper, Sowa3, Sowie Ogrody, Sowia Szklarnia oraz menu główne i meta-postęp · Status: **analiza**, bez zmian w kodzie.
 > Zakłada wdrożenie Analizy 1 (zapis w Firestore) jako fundamentu. Wszystkie propozycje poniżej zapisują dane wyłącznie przez `SowieCloud`.
 > Kolejność prac: [`ANALIZA_3_Plan_prac.md`](ANALIZA_3_Plan_prac.md).
 
@@ -12,6 +12,8 @@
 2. **Gra będzie prowadzona głównie na telefonie.** Responsywność optymalizujemy pod telefon w pionie, obsługiwany jedną ręką (rozdział 2.5). Komputer i orientacja pozioma są obsługiwane, ale na drugim planie.
 3. **Jeden profil gracza z hasłem `huhu`** (Analiza 1). Nie ma rankingu między graczami, więc wszędzie, gdzie była mowa o rankingu, są **rekordy osobiste** (top 10 na grę i poziom trudności, rekordy wyzwania dnia).
 4. **Nowe wymaganie: ładne menu główne** z wyborem gier, instrukcjami i galerią odblokowanych obrazków (rozdział 4.1). Menu dostaje osobny etap w planie prac, zaraz po fundamencie, jeszcze przed przebudową gier.
+5. **Sowa3 (nazwa obecna; po przebudowie „Sowie Tory”) zachowuje cztery plansze:** Sowa w sklepie Biedronka, Sowa na festiwalu roślin, Sowa uciekająca przed dzikami na blokowisku z PRL, Sowa na stacji benzynowej Amic, **oraz finał każdego etapu**: sowa wskakuje do basenu ogrodowego i zmienia się w humbaka (rozdział 3.2). Dziki zostają jako pościg na planszy PRL (zmiana decyzji 5 z rozdziału 8).
+6. **Reguły Firestore opublikowane** przez właściciela 2026-09-27 (Analiza 1, rozdział 9.2).
 
 ---
 
@@ -103,13 +105,13 @@ Konsekwencje:
 
 ### 2.1 Stałe elementy — kontrakt dla każdej gry
 
-| | SowaRunner | Sowie Tory (Sowa3) | Sowa w Chmurach (Jumper) | Sowie Ogrody | Sowia Szklarnia |
+| | Sowia Ucieczka (obecnie SowaRunner) | Sowie Tory (obecnie Sowa3) | Sowa w Chmurach (obecnie SowaJumper) | Sowie Ogrody | Łącz i Hoduj (obecnie Sowia Szklarnia) |
 |---|---|---|---|---|---|
 | **Sowa-bohaterka** | biegnie, skacze, szybuje, ślizga się | pędzi trzema torami | wspina się po gałązkach | ogrodniczka | szklarniarka łącząca rośliny |
-| **Pracu Pracu** | dymki, telefony, rój maili | dymki (ślizg), telefon zmieniający tor | latające dymki (da się zdeptać) | telefon zmniejszający produkcję | karteczki zasłaniające pola |
+| **Pracu Pracu** | dymki, telefony, rój maili | dymki (ślizg), telefon zmieniający tor (+ dziki goniące sowę na planszy PRL) | latające dymki (da się zdeptać) | telefon zmniejszający produkcję | karteczki zasłaniające pola |
 | **Amic** | dystrybutory, cysterny, znaki cen | dystrybutory, wózki, znaki | sterowiec, spadające kanistry | ciężarówka zastawiająca grządkę | skrzynie i kanistry blokujące pola |
 | **Liście Monstery** | punkty i waluta | punkty i waluta | punkty i waluta | główna waluta | przedmioty do łączenia + waluta |
-| **Humbak** | „Rejs na humbaku” | „Humbacze Tory” (po każdej planszy) | „Niebiański Ocean” | „Zatoka Humbaka” | „Basen Humbaka” |
+| **Humbak** | „Rejs na humbaku” | skok do basenu ogrodowego i przemiana w humbaka, potem „Humbacze Tory” (po każdej planszy) | „Niebiański Ocean” | „Zatoka Humbaka” | „Basen Humbaka” |
 | **Skaczące kózki** | 5 power-upów | 5 power-upów | 5 power-upów | „złota kózka” (premie) | kózki-wzmacniacze |
 
 ### 2.2 Postacie i ich zasady
@@ -253,8 +255,8 @@ shared/
   menu/     menu.js  menu.css  games.js  guides.js  gallery.js           ← menu główne (rozdział 4.1)
   pwa/      manifest.webmanifest  sw.js
 assets/     svg/  audio/  fonts/  gallery-thumbs/
-SowaRunner/ index.html  main.js  game.js  patterns.js  bonus-whale.js  docs/
-Sowa3/ …   SowaJumper/ …   SowieOgrody/ …   SowiaSzklarnia/ …
+SowiaUcieczka/ index.html  main.js  game.js  patterns.js  bonus-whale.js  docs/
+SowieTory/ …   SowaWChmurach/ …   SowieOgrody/ …   LaczIHoduj/ …   (foldery po przebudowie)
 ```
 
 - **Moduły ES** (`<script type="module">`) bez etapu budowania: GitHub Pages serwuje je bezpośrednio. Minifikację (np. Vite) można dodać później.
@@ -270,6 +272,25 @@ Sowa3/ …   SowaJumper/ …   SowieOgrody/ …   SowiaSzklarnia/ …
 ## 3. Projekty gier
 
 Każda gra zachowuje swój identyfikator (`runner`, `jumper`, `sowa3`, `ogrody`, `szklarnia`), więc profil i rekordy z Analizy 1 działają bez zmian.
+
+**Nazwy gier i folderów.** Nazwy „SowaRunner”, „SowaJumper”, „Sowa3” i „Sowia Szklarnia” są **obecne**. Zmienią się dopiero przy przebudowie danej gry, w jej etapie planu prac, **razem z nazwą folderu w repo** (zgoda właściciela 2026-09-27). **Identyfikatory gier w bazie zostają bez zmian**, bo są wpisane w opublikowane reguły Firestore (lista dozwolonych gier). Ich zmiana wymagałaby nowej publikacji reguł i przeniesienia danych.
+
+| Nazwa obecna | Folder obecny | Nazwa po przebudowie (w menu) | Folder po przebudowie | Identyfikator w bazie | Etap |
+|---|---|---|---|---|---|
+| SowaRunner | `SowaRunner/` | Sowia Ucieczka | `SowiaUcieczka/` | `runner` (bez zmian) | E4 |
+| Sowa3 | `Sowa3/` | Sowie Tory | `SowieTory/` | `sowa3` (bez zmian) | E5 |
+| SowaJumper | `SowaJumper/` | Sowa w Chmurach | `SowaWChmurach/` | `jumper` (bez zmian) | E6 |
+| Sowie Ogrody | `SowieOgrody/` | Sowie Ogrody | `SowieOgrody/` (bez zmian) | `ogrody` (bez zmian) | E7 |
+| Sowia Szklarnia | `SowiaSzklarnia/` | Łącz i Hoduj | `LaczIHoduj/` | `szklarnia` (bez zmian) | E8 |
+
+Nazwy folderów są bez polskich znaków i w tym samym stylu co dziś. Zasady zmiany folderu:
+
+- nowa wersja gry powstaje **od razu w nowym folderze**, a stara działa w starym. Nowy folder jest jednocześnie wersją podglądową do testów na telefonie;
+- po akceptacji właściciela karta w menu wskazuje nowy folder, stare pliki gry są usuwane, a w starym folderze zostaje tylko mały `index.html` przekierowujący do nowego adresu (zakładki i linki nadal działają). GitHub Pages nie obsługuje przekierowań serwerowych, więc to zwykła strona z `location.replace()`;
+- przy zmianie folderu aktualizujemy wszystkie odwołania: rejestr gier (`GAME_REGISTRY.path`), listę plików w skrypcie `html` w `package.json`, `eslint.config.js`, testy, `tests/smoke.html`, dokumentację i instrukcje;
+- strony-przekierowania usuwamy w etapie E9.
+
+Do czasu przebudowy menu i instrukcje używają nazw obecnych.
 
 ### 3.1 SowaRunner → „Sowia Ucieczka” (side-scroller)
 
@@ -327,11 +348,28 @@ Dziury w terenie mogą zostać jako neutralny element toru.
 
 ### 3.2 Sowa3 → „Sowie Tory” (trzy tory w głąb ekranu)
 
-Proponowana nowa nazwa w menu: „Sowie Tory” (identyfikator `sowa3` bez zmian).
+„Sowa3” to **obecna** nazwa gry. Po przebudowie (etap E5) gra nazywa się „Sowie Tory” i trafia do folderu `SowieTory/` (stary `Sowa3/` zostaje tylko jako przekierowanie). Identyfikator w bazie `sowa3` zostaje bez zmian.
 
 **Sterowanie:** swipe ←/→ (tor), ↑ (skok), ↓ (ślizg); klawisze ←/→/A/D, ↑/W, ↓/S; opcjonalnie tap lewa/prawa strona.
 
-**Plansze (kampania, każda ok. 75 s):** 1. Dyskont → 2. Wystawa kwiatów → 3. Osiedle PRL → 4. Stacja Amic. Po kampanii odblokowuje się **tryb Nieskończony**.
+**Wymagania właściciela (2026-09-27) — te elementy muszą zostać:**
+
+1. plansza **Sowa w sklepie Biedronka**,
+2. plansza **Sowa na festiwalu roślin**,
+3. plansza **Sowa uciekająca przed dzikami na blokowisku z PRL**,
+4. plansza **Sowa na stacji benzynowej Amic**,
+5. po zakończeniu każdego etapu: **sowa wskakuje do basenu ogrodowego i zmienia się w humbaka**.
+
+**Plansze (kampania, każda ok. 75 s, kolejność jak w obecnej grze).** Po kampanii odblokowuje się **tryb Nieskończony**, który przechodzi przez te same cztery plansze w pętli.
+
+| # | Plansza | Oprawa (zachowujemy z obecnej wersji i rozbudowujemy) | Rozgrywka specyficzna dla planszy |
+|---|---|---|---|
+| 1 | **Sowa w sklepie Biedronka** | alejka sklepu, regały z produktami po bokach, tablice „SUPER CENA!” wysoko nad alejką, pieczywo, stosy produktów, pracownik z paleciakiem przy krawędzi, kolorystyka sklepu i biedronki jako dekoracje | Amic: paleta z płynem do spryskiwaczy i kanistrami, stojak promocyjny z cenami (ślizg); Pracu: telefon „Przyjmiesz zmianę?” z zaplecza, dymki nad kasami; wózki sklepowe jako pełne przeszkody |
+| 2 | **Sowa na festiwalu roślin** | hala festiwalowa, metalowe stojaki pełne roślin, wózki z kwiatami, zraszacze i mgiełka przy krawędziach, girlandy i balony | najwięcej liści Monstery w kampanii (częstsza Gorączka Monster); Amic: stoisko promocyjne Amic i kanistry z wodą do podlewania; Pracu: „Telefon od Magdy”, stosy katalogów; zwiedzający to dekoracja przy bokach |
+| 3 | **Sowa uciekająca przed dzikami na blokowisku z PRL** | bloki z wielkiej płyty, powtarzalne okna i balkony, trzepak, ławka, kot na balkonie, gołębie wysoko na ekranie | **pościg dzików**: stado biegnie za sową u dołu ekranu, a życia pokazane są jako odległość stada (trafienie przybliża dziki). Co pewien czas jeden dzik wyrywa się do przodu wzdłuż wybranego toru (strzałka ostrzegawcza 1 s wcześniej) i trzeba zmienić tor. Do tego Pracu i Amic (cysterna dostawcza Amic, barierki) |
+| 4 | **Sowa na stacji benzynowej Amic** | sklep i stacja w tle, białe zadaszenie z zielonym pasem, asfaltowy podjazd jako korytarz gry | Amic w pełnej krasie: dystrybutory (pełne), znak z cenami i zadaszenie (ślizg), samochody na podjeździe (pełne, długie), kanistry (skok); Pracu: dymki i telefony |
+
+**Dziki to świadomy wyjątek** od zasady „przeszkody = rodziny Pracu i Amic”: należą do tożsamości planszy PRL (wymaganie właściciela). Na pozostałych planszach nie występują. Ludzie, donice i słupki z obecnej wersji zostają dekoracją przy bokach, bez kolizji.
 
 **Przeszkody według sposobu omijania**
 
@@ -342,11 +380,17 @@ Proponowana nowa nazwa w menu: „Sowie Tory” (identyfikator `sowa3` bez zmian
 | Pełna (zmiana toru) | wielki telefon („Telefon od Magdy”) | dystrybutor, wózek, cysterna (długa, zajmuje tor na dłużej) |
 | Ruchoma | telefon zmieniający tor (strzałka ostrzegawcza 0,8 s wcześniej) | — |
 
-Każda plansza ma własną oprawę tych samych rodzin (np. w Dyskoncie „paleta Amic z płynem do spryskiwaczy”, w PRL „cysterna dostawcza Amic”). Dziki, ludzie, donice i słupki z obecnej wersji zostają **dekoracją przy bokach** (bez kolizji) albo znikają (decyzja 5).
+Każda plansza ma własną oprawę tych samych rodzin przeszkód (tabela plansz powyżej). Na planszy PRL dochodzą dziki.
 
 **Kózki:** przeskakują między torami. Złapanie = power-up; w tej grze Turbo zastępuje **Kózia jazda** (sowa jedzie na kozie i automatycznie przeskakuje wszystko przez 8 s).
 
-**Humbak — „Humbacze Tory”:** koniec planszy = działka z basenem. Sowa wskakuje do basenu, zmienia się w humbaka i przez 20 s **gracz steruje humbakiem** na trzech morskich torach: swipe w górę = wyskok nad falą, liście w kółkach, brak obrażeń. Potem podsumowanie planszy i następna. Dzisiejsza animacja przemiany zostaje jako krótkie (2 s) przejście.
+**Finał etapu — basen ogrodowy i przemiana w humbaka (wymaganie właściciela, zachowujemy):**
+
+- Na końcu każdej planszy sowa dobiega na działkę z okrągłym basenem ogrodowym. Wygląd zostaje z obecnej wersji, przerysowany w nowym stylu: szara, pionowo ryflowana ścianka, szeroki niebieski rant, jasna turkusowa woda z delikatnymi falami, trawa, płot, drzewa i krzewy, a przy bokach koza na leżaku i grill.
+- Sekwencja jak dziś (ok. 4 s): sowa biegnie do środka → wybija się → wskakuje do basenu → plusk i bąbelki → **przemiana w humbaka** (sowa „rozmywa się” w bąbelkach, a z wody wynurza się humbak z fontanną).
+- Po pierwszym pełnym obejrzeniu sekwencję można skrócić tapnięciem (jak dziś); informacja o obejrzeniu trafia do `gry/sowa3.finishSeen`.
+
+**Humbak — „Humbacze Tory” (nowość po przemianie):** humbak, w którego zmieniła się sowa, **zostaje grywalny** przez 20 s: płynie trzema morskimi torami, swipe w górę = wyskok nad falą, liście Monstery w kółkach, brak obrażeń. Potem podsumowanie planszy (wynik, liście, gwiazdki) i następna plansza.
 
 **Punktacja**
 
@@ -553,7 +597,7 @@ Pełna kolejność prac, zależności, kryteria ukończenia i checklisty testów
 | 2 | Fundament: Sowi Silnik, powłoka telefonu i PWA, postacie SVG, dźwięk, wspólny interfejs |
 | 3 | **Menu główne**: wybór gier, instrukcje, galeria z miniaturami |
 | 4 | Sowia Ucieczka (Runner) |
-| 5 | Sowie Tory (Sowa3) |
+| 5 | Sowie Tory (obecnie Sowa3): Biedronka, festiwal roślin, PRL z dzikami, stacja Amic + basen i humbak |
 | 6 | Sowa w Chmurach (Jumper) |
 | 7 | Sowie Ogrody |
 | 8 | Łącz i Hoduj (Szklarnia) |
@@ -571,7 +615,7 @@ Każdy etap trafia na `main` osobno. Zgodnie z `AGENTS.md` każda zmiana gry akt
 | 2 | Runner: Chmura Pracu jako życia czy klasyczne 3 serduszka? | ✅ Chmura Pracu (wizualnie nadal 3 kroki) |
 | 3 | Nowe nazwy w menu: „Sowia Ucieczka”, „Sowie Tory”, „Sowa w Chmurach”, „Łącz i Hoduj” | ✅ tak (identyfikatory i zapisy bez zmian) |
 | 4 | Poziomy trudności Chill / Arcade / Chaos | ✅ zostają + Tryb Przytulny jako opcja Chill |
-| 5 | Przeszkody spoza rodzin Pracu/Amic (dziki, ludzie, donice, słupki) | ✅ dekoracja bez kolizji |
+| 5 | Przeszkody spoza rodzin Pracu/Amic (dziki, ludzie, donice, słupki) | ✅ ludzie, donice, słupki — dekoracja bez kolizji; **dziki zostają** jako pościg i przeszkoda na planszy PRL (zmiana 2026-09-27) |
 | 6 | Źródło dźwięków | ✅ CC0 + własne nagrania „Hu-hu!” i „Pracu pracu!” |
 | 7 | Grafika: SVG w plikach czy rysowanie kodem? | ✅ SVG w `assets/svg/` |
 | 8 | Rekordy osobno dla każdego poziomu trudności? | ✅ tak (jeden gracz, więc bez rankingu między graczami) |
@@ -579,6 +623,7 @@ Każdy etap trafia na `main` osobno. Zgodnie z `AGENTS.md` każda zmiana gry akt
 | 10 | PWA (instalacja na telefonie, offline) | ✅ tak, jako główny sposób grania |
 | 11 | Główne urządzenie | ✅ telefon w pionie (rozdział 2.5) |
 | 12 | Menu główne z wyborem gier, instrukcjami i galerią | ✅ tak (rozdział 4.1) |
+| 13 | Plansze Sowa3 (po przebudowie: Sowie Tory) | ✅ Biedronka, festiwal roślin, blokowisko PRL z dzikami, stacja Amic + finał: basen ogrodowy i przemiana w humbaka (rozdział 3.2) |
 
 ---
 
@@ -592,5 +637,6 @@ Każdy etap trafia na `main` osobno. Zgodnie z `AGENTS.md` każda zmiana gry akt
 | Wydajność na starszych telefonach | pule obiektów, DPR max 2, tryb „Oszczędzanie baterii”, testy na urządzeniu średniej klasy |
 | Gesty systemowe telefonu (cofanie w Safari, pasek powiadomień, pasek domowy) | martwe strefy przy krawędziach, auto-pauza, PWA w trybie `standalone` |
 | Różnice między przeglądarkami telefonów (Safari vs Chrome) | testy na obu silnikach (Playwright: WebKit i Chromium) + ręczny test na iPhonie i Androidzie po każdym etapie |
-| Znak towarowy Amic | tylko nazwa własną czcionką i ogólne kolory, bez logotypu |
+| Znaki towarowe Amic i Biedronka | nazwy pisane własną czcionką, kolorystyka i dekoracje w stylu gry, bez kopiowania logotypów |
+| Utrata charakteru Sowa3 przy przebudowie | lista elementów obowiązkowych (4 plansze + finał z basenem i humbakiem) jest kryterium ukończenia etapu E5 |
 | Duży zakres | etapy niezależne, każda gra wdrażana osobno; stara wersja działa do czasu podmiany |

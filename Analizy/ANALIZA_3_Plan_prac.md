@@ -6,12 +6,13 @@
 
 ## 0. Założenia planu
 
-- **Decyzje właściciela:** jeden profil z hasłem `huhu` (jawnym w kodzie), stare wyniki do skasowania, wszystkie rekomendacje z analiz zaakceptowane, **gra głównie na telefonie**, ładne menu główne z wyborem gier, instrukcjami i galerią odblokowanych obrazków.
+- **Decyzje właściciela:** jeden profil z hasłem `huhu` (jawnym w kodzie), stare wyniki do skasowania, wszystkie rekomendacje z analiz zaakceptowane, **gra głównie na telefonie**, ładne menu główne z wyborem gier, instrukcjami i galerią odblokowanych obrazków, w Sowa3 zostają cztery plansze (Biedronka, festiwal roślin, blokowisko PRL z dzikami, stacja Amic) i finał z basenem ogrodowym i przemianą w humbaka.
+- **Stan na 2026-09-27:** reguły Firestore z Analizy 1 (rozdz. 9.2) są **opublikowane** przez właściciela. W bazie są kolekcje drugiego projektu (`audio`, `character_builder`, `dataslate`); kolekcja `sowiegry` powstanie w E1. Kod gier jeszcze nie korzysta z Firestore.
 - **Każdy etap to zamknięta zmiana na `main`.** Na `main` zawsze jest grywalna wersja: stara gra działa, dopóki nowa nie jest gotowa i zaakceptowana.
 - **Telefon jest miarą ukończenia.** Każdy etap kończy się testami automatycznymi na profilach telefonów i ręczną checklistą na prawdziwym telefonie (rozdział 3).
 - **Minimum pracy „do kosza”.** Obecne gry dostają tylko drobne zmiany (podpięcie zapisu do Firestore), bo i tak zostaną przebudowane.
 - **Zgodnie z `AGENTS.md`** każda zmiana gry aktualizuje jej `docs/Documentation.md` i `docs/README.md` (README po polsku, dla gracza), a zmiana modułów wspólnych aktualizuje dokumentację główną.
-- Identyfikatory i foldery gier (`SowaRunner/`, `SowaJumper/`, `Sowa3/`, `SowieOgrody/`, `SowiaSzklarnia/`) zostają. Zmieniają się tylko nazwy wyświetlane w menu, więc adresy, zapisy i pamięć podręczna PWA pozostają spójne.
+- **Nazwy i foldery gier zmieniają się dopiero w etapie przebudowy danej gry:** SowaRunner → Sowia Ucieczka, folder `SowiaUcieczka/` (E4); Sowa3 → Sowie Tory, `SowieTory/` (E5); SowaJumper → Sowa w Chmurach, `SowaWChmurach/` (E6); Sowia Szklarnia → Łącz i Hoduj, `LaczIHoduj/` (E8); Sowie Ogrody bez zmian. Do tego czasu obowiązują nazwy i foldery obecne. **Identyfikatory w bazie (`runner`, `sowa3`, `jumper`, `ogrody`, `szklarnia`) nie zmieniają się nigdy**, bo są w opublikowanych regułach Firestore. Szczegóły: Analiza 2, rozdział 3 („Nazwy gier i folderów”).
 - Rozmiar etapów: **S / M / L** (mały / średni / duży), bez szacowania godzin.
 
 ---
@@ -24,7 +25,7 @@ E0 Przygotowanie
       └─► E2 Fundament (silnik, telefon/PWA, postacie, dźwięk, wspólny interfejs)
            └─► E3 Menu główne (gry, instrukcje, galeria)
                 └─► E4 Sowia Ucieczka (Runner)
-                     └─► E5 Sowie Tory (Sowa3)
+                     └─► E5 Sowie Tory (obecnie Sowa3)
                           └─► E6 Sowa w Chmurach (Jumper)
                                └─► E7 Sowie Ogrody
                                     └─► E8 Łącz i Hoduj (Szklarnia)
@@ -38,7 +39,7 @@ E0 Przygotowanie
 | E2 | Fundament | L | E1 | strona testowa „Sowie Laboratorium”, instalacja jako aplikacja (PWA) |
 | E3 | Menu główne | M | E2 | nowe menu: ścieżka gier, instrukcje, galeria z przeglądarką zdjęć |
 | E4 | Sowia Ucieczka | L | E3 | pierwsza nowa gra |
-| E5 | Sowie Tory | L | E4 | druga nowa gra |
+| E5 | Sowie Tory | L | E4 | druga nowa gra: Biedronka, festiwal roślin, PRL z dzikami, stacja Amic, basen i humbak |
 | E6 | Sowa w Chmurach | M | E5 | trzecia nowa gra |
 | E7 | Sowie Ogrody | M | E6 | odświeżona gra idle |
 | E8 | Łącz i Hoduj | L | E7 | nowa gra logiczna (merge) |
@@ -56,7 +57,7 @@ E0 Przygotowanie
 
 **Okres przejściowy (E4–E8):** nowe gry wysyłają zdarzenia (`leaf:collected`, `goat:caught`, `run:ended` …) do nowego modułu `SowieProgress`. Do czasu E9 cienki „most” przekazuje je do obecnej Sowiej Akademii i Galerii, więc misje dnia i odblokowywanie zdjęć działają zarówno ze starymi, jak i z nowymi grami. `shared/gameplay-expansion.js` nie jest ładowany na stronach przebudowanych gier.
 
-**Podgląd przed podmianą (E4–E8):** nowa wersja gry trafia najpierw na `main` jako `nowa.html` w folderze gry, z linkiem „Wypróbuj nową wersję” w ustawieniach menu. Po akceptacji właściciela (test na telefonie) kolejna zmiana robi z niej `index.html` i usuwa stare pliki.
+**Podgląd przed podmianą (E4–E8):** nowa wersja gry powstaje od razu w **nowym folderze** (np. `SowiaUcieczka/`) i trafia na `main`, a w menu pojawia się link „Wypróbuj nową wersję”. Stara gra działa dalej w starym folderze. Po akceptacji właściciela (test na telefonie) kolejna zmiana przełącza kartę w menu na nowy folder, usuwa stare pliki gry i zostawia w starym folderze tylko `index.html` z przekierowaniem. W E7 (Sowie Ogrody) folder się nie zmienia, więc podglądem jest `SowieOgrody/nowa.html`.
 
 ---
 
@@ -68,7 +69,7 @@ E0 Przygotowanie
 |---|---|
 | 0.1 | Uruchomić `npm test` na obecnym `main` i zapisać stan wyjściowy (co przechodzi, co nie). |
 | 0.2 | Playwright: profile telefonów `iPhone SE`, `iPhone 13`, `Pixel 7`, własny `Android 360×800` oraz `iPhone 13` w poziomie; silniki Chromium **i WebKit** (Safari). W CI: `npx playwright install --with-deps chromium webkit`. Obecne testy starych gier zostają na desktopowym Chromium, a nowe testy od początku biegną na telefonach. |
-| 0.3 | Emulator Firestore: `firebase.json` (tylko emulator), `firestore.rules` (reguły z Analizy 1, rozdz. 9.2), `firebase-tools` jako devDependency, w CI krok `actions/setup-java` (Java 21). |
+| 0.3 | Emulator Firestore: `firebase.json` (tylko emulator), `firestore.rules` (**dokładna kopia reguł opublikowanych 2026-09-27**, Analiza 1, rozdz. 9.2), `firebase-tools` jako devDependency, w CI krok `actions/setup-java` (Java 21). |
 | 0.4 | Usunąć nieaktualne dokumenty opisujące stary układ: `docs/AUDYT_MERGE_CUTE_POLISH.md`, `docs/WDROZENIE_CUTE_POLISH.md`, `docs/PLAN_ROZWOJU_CUTE_POLISH.md`. |
 
 **Gotowe, gdy:** CI jest zielone z nowymi profilami i emulatorem; stan wyjściowy testów jest opisany.
@@ -88,7 +89,7 @@ E0 Przygotowanie
 | 1.9 | Testy: `tests/unit/sowie-cloud.test.mjs`; e2e na emulatorze (hasło, zapis, przeładowanie, drugi kontekst przeglądarki = „drugie urządzenie” widzi rekord, powrót z tła); testy reguł; przepisanie testów z `platform.spec.js`, `owl-gallery.spec.js`, `smoke.spec.js`; w `tests/unit/architecture.test.mjs` reguła „`localStorage` tylko w `sowie-cloud.js`”. |
 | 1.10 | Dokumentacja główna i każdej gry; poprawiony komentarz w `config/firebase-config.js`. |
 
-**Właściciel:** opublikować reguły z `firestore.rules` w konsoli Firebase (sprawdzić w Rules Playground, że drugi projekt działa), sprawdzić plan i limity, wpisać `huhu` na telefonie i zobaczyć w konsoli kolekcję `sowiegry`.
+**Właściciel:** ~~opublikować reguły~~ ✅ wykonane 2026-09-27; sprawdzić plan i limity; po wdrożeniu E1 wpisać `huhu` na telefonie i zobaczyć w konsoli kolekcję `sowiegry`.
 
 **Gotowe, gdy:**
 
@@ -141,26 +142,46 @@ Etap dzielony na cztery części, każda trafia na `main` osobno.
 | 4.3 | 5 kózek, Plusk-o-metr, bonus „Rejs na humbaku”, 6 biomów. |
 | 4.4 | Punktacja, combo, zadania biegu, Sowi mnożnik; `submitRun()` (rekordy per poziom, top 10, historia, rekord dnia); wyzwanie dnia z ziarnem. |
 | 4.5 | Samouczek pierwszego uruchomienia; instrukcja w `guides-data.js`; ilustracja karty w menu; muzyka gry. |
-| 4.6 | Podgląd `nowa.html` → akceptacja → podmiana i usunięcie starych plików z `p5.js` włącznie (Analiza 2, rozdz. 6). |
+| 4.6 | Nowa gra w folderze `SowiaUcieczka/` (podgląd) → akceptacja → karta menu na nowy folder, usunięcie starych plików z `SowaRunner/` z `p5.js` włącznie (Analiza 2, rozdz. 6), przekierowanie `SowaRunner/index.html` → `SowiaUcieczka/`, aktualizacja wszystkich odwołań do folderu (rejestr gier, `package.json`, `eslint.config.js`, testy, dokumentacja). |
 | 4.7 | Dokumentacja gry. |
 
 **Gotowe, gdy:** czas reakcji ≥ 1,1 s na 320 × 568 w pionie przy maksymalnej prędkości (test liczony z parametrów kamery i prędkości); obrót telefonu nie resetuje biegu; 60 kl./s na telefonie średniej klasy; gra < 800 KB; e2e na profilach telefonów zielone.
 
-### E5 — Sowie Tory / Sowa3 (L) — Analiza 2, rozdz. 3.2
+### E5 — Sowie Tory, obecnie Sowa3 (L) — Analiza 2, rozdz. 3.2
 
-Rzutnia perspektywiczna i sortowanie po głębokości; swipe w 4 kierunkach (z martwymi strefami przy krawędziach); 4 plansze + tryb Nieskończony; przeszkody według typu (niska / wysoka / pełna / ruchoma); dziki, ludzie, donice i słupki jako dekoracje bez kolizji; kózki z „Kozią jazdą”; **grywalny** bonus „Humbacze Tory” po każdej planszy (przemiana w humbaka jako 2-sekundowe przejście); gwiazdki plansz; rekordy kampanii i trybu Nieskończonego; samouczek; muzyka na każdą planszę; podgląd → podmiana → usunięcie 16 starych plików; dokumentacja.
+„Sowa3” to obecna nazwa; w tym etapie gra dostaje nazwę „Sowie Tory” (folder `Sowa3/` i identyfikator `sowa3` bez zmian).
 
-**Gotowe, gdy:** swipe działa jedną ręką bez wywoływania gestu „cofnij”; każda plansza ma przejście (test wzorów); bonus humbaka jest grywalny; e2e na telefonach zielone.
+**Elementy obowiązkowe (wymaganie właściciela, 2026-09-27):**
+
+1. plansza **Sowa w sklepie Biedronka**,
+2. plansza **Sowa na festiwalu roślin**,
+3. plansza **Sowa uciekająca przed dzikami na blokowisku z PRL**,
+4. plansza **Sowa na stacji benzynowej Amic**,
+5. po każdym etapie: **sowa wskakuje do basenu ogrodowego i zmienia się w humbaka**.
+
+| # | Zadanie |
+|---|---|
+| 5.0 | Checklista smaczków obecnej wersji do przeniesienia: oprawa czterech plansz (regały, „SUPER CENA!”, pieczywo, pracownik z paleciakiem; hala, stojaki, wózki z kwiatami, zraszacze; bloki z wielkiej płyty, trzepak, ławka, kot na balkonie, gołębie; zadaszenie, zielony pas, sklep stacji), basen (szara ryflowana ścianka, niebieski rant, turkusowa woda, trawa, płot, drzewa), koza na leżaku i grill, teksty żartów („Telefon od Magdy”, „Przyjmiesz zmianę?”). |
+| 5.1 | Rdzeń: rzutnia perspektywiczna, sortowanie po głębokości, swipe w 4 kierunkach (tor, skok, ślizg) z martwymi strefami przy krawędziach. |
+| 5.2 | Cztery plansze w kolejności: Biedronka → festiwal roślin → blokowisko PRL → stacja Amic; przeszkody według typu (niska / wysoka / pełna / ruchoma) w rodzinach Pracu i Amic; ludzie, donice i słupki jako dekoracje bez kolizji. |
+| 5.3 | Plansza PRL: **pościg dzików** (stado u dołu ekranu jako wskaźnik żyć, dzik szarżujący wzdłuż toru ze strzałką ostrzegawczą 1 s wcześniej). |
+| 5.4 | Finał każdego etapu: działka z basenem ogrodowym, sekwencja ok. 4 s (bieg → skok → plusk → przemiana w humbaka), skracanie tapnięciem po pierwszym obejrzeniu (`finishSeen`). |
+| 5.5 | Grywalny bonus „Humbacze Tory” (20 s) zaraz po przemianie; podsumowanie planszy z gwiazdkami. |
+| 5.6 | Kózki z „Kozią jazdą”, liście, combo, Gorączka Monster (najczęstsza na festiwalu roślin); tryb Nieskończony; rekordy kampanii i trybu Nieskończonego. |
+| 5.7 | Samouczek, instrukcja w `guides-data.js`, ilustracja karty w menu, muzyka na każdą planszę. |
+| 5.8 | Nowa gra w folderze `SowieTory/` (podgląd) → akceptacja → karta menu na nowy folder, usunięcie 16 starych plików z `Sowa3/`, przekierowanie `Sowa3/index.html` → `SowieTory/`, aktualizacja odwołań; dokumentacja gry w `SowieTory/docs/`. |
+
+**Gotowe, gdy:** są wszystkie cztery plansze i finał z basenem i przemianą w humbaka (lista obowiązkowa powyżej); swipe działa jedną ręką bez wywoływania gestu „cofnij”; każdy wzór przeszkód ma przejście (test); bonus humbaka jest grywalny; e2e na telefonach zielone.
 
 ### E6 — Sowa w Chmurach / Jumper (M) — Analiza 2, rozdz. 3.3
 
-Przeciąganie palcem w dolnej połowie ekranu + opcjonalne przechylanie (na iPhonie przycisk z prośbą o zgodę); 6 typów platform; Pracu do zdeptania, Amic do omijania; kózki z „Rakietką”; „Niebiański Ocean”; ratunek zamiast upadku; 5 stref wysokości; samouczek; podgląd → podmiana → usunięcie 11 starych plików; dokumentacja.
+Przeciąganie palcem w dolnej połowie ekranu + opcjonalne przechylanie (na iPhonie przycisk z prośbą o zgodę); 6 typów platform; Pracu do zdeptania, Amic do omijania; kózki z „Rakietką”; „Niebiański Ocean”; ratunek zamiast upadku; 5 stref wysokości; samouczek; nowa gra w folderze `SowaWChmurach/` (podgląd) → akceptacja → usunięcie 11 starych plików z `SowaJumper/` i przekierowanie do nowego folderu, aktualizacja odwołań; dokumentacja w `SowaWChmurach/docs/`.
 
 **Gotowe, gdy:** sterowanie jest płynne jedną ręką, a palec nie zasłania sowy; przechylanie działa na Androidzie i iPhonie po zgodzie; e2e na telefonach zielone.
 
 ### E7 — Sowie Ogrody (M) — Analiza 2, rozdz. 3.4
 
-Czytelne moduły zamiast obecnego `script.js`; nowy format stanu z migracją ze stanu zapisanego w Firestore w E1 (`saveVersion`); rozdziały z celami; widoczny ogród; zdarzenia: telefon Pracu, ciężarówka Amic, złota kózka; „Zatoka Humbaka”; symulator ekonomii w testach (pierwszy prestiż po ok. 2–3 h); dolny panel (bottom sheet) na telefonie; postęp offline z czasu serwera i po powrocie z tła; usunięcie `shared/stable-panel.js`; podgląd → podmiana; dokumentacja.
+Czytelne moduły zamiast obecnego `script.js`; nowy format stanu z migracją ze stanu zapisanego w Firestore w E1 (`saveVersion`); rozdziały z celami; widoczny ogród; zdarzenia: telefon Pracu, ciężarówka Amic, złota kózka; „Zatoka Humbaka”; symulator ekonomii w testach (pierwszy prestiż po ok. 2–3 h); dolny panel (bottom sheet) na telefonie; postęp offline z czasu serwera i po powrocie z tła; usunięcie `shared/stable-panel.js`; podgląd `SowieOgrody/nowa.html` → podmiana (folder bez zmian); dokumentacja.
 
 **Gotowe, gdy:** symulator potwierdza tempo progresji; postęp z E1 wczytuje się bez strat; panel mieści się na 320 × 568; e2e na telefonach zielone.
 
@@ -171,7 +192,7 @@ Czytelne moduły zamiast obecnego `script.js`; nowy format stanu z migracją ze 
 | 8.0 | **Prototyp**: plansza 7 × 9, jeden łańcuch Monstery, przeciąganie na telefonie. **Punkt kontrolny właściciela** — jeśli rozgrywka się nie podoba, przechodzimy na wariant zapasowy (idle z odwróconymi rolami). |
 | 8.1 | 4 łańcuchy + hybrydy, „Sowia doniczka”, zamówienia sowich sąsiadek, odnawianie pomieszczeń szklarni. |
 | 8.2 | Przeszkody: karteczki i telefon Pracu, skrzynie i kanister Amic; 5 kózek-wzmacniaczy; „Basen Humbaka” z rekordem. |
-| 8.3 | Pakiet startowy z obecnego stanu `gry/szklarnia` (nowa `saveVersion`); samouczek; podgląd → podmiana → usunięcie starego `script.js`; dokumentacja. |
+| 8.3 | Pakiet startowy z obecnego stanu `gry/szklarnia` (nowa `saveVersion`, identyfikator `szklarnia` bez zmian); samouczek; nowa gra w folderze `LaczIHoduj/` (podgląd) → akceptacja → usunięcie starych plików z `SowiaSzklarnia/` i przekierowanie do nowego folderu, aktualizacja odwołań; dokumentacja w `LaczIHoduj/docs/`. |
 
 **Gotowe, gdy:** przeciąganie przedmiotów jest precyzyjne na 320 × 568 (pole ≥ 44 px, przedmiot uniesiony nad palcem); plansza nie może się zablokować bez wyjścia (test jednostkowy); e2e na telefonach zielone.
 
@@ -183,7 +204,7 @@ Czytelne moduły zamiast obecnego `script.js`; nowy format stanu z migracją ze 
 | 9.2 | Sowi Butik: stroje, gatunki sów, dłuższe działanie kózek. |
 | 9.3 | Nowe wymagania odblokowania 30 zdjęć galerii (propozycja do akceptacji właściciela). |
 | 9.4 | Usunięcie starego kodu: `sowie-academy.js`, `gameplay-expansion.js`, `game-guides.js`, `notification-manager.js`, `modal-accessibility.js`, `sowie-runtime.js`, pasek narzędzi i dok z `sowie-core.js`, most z okresu przejściowego. |
-| 9.5 | Usunięcie kodu kasującego stare klucze `localStorage` (gdy od E1 minęły 1–2 miesiące). |
+| 9.5 | Usunięcie kodu kasującego stare klucze `localStorage` (gdy od E1 minęły 1–2 miesiące) oraz stron-przekierowań w starych folderach (`SowaRunner/`, `Sowa3/`, `SowaJumper/`, `SowiaSzklarnia/`). |
 | 9.6 | Końcowy przegląd wydajności na telefonach i pełna aktualizacja dokumentacji. |
 
 **Gotowe, gdy:** jest jeden system postępu; w repo nie ma plików starego układu; wszystkie testy (także na telefonach) zielone.
@@ -214,10 +235,10 @@ Czytelne moduły zamiast obecnego `script.js`; nowy format stanu z migracją ze 
 
 | Etap | Czynność |
 |---|---|
-| E1 | Opublikować reguły Firestore (z `firestore.rules`) i sprawdzić je w Rules Playground; sprawdzić plan i limity; wpisać `huhu` na telefonie i sprawdzić kolekcję `sowiegry` w konsoli. |
+| E1 | ✅ Reguły Firestore opublikowane (2026-09-27). Pozostaje: sprawdzić plan i limity; po wdrożeniu wpisać `huhu` na telefonie i sprawdzić kolekcję `sowiegry` w konsoli. |
 | E2 | Zaakceptować wygląd postaci w „Sowim Laboratorium”; opcjonalnie nagrać „Hu-hu!” i „Pracu pracu!” (np. dyktafon w telefonie); zainstalować SowieGry jako aplikację. |
 | E3 | Zaakceptować wygląd menu na telefonie. |
-| E4–E8 | Zagrać w wersję podglądową (`nowa.html`) na telefonie i dać zielone światło na podmianę. |
+| E4–E8 | Zagrać w wersję podglądową (nowy folder gry, w E7 `SowieOgrody/nowa.html`) na telefonie i dać zielone światło na podmianę. |
 | E8 | Punkt kontrolny prototypu merge. |
 | E9 | Zaakceptować nowe wymagania odblokowania zdjęć galerii. |
 
