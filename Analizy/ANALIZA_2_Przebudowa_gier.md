@@ -1,7 +1,17 @@
 # Analiza 2 — przebudowa gier SowieGry
 
-> Data: 2026-09-27 · Zakres: SowaRunner, SowaJumper, Sowa3, Sowie Ogrody, Sowia Szklarnia oraz wspólne menu i meta-postęp · Status: **analiza**, bez zmian w kodzie.
+> Data: 2026-09-27 · Wersja 2 (po decyzjach właściciela) · Zakres: SowaRunner, SowaJumper, Sowa3, Sowie Ogrody, Sowia Szklarnia oraz menu główne i meta-postęp · Status: **analiza**, bez zmian w kodzie.
 > Zakłada wdrożenie Analizy 1 (zapis w Firestore) jako fundamentu. Wszystkie propozycje poniżej zapisują dane wyłącznie przez `SowieCloud`.
+> Kolejność prac: [`ANALIZA_3_Plan_prac.md`](ANALIZA_3_Plan_prac.md).
+
+---
+
+## Decyzje właściciela (2026-09-27)
+
+1. **Wszystkie rekomendacje z tabeli w rozdziale 8 zostały zaakceptowane.**
+2. **Gra będzie prowadzona głównie na telefonie.** Responsywność optymalizujemy pod telefon w pionie, obsługiwany jedną ręką (rozdział 2.5). Komputer i orientacja pozioma są obsługiwane, ale na drugim planie.
+3. **Jeden profil gracza z hasłem `huhu`** (Analiza 1). Nie ma rankingu między graczami, więc wszędzie, gdzie była mowa o rankingu, są **rekordy osobiste** (top 10 na grę i poziom trudności, rekordy wyzwania dnia).
+4. **Nowe wymaganie: ładne menu główne** z wyborem gier, instrukcjami i galerią odblokowanych obrazków (rozdział 4.1). Menu dostaje osobny etap w planie prac, zaraz po fundamencie, jeszcze przed przebudową gier.
 
 ---
 
@@ -13,7 +23,9 @@
 4. Proponuję **wspólny fundament**: „Sowi Świat” (biblia postaci, ról, stylu i dźwięku) oraz „Sowi Silnik” (lekki silnik Canvas 2D w modułach ES, bez p5.js, który waży 5,2 MB). Na nim przebudowujemy każdą grę od zera, z czytelną pętlą rozgrywki.
 5. **Stałe elementy każdej gry** (wymagania): cute sowy jako bohaterowie, **Pracu Pracu** i **Amic** jako przeszkody, **liście Monstery** jako punktacja, **humbaki** jako bonusowe poziomy, **skaczące kózki** jako power-upy. Tabela zgodności: rozdział 2.1.
 6. **Sowia Szklarnia** dubluje dziś Sowie Ogrody (te same rośliny, te same zasoby). Proponuję zmienić ją w grę logiczną typu **„połącz i hoduj” (merge)**. Wtedy zestaw ma 3 gry zręcznościowe, 1 idle i 1 logiczną.
-7. Kolejność: Analiza 1 → Sowi Silnik i grafika → SowaRunner → Sowa3 → SowaJumper → Sowie Ogrody → Sowia Szklarnia → meta (mapa, zadania, butik, rankingi).
+7. **Telefon przede wszystkim:** wszystkie gry projektujemy najpierw pod pion i jedną rękę, ze strefami kciuka, bezpiecznymi obszarami ekranu i instalacją jako aplikacja (PWA). Szczegóły: rozdział 2.5.
+8. **Nowe menu główne**: ścieżka przez „Sowi Świat” z kartami gier, ilustrowane instrukcje i galeria odblokowanych zdjęć z miniaturami i przeglądarką pełnoekranową (rozdział 4.1).
+9. Kolejność: Analiza 1 → fundament (Sowi Silnik, grafika, powłoka telefonu) → menu główne → Sowia Ucieczka → Sowie Tory → Sowa w Chmurach → Sowie Ogrody → Łącz i Hoduj → meta (zadania, butik, osiągnięcia). Szczegóły: `ANALIZA_3_Plan_prac.md`.
 
 ---
 
@@ -104,7 +116,7 @@ Konsekwencje:
 
 **Sowy (bohaterki)**
 
-- Główna bohaterka „Sówka” plus kolekcjonowane gatunki: Puszczyk, Płomykówka, Uszatka, Śnieżna, Pójdźka, Puchacz. **Tylko kosmetyka**, bez przewagi w rankingu.
+- Główna bohaterka „Sówka” plus kolekcjonowane gatunki: Puszczyk, Płomykówka, Uszatka, Śnieżna, Pójdźka, Puchacz. **Tylko kosmetyka**, bez wpływu na rozgrywkę.
 - Wygląd: okrągłe ciało, duże oczy z odblaskami, mały dziobek, różowe policzki, kontur 3 px w kolorze `#3b2f4a` (nigdy czarny).
 - Animacje: mruganie co 3–5 s, bieg (6 klatek), skok z efektem squash & stretch, szybowanie, oszołomienie (gwiazdki), radość (zmrużone oczy).
 - Jedna wspólna biblioteka rysowania sowy dla wszystkich gier, żeby sowa wszędzie wyglądała identycznie. Garderoba (obecne 9 dodatków) działa wszędzie.
@@ -143,7 +155,7 @@ Kózki zawsze podskakują (łukiem, z „meee!”), a złapanie daje efekt. Kóz
 | Turbo | pomarańczowa / błyskawica | sprint z nietykalnością | 4 s |
 | Podwajaczka | zielona / „×2” | podwójne liście | 10 s |
 
-Złapana kózka przez chwilę jedzie na grzbiecie sowy (albo sowa na kózce). Czas działania można wydłużać w Sowim Butiku (rozdział 4).
+Złapana kózka przez chwilę jedzie na grzbiecie sowy (albo sowa na kózce). Czas działania można wydłużać w Sowim Butiku (rozdział 4.2).
 
 **Humbaki (bonusowe poziomy)**
 
@@ -185,16 +197,49 @@ Zastępujemy piski oscylatora prawdziwymi próbkami i muzyką.
 
 **Silnik audio:** Web Audio z szynami master / muzyka / efekty, suwaki głośności 0–100% zamiast wł./wył., limit jednoczesnych głosów i odstępów na dźwięk, wariacja wysokości ±5%, ściszanie muzyki podczas bonusu, wyciszenie po ukryciu karty, odblokowanie przy pierwszym dotknięciu (iOS), opcjonalne wibracje (Android).
 
-### 2.5 Responsywność i sterowanie
+### 2.5 Telefon przede wszystkim: responsywność i sterowanie
 
-- **Świat w jednostkach logicznych, nie w pikselach.** Każda gra deklaruje, ile jednostek świata ma być zawsze widoczne (np. Runner: min. 16 jednostek przed sową). Kamera dopasowuje skalę. **Czas reakcji nie zależy od ekranu.**
-- **Nigdy nie resetujemy gry przy zmianie rozmiaru.** Obrót, schowanie paska adresu, ukrycie karty i utrata fokusu wstrzymują grę, a wznowienie poprzedza odliczanie 3-2-1.
-- Układ: `100dvh`, `env(safe-area-inset-*)`, HUD poza korytarzem gry, `touch-action: none` tylko na canvasie.
-- Orientacja: Runner poziomo lub pionowo, Sowie Tory i Jumper pionowo (w poziomie kolumna gry na środku z dekoracjami po bokach), Ogrody i Szklarnia pionowo na telefonie (dolny panel) i dwie kolumny na komputerze.
-- Wspólna warstwa wejścia: tap, przytrzymanie, przeciągnięcie, swipe (próg 24 px / 200 ms); klawiatura (Spacja/↑/W, ↓/S, ←/→/A/D, P = pauza, Esc = menu); opcjonalnie pad.
-- **Dostępność:** ograniczenie ruchu (bez wstrząsów, mniej cząsteczek), rozróżnianie kształtem i ikoną (nie tylko kolorem), **Tryb Przytulny** (wolniej, bez końca gry — dla dzieci), tekst min. 14 px, cele dotyku min. 44 px, widoczny fokus.
-- **Wydajność:** 60 kl./s na średnim telefonie, pule obiektów (zero alokacji w pętli), statyczne warstwy tła w pamięci podręcznej, DPR max 2. Budżet: pierwsze wejście < 1,5 MB bez zdjęć galerii, jedna gra < 800 KB.
-- **PWA:** manifest + service worker. Instalacja na ekranie telefonu, gra offline, a w połączeniu z cache Firestore z Analizy 1 wyniki wysyłają się po odzyskaniu sieci.
+Założenia (decyzja 2): gra głównie na telefonie, w pionie, jedną ręką, w krótkich sesjach (2–5 min), przy różnej jakości zasięgu.
+
+**Urządzenia referencyjne**
+
+| Klasa | Rozmiar CSS w pionie | Przykłady | Rola w testach |
+|---|---|---|---|
+| Mały | 320 × 568 | iPhone SE (1. gen.) | minimum: wszystko działa, nic się nie nakłada |
+| Mały–średni | 360 × 800 | popularne Androidy | **główny cel** |
+| Średni | 390 × 844 / 393 × 852 | iPhone 13–15 | **główny cel** |
+| Duży | 412 × 915 / 430 × 932 | Pixel, iPhone Pro Max | obowiązkowy |
+| Poziomo | np. 844 × 390 | każdy telefon | obsługiwany, bez nakładania się elementów |
+| Tablet / komputer | szerokość ≥ 768 | — | kolumna gry na środku, dekoracje po bokach |
+
+**Zasady**
+
+1. **Pion jest podstawą wszystkich gier**, także Runnera. Każdy ekran projektujemy najpierw w 360 × 800, potem sprawdzamy 320 × 568 i poziom.
+2. **Świat w jednostkach logicznych, nie w pikselach.** Kamera dobiera skalę do ekranu, a prędkości są dobrane tak, żeby przeszkoda była widoczna **co najmniej 1,1 s** przed zderzeniem na najmniejszym ekranie w pionie. Czas reakcji nie zależy od telefonu.
+3. **Strefy kciuka.** Sterowanie i główne przyciski są w dolnych ~40% ekranu. Górna część służy do czytania (HUD). Pauza jest w górnym rogu (rzadko potrzebna), a gra i tak pauzuje się sama przy każdej przerwie.
+4. **Gesty w dowolnym miejscu planszy.** Tap, przytrzymanie, swipe (próg 24 px / 200 ms) i przeciąganie działają na całym ekranie gry, bez celowania w przyciski. Wyjątek: martwa strefa 16–20 px przy lewej i prawej krawędzi (systemowy gest „cofnij”) i przy dolnej krawędzi (pasek domowy iPhone’a).
+5. **Blokada gestów przeglądarki:** `touch-action: none` na planszy, `overscroll-behavior: none` (bez „pociągnij, aby odświeżyć”), `-webkit-touch-callout: none` i `user-select: none` (bez menu po przytrzymaniu), `touch-action: manipulation` na przyciskach (bez opóźnienia i powiększenia po podwójnym tapnięciu).
+6. **Bezpieczne obszary:** `viewport-fit=cover` + `env(safe-area-inset-*)`. HUD nigdy nie wchodzi pod wycięcie ekranu, Dynamic Island ani pasek domowy.
+7. **Wysokość ekranu:** `100dvh` + `visualViewport`. Chowanie się paska adresu nie zmienia skali świata w trakcie gry i nigdy nie resetuje rozgrywki.
+8. **Przerwy:** obrót ekranu, przejście do innej aplikacji, blokada ekranu, powiadomienie z góry czy połączenie przychodzące wstrzymują grę (`visibilitychange`, `blur`, `orientationchange`). Powrót poprzedza odliczanie 3-2-1.
+9. **PWA jako główny sposób grania:** manifest z `display: "standalone"` i `orientation: "portrait"` oraz service worker. Po dodaniu do ekranu głównego nie ma paska przeglądarki ani gestu „cofnij” z Safari, dane nie są kasowane po 7 dniach, a gry działają bez zasięgu. Menu podpowiada instalację: na Androidzie przycisk „Zainstaluj”, na iPhonie krótka instrukcja „Udostępnij → Do ekranu początkowego”.
+10. **Wydajność:** 60 kl./s na telefonie średniej klasy (np. Android z 4 GB RAM, iPhone 11). DPR max 2, pule obiektów (zero alokacji w pętli), statyczne tła w pamięci podręcznej, zatrzymana pętla przy ukrytej karcie. Jeśli przez 5 s gra działa poniżej 45 kl./s, proponuje tryb „Oszczędzanie baterii” (30 kl./s, mniej cząsteczek).
+11. **Transfer w sieci komórkowej:** pierwsze wejście < 1,5 MB, jedna gra < 800 KB, muzyka i zdjęcia ładowane leniwie, w galerii miniatury zamiast zdjęć 1200 × 900 (rozdział 4.1).
+12. **Dźwięk:** odblokowanie Web Audio przy pierwszym dotknięciu. Na iPhonie `navigator.audioSession.type = "ambient"` (Safari 16.4+): gra nie przerywa muzyki gracza i respektuje przełącznik wyciszenia. Wyciszenie po zablokowaniu ekranu.
+13. **Wibracje:** krótkie (15–30 ms) przy trafieniu i złapaniu kózki, tylko na Androidzie (`navigator.vibrate`; Safari go nie obsługuje), z wyłącznikiem w ustawieniach.
+14. **Tekst i przyciski:** tekst interfejsu min. 16 px (pola formularzy min. 16 px, bo inaczej iOS powiększa stronę), cele dotyku min. 48 × 48 px, odstępy między nimi ≥ 8 px.
+15. **Dostępność:** ograniczenie ruchu (bez wstrząsów, mniej cząsteczek), rozróżnianie kształtem i ikoną (nie tylko kolorem), **Tryb Przytulny** (wolniej, bez końca gry — dla dzieci), widoczny fokus.
+16. **Klawiatura i komputer nadal działają** (Spacja/↑/W, ↓/S, ←/→/A/D, P = pauza, Esc = menu), ale to drugi plan.
+
+**Układ gier na telefonie w pionie**
+
+| Gra | Sterowanie jedną ręką | Plansza | HUD i przyciski |
+|---|---|---|---|
+| Sowia Ucieczka | tap / przytrzymanie / swipe w dół w dowolnym miejscu | tor w dolnych ~60% wysokości; nad nim wolna przestrzeń na wysokie łuki liści, platformy i szybowanie | HUD u góry, dół wolny |
+| Sowie Tory | swipe w 4 kierunkach w dowolnym miejscu | tory zajmują ~80% szerokości | HUD u góry |
+| Sowa w Chmurach | przeciąganie palcem w dolnej połowie ekranu | pełny ekran | HUD u góry |
+| Sowie Ogrody | tapy w ogród + dolny panel (bottom sheet) | ogród w górnych ~45% wysokości | zakładki panelu przy dolnej krawędzi |
+| Łącz i Hoduj | przeciągnij i upuść | siatka 7 × 9, pole min. 44 px (7 × 44 = 308 px, mieści się w 320 px) | zamówienia nad planszą, „Sowia doniczka” pod planszą |
 
 ### 2.6 Technika: „Sowi Silnik”
 
@@ -203,9 +248,11 @@ shared/
   engine/   loop.js  view.js  input.js  audio.js  assets.js  sprites.js
             tween.js  particles.js  camera.js  rng.js  collide.js  pool.js  scene.js
   world/    owl.js  goats.js  pracu.js  amic.js  leaves.js  whale.js     ← postacie: wygląd + zachowanie
-  ui/       hud.js  pause-menu.js  results.js  toasts.js  modal.js  profile-picker.js
-  meta/     cloud.js (Analiza 1)  progress.js (zadania, piórka, kolekcje)  leaderboard.js
-assets/     svg/  audio/  fonts/
+  ui/       hud.js  pause-menu.js  results.js  toasts.js  modal.js  password-gate.js
+  meta/     cloud.js (Analiza 1)  progress.js (zadania, piórka, kolekcje)  records.js  guides-data.js
+  menu/     menu.js  menu.css  games.js  guides.js  gallery.js           ← menu główne (rozdział 4.1)
+  pwa/      manifest.webmanifest  sw.js
+assets/     svg/  audio/  fonts/  gallery-thumbs/
 SowaRunner/ index.html  main.js  game.js  patterns.js  bonus-whale.js  docs/
 Sowa3/ …   SowaJumper/ …   SowieOgrody/ …   SowiaSzklarnia/ …
 ```
@@ -222,7 +269,7 @@ Sowa3/ …   SowaJumper/ …   SowieOgrody/ …   SowiaSzklarnia/ …
 
 ## 3. Projekty gier
 
-Każda gra zachowuje swój identyfikator (`runner`, `jumper`, `sowa3`, `ogrody`, `szklarnia`), więc rekordy i profile z Analizy 1 przechodzą bez zmian.
+Każda gra zachowuje swój identyfikator (`runner`, `jumper`, `sowa3`, `ogrody`, `szklarnia`), więc profil i rekordy z Analizy 1 działają bez zmian.
 
 ### 3.1 SowaRunner → „Sowia Ucieczka” (side-scroller)
 
@@ -265,11 +312,16 @@ Dziury w terenie mogą zostać jako neutralny element toru.
 
 - Wynik = dystans (1 pkt/m) + liście × **mnożnik combo** (×1–×5; +1 poziom co 10 liści bez trafienia, trafienie obniża o 1 poziom, nie do zera) + premie: „O włos!” +25, kózka +50, humbacza premia.
 - **Zadania biegu:** zawsze 3 aktywne (np. „Prześlizgnij się pod 3 znakami Amic”, „Złap Kózkę Magnes”, „Zbierz 80 liści w jednym biegu”). Każde 3 ukończone podnoszą stały **Sowi mnożnik** (poziom 1–20).
-- Ranking: dystans oraz wynik.
+- Rekordy osobiste: dystans i wynik, osobno dla każdego poziomu trudności (top 10).
 
-**Trudność:** prędkość w jednostkach świata (np. 6 → 14 j/s przez ok. 3 min), wzory odblokowywane progami dystansu. Tryby: **Chill** (wolniej, Tryb Przytulny bez końca gry dostępny jako opcja), **Arcade**, **Chaos** (szybciej, gęstsze wzory, osobny ranking).
+**Trudność:** prędkość w jednostkach świata rośnie przez ok. 3 min, a wzory odblokowują się progami dystansu. Tryby: **Chill** (wolniej, Tryb Przytulny bez końca gry dostępny jako opcja), **Arcade**, **Chaos** (szybciej, gęstsze wzory, osobne rekordy).
 
-**Responsywność:** widoczne co najmniej 16 jednostek przed sową i 9 jednostek wysokości. W pionie świat się pomniejsza, a sowa stoi bliżej lewej krawędzi. Czas reakcji na przeszkodę ≥ 1,1 s w każdym ułożeniu ekranu.
+**Telefon w pionie (główny układ):**
+
+- sowa stoi przy lewej krawędzi (ok. 18% szerokości), a kamera pokazuje min. 8 „szerokości sowy” przed nią;
+- wraz z prędkością kamera **płynnie się oddala**, żeby przeszkoda była widoczna ≥ 1,1 s. Szybsze obiekty (wózek Amic) zapowiada ikona „!” przy prawej krawędzi;
+- **wysokość ekranu to przestrzeń gry:** tor zajmuje dolne ~60%, a nad nim są platformy na 2–3 poziomach, wysokie łuki liści i trasy szybowania. Pion daje więcej rozgrywki, a nie tylko więcej nieba;
+- w poziomie widać więcej toru przed sową przy tych samych prędkościach.
 
 **Usuwamy:** `sketch.js` i wszystkie 7 warstw łatek, `p5.js`, `p5.sound.min.js`, `p5-early-random.js`.
 
@@ -300,17 +352,17 @@ Każda plansza ma własną oprawę tych samych rodzin (np. w Dyskoncie „paleta
 
 - Liście × mnożnik combo (×1–×5), premia za ukończenie planszy, premia „bez trafienia”.
 - **Gwiazdki planszy:** ★ ukończenie, ★★ ≥ określona liczba liści, ★★★ bez trafienia. Daje to cel do powtarzania.
-- Ranking: łączny wynik kampanii oraz rekord trybu Nieskończonego.
+- Rekordy osobiste: łączny wynik kampanii i rekord trybu Nieskończonego (top 10 na poziom trudności).
 
 **Grafika i technika:** prawdziwa rzutnia perspektywiczna (punkt zbiegu, skala z głębokości), sortowanie obiektów po głębokości, mgła w oddali, przesuwająca się tekstura drogi, podświetlenie toru pod sową. Dekoracje **projektowo** poza korytarzem trzech torów, więc znika potrzeba ponownego malowania trasy.
 
-**Responsywność:** pion jako podstawa (tory zajmują ok. 80% szerokości), w poziomie droga na środku i scenografia po bokach. Czas widoczności przeszkody liczony w głębokości, więc nie zależy od ekranu.
+**Telefon:** pion jako podstawa (tory zajmują ok. 80% szerokości), w poziomie droga na środku i scenografia po bokach. Czas widoczności przeszkody liczony w głębokości, więc nie zależy od ekranu. Swipe w prawo zaczynający się przy lewej krawędzi koliduje w Safari z gestem „cofnij”, dlatego gesty w martwej strefie krawędzi (2.5, zasada 4) są ignorowane, a zalecanym trybem jest PWA.
 
 **Usuwamy:** 16 obecnych plików JS (`script.js` + 15 warstw).
 
 ### 3.3 SowaJumper → „Sowa w Chmurach” (wspinaczka w pionie)
 
-**Sterowanie:** **przeciąganie palcem w dowolnym miejscu** (ruch względny, więc palec nie zasłania sowy), opcjonalnie przechylanie telefonu (na iOS wymaga zgody), klawisze ←/→/A/D. Przejście przez krawędź ekranu na drugą stronę zostaje.
+**Sterowanie:** **przeciąganie palcem w dolnej połowie ekranu** (ruch względny, więc palec nie zasłania sowy ani platform nad nią), opcjonalnie przechylanie telefonu (na iOS wymaga zgody), klawisze ←/→/A/D. Przejście przez krawędź ekranu na drugą stronę zostaje.
 
 **Platformy (6 czytelnych typów zamiast 12):** gałązka (zwykła), liść Monstery (sprężysty, +10 pkt), chmurka (znika po jednym odbiciu), huśtawka (ruchoma), balkon (szeroki, odpoczynek co ok. 150 m), krucha gałązka (łamie się).
 
@@ -328,9 +380,9 @@ Każda plansza ma własną oprawę tych samych rodzin (np. w Dyskoncie „paleta
 
 **Strefy wysokości:** Ogródek (0–150 m) → Blok (150–400 m) → Chmury (400–800 m) → Zorza (800–1500 m) → Kosmos (1500 m+, humbaki-gwiazdozbiory).
 
-**Punktacja:** wysokość (1 pkt/m) + liście × mnożnik + przebite dymki Pracu (+50) + seria idealnych lądowań (środkowe 30% platformy). Ranking: wysokość oraz wynik.
+**Punktacja:** wysokość (1 pkt/m) + liście × mnożnik + przebite dymki Pracu (+50) + seria idealnych lądowań (środkowe 30% platformy). Rekordy osobiste: wysokość i wynik.
 
-**Responsywność:** pion jako podstawa (szerokość logiczna 9 jednostek); w poziomie i na komputerze kolumna 9:16 na środku, po bokach paralaksa i HUD.
+**Telefon:** pion jako podstawa (szerokość logiczna 9 jednostek); w poziomie i na komputerze kolumna 9:16 na środku, po bokach paralaksa i HUD.
 
 **Usuwamy:** 11 obecnych plików JS, w tym łańcuchowe ładowanie i `cute-loader.js`.
 
@@ -353,7 +405,7 @@ Zostaje gatunek idle/incremental. Porządkujemy go i dopasowujemy do ról maskot
 
 **Dlaczego zmiana gatunku:** dziś Szklarnia to druga gra idle o tych samych roślinach, a jej rdzeń (kozy-szkodniki) jest sprzeczny z nową rolą kóz. Merge zachowuje motyw hodowli i krzyżowania, ale daje zupełnie inną rozgrywkę.
 
-- **Plansza:** półki szklarni, siatka 7 × 9 pól.
+- **Plansza:** półki szklarni, siatka 7 × 9 pól, dopasowana do szerokości telefonu (pole min. 44 px). Przeciąganie przedmiotu podnosi go nad palec, żeby było widać, gdzie spadnie.
 - **Łączenie:** dwa identyczne przedmioty = przedmiot wyższego poziomu. Łańcuchy (po 5 poziomów): **Monstera** (nasionko → kiełek → sadzonka → monstera → Złota Monstera), Pilea, Paproć, Kaktus. Hybrydy z obecnej gry (Monpilea, Alopaproć, Złotolistka) wracają jako **łączenie dwóch różnych roślin najwyższego poziomu**.
 - **Źródło przedmiotów:** „Sowia doniczka” — tap daje nasionko (zapas ładuje się stopniowo; bez płatności i reklam). Łamigłówką jest gospodarowanie miejscem na planszy.
 - **Zamówienia:** 3 sowie sąsiadki proszą o konkretne rośliny. Nagrody: liście Monstery (waluta) i gwiazdki odnowy. **Gwiazdki odnawiają kolejne pomieszczenia szklarni**, co zachowuje „budowanie pomieszczeń” z obecnej gry (Doniczarnia, Sala Upraw, Zraszalnia…).
@@ -363,18 +415,81 @@ Zostaje gatunek idle/incremental. Porządkujemy go i dopasowujemy do ról maskot
   - **Skrzynie Amic** blokują pola; 2 połączenia obok je otwierają (w środku nagroda).
   - **Kanister Amic** jest nieruchomy; usuwa go tylko kózka.
 - **Kózki-wzmacniacze** (z zamówień i skrzyń): **Kózka Skoczek** skacze po planszy i łączy 3 losowe pary, **Kózka Zjadaczka** zjada karteczki Pracu w rzędzie i kolumnie, **Kózka Dżoker** pasuje do każdego przedmiotu, **Kózka Sprężynka** podnosi dowolny przedmiot o 1 poziom, **Kózka Taran** usuwa kanister Amic.
-- **Humbak — „Basen Humbaka”:** co 5 wykonanych zamówień 45 s bonusu na specjalnej planszy z wodą: same dobre przedmioty, połączenia robią pluski, liczy się wynik. Nagroda: skrzynia z kózkami. **Ranking:** najlepszy wynik w Basenie Humbaka.
+- **Humbak — „Basen Humbaka”:** co 5 wykonanych zamówień 45 s bonusu na specjalnej planszy z wodą: same dobre przedmioty, połączenia robią pluski, liczy się wynik. Nagroda: skrzynia z kózkami. **Rekord osobisty:** najlepszy wynik w Basenie Humbaka.
 - **Stan gry** zapisuje się w `gry/szklarnia` (Analiza 1) z nową wersją `saveVersion`. Obecny postęp Szklarni zamieniamy na pakiet startowy (np. liście → waluta, liczba pomieszczeń → odnowione pomieszczenia).
 
-**Wariant zapasowy** (jeśli wolisz zostawić idle): obecna mechanika zarządzania z odwróconymi rolami: kozy pomagają (przyspieszają wzrost), Pracu Pracu i Amic przeszkadzają (karteczki obniżające produkcję, ciężarówki zajmujące pomieszczenie). Wymaga mocnego odróżnienia od Ogrodów (np. brak klikania, tylko planowanie układu).
+**Wariant zapasowy** (tylko gdyby prototyp merge się nie sprawdził): obecna mechanika zarządzania z odwróconymi rolami: kozy pomagają (przyspieszają wzrost), Pracu Pracu i Amic przeszkadzają (karteczki obniżające produkcję, ciężarówki zajmujące pomieszczenie). Wymaga mocnego odróżnienia od Ogrodów (np. brak klikania, tylko planowanie układu).
 
 ---
 
-## 4. Meta-postęp i wspólny interfejs
+## 4. Menu główne, meta-postęp i wspólny interfejs
 
-**Menu główne — „Sowia Mapa”:** ilustrowana mapa z 5 miejscami (tor biegu, tory miejskie, drzewo do chmur, ogród, szklarnia). U góry wybrany gracz (ekran profili z Analizy 1), obok Zadania dnia, Kolekcja i Ranking.
+### 4.1 Menu główne: wybór gier, instrukcje, galeria (nowe wymaganie)
 
-**Jeden system postępu zamiast trzech:**
+Menu jest pierwszym, co widać po wejściu, więc dostaje własny etap prac (plan: etap 3), jeszcze przed przebudową gier. Na początku karty prowadzą do obecnych gier, a po każdej przebudowie podmieniamy tylko ilustrację, opis i instrukcję danej gry.
+
+**Układ na telefonie w pionie**
+
+```
+┌──────────────────────────────┐  ← bezpieczny obszar (notch / Dynamic Island)
+│ SowieGry            ☁️  ⚙️   │  logo · stan zapisu w chmurze · ustawienia
+│  (Sówka macha)  „Hu-hu! W co │  animowana sowa w wybranym stroju
+│   dziś gramy?”  ●●○ zadania  │  postęp 3 zadań dnia
+├──────────────────────────────┤
+│ ╭──────────────────────────╮ │
+│ │ [ilustracja]  Sowia      │ │  karta gry = stacja na krętej ścieżce
+│ │               Ucieczka   │ │  przez „Sowi Świat” (przewijanie w pionie)
+│ │ Rekord: 1480 m  ★ Nowe!  │ │
+│ │ [   GRAJ   ] [Jak grać?] │ │  przyciski ≥ 48 px
+│ ╰──────────────────────────╯ │
+│        ⋮ (4 kolejne karty)   │
+├──────────────────────────────┤
+│  🎮 Gry  📖 Jak grać  🖼️ Galeria  🦉 Sowa │  dolny pasek zakładek (strefa kciuka)
+└──────────────────────────────┘
+```
+
+**Zakładka „Gry” (wybór gier)**
+
+- Pięć dużych kart ułożonych wzdłuż ilustrowanej, krętej ścieżki przez „Sowi Świat” (łąka → miasto → chmury → ogród → szklarnia). Pionowe przewijanie jest naturalne na telefonie, a ścieżka zachowuje klimat „Sowiej Mapy”.
+- Karta: ilustracja SVG gry z postaciami, nazwa, jedno zdanie opisu, rekord osobisty (z `profil.records`, bez dodatkowego odczytu), znaczek „Nowe!” po przebudowie gry, przycisk **Graj** (główny) i **Jak grać?**.
+- Delikatne animacje: podskakujące kózki, pływający humbak, kołyszące się liście Monstery (wyłączane przy ograniczeniu ruchu).
+- Na komputerze i tablecie: siatka 2–3 kolumn kart zamiast ścieżki.
+
+**Zakładka „Jak grać” (instrukcje)**
+
+- Lista gier, a w każdej 4–6 kart przewijanych w bok (swipe) z krótką animowaną demonstracją:
+  1. **Cel gry** — jedno zdanie + ilustracja;
+  2. **Sterowanie** — ikony gestów (tap, przytrzymaj, przesuń, przeciągnij) z animowaną dłonią;
+  3. **Przeszkody** — Pracu Pracu (ruchome, zaskakujące) i Amic (ciężkie, statyczne) oraz jak je omijać w tej grze;
+  4. **Kózki** — 5 power-upów z kolorem chustki, ikoną i efektem;
+  5. **Humbak** — jak wejść do poziomu bonusowego;
+  6. **Punkty i rekordy** — liście Monstery, combo, gwiazdki.
+- Osobna karta **„Poznaj Sowi Świat”**: mini-słowniczek postaci (Sówka i inne sowy, Pracu Pracu, Amic, kózki, humbak, liście), przyjazny także dla dzieci.
+- Treść instrukcji jest w jednym pliku danych (`shared/meta/guides-data.js`). Korzystają z niego menu, przycisk „Jak grać?” na karcie gry i menu pauzy w grze. Zastępuje obecny `shared/game-guides.js`.
+- **Samouczek w grze:** przy pierwszym uruchomieniu każdej gry pierwsze ~20 s to spokojny fragment z podpowiedziami („Stuknij, żeby skoczyć”, „Przesuń w dół, żeby się prześlizgnąć”). Można go pominąć, a flaga „samouczek ukończony” trafia do `gry/{gameId}` w Firestore.
+
+**Zakładka „Galeria” (odblokowane obrazki)**
+
+- Siatka **2 kolumn** na telefonie (3 na tablecie, 4–5 na komputerze) z 30 zdjęciami sów z `Obrazki/`. Licznik „12 / 30” i filtry: Wszystkie / Odblokowane / Do zdobycia.
+- **Zablokowane zdjęcie**: rozmyta miniatura z kłódką, tekst wymagania („Przebiegnij 1000 m w Sowiej Ucieczce”) i pasek postępu do celu. Motywuje i podpowiada, w co zagrać.
+- **Nowo odblokowane**: znaczek „Nowe!”, a po powrocie do menu karta zdjęcia się odwraca (animacja) i słychać radosne „hu-hu!”. W trakcie gry wystarcza krótki komunikat, żeby nie rozpraszać.
+- **Przeglądarka pełnoekranowa**: tap w miniaturę otwiera zdjęcie; swipe w bok przechodzi między odblokowanymi; powiększanie dwoma palcami i podwójnym tapnięciem (tylko tutaj, reszta gry blokuje powiększanie); swipe w dół zamyka. Pod zdjęciem: tytuł, autor i link do źródła w Pexels (zgodnie z `Obrazki/README.md`), przyciski **❤ Ulubione** i **Ustaw jako tło menu**.
+- **Wydajność na telefonie**: dziś siatka ładuje pełne pliki 1200 × 900 (30 plików, łącznie 4,7 MB). Dodajemy miniatury 400 × 300 (WebP, ok. 25–40 KB, łącznie ok. 1 MB) w `assets/gallery-thumbs/`, generowane jednorazowo skryptem. `loading="lazy"`, `decoding="async"`, `srcset` pod gęstość ekranu, kolorowy placeholder. Pełne zdjęcie pobierane dopiero w przeglądarce.
+- Stan galerii (odblokowane, obejrzane, ulubione, tło menu) zapisuje się w `profil.gallery` (Analiza 1). Wymagania odblokowania w etapie menu zostają obecne; w etapie meta przepisujemy je na nowe osiągnięcia.
+
+**Zakładka „Sowa”:** garderoba, zadania dnia i tygodnia, rekordy osobiste wszystkich gier (okno „🏆 Rekordy” z Analizy 1), ustawienia (dźwięk, efekty, wibracje, Tryb Przytulny, „Wyloguj to urządzenie”). Sowi Butik dochodzi w etapie meta.
+
+**Oprawa i działanie**
+
+- Paleta i czcionka Fredoka z rozdziału 2.3, karty z zaokrągleniem ~24 px i miękkim cieniem, tło: niebo z paralaksą chmur. Opcjonalnie wieczorem (lub przy ciemnym motywie systemu) nocna wersja: gwiazdy, księżyc i śpiąca sówka.
+- Cicha muzyka menu i dźwięki kliknięć (zgodnie z ustawieniami).
+- Ekran hasła (Analiza 1) pojawia się przed menu tylko przy pierwszym wejściu na urządzeniu.
+- Karta „Zainstaluj SowieGry na telefonie” (PWA) pokazywana, dopóki gra nie działa jako aplikacja.
+- **Budżet:** menu bez zdjęć < 300 KB, gotowe do dotyku < 1,5 s na telefonie średniej klasy. Rekordy i stan galerii dochodzą z Firestore w tle (szkielet karty do czasu wczytania).
+- Wszystkie elementy klikalne to prawdziwe `<button>` / `<a>` z widocznym fokusem. Menu działa także z klawiatury.
+- Zastępuje obecne `index.html` + `shared/main-menu.js` + `shared/main-menu.css` oraz przyciski galerii, akademii i instrukcji doklejane do nagłówka.
+
+### 4.2 Jeden system postępu zamiast trzech
 
 | Obecnie | Po zmianie |
 |---|---|
@@ -382,22 +497,24 @@ Zostaje gatunek idle/incremental. Porządkujemy go i dopasowujemy do ról maskot
 | Sowia Akademia: misje dzienne/tygodniowe → XP, piórka | **Zadania dnia** (3, z różnych gier) + **Zadanie tygodnia** → piórka i XP |
 | Kontrakty, serie, „✨ Rozszerzenia” (`gameplay-expansion.js`) | wchodzą w Zadania dnia i zadania biegu w grach |
 
-- **Piórka** wydaje się w **Sowim Butiku**: stroje (obecne 9 + nowe), gatunki sów, dłuższe działanie kózek (małe ulepszenia bez wpływu na ranking w trybie Chaos).
-- **XP → Poziom gracza** widoczny w profilu.
-- **Galeria Sów** (30 zdjęć z `Obrazki/`) zostaje. Wymagania odblokowania przepisujemy na nowe osiągnięcia.
-- **Ranking** z Analizy 1: wszech czasów i wyzwanie dnia.
+- **Piórka** wydaje się w **Sowim Butiku**: stroje (obecne 9 + nowe), gatunki sów, dłuższe działanie kózek.
+- **XP → Poziom gracza** widoczny w zakładce „Sowa”.
+- **Galeria Sów** (30 zdjęć) zostaje, a wymagania odblokowania przepisujemy na nowe osiągnięcia.
+- **Rekordy osobiste** z Analizy 1: top 10 na grę i poziom trudności, ostatnie gry, rekordy wyzwania dnia.
 
-**HUD w grach (jeden standard):** lewy górny róg — pauza; środek — wynik i liście; prawy górny róg — życia i liczniki power-upów; dół ekranu wolny (strefa gestów). W trakcie gry max 1 komunikat naraz, a postęp zadań pokazujemy dopiero na ekranie wyników.
+### 4.3 Wspólny interfejs w grach
 
-**Menu pauzy:** Wznów, Zacznij od nowa, Ustawienia (suwaki dźwięku, efekty, sterowanie, Tryb Przytulny), Jak grać, Garderoba, Wyjdź do mapy. Znikają pasek narzędzi i dok z 8 przyciskami.
+**HUD (jeden standard):** lewy górny róg — pauza; środek — wynik i liście; prawy górny róg — życia i liczniki power-upów; wszystko w bezpiecznym obszarze. Dół ekranu wolny (strefa gestów). W trakcie gry max 1 komunikat naraz, a postęp zadań pokazujemy dopiero na ekranie wyników.
 
-**Ekran wyników:** wynik, animacja nowego rekordu, zebrane liście, postęp zadań, top 3 rankingu i własna pozycja, przyciski „Jeszcze raz” i „Mapa”.
+**Menu pauzy:** Wznów, Zacznij od nowa, Jak grać (te same karty co w menu), Ustawienia (suwaki dźwięku, efekty, wibracje, sterowanie, Tryb Przytulny), Garderoba, Wyjdź do menu. Duże przyciski w dolnej połowie ekranu. Znikają pasek narzędzi i dok z 8 przyciskami.
+
+**Ekran wyników:** wynik, animacja nowego rekordu, zebrane liście, miejsce w osobistym top 10, postęp zadań, nowo odblokowane zdjęcie (jeśli jest), przyciski „Jeszcze raz” (duży, w zasięgu kciuka) i „Menu”.
 
 ---
 
 ## 5. Punktacja — zestawienie
 
-| Gra | Metryka rankingu | Wzór wyniku | Mnożnik | Premie |
+| Gra | Rekord osobisty | Wzór wyniku | Mnożnik | Premie |
 |---|---|---|---|---|
 | Sowia Ucieczka | dystans i wynik | m + liście × combo | combo ×1–×5, Sowi mnożnik (zadania biegu) | „O włos!”, kózka, humbak |
 | Sowie Tory | wynik kampanii, rekord Nieskończonego | liście × combo + premie plansz | combo ×1–×5 | ukończenie planszy, bez trafienia, gwiazdki |
@@ -405,7 +522,7 @@ Zostaje gatunek idle/incremental. Porządkujemy go i dopasowujemy do ról maskot
 | Sowie Ogrody | liście w całej grze | produkcja / s | ulepszenia, prestiż | złota kózka, Zatoka Humbaka |
 | Łącz i Hoduj | wynik Basenu Humbaka | punkty za połączenia × poziom przedmiotu | seria połączeń | zamówienia, skrzynie Amic |
 
-Rankingi prowadzimy osobno dla poziomów trudności (Chill / Arcade / Chaos) albo tylko dla Arcade (decyzja 8).
+Rekordy gier zręcznościowych są osobne dla każdego poziomu trudności (Chill / Arcade / Chaos).
 
 ---
 
@@ -417,46 +534,51 @@ Rankingi prowadzimy osobno dla poziomów trudności (Chill / Arcade / Chaos) alb
 | SowaJumper | `script.js`, `difficulty.js`, `cute-loader.js`, `extra-lives.js`, `bonus-fix.js`, `safety-balance.js`, `cute-rework.js`, `bonus-lanes.js`, `animation-polish.js`, `platform-expansion.js`, `pause-final.js` |
 | Sowa3 | `script.js` i 15 warstw (`difficulty.js`, `extra-lives.js`, `visual-polish.js`, `stage-ambience.js`, `stage-obstacles.js`, `lane-balance.js`, `visibility-corridor.js`, `finish-pool.js`, `cute-rework.js`, `moving-obstacle-safety.js`, `finish-controls.js`, `finish-details.js`, `pause-guard.js`, `animation-polish.js`, `amic-stage.js`) |
 | Gry idle | obecne `script.js` Ogrodów i Szklarni (zastąpione czytelnymi modułami), `shared/stable-panel.js`, `shared/idle-save-bridge.js` |
-| Wspólne | `shared/gameplay-expansion.js`, `shared/sowie-runtime.js` (zastępuje go Sowi Silnik), `tone()`/`startMusic()` z `sowie-core.js`, pasek narzędzi i dok, `shared/sowie-academy.js` w obecnej formie (logika przechodzi do `meta/progress.js`) |
-| Dokumentacja | `docs/AUDYT_MERGE_CUTE_POLISH.md`, `docs/WDROZENIE_CUTE_POLISH.md`, `docs/PLAN_ROZWOJU_CUTE_POLISH.md` (opisują stary układ; do archiwum lub usunięcia) |
+| Menu | `shared/main-menu.js`, `shared/main-menu.css`, `shared/game-guides.js` (treść przechodzi do `guides-data.js`), przyciski doklejane do nagłówka menu |
+| Wspólne | `shared/gameplay-expansion.js`, `shared/sowie-runtime.js` (zastępuje go Sowi Silnik), `shared/modal-accessibility.js` i `shared/notification-manager.js` (zastępuje je `shared/ui/`), `tone()`/`startMusic()` z `sowie-core.js`, pasek narzędzi i dok, `shared/sowie-academy.js` w obecnej formie (logika przechodzi do `meta/progress.js`) |
+| Dokumentacja | `docs/AUDYT_MERGE_CUTE_POLISH.md`, `docs/WDROZENIE_CUTE_POLISH.md`, `docs/PLAN_ROZWOJU_CUTE_POLISH.md` (opisują stary układ; do usunięcia) |
 
-Zostają: `Obrazki/` (Galeria Sów), `shared/owl-gallery.*` (po przepięciu na `SowieCloud`), rejestr gier, obsługa `?seed=` i `?testNow=`, konfiguracja testów i CI (rozszerzona).
+Zostają: `Obrazki/` (Galeria Sów, + miniatury), logika galerii z `shared/owl-gallery.js` (po przepięciu na `SowieCloud`, z nowym wyglądem w menu), rejestr gier, obsługa `?seed=` i `?testNow=`, konfiguracja testów i CI (rozszerzona).
 
 ---
 
 ## 7. Plan wdrożenia
 
-Każda gra trafia na `main` osobno: nowa wersja zastępuje starą, a rekordy są bezpieczne dzięki modelowi danych z Analizy 1. Zgodnie z `AGENTS.md` każda zmiana gry aktualizuje jej `docs/Documentation.md` i `docs/README.md`. Dzięki modułowej budowie opis „do odtworzenia 1:1” staje się realny.
+Pełna kolejność prac, zależności, kryteria ukończenia i checklisty testów na telefonie: [`ANALIZA_3_Plan_prac.md`](ANALIZA_3_Plan_prac.md). Skrót:
 
-| Etap | Zakres | Kryterium ukończenia | Rozmiar |
-|---|---|---|---|
-| 0 | Analiza 1: Firestore, profile, rankingi | wyniki w `sowiegry/…` | M |
-| 1 | Sowi Silnik + Sowi Świat: pętla, widok, wejście, audio, atlas SVG, postacie (sowa, 5 kózek, humbak, Pracu, Amic, liście), czcionka, HUD, menu pauzy, PWA | strona demonstracyjna z postaciami, 60 kl./s na telefonie, testy jednostkowe | L |
-| 2 | Sowia Ucieczka (Runner) | ≥ 30 wzorów w 4 progach, test przejścia każdego wzoru, czas reakcji ≥ 1,1 s w obu orientacjach, bonus humbaka, 5 kózek, ranking | L |
-| 3 | Sowie Tory (Sowa3) | 4 plansze + Nieskończony, skok i ślizg, grywalny bonus humbaka, gwiazdki | L |
-| 4 | Sowa w Chmurach (Jumper) | przeciąganie i przechylanie, 6 platform, zasada „Pracu depczemy, Amic omijamy”, ratunek zamiast upadku, bonus humbaka | M |
-| 5 | Sowie Ogrody | rozdziały, nowe zdarzenia Pracu/Amic/kózek, Zatoka Humbaka, symulator ekonomii, pierwszy prestiż ok. 2–3 h | M |
-| 6 | Łącz i Hoduj (Szklarnia) | plansza merge, 4 łańcuchy + hybrydy, zamówienia, przeszkody, kózki, Basen Humbaka, zamiana starego zapisu na pakiet startowy | L |
-| 7 | Meta: Sowia Mapa, Zadania dnia, Osiągnięcia, Sowi Butik, Galeria, sprzątanie starych plików i dokumentacji | jeden system postępu, brak paska narzędzi i doku | M |
+| Etap | Zakres |
+|---|---|
+| 0 | Przygotowanie: porządki w repo, testy na profilach telefonów, emulator Firestore |
+| 1 | Chmura (Analiza 1): Firestore, hasło `huhu`, kasowanie starych danych, rekordy |
+| 2 | Fundament: Sowi Silnik, powłoka telefonu i PWA, postacie SVG, dźwięk, wspólny interfejs |
+| 3 | **Menu główne**: wybór gier, instrukcje, galeria z miniaturami |
+| 4 | Sowia Ucieczka (Runner) |
+| 5 | Sowie Tory (Sowa3) |
+| 6 | Sowa w Chmurach (Jumper) |
+| 7 | Sowie Ogrody |
+| 8 | Łącz i Hoduj (Szklarnia) |
+| 9 | Meta: zadania, osiągnięcia, Sowi Butik, nowe wymagania galerii, sprzątanie |
 
-S / M / L = mała / średnia / duża zmiana (względnie, bez szacowania godzin).
+Każdy etap trafia na `main` osobno. Zgodnie z `AGENTS.md` każda zmiana gry aktualizuje jej `docs/Documentation.md` i `docs/README.md`.
 
 ---
 
-## 8. Decyzje do podjęcia
+## 8. Decyzje (zatwierdzone 2026-09-27)
 
-| # | Pytanie | Rekomendacja |
+| # | Pytanie | Decyzja |
 |---|---|---|
-| 1 | Szklarnia jako gra merge („Łącz i Hoduj”) czy nadal idle z odwróconymi rolami? | **merge** |
-| 2 | Runner: Chmura Pracu jako życia czy klasyczne 3 serduszka? | Chmura Pracu (wizualnie to nadal 3 kroki) |
-| 3 | Nowe nazwy w menu: „Sowia Ucieczka”, „Sowie Tory”, „Sowa w Chmurach”, „Łącz i Hoduj”? | tak (identyfikatory i zapisy bez zmian) |
-| 4 | Poziomy trudności Chill / Arcade / Chaos zostają? | tak + Tryb Przytulny jako opcja Chill |
-| 5 | Przeszkody spoza rodzin Pracu/Amic (dziki, ludzie, donice, słupki) | dekoracja bez kolizji |
-| 6 | Źródło dźwięków | CC0 + własne nagrania „Hu-hu!” i „Pracu pracu!” |
-| 7 | Grafika: SVG w plikach czy rysowanie kodem? | SVG w `assets/svg/` |
-| 8 | Rankingi osobno dla każdego poziomu trudności? | tylko Arcade w rankingu głównym, pozostałe jako rekordy osobiste |
-| 9 | Kolejność gier po silniku | Runner → Tory → Jumper → Ogrody → Szklarnia |
-| 10 | PWA (instalacja na telefonie, offline) | tak |
+| 1 | Szklarnia jako gra merge („Łącz i Hoduj”) czy nadal idle? | ✅ **merge** |
+| 2 | Runner: Chmura Pracu jako życia czy klasyczne 3 serduszka? | ✅ Chmura Pracu (wizualnie nadal 3 kroki) |
+| 3 | Nowe nazwy w menu: „Sowia Ucieczka”, „Sowie Tory”, „Sowa w Chmurach”, „Łącz i Hoduj” | ✅ tak (identyfikatory i zapisy bez zmian) |
+| 4 | Poziomy trudności Chill / Arcade / Chaos | ✅ zostają + Tryb Przytulny jako opcja Chill |
+| 5 | Przeszkody spoza rodzin Pracu/Amic (dziki, ludzie, donice, słupki) | ✅ dekoracja bez kolizji |
+| 6 | Źródło dźwięków | ✅ CC0 + własne nagrania „Hu-hu!” i „Pracu pracu!” |
+| 7 | Grafika: SVG w plikach czy rysowanie kodem? | ✅ SVG w `assets/svg/` |
+| 8 | Rekordy osobno dla każdego poziomu trudności? | ✅ tak (jeden gracz, więc bez rankingu między graczami) |
+| 9 | Kolejność gier po fundamencie | ✅ Runner → Tory → Jumper → Ogrody → Szklarnia (menu wcześniej, jako etap 3) |
+| 10 | PWA (instalacja na telefonie, offline) | ✅ tak, jako główny sposób grania |
+| 11 | Główne urządzenie | ✅ telefon w pionie (rozdział 2.5) |
+| 12 | Menu główne z wyborem gier, instrukcjami i galerią | ✅ tak (rozdział 4.1) |
 
 ---
 
@@ -467,6 +589,8 @@ S / M / L = mała / średnia / duża zmiana (względnie, bez szacowania godzin).
 | Przebudowa „od zera” traci drobne smaczki obecnych wersji | przed usunięciem każdej gry lista jej elementów (żarty, dekoracje, teksty) jako checklista do przeniesienia |
 | Nowa gra merge to najwięcej projektowania | prototyp planszy i 1 łańcucha przed resztą; wariant zapasowy z rozdziału 3.5 |
 | Balans (prędkości, ekonomia idle) | symulatory w testach jednostkowych, parametry w jednym pliku konfiguracyjnym na grę |
-| Wydajność na starszych telefonach | pule obiektów, DPR max 2, opcja „Ograniczone efekty”, testy na urządzeniu średniej klasy |
+| Wydajność na starszych telefonach | pule obiektów, DPR max 2, tryb „Oszczędzanie baterii”, testy na urządzeniu średniej klasy |
+| Gesty systemowe telefonu (cofanie w Safari, pasek powiadomień, pasek domowy) | martwe strefy przy krawędziach, auto-pauza, PWA w trybie `standalone` |
+| Różnice między przeglądarkami telefonów (Safari vs Chrome) | testy na obu silnikach (Playwright: WebKit i Chromium) + ręczny test na iPhonie i Androidzie po każdym etapie |
 | Znak towarowy Amic | tylko nazwa własną czcionką i ogólne kolory, bez logotypu |
 | Duży zakres | etapy niezależne, każda gra wdrażana osobno; stara wersja działa do czasu podmiany |
