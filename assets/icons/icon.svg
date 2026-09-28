@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- Ikona SowieGry: Sówka na niebie. Treść mieści się w środkowym kole 80% (ikona „maskable”). -->
+  <defs>
+    <linearGradient id="niebo" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#bfe9ff"/>
+      <stop offset="1" stop-color="#fff6e3"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" fill="url(#niebo)"/>
+  <ellipse cx="256" cy="420" rx="120" ry="18" fill="#3b2f4a" opacity="0.12"/>
+  <g stroke="#3b2f4a" stroke-width="10" stroke-linejoin="round" stroke-linecap="round">
+    <!-- uszka -->
+    <path d="M168 150 L150 92 L214 128 Z" fill="#9a6a45"/>
+    <path d="M344 150 L362 92 L298 128 Z" fill="#9a6a45"/>
+    <!-- skrzydła -->
+    <ellipse cx="140" cy="292" rx="42" ry="78" fill="#9a6a45" transform="rotate(14 140 292)"/>
+    <ellipse cx="372" cy="292" rx="42" ry="78" fill="#9a6a45" transform="rotate(-14 372 292)"/>
+    <!-- ciało -->
+    <ellipse cx="256" cy="268" rx="126" ry="146" fill="#b07a52"/>
+    <!-- brzuszek -->
+    <ellipse cx="256" cy="318" rx="80" ry="86" fill="#f3e3c8"/>
+    <!-- oczy -->
+    <circle cx="206" cy="220" r="50" fill="#ffffff"/>
+    <circle cx="306" cy="220" r="50" fill="#ffffff"/>
+  </g>
+  <circle cx="212" cy="226" r="24" fill="#3b2f4a"/>
+  <circle cx="300" cy="226" r="24" fill="#3b2f4a"/>
+  <circle cx="220" cy="216" r="9" fill="#ffffff"/>
+  <circle cx="308" cy="216" r="9" fill="#ffffff"/>
+  <!-- policzki -->
+  <ellipse cx="170" cy="276" rx="20" ry="12" fill="#ff9fb2" opacity="0.8"/>
+  <ellipse cx="342" cy="276" rx="20" ry="12" fill="#ff9fb2" opacity="0.8"/>
+  <!-- dziobek -->
+  <path d="M238 262 L274 262 L256 292 Z" fill="#f4c542" stroke="#3b2f4a" stroke-width="8" stroke-linejoin="round"/>
+  <!-- piórka na brzuszku -->
+  <g fill="none" stroke="#c9a97c" stroke-width="7" stroke-linecap="round">
+    <path d="M224 322 q12 10 24 0"/>
+    <path d="M264 322 q12 10 24 0"/>
+    <path d="M244 352 q12 10 24 0"/>
+  </g>
+  <!-- stópki -->
+  <g fill="#f4c542" stroke="#3b2f4a" stroke-width="8" stroke-linejoin="round">
+    <ellipse cx="220" cy="410" rx="24" ry="12"/>
+    <ellipse cx="292" cy="410" rx="24" ry="12"/>
+  </g>
+</svg>

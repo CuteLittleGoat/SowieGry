@@ -12,6 +12,24 @@
 
 Najpewniejszym sposobem uruchomienia jest GitHub Pages albo lokalny serwer HTTP. Przy bezpośrednim otwieraniu plików przez `file://` część funkcji przeglądarki może nie działać.
 
+## Instalacja na telefonie (aplikacja)
+
+SowieGry można dodać do ekranu głównego telefonu — wtedy działają jak aplikacja: bez paska przeglądarki, na pełnym ekranie, a menu i gry otwierane wcześniej uruchamiają się także bez zasięgu.
+
+- **Android (Chrome):** menu ⋮ → **Zainstaluj aplikację** (albo „Dodaj do ekranu głównego”).
+- **iPhone (Safari):** przycisk **Udostępnij** → **Do ekranu początkowego**.
+
+Po instalacji Safari nie zapomina hasła po 7 dniach bez wizyty.
+
+## Sowie Laboratorium
+
+Strona testowa `lab/` (adres strony + `/lab/`) służy do sprawdzania na telefonie nowego silnika gier:
+
+- **Gesty** — stuknij, przytrzymaj, przesuń w cztery strony; różowe pasy przy krawędziach to „martwe strefy” (gest „cofnij” przeglądarki i pasek domowy iPhone’a nie uruchamiają gry);
+- **Informacje** — płynność (klatki na sekundę), rozmiar ekranu, bezpieczne obszary (wycięcie, Dynamic Island), tryb aplikacji, praca bez zasięgu, zapis w chmurze;
+- **Test pauzy i odliczania** — tak zachowa się gra po przejściu do innej aplikacji: pauza, „Graj dalej”, potem 3-2-1;
+- **Oszczędzanie baterii** — 30 klatek na sekundę i mniej efektów; gra sama zaproponuje ten tryb, gdy będzie zwalniać.
+
 ## Gry
 
 - `SowaRunner` — boczny endless runner.

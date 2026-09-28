@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="pl" class="sowie-shell">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#bfe9ff" />
+  <title>Sowie Laboratorium — SowieGry</title>
+  <link rel="manifest" href="../manifest.webmanifest" />
+  <link rel="icon" href="../assets/icons/icon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="../assets/icons/apple-touch-icon.png" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="SowieGry" />
+  <script src="../config/firebase-config.js"></script>
+  <script src="../shared/sowie-platform.js"></script>
+  <script src="../shared/sowie-cloud.js"></script>
+  <script src="../shared/password-gate.js"></script>
+  <script src="../shared/pwa.js"></script>
+  <link rel="stylesheet" href="../shared/cute-ui.css" />
+  <link rel="stylesheet" href="../shared/engine/shell.css" />
+  <link rel="stylesheet" href="lab.css" />
+  <script type="module" src="main.js"></script>
+</head>
+<body>
+  <div class="lab" data-lab>
+    <header class="lab-header">
+      <a class="lab-back" href="../">← Menu</a>
+      <h1>Sowie Laboratorium</h1>
+      <span class="lab-fps" data-fps>— kl./s</span>
+    </header>
+    <nav class="lab-tabs" aria-label="Działy Laboratorium">
+      <button type="button" data-tab="gesty" aria-pressed="true">Gesty</button>
+      <button type="button" data-tab="info" aria-pressed="false">Informacje</button>
+    </nav>
+
+    <section class="lab-panel lab-panel-stage" data-panel="gesty" aria-label="Test gestów">
+      <div class="lab-stage" data-stage>
+        <canvas data-gesture-canvas role="img" aria-label="Pole testu gestów z zaznaczonymi martwymi strefami"></canvas>
+        <p class="lab-last" data-last-gesture aria-live="polite">Dotknij, przytrzymaj albo przesuń palcem</p>
+        <ol class="lab-log" data-gesture-log aria-label="Ostatnie gesty"></ol>
+      </div>
+    </section>
+
+    <section class="lab-panel" data-panel="info" aria-label="Informacje o urządzeniu" hidden>
+      <dl class="lab-info">
+        <div><dt>Płynność</dt><dd data-info="fps">—</dd></div>
+        <div><dt>Ekran (CSS)</dt><dd data-info="screen">—</dd></div>
+        <div><dt>Widoczny obszar</dt><dd data-info="viewport">—</dd></div>
+        <div><dt>Gęstość pikseli</dt><dd data-info="dpr">—</dd></div>
+        <div><dt>Bezpieczne obszary</dt><dd data-info="safe">—</dd></div>
+        <div><dt>Tryb</dt><dd data-info="mode">—</dd></div>
+        <div><dt>Praca bez zasięgu</dt><dd data-info="sw">—</dd></div>
+        <div><dt>Sieć</dt><dd data-info="online">—</dd></div>
+        <div><dt>Zapis w chmurze</dt><dd data-info="cloud">—</dd></div>
+        <div><dt>Oszczędzanie baterii</dt><dd data-info="saver">—</dd></div>
+      </dl>
+      <div class="lab-actions">
+        <button type="button" data-action="pause">Test pauzy i odliczania</button>
+        <button type="button" data-action="saver" aria-pressed="false">Oszczędzanie baterii</button>
+        <button type="button" data-action="slow">Pokaż propozycję oszczędzania</button>
+        <button type="button" data-action="safe" aria-pressed="false">Pokaż bezpieczne obszary</button>
+      </div>
+    </section>
+    <div class="lab-safe-overlay" data-safe-overlay hidden></div>
+  </div>
+</body>
+</html>

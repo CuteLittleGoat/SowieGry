@@ -30,6 +30,19 @@ module.exports = [
     },
   },
   {
+    // Moduły ES Sowiego Silnika i stron na nim opartych (katalogi z package.json "type": "module").
+    files: ["shared/engine/**/*.js", "lab/**/*.js"],
+    languageOptions: {
+      sourceType: "module",
+    },
+  },
+  {
+    files: ["sw.js"],
+    languageOptions: {
+      globals: globals.serviceworker,
+    },
+  },
+  {
     files: ["**/*.mjs"],
     languageOptions: {
       ecmaVersion: "latest",

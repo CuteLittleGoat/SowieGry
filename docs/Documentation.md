@@ -37,6 +37,13 @@ shared/
   records.js              (okno „🏆 Rekordy” w grach)
   main-menu.js/.css       (karty gier w menu)
   cute-ui.css, game-enhancements.css
+  pwa.js                  (rejestracja service workera)
+  engine/                 (Sowi Silnik — moduły ES: pętla, widok, kamera, gesty, sceny, powłoka telefonu…)
+lab/                      (Sowie Laboratorium — strona testowa silnika na telefonie)
+assets/icons/             (ikona aplikacji SVG i PNG)
+manifest.webmanifest      (PWA)
+sw.js                     (service worker — w katalogu głównym, żeby obejmował całą stronę)
+scripts/make-icons.cjs    (generowanie ikon PNG z SVG)
 tests/
   smoke.html
   e2e/            (testy Playwright; telefon/ — testy na profilach telefonów)
@@ -60,6 +67,7 @@ Na początku (w `<head>` stron gier, na końcu `<body>` menu), ścieżki względ
 2. `shared/sowie-platform.js`
 3. `shared/sowie-cloud.js`
 4. `shared/password-gate.js`
+5. `shared/pwa.js` (od E2a)
 
 Dopiero potem `sowie-core.js`, gra i pozostałe moduły. Test `tests/unit/architecture.test.mjs` pilnuje tej kolejności.
 
@@ -149,6 +157,85 @@ Ustawia pionowy układ paska narzędzi i kolumny HUD (4 kolumny na ekranach ≤ 
 
 Gdy gra działa w ramce `tests/smoke.html`, przesyła do rodzica (`postMessage`): błędy JavaScript, nieobsłużone odrzucenia Promise i informację o załadowaniu gry.
 
+## Sowi Silnik (`shared/engine/`) — etap E2a
+
+Moduły ES (`<script type="module">`, bez etapu budowania) dla przebudowanych gier i „Sowiego Laboratorium” (Analiza 2, rozdz. 2.5–2.6). `shared/engine/package.json` zawiera `{ "type": "module" }`, żeby Node (testy jednostkowe, `node --check`) traktował pliki jako moduły; przeglądarka go ignoruje. `index.js` eksportuje wszystko.
+
+### `rng.js`
+
+- `hashSeed(value)` — FNV-1a (start `2166136261`, mnożnik `16777619`, wynik `>>> 0`, zero → 1);
+- `createRng(seed)` — xorshift32 (`<<13`, `>>>17`, `<<5`), **ten sam algorytm co `SowiePlatform.createRng`**, więc `?seed=` i wyzwanie dnia dają identyczny układ; metody `next()` [0, 1), `range(min, max)`, `int(min, max)` (włącznie), `chance(p)`, `pick(lista)`, `shuffle(lista)` (Fisher–Yates), `getState()`, `setState(n)`.
+
+### `loop.js`
+
+`STEP = 1/120` s. `createLoop({ update, render, step, maxFrame = 0.25, maxSteps = 12, raf, caf })`:
+
+- każda klatka: `delta` = czas od poprzedniej (max 0,25 s — po powrocie karty nie ma skoku), akumulator; `update(STEP)` tyle razy, ile mieści się kroków (max 12 — przy przekroczeniu zaległy czas jest gubiony, bez „spirali śmierci”); `render(alpha)` z `alpha = akumulator / STEP` do interpolacji;
+- `pause()` zatrzymuje symulację (rysowanie trwa, `alpha = 0`), `resume()` zeruje akumulator;
+- `fps()` — średnia wykładnicza (0,9 / 0,1); `setRenderRate(30)` rysuje co drugą klatkę („Oszczędzanie baterii”), `setRenderRate(60)` — każdą;
+- `onFrame(listener)` — `{ delta, fps, steps }` po każdej klatce (monitor płynności); `tick(time)` — jedna klatka (testy).
+
+### `pool.js`, `collide.js`, `tween.js`, `particles.js`
+
+- `createPool(factory, reset, { size })` — `acquire()`, `release(obj)` (zamiana z ostatnim, indeks w `obj.poolIndex`), `forEachActive(fn)` (od końca — można zwalniać w trakcie), `releaseAll()`, `activeCount()`, `freeCount()`;
+- kolizje: `aabb(a, b)`, `circles(ax, ay, ar, bx, by, br)`, `circleRect(cx, cy, r, rect)`, `hitbox(box, factor = 0.8, out)` — pole kolizji 80% wokół środka (gra wybaczająca), `landsOn(poprzedniSpód, obecnySpód, platforma, lewo, prawo)` — lądowanie tylko z góry;
+- `ease` (linear, quadIn/Out/InOut, cubicOut, sineInOut, backOut, elasticOut) i `createTweens()` — `to(cel, pola, czas, { easing, delay, onDone })`, `cancel`, `cancelFor(cel)`, `update(dt)`;
+- `createParticles({ max = 300, random })` — dane w `Float32Array` (bez alokacji), `emit(x, y, { count, speed, spread, angle, lifetime, radius, fall, tint })`, `update(dt)` (grawitacja, usuwanie przez zamianę z ostatnim), `render(ctx)` (koła, przezroczystość = pozostałe życie), `setDensity(0–1)` (ograniczone efekty / oszczędzanie baterii).
+
+### `view.js` i `camera.js` — świat w jednostkach logicznych
+
+- `computeLayout({ cssWidth, cssHeight, minWorld, dpr, maxDpr = 2, lockedScale, tolerance = 0.15 })` — skala = `min(szerokość / minWorld.width, wysokość / minWorld.height)`, więc zawsze widać co najmniej `minWorld` (np. 9 × 16 jednostek); rozdzielczość płótna = CSS × min(DPR, 2). Z `lockedScale` skala się nie zmienia (np. chowanie paska adresu), chyba że widoczny świat skurczyłby się o ponad 15% (obrót telefonu);
+- `worldToScreen` / `screenToWorld` (kamera wskazuje punkt świata na środku ekranu, z `zoom` i wstrząsem);
+- `createView({ canvas, minWorld, maxDpr, getSize, getDpr })` — `resize()`, `layout()`, `apply(ctx, kamera)` (dalej rysujemy w jednostkach świata), `applyScreen(ctx)` (piksele CSS), `lockScale(true)` na czas rozgrywki, `onResize`;
+- `createCamera({ x, y, zoom })` — `follow(x, y, dt, sztywność = 8)` (wykładniczo, niezależnie od liczby klatek), `clamp(granice)`, `shake(0–1)` i `update(dt, { reducedMotion })` — wstrząs z „traumy” (`trauma²·0,35`), zerowy przy ograniczeniu ruchu.
+
+### `input.js` — gesty w dowolnym miejscu planszy
+
+`DEFAULTS`: przytrzymanie po 180 ms, tolerancja ruchu 12 px, swipe ≥ 24 px w ≤ 200 ms, martwe strefy: lewo 18 px, prawo 18 px, dół 20 px (+ bezpieczny obszar dolny).
+
+- `inDeadZone(x, y, szer, wys, strefy, dółBezpieczny)`, `swipeDirection(dx, dy)` (dominująca oś);
+- `createGestureRecognizer({ width, height, onGesture, … })` — jeden aktywny wskaźnik; zdarzenia: `press` (od razu po dotknięciu), `tap`, `holdstart`/`holdend`, `swipe` (`direction`: up/down/left/right), `dragstart`/`drag`/`dragend` (powolny ruch albo ruch po przytrzymaniu), `release`, `ignored` (dotknięcie w martwej strefie — np. systemowy gest „cofnij” od krawędzi ekranu nie działa w grze); `update(czas)` wykrywa przytrzymanie; drugi palec jest ignorowany;
+- `KEY_MAP` — Spacja/↑/W = akcja (`press`/`release`), ↓/S, ←/A, →/D = `swipe` w danym kierunku, P = `pause`, Esc = `menu`;
+- `bindInput(element, onGesture, opcje)` — zdarzenia wskaźnika (`pointerdown/move/up/cancel`, przechwycenie wskaźnika), zegar co 30 ms do wykrywania przytrzymania, blokada menu kontekstowego, klawiatura (poza polami formularzy); zwraca `{ recognizer, isKeyDown(akcja), unbind() }`.
+
+### `scene.js`, `safe-area.js`
+
+- `createScenes({ transition = 0.25 })` — `add(nazwa, { enter, exit, update, render, gesture })`, `go(nazwa, parametry)` (ściemnienie: połowa czasu → zmiana sceny → rozjaśnienie), `fade()` (0–1 do rysowania zasłony), `current()`;
+- `measureSafeAreas()` — bezpieczne obszary (wycięcie, Dynamic Island, pasek domowy) w pikselach: ukryty element z `padding: env(safe-area-inset-*)` i `getComputedStyle` (zmiennych `env()` nie da się odczytać wprost).
+
+### `shell.js` i `shell.css` — powłoka telefonu
+
+- `createPerfMonitor({ threshold = 45, windowSeconds = 5, onSlow })` — gdy przez 5 s gra działa poniżej 45 kl./s, wywołuje `onSlow` raz (do `reset()`);
+- `createPauseController({ loop, countdownFrom = 3, tickMs = 1000, schedule, cancel, onChange })` — stany `running` → `paused` → `countdown` (3, 2, 1) → `running`; przerwy liczą się tylko w aktywnej rozgrywce (`setActive(true)`); kolejna przerwa w trakcie odliczania je anuluje;
+- `createShell({ stage, loop, onBatterySaver, overlay = true, strings })`:
+  - auto-pauza: `visibilitychange → hidden` i `pagehide` (inna aplikacja, blokada ekranu), `blur` (powiadomienie, połączenie), zmiana orientacji (`matchMedia("(orientation: portrait)")`);
+  - okno pauzy `.sowie-pause-overlay` (`role="dialog"`, `aria-label="Pauza"`): tytuł „Pauza”, powód (tło: „Witaj z powrotem 🦉”, fokus: „Gra czeka na Ciebie”, obrót: „Ekran się obrócił”, gracz: „Odpocznij chwilę”), przycisk „Graj dalej” (52 px, przy dolnej krawędzi); potem wielkie cyfry odliczania `.sowie-countdown` (animacja `sowieCountdownPop`, wyłączona przy ograniczeniu ruchu);
+  - monitor płynności → pasek `.sowie-slow-banner` „Gra trochę zwalnia. Włączyć tryb „Oszczędzanie baterii”?” [Włącz] [Nie teraz];
+  - `setBatterySaver(on)` — `loop.setRenderRate(30 | 60)`, wywołanie `onBatterySaver` (np. mniej cząsteczek) i zapis `profil.settings.batterySaver` przez `SowieCloud.updateProfile` (po 1 s); po `SowieCloud.ready` odczyt zapisanego ustawienia;
+  - blokada `gesturestart` (szczypanie na iOS) i `dblclick` na planszy;
+- `shell.css`: `html.sowie-shell` (bez przewijania, `overscroll-behavior: none` — bez „pociągnij, aby odświeżyć”), `.sowie-stage` (`position: fixed`, `height: 100dvh`, `touch-action: none`, `user-select: none`, `-webkit-touch-callout: none`), przyciski i linki `touch-action: manipulation`, style okna pauzy (karta `#fff6e3`, zaokrąglenie 24 px), odliczania (biały, `min(40vw, 180px)`, cień `#3b2f4a`) i paska oszczędzania.
+
+## PWA — instalacja na telefonie i start bez zasięgu
+
+- `manifest.webmanifest` (katalog główny): `name`/`short_name` „SowieGry”, `lang: "pl"`, `id`/`start_url`/`scope` `"./"`, `display: "standalone"`, `orientation: "portrait"`, `background_color: #fff6e3`, `theme_color: #bfe9ff`, ikony 192 i 512 (`any`), 512 `maskable`, SVG;
+- `assets/icons/icon.svg` — Sówka na niebie (gradient `#bfe9ff` → `#fff6e3`, treść w środkowym kole 80% — bezpieczna dla ikon „maskable”); PNG (`icon-192.png`, `icon-512.png`, `icon-maskable-512.png`, `apple-touch-icon.png` 180 px, `favicon-32.png`) generuje `node scripts/make-icons.cjs` (Chromium z Playwright robi zrzuty SVG);
+- każda strona (menu, gry, Laboratorium) ma w `<head>`: `<link rel="manifest">`, ikonę SVG, `apple-touch-icon`, `mobile-web-app-capable`, `apple-mobile-web-app-capable`, `apple-mobile-web-app-title` „SowieGry” oraz skrypt `shared/pwa.js` po `password-gate.js`;
+- `shared/pwa.js` — po `load` rejestruje `sw.js` z katalogu głównego (zakres = cała strona) na `https` i `localhost`; błąd rejestracji to tylko `console.warn`; `window.SowiePwa.standalone()` — czy gra działa jako zainstalowana aplikacja;
+- `sw.js` (katalog główny — service worker w `shared/` obejmowałby tylko ten katalog, a GitHub Pages nie pozwala ustawić nagłówka `Service-Worker-Allowed`):
+  - `VERSION = "sowiegry-v1"` — jedna pamięć podręczna na wersję; przy aktywacji usuwane są stare `sowiegry-*`; **przy każdej zmianie listy lub strategii trzeba podnieść `VERSION`**;
+  - instalacja: `SHELL` (menu z wszystkimi skryptami i stylami, manifest, ikony) z `cache: "reload"`, w tle pliki SDK Firebase 12.19.0 z gstatic (błąd nie blokuje instalacji), `skipWaiting`, przy aktywacji `clients.claim`;
+  - pobieranie (tylko `GET`): strony i kod z tej domeny — **najpierw sieć** (aktualizacje z GitHub Pages od razu), przy braku sieci lub po 4 s — pamięć, a dla nawigacji bez kopii — menu `./`; obrazki, czcionki i dźwięki (`png, jpg, webp, gif, svg, ico, woff/woff2, mp3, ogg, wav`) oraz SDK z gstatic — **najpierw pamięć**; zapisywane są tylko odpowiedzi `ok` typu `basic`/`cors`; żądania do Firestore nie są obsługiwane (zapis offline robi SDK w IndexedDB);
+  - gry trafiają do pamięci przy pierwszej wizycie (start bez zasięgu działa dla menu i gier już otwieranych).
+
+## Sowie Laboratorium (`lab/`)
+
+Strona testowa do sprawdzania Sowiego Silnika na prawdziwym telefonie (Analiza 3, E2). `lab/index.html` (`html.sowie-shell`, `viewport-fit=cover`, te same skrypty startowe co gry — hasło obowiązuje), `lab/lab.css`, `lab/main.js` (moduł ES; `lab/package.json` z `"type": "module"`). Nie jest w rejestrze gier.
+
+- nagłówek: „← Menu”, „Sowie Laboratorium”, licznik kl./s; przyciski działów (`aria-pressed`, min. 48 px);
+- **Gesty**: pole sięgające krawędzi ekranu (`.lab-stage`, `touch-action: none`) z płótnem: różowe pasy martwych stref (18 px po bokach, 20 px + pasek domowy u dołu, podpis „martwa strefa”), zielony ślad palca, żółty błysk przy dotknięciu; nazwa ostatniego gestu (`[data-last-gesture]`: Stuknięcie, Przytrzymanie, Koniec przytrzymania, Przesunięcie w lewo/prawo/górę/dół, Przeciąganie, Koniec przeciągania, Martwa strefa (gest pominięty), Pauza (klawisz P)) i dziennik 6 ostatnich gestów z godziną; w tym dziale działa auto-pauza (jak w grze);
+- **Informacje**: płynność, ekran CSS, widoczny obszar (`visualViewport`), DPR (i DPR rysowania), bezpieczne obszary, tryb (aplikacja / przeglądarka), praca bez zasięgu (czy service worker kontroluje stronę), sieć, stan zapisu w chmurze, oszczędzanie baterii; przyciski: „Test pauzy i odliczania”, „Oszczędzanie baterii” (przełącznik), „Pokaż propozycję oszczędzania”, „Pokaż bezpieczne obszary” (czerwone ramki wg `env(safe-area-inset-*)`);
+- `window.SowieLab = { loop, shell, view }` — dostęp dla testów.
+
 ## Profil (Firestore: `sowiegry/profil`)
 
 Jedyny profil gracza (Analiza 1, rozdział 4.1), wczytywany i zapisywany przez `SowieCloud`:
@@ -198,8 +285,8 @@ Pełny zestaw uruchamiany przed każdym wypchnięciem na `main` i w CI (`.github
 |---|---|---|
 | składnia | `npm run syntax` (`scripts/check-syntax.sh`) | `node --check` dla każdego pliku `.js` poza `node_modules/`, `.git/`, `playwright-report/` |
 | lint | `npm run lint` | ESLint 9 (`eslint.config.js`) |
-| formatowanie | `npm run format:check` | Prettier 3 (`.prettierrc.json`: szerokość 120, 2 spacje, średniki, cudzysłowy podwójne, przecinki końcowe) dla plików konfiguracyjnych, `firebase.json`, workflow i katalogów `tests/e2e`, `tests/unit`, `tests/rules` |
-| HTML | `npm run html` | `html-validate` (`.htmlvalidate.json`) dla `index.html`, stron pięciu gier i `tests/smoke.html` |
+| formatowanie | `npm run format:check` | Prettier 3 (`.prettierrc.json`: szerokość 120, 2 spacje, średniki, cudzysłowy podwójne, przecinki końcowe) dla plików konfiguracyjnych, `firebase.json`, `manifest.webmanifest`, `sw.js`, `shared/engine/`, `lab/main.js`, `lab/lab.css`, `scripts/make-icons.cjs`, workflow i katalogów `tests/e2e`, `tests/unit`, `tests/rules` |
+| HTML | `npm run html` | `html-validate` (`.htmlvalidate.json`) dla `index.html`, stron pięciu gier, `lab/index.html` i `tests/smoke.html` |
 | jednostkowe | `npm run test:unit` | `node --test tests/unit/*.test.mjs` |
 | reguły i przeglądarkowe | `npm run test:e2e` | emulator Firestore: `firebase emulators:exec --only firestore --project demo-sowiegry "npm run test:rules && playwright test"` — najpierw testy reguł (`test:rules` = `node --test tests/rules/*.test.mjs`, wymaga działającego emulatora), potem Playwright |
 
@@ -220,6 +307,7 @@ Zależności deweloperskie są przypięte tam, gdzie wersja wpływa na przegląd
 | `android-360x800` | własny: 360 × 800, DPR 3, `isMobile`, `hasTouch`, UA Androida 14 | 360 × 800 |
 | `iphone-13-poziomo` | `devices["iPhone 13 landscape"]` | 750 × 342 |
 
+- `serviceWorkers: "block"` — w testach service worker (PWA) nie jest rejestrowany i nie przechwytuje żądań; test PWA włącza go jawnie (`test.use({ serviceWorkers: "allow" })`);
 - zmienna `SOWIE_E2E_BEZ_WEBKIT=1` pomija projekty WebKit **tylko lokalnie** (np. w środowisku bez przeglądarki WebKit) i wypisuje ostrzeżenie; przy ustawionym `CI` zmienna jest ignorowana, więc w CI WebKit biegnie zawsze.
 
 ### Wspólne fikstury (`tests/e2e/fixtures.js`)
@@ -263,6 +351,16 @@ Zależności deweloperskie są przypięte tam, gdzie wersja wpływa na przegląd
 - emulator: zejście do tła zapisuje stan Ogrodów od razu, a powrót po 10 minutach pokazuje okno postępu offline;
 - ekran hasła przykrywa dok przycisków gry (instrukcja, rekordy, galeria).
 
+`laboratorium.spec.js` (E2a):
+
+- gesty w Laboratorium: stuknięcie, przesunięcia w 4 kierunkach, przytrzymanie, pominięcie gestu od lewej krawędzi, przy prawej krawędzi i przy pasku domowym; brak przewijania w bok;
+- auto-pauza po przejściu w tło (okno „Pauza” z „Witaj z powrotem”, pętla zatrzymana), przycisk „Graj dalej” ≥ 48 px w dolnej połowie, odliczanie 3 → 2 → wznowienie;
+- dział „Informacje”: płynność, bezpieczne obszary, tryb przeglądarki; „Oszczędzanie baterii” włącza 30 kl./s i zapisuje `settings.batterySaver` w profilu; propozycja oszczędzania i test pauzy.
+
+`pwa.spec.js` (E2a, `serviceWorkers: "allow"`):
+
+- po pierwszej wizycie service worker kontroluje stronę; bez sieci (`context.setOffline(true)`) menu ładuje się z pamięci podręcznej (5 kart gier, garderoba), bez błędów.
+
 `rekordy.spec.js`:
 
 - emulator, SowaJumper z `?daily=1`: dwie rozgrywki → okno 🏆 pokazuje najlepszy wynik, top 10 (2 wpisy), ostatnie gry (z oznaczeniem wyzwania dnia) i rekord dnia; poziom Chaos ma osobne, puste rekordy;
@@ -276,10 +374,15 @@ Zależności deweloperskie są przypięte tam, gdzie wersja wpływa na przegląd
 - emulator wymaga Javy 11+ (w CI: `actions/setup-java`, Temurin 21) i przy pierwszym uruchomieniu pobiera plik JAR do `~/.cache/firebase/emulators` (w CI ten katalog jest w `actions/cache`);
 - logi emulatora trafiają do `firestore-debug.log` (ignorowany przez git, dołączany do artefaktów CI przy błędzie).
 
+### Testy silnika i PWA (`tests/unit/engine.test.mjs`, `tests/unit/pwa.test.mjs`)
+
+- RNG zgodny z algorytmem `SowiePlatform` i powtarzalny; pętla: 120 kroków na sekundę przy 60 kl./s, `alpha` w [0, 1), pauza, limit 0,25 s po przerwie, brak spirali śmierci, 30 kl./s w oszczędzaniu baterii; pula; kolizje; animacje i funkcje łagodzenia; cząsteczki (limit, gęstość); widok (skala 40 dla 360 × 800 i świata 9 × 16, DPR max 2, stała skala przy pasku adresu, nowa przy obrocie, odwrotność przekształceń); kamera; gesty (stuknięcie, przytrzymanie, 4 kierunki swipe, przeciąganie, przytrzymanie → przeciąganie, martwe strefy, drugi palec, klawisze); sceny; monitor płynności; auto-pauza z odliczaniem;
+- PWA: pola manifestu i rozmiary ikon PNG, manifest i rejestracja na każdej stronie, `VERSION`, istnienie plików z `SHELL`, wszystkie skrypty i style menu w `SHELL`, SDK w pamięci, brak obsługi Firestore, usuwanie starych wersji.
+
 ### Test architektury (`tests/unit/architecture.test.mjs`)
 
 - rejestr ma dokładnie 5 gier; menu generowane z rejestru; każda gra ładuje platformę i wspólne powiadomienia;
-- **`localStorage` i `sessionStorage` występują tylko w `shared/sowie-cloud.js`** (przeszukiwane są wszystkie pliki `.js` w `shared/`, `config/` i folderach gier, bez `p5.js`);
+- **`localStorage` i `sessionStorage` występują tylko w `shared/sowie-cloud.js`** (przeszukiwane są rekursywnie wszystkie pliki `.js` w `shared/`, `config/`, `lab/`, folderach gier i `sw.js`, bez `p5.js`);
 - `shared/progress-reset.js` i `shared/idle-save-bridge.js` nie istnieją i nie są ładowane; platforma nie ma migracji, kopii, eksportu ani importu; ustawienia mają „Wyloguj to urządzenie”;
 - każda strona ładuje `config/firebase-config.js`, `sowie-platform.js`, `sowie-cloud.js`, `password-gate.js` w tej kolejności i przed `sowie-core.js`;
 - `sowie-cloud.js` nie czyści całej pamięci (`clear`), ma hasło `huhu`, klucz `sowiegry:urzadzenie`, przypiętą wersję SDK, nazwaną aplikację i cache IndexedDB; wszystkie ścieżki w kodzie leżą w kolekcjach `sowiegry`, `sowiegry_gry`, `sowiegry_historia`, a żaden inny plik nie używa Firestore;

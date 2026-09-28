@@ -49,6 +49,8 @@ module.exports = defineConfig({
     trace: "retain-on-failure",
     screenshot: "only-on-failure",
     video: "retain-on-failure",
+    // Service worker (PWA) wyłączony w testach — nie przechwytuje żądań; testy PWA włączają go jawnie.
+    serviceWorkers: "block",
   },
   projects: [
     {

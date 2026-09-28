@@ -45,15 +45,18 @@ test("runtime nie podmienia metod SowieCore", async () => {
   await assert.rejects(read("SowieOgrody/ogrody-runtime.js"));
 });
 
-// Wszystkie pliki JavaScript gier i modułów wspólnych (bez bibliotek zewnętrznych).
+// Wszystkie pliki JavaScript gier, modułów wspólnych (także podkatalogów), Laboratorium i service worker.
 async function projectScripts() {
-  const folders = ["shared", "config", "SowaRunner", "SowaJumper", "Sowa3", "SowieOgrody", "SowiaSzklarnia"];
-  const files = [];
-  for (const folder of folders) {
-    for (const name of await readdir(folder)) {
-      if (name.endsWith(".js") && !/^p5(\.sound\.min)?\.js$/.test(name)) files.push(join(folder, name));
+  const folders = ["shared", "config", "lab", "SowaRunner", "SowaJumper", "Sowa3", "SowieOgrody", "SowiaSzklarnia"];
+  const files = ["sw.js"];
+  async function walk(folder) {
+    for (const entry of await readdir(folder, { withFileTypes: true })) {
+      const file = join(folder, entry.name);
+      if (entry.isDirectory()) await walk(file);
+      else if (entry.name.endsWith(".js") && !/^p5(\.sound\.min)?\.js$/.test(entry.name)) files.push(file);
     }
   }
+  for (const folder of folders) await walk(folder);
   return files;
 }
 
@@ -132,7 +135,7 @@ test("kod SowieGry pisze tylko w kolekcji sowiegry i jej podkolekcjach", async (
   }
   for (const file of await projectScripts()) {
     if (file === join("shared", "sowie-cloud.js")) continue;
-    assert.doesNotMatch(await read(file), /firebase-firestore|getFirestore|initializeFirestore/, file);
+    assert.doesNotMatch(await read(file), /getFirestore|initializeFirestore|writeBatch|setDoc\(|getDocs?\(/, file);
   }
 });
 

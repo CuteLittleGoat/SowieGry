@@ -83,3 +83,7 @@ Dodaj `?debug=1` do adresu gry, aby zobaczyć liczbę przeszkód, prędkość, c
 ## Okno rekordów
 
 Przycisk **🏆** w prawym górnym rogu otwiera okno **Rekordy**: najlepszy wynik dla wybranego poziomu trudności (Chill / Arcade / Chaos), 10 najlepszych gier, 10 ostatnich gier i rekordy wyzwania dnia. Rekordy są zapisane w chmurze, więc te same widać na telefonie i komputerze.
+
+## Gra jako aplikacja na telefonie
+
+SowieGry można dodać do ekranu głównego (Android: menu ⋮ → „Zainstaluj aplikację”; iPhone: „Udostępnij” → „Do ekranu początkowego”). Gra otwierana wcześniej uruchomi się wtedy także bez zasięgu.

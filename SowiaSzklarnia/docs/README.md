@@ -40,3 +40,7 @@ Po powrocie do gry (także po przełączeniu się na inną aplikację na telefon
 ## Okno rekordów
 
 Przycisk **🏆** w prawym górnym rogu pokazuje podsumowanie postępu zapisane w chmurze (np. liście zebrane w całej grze).
+
+## Gra jako aplikacja na telefonie
+
+SowieGry można dodać do ekranu głównego (Android: menu ⋮ → „Zainstaluj aplikację”; iPhone: „Udostępnij” → „Do ekranu początkowego”). Gra otwierana wcześniej uruchomi się wtedy także bez zasięgu.
