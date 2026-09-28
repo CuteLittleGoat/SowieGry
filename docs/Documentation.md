@@ -970,7 +970,7 @@ Każda nakładka zatrzymuje propagację zdarzeń klawiatury, wskaźnika, dotyku,
 - `Analizy/ANALIZA_1_Firestore_zapis_postepu.md` — przeniesienie zapisu postępu do Firestore (model danych, hasło, reguły).
 - `Analizy/ANALIZA_2_Przebudowa_gier.md` — przebudowa gier, menu główne, telefon jako główne urządzenie.
 - `Analizy/ANALIZA_3_Plan_prac.md` — kolejność prac (etapy E0–E9).
-- `docs/AUDYT_MERGE_CUTE_POLISH.md`, `docs/PLAN_ROZWOJU_CUTE_POLISH.md`, `docs/WDROZENIE_CUTE_POLISH.md` — nieaktualne dokumenty starego układu (opisują m.in. zapis w pamięci przeglądarki); zgodnie z planem (E0.4) do usunięcia — czekają na decyzję właściciela.
+- Nieaktualne dokumenty starego układu (`docs/AUDYT_MERGE_CUTE_POLISH.md`, `docs/PLAN_ROZWOJU_CUTE_POLISH.md`, `docs/WDROZENIE_CUTE_POLISH.md`) usunięto po akceptacji właściciela (E0.4, porządki po E2).
 
 ## Dług techniczny
 

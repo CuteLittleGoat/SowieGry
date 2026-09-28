@@ -7,17 +7,18 @@
 ## Kolejność plików
 
 1. `p5.js`
-2. `p5.sound.min.js`
-3. `sketch.js`
-4. `render-fix.js`
-5. `extra-lives.js`
-6. `obstacle-balance.js`
-7. `../shared/sowie-core.js`
-8. `../shared/sowie-runtime.js`
-9. `cute-rework.js`
-10. `animation-polish.js`
-11. `runner-events-extra.js`
-12. `pause-final.js`
+2. `sketch.js`
+3. `render-fix.js`
+4. `extra-lives.js`
+5. `obstacle-balance.js`
+6. `../shared/sowie-core.js`
+7. `../shared/sowie-runtime.js`
+8. `cute-rework.js`
+9. `animation-polish.js`
+10. `runner-events-extra.js`
+11. `pause-final.js`
+
+Pusty plik `p5.sound.min.js` (0 bajtów) i jego `<script>` usunięto w porządkach po E2 (gra nie korzystała z biblioteki p5.sound; dźwięk daje `SowieCore`).
 
 W `<head>` przed `p5.js` ładowane są kolejno `../config/firebase-config.js`, `../shared/sowie-platform.js`, `../shared/sowie-cloud.js`, `../shared/password-gate.js` i `../shared/sowie-smoke-hook.js`, a także `style.css` i `../shared/cute-ui.css`.
 
@@ -57,7 +58,7 @@ Ostatnia warstwa `updateRun()` i `updateWhale()`. Zatrzymuje wszystkie wcześnie
 
 ## Wspólna warstwa
 
-`SowieCore` udostępnia profil, misje, statystyki, audio, muzykę, kosmetyki, komunikaty i debug. `SowieRuntime` ustawia wspólny układ paska narzędzi i klasę ograniczonych efektów. Postęp zapisuje `SowieCloud` (`shared/sowie-cloud.js`) w Firestore; w `<head>` strony kolejno: `../config/firebase-config.js`, `../shared/sowie-platform.js`, `../shared/sowie-cloud.js`, `../shared/password-gate.js`, `../shared/sowie-smoke-hook.js`, `p5.js`, `p5.sound.min.js`.
+`SowieCore` udostępnia profil, misje, statystyki, audio, muzykę, kosmetyki, komunikaty i debug. `SowieRuntime` ustawia wspólny układ paska narzędzi i klasę ograniczonych efektów. Postęp zapisuje `SowieCloud` (`shared/sowie-cloud.js`) w Firestore; w `<head>` strony kolejno: `../config/firebase-config.js`, `../shared/sowie-platform.js`, `../shared/sowie-cloud.js`, `../shared/password-gate.js`, `../shared/sowie-smoke-hook.js`, `p5.js`.
 
 ## Combo
 
