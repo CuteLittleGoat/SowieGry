@@ -92,3 +92,65 @@ test("jednorazowy workflow pobierania obrazów nie pozostaje w repozytorium", ()
     assert.equal(fs.existsSync(path.join(root, ".github/workflows", workflow)), false);
   }
 });
+
+// Uruchamia shared/owl-gallery.js w piaskownicy (bez przeglądarki) i zwraca window.SowieOwlGallery.
+async function loadGallery() {
+  const vm = await import("node:vm");
+  const element = () => ({ dataset: {}, setAttribute() {}, addEventListener() {}, appendChild() {}, append() {} });
+  const window = { addEventListener() {}, dispatchEvent() {} };
+  const document = {
+    currentScript: { src: "https://example.test/shared/owl-gallery.js" },
+    readyState: "complete",
+    getElementById: () => null,
+    querySelector: () => null,
+    createElement: element,
+    body: element(),
+  };
+  const context = vm.createContext({ window, document, URL, CustomEvent: class {}, console });
+  vm.runInContext(read("shared/owl-gallery.js"), context);
+  return window.SowieOwlGallery;
+}
+
+test("cele galerii są danymi: warunek odblokowania i postęp do paska", async () => {
+  const gallery = await loadGallery();
+  assert.equal(gallery.PHOTOS.length, 30);
+  for (const photo of gallery.PHOTOS) {
+    assert.ok(Array.isArray(photo.goals), photo.id);
+    for (const [source, target] of photo.goals) {
+      assert.match(source, /^(level|feathers|[a-z0-9]+[A-Z]\w+)$/, `${photo.id}: ${source}`);
+      assert.ok(target > 0, photo.id);
+    }
+  }
+  // Obiekty z piaskownicy vm porównujemy po JSON (inne prototypy tablic).
+  const plain = (value) => JSON.parse(JSON.stringify(value));
+  assert.deepEqual(plain(gallery.PHOTOS[0].goals), []);
+  const academy = { level: 5, feathers: 15, metrics: { runnerDistance: 500 } };
+  assert.equal(gallery.progressOf("owl-01", academy).share, 1);
+  assert.equal(gallery.progressOf("owl-03", academy).share, 0.5);
+  assert.equal(gallery.progressOf("owl-03", academy).done, false);
+  const both = gallery.progressOf("owl-08", academy);
+  assert.deepEqual(plain(both.goals.map((goal) => [goal.source, goal.value, goal.target, goal.done])), [
+    ["level", 5, 5, true],
+    ["feathers", 15, 30, false],
+  ]);
+  assert.equal(both.share, 0.75);
+  assert.equal(gallery.progressOf("owl-26", { level: 1, feathers: 0, metrics: {} }).goals.length, 5);
+  assert.equal(gallery.progressOf("nie-ma", academy), null);
+});
+
+test("miniatury WebP 400 i 600 px dla każdego zdjęcia, siatka poniżej 1 MB", async () => {
+  const gallery = await loadGallery();
+  let total400 = 0;
+  for (const photo of gallery.PHOTOS) {
+    for (const width of [400, 600]) {
+      const url = gallery.thumbUrl(photo, width);
+      assert.equal(url, `https://example.test/assets/gallery-thumbs/${photo.file.replace(".jpg", "")}-${width}.webp`);
+      const data = fs.readFileSync(path.join(root, new URL(url).pathname));
+      assert.equal(data.toString("latin1", 0, 4), "RIFF");
+      assert.equal(data.toString("latin1", 8, 12), "WEBP");
+      if (width === 400) total400 += data.length;
+    }
+  }
+  assert.ok(total400 < 1024 * 1024, `miniatury 400 px: ${total400} B`);
+  assert.equal(fs.readdirSync(path.join(root, "assets/gallery-thumbs")).length, 60);
+});

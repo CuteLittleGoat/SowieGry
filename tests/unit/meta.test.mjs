@@ -186,3 +186,26 @@ test("instrukcje: struktura przewodników, gesty i grafiki z katalogu", () => {
   );
   assert.deepEqual(validateGuide(null), ["brak przewodnika"]);
 });
+
+test("instrukcje obecnych gier: każda gra z rejestru ma przewodnik (treść z dawnego game-guides.js)", async () => {
+  const { readFileSync } = await import("node:fs");
+  const { GUIDE_ORDER } = await import("../../shared/meta/guides-data.js");
+  const platform = readFileSync(new URL("../../shared/sowie-platform.js", import.meta.url), "utf8");
+  const ids = [...platform.matchAll(/id: "(runner|jumper|sowa3|ogrody|szklarnia)"/g)].map((match) => match[1]);
+  assert.deepEqual(GUIDE_ORDER, ["swiat", ...ids]);
+  for (const id of ids) {
+    const guide = guideFor(id);
+    assert.ok(guide.cards.length >= 4 && guide.cards.length <= 6, id);
+    assert.equal(guide.cards[0].title, "Cel gry");
+    assert.ok(
+      guide.cards.some((card) => card.gesture),
+      `${id}: karta sterowania z gestem`,
+    );
+  }
+  assert.match(guideFor("runner").summary, /podwójnego skoku/);
+  assert.match(guideFor("szklarnia").cards[1].text, /SIO! SIO!/);
+  // Klasyczny skrypt gier nie ma już własnej kopii treści.
+  const legacy = readFileSync(new URL("../../shared/game-guides.js", import.meta.url), "utf8");
+  assert.doesNotMatch(legacy, /summary:/);
+  assert.match(legacy, /meta\/guides-data\.js/);
+});

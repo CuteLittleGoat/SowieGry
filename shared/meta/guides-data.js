@@ -75,7 +75,206 @@ export const GUIDES = Object.freeze({
       },
     ],
   },
+  // Obecne gry (treść przeniesiona z shared/game-guides.js w E3). Po przebudowie każdej gry podmieniamy jej karty.
+  runner: {
+    id: "runner",
+    title: "SowaRunner",
+    summary:
+      "Biegnij jak najdalej, omijaj przeszkody i zbieraj liście. Tempo stale rośnie, więc liczą się rytm, obserwacja trasy i rozsądne używanie podwójnego skoku.",
+    cards: [
+      {
+        id: "cel",
+        title: "Cel gry",
+        text: "Zdobywaj punkty, bij rekord dystansu i kończ długie biegi z jak najmniejszą liczbą obrażeń.",
+        sprite: "sowa-bieg-2",
+      },
+      {
+        id: "sterowanie",
+        title: "Sterowanie",
+        text: "Dotknięcie ekranu, kliknięcie lub Spacja to skok. Drugi skok można wykonać w powietrzu. Na ekranie tytułowym ten sam gest rozpoczyna bieg.",
+        gesture: "tap",
+        sprite: "sowa-skok",
+      },
+      {
+        id: "podwojny-skok",
+        title: "Podwójny skok",
+        text: "Nie zużywaj drugiego skoku zbyt wcześnie — zachowaj go do korekty.",
+        sprite: "pracu-dymek",
+      },
+      {
+        id: "liscie",
+        title: "Liście i seria",
+        text: "Liście zwiększają serię i dają dodatkowe premie punktowe.",
+        sprite: "lisc-zielony",
+      },
+      {
+        id: "humbak",
+        title: "Humbak",
+        text: "Humbak uruchamia krótką minigrę bonusową.",
+        sprite: "humbak",
+      },
+    ],
+  },
+  jumper: {
+    id: "jumper",
+    title: "SowaJumper",
+    summary:
+      "Automatycznie odbijająca się sowa wspina się po platformach. Ty sterujesz wyłącznie ruchem poziomym i wybierasz najbezpieczniejszą drogę ku górze.",
+    cards: [
+      {
+        id: "cel",
+        title: "Cel gry",
+        text: "Wznieś się jak najwyżej, zbieraj liście i buduj serię precyzyjnych lądowań.",
+        sprite: "sowa-skok",
+      },
+      {
+        id: "sterowanie",
+        title: "Sterowanie",
+        text: "Na telefonie przytrzymaj lewą albo prawą połowę ekranu. Na klawiaturze: ←/→ lub A/D. Spacja albo dotknięcie ekranu tytułowego rozpoczyna grę.",
+        gesture: "hold",
+        sprite: "sowa-szybuje",
+      },
+      {
+        id: "krawedz",
+        title: "Przez krawędź",
+        text: "Sowa przechodzi przez boczną krawędź i wraca z drugiej strony.",
+        sprite: "sowa-bieg-4",
+      },
+      {
+        id: "ladowanie",
+        title: "Precyzyjne lądowanie",
+        text: "Lądowanie blisko środka platformy podtrzymuje serię precyzji.",
+        sprite: "sowa-radosc",
+      },
+      {
+        id: "platformy",
+        title: "Platformy",
+        text: "Platformy Amic wybijają znacznie wyżej, a kruche rozpadają się po użyciu.",
+        sprite: "amic-sterowiec",
+      },
+    ],
+  },
+  sowa3: {
+    id: "sowa3",
+    title: "Sowa3",
+    summary:
+      "Trzytorowy runner, w którym sowa pędzi przez kolejne plansze. Zmieniaj tor, zbieraj liście i unikaj obiektów nadciągających z głębi ekranu.",
+    cards: [
+      {
+        id: "cel",
+        title: "Cel gry",
+        text: "Ukończ wszystkie plansze, osiągnij wysoki wynik i utrzymaj jak najdłuższe combo liści.",
+        sprite: "sowa-bieg-5",
+      },
+      {
+        id: "sterowanie",
+        title: "Sterowanie",
+        text: "Na telefonie przesuń palcem w lewo lub w prawo albo dotknij lewej lub prawej części ekranu. Na klawiaturze: ←/→ albo A/D.",
+        gesture: "swipe-right",
+        sprite: "sowa-bieg-2",
+      },
+      {
+        id: "horyzont",
+        title: "Patrz na horyzont",
+        text: "Obserwuj horyzont, a nie samą sowę — daje to więcej czasu na reakcję.",
+        sprite: "pracu-telefon-magda",
+      },
+      {
+        id: "combo",
+        title: "Combo liści",
+        text: "Kolejne liście bez kolizji zwiększają combo i premię punktową.",
+        sprite: "lisc-zloty",
+      },
+      {
+        id: "plansze",
+        title: "Plansze",
+        text: "Każda plansza ma własne przeszkody i rytm, a na końcu etapu sowa wskakuje do basenu.",
+        sprite: "plusk",
+      },
+    ],
+  },
+  ogrody: {
+    id: "ogrody",
+    title: "Sowie Ogrody",
+    summary:
+      "Gra idle/incremental o rozwijaniu ogrodu. Zbieraj liście, kupuj rośliny, odblokowuj strefy, podlewaj i stopniowo automatyzuj produkcję.",
+    cards: [
+      {
+        id: "cel",
+        title: "Cel gry",
+        text: "Zbuduj coraz wydajniejszy ogród, wykonuj kontrakty i przeprowadzaj Wielkie Przesadzanie, aby zdobywać trwałe premie.",
+        sprite: "lisc-zielony",
+      },
+      {
+        id: "sterowanie",
+        title: "Sterowanie",
+        text: "Przycisk „Zbierz liście” daje natychmiastowy dochód. Zakładki służą do kupowania roślin, ulepszeń, automatyzacji i prestiżu, a przycisk z gwiazdką otwiera kontrakty ogrodnicze.",
+        gesture: "tap",
+        sprite: "sowa-stoi",
+      },
+      {
+        id: "rosliny",
+        title: "Najpierw rośliny",
+        text: "Najpierw kupuj rośliny z najlepszym stosunkiem produkcji do ceny.",
+        sprite: "zycie",
+      },
+      {
+        id: "podlewanie",
+        title: "Podlewanie",
+        text: "Podlewanie czasowo wzmacnia ogród.",
+        sprite: "plusk",
+      },
+      {
+        id: "offline",
+        title: "Ogród rośnie beze mnie",
+        text: "Gra zapisuje się automatycznie i nalicza część produkcji, gdy Cię nie ma.",
+        sprite: "sowa-mruga",
+      },
+    ],
+  },
+  szklarnia: {
+    id: "szklarnia",
+    title: "Sowia Szklarnia",
+    summary:
+      "Botaniczna gra idle o budowaniu pomieszczeń, sadzeniu roślin, badaniach i tworzeniu hybryd. Kozy próbują podjadać kolekcję, więc trzeba je regularnie przeganiać.",
+    cards: [
+      {
+        id: "cel",
+        title: "Cel gry",
+        text: "Rozbuduj szklarnię, odkryj hybrydy, skompletuj album cech i utrzymuj wysoką radość sowy.",
+        sprite: "lisc-teczowy",
+      },
+      {
+        id: "sterowanie",
+        title: "Sterowanie",
+        text: "Zakładki służą do budowy, sadzenia, krzyżowania, badań i zarządzania kozami. „Podlej wszystko” wzmacnia rośliny, jeśli masz dość wody, a „SIO! SIO!” przegania aktywną kozę i może dać nagrodę.",
+        gesture: "tap",
+        sprite: "kozka-sprezynka-skok",
+      },
+      {
+        id: "zasoby",
+        title: "Woda i nasiona",
+        text: "Rozwijaj produkcję wody i nasion równolegle z liśćmi.",
+        sprite: "plusk",
+      },
+      {
+        id: "krzyzowanie",
+        title: "Krzyżowanie",
+        text: "Dojrzałe rośliny są potrzebne do krzyżowania.",
+        sprite: "lisc-zloty",
+      },
+      {
+        id: "laboratorium",
+        title: "Cele laboratorium",
+        text: "Przycisk z gwiazdką pokazuje cele laboratorium i odkryte cechy.",
+        sprite: "sowa-radosc",
+      },
+    ],
+  },
 });
+
+// Kolejność przewodników w zakładce „Jak grać” (najpierw „Poznaj Sowi Świat”, potem gry jak w rejestrze).
+export const GUIDE_ORDER = Object.freeze(["swiat", "runner", "jumper", "sowa3", "ogrody", "szklarnia"]);
 
 // Sprawdza przewodnik (błędy jako lista napisów — pusta, gdy wszystko w porządku).
 export function validateGuide(guide, { sprites = null } = {}) {

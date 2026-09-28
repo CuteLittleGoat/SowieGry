@@ -14,14 +14,13 @@ const gameIndexes = [
   "SowiaSzklarnia/index.html",
 ];
 
-test("katalog instrukcji obejmuje dokładnie pięć gier", () => {
-  const source = read("shared/game-guides.js");
+test("katalog instrukcji (shared/meta/guides-data.js) obejmuje pięć gier i „Poznaj Sowi Świat”", async () => {
+  const { GUIDES } = await import("../../shared/meta/guides-data.js");
+  assert.deepEqual(Object.keys(GUIDES).sort(), ["jumper", "ogrody", "runner", "sowa3", "swiat", "szklarnia"]);
   for (const id of ["runner", "jumper", "sowa3", "ogrody", "szklarnia"]) {
-    assert.match(source, new RegExp(`\\b${id}:\\s*\\{`));
+    assert.ok(GUIDES[id].summary && GUIDES[id].cards.length >= 4, id);
   }
-  assert.match(source, /goal:/);
-  assert.match(source, /controls:/);
-  assert.match(source, /tips:/);
+  assert.match(read("shared/game-guides.js"), /meta\/guides-data\.js/);
 });
 
 test("menu główne tworzy przycisk instrukcji przy każdej karcie", () => {

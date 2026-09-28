@@ -30,7 +30,7 @@ shared/
   sowie-smoke-hook.js     (raportowanie błędów do tests/smoke.html)
   sowie-academy.js        (Sowia Akademia)
   owl-gallery.js/.css     (Galeria Sów)
-  game-guides.js          (instrukcje gier)
+  game-guides.js          (dok przycisków gry i okno instrukcji; treść z meta/guides-data.js)
   gameplay-expansion.js   (serie, precyzja, combo, wyzwanie dnia, kontrakty, album cech)
   stable-panel.js         (stabilny panel gier idle)
   modal-accessibility.js  (dostępność modali gier idle)
@@ -46,12 +46,14 @@ lab/                      (Sowie Laboratorium — strona testowa silnika na tele
 assets/icons/             (ikona aplikacji SVG i PNG)
 assets/svg/               (źródła SVG postaci: sowa/, garderoba/, kozki/, humbak/, pracu/, amic/, liscie/, interfejs/)
 assets/fonts/             (Fredoka 500 i 700 z polskimi literami, WOFF2, licencja OFL.txt)
+assets/gallery-thumbs/    (miniatury zdjęć Galerii Sów, WebP 400 i 600 px)
 assets/audio/             (dźwięki: sfx/ — 27 efektów, music/ — motyw menu i pieśń humbaka, audio.json, LICENSES.md)
 manifest.webmanifest      (PWA)
 sw.js                     (service worker — w katalogu głównym, żeby obejmował całą stronę)
 scripts/make-icons.cjs    (generowanie ikon PNG z SVG)
 scripts/make-fonts.py     (budowa czcionek Fredoka z polskimi literami — jednorazowo, wynik w repo)
 scripts/make-audio.mjs    (syntezator efektów i muzyki → MP3 + manifest; wynik w repo)
+scripts/make-thumbs.cjs   (miniatury WebP Galerii Sów 400 i 600 px → assets/gallery-thumbs/)
 tests/
   smoke.html
   e2e/            (testy Playwright; telefon/ — testy na profilach telefonów)
@@ -140,7 +142,11 @@ Stan (XP, piórka, metryki, misje dzienne i tygodniowe, nagrody) jest w `profil.
 
 ### `shared/owl-gallery.js` — `window.SowieOwlGallery`
 
-30 fotografii z `Obrazki/` (tytuł, opis, autor, link Pexels, warunek odblokowania z metryk Akademii). Stan (`unlocked`, `viewed`, `favorite`) jest w `profil.gallery`; wczytywany po `SowieCloud.ready`, zapisywany przez `updateProfile`. Przed wczytaniem `refreshUnlocks()` nic nie robi (nie nadpisze stanu z chmury). Nowe odblokowania pokazują toast „Nowa fotografia w Galerii Sów!”, obejrzenie wszystkich 30 daje nagrodę Akademii `gallery:complete`.
+30 fotografii z `Obrazki/` (`id`, `file`, tytuł, opis `alt`, autor, link Pexels, tekst wymagania `requirement` i **cele `goals`**). Od E3 warunki odblokowania są danymi: `goals` to lista `[źródło, próg]`, gdzie źródło to `level` (poziom Akademii), `feathers` (piórka) albo nazwa metryki Akademii (np. `runnerDistance`, `ogrodyBuys`, `szklarniaRooms`, `runnerVisits`); zdjęcie odblokowuje się, gdy wszystkie cele są osiągnięte (`owl-01` ma pustą listę — prezent powitalny). Stan (`unlocked`, `viewed`, `favorite`, od E3 `background`) jest w `profil.gallery`; wczytywany po `SowieCloud.ready`, zapisywany przez `updateProfile`. Przed wczytaniem `refreshUnlocks()` nic nie robi (nie nadpisze stanu z chmury). Nowe odblokowania pokazują toast „Nowa fotografia w Galerii Sów!”, obejrzenie wszystkich 30 daje nagrodę Akademii `gallery:complete`.
+
+API (`window.SowieOwlGallery`): `PHOTOS`, `open()`, `close()`, `refreshUnlocks()`, `snapshot()`, `progressOf(zdjęcie | id, migawkaAkademii)` → `{ share (0–1, średnia z celów), goals: [{ source, target, value (obcięta do progu), done }], done }` (do paska postępu zablokowanego zdjęcia), `markViewed(id)`, `setFavorite(id)` (jedno ulubione; ponowny wybór zdejmuje), `setBackground(id | null)` (tło menu — tylko odblokowane), `photoUrl(zdjęcie)` (pełne 1200 × 900), `thumbUrl(zdjęcie, 400 | 600)` (miniatura WebP), `isLoaded()`. Siatka w oknie galerii (gry) używa miniatur: `src` 400 px, `srcset` 400w/600w, `sizes="(max-width: 700px) 45vw, 220px"`, `loading="lazy"`, `decoding="async"`.
+
+**Miniatury** (`assets/gallery-thumbs/<plik>-400.webp` i `-600.webp`, 60 plików): `node scripts/make-thumbs.cjs` — Chromium z Playwright rysuje każde zdjęcie na płótnie 400 × 300 (jakość WebP 0,78) i 600 × 450 (0,72) z `imageSmoothingQuality = "high"`; razem ok. 554 KB (400 px) i ok. 976 KB (600 px, dla ekranów 3×) zamiast 4,7 MB pełnych zdjęć.
 
 ### `shared/gameplay-expansion.js`
 
@@ -432,7 +438,13 @@ Moduły ES (`shared/ui/package.json` z `"type": "module"`, `index.js` eksportuje
 
 ### `guides-data.js` — instrukcje
 
-Struktura przewodnika `{ id, title, summary, cards: [{ id, title, text, sprite?, gesture?, tip? }] }`; `GESTURES` (tap „Stuknij”, hold „Przytrzymaj”, swipe-up/down/left/right „Przesuń w …”, drag „Przeciągnij”); `GUIDES.swiat` — „Poznaj Sowi Świat” (7 kart: Sówka, Liście monstery, Pracu Pracu, Amic, Skaczące kózki, Humbak, Serduszka-doniczki); `validateGuide(przewodnik, { sprites })` → lista błędów (brak pól, puste karty, powtórzone id, nieznany gest, brak grafiki w katalogu); `guideFor(id)`. Treść obecnych gier przeniesie tu etap E3 (z `shared/game-guides.js`).
+Struktura przewodnika `{ id, title, summary, cards: [{ id, title, text, sprite?, gesture?, tip? }] }`; `GESTURES` (tap „Stuknij”, hold „Przytrzymaj”, swipe-up/down/left/right „Przesuń w …”, drag „Przeciągnij”); `GUIDES.swiat` — „Poznaj Sowi Świat” (7 kart: Sówka, Liście monstery, Pracu Pracu, Amic, Skaczące kózki, Humbak, Serduszka-doniczki); `validateGuide(przewodnik, { sprites })` → lista błędów (brak pól, puste karty, powtórzone id, nieznany gest, brak grafiki w katalogu); `guideFor(id)`; `GUIDE_ORDER = ["swiat", "runner", "jumper", "sowa3", "ogrody", "szklarnia"]` (kolejność w zakładce „Jak grać”).
+
+Od E3 w pliku są też przewodniki **obecnych gier** (treść przeniesiona z `shared/game-guides.js`, bez zmian merytorycznych) — każdy ma opis `summary` i 5 kart: „Cel gry”, „Sterowanie” (z gestem: SowaRunner `tap`, SowaJumper `hold`, Sowa3 `swipe-right`, Ogrody i Szklarnia `tap`) oraz 3 karty ze wskazówkami (np. „Podwójny skok”, „Liście i seria”, „Humbak”; „Przez krawędź”, „Precyzyjne lądowanie”, „Platformy”; „Patrz na horyzont”, „Combo liści”, „Plansze”; „Najpierw rośliny”, „Podlewanie”, „Ogród rośnie beze mnie”; „Woda i nasiona”, „Krzyżowanie”, „Cele laboratorium”), każda z grafiką z katalogu. Po przebudowie gry podmieniamy tylko jej karty.
+
+### `shared/game-guides.js` — `window.SowieGameGuides` (strony gier)
+
+Klasyczny skrypt: dok przycisków gry (`getDock()` → `.sowie-tool-dock`), przycisk ❓ (`data-game-guide-fab`, `aria-label="Instrukcja gry <nazwa z rejestru>"`) i okno instrukcji. Od E3 treść pochodzi z `shared/meta/guides-data.js` wczytywanego przez `import()` przy starcie strony (`ready` — obietnica z `GUIDES`); `open(gameId)` jest asynchroniczne i pokazuje „Instrukcja — <tytuł>”, opis i kolejne karty jako sekcje (tytuł `h3` + tekst i wskazówka). Klik w dowolny element z `data-game-guide` otwiera okno tej gry.
 
 ## Dźwięki (`assets/audio/`, `scripts/make-audio.mjs`) — etap E2c
 
@@ -452,7 +464,7 @@ Wszystkie dźwięki są syntezowane kodem (własna twórczość, CC0 — `assets
 - każda strona (menu, gry, Laboratorium) ma w `<head>`: `<link rel="manifest">`, ikonę SVG, `apple-touch-icon`, `mobile-web-app-capable`, `apple-mobile-web-app-capable`, `apple-mobile-web-app-title` „SowieGry” oraz skrypt `shared/pwa.js` po `password-gate.js`;
 - `shared/pwa.js` — po `load` rejestruje `sw.js` z katalogu głównego (zakres = cała strona) na `https` i `localhost`; błąd rejestracji to tylko `console.warn`; `window.SowiePwa.standalone()` — czy gra działa jako zainstalowana aplikacja;
 - `sw.js` (katalog główny — service worker w `shared/` obejmowałby tylko ten katalog, a GitHub Pages nie pozwala ustawić nagłówka `Service-Worker-Allowed`):
-  - `VERSION = "sowiegry-v1"` — jedna pamięć podręczna na wersję; przy aktywacji usuwane są stare `sowiegry-*`; **przy każdej zmianie listy lub strategii trzeba podnieść `VERSION`**;
+  - `VERSION = "sowiegry-v2"` (od E3: dodany `shared/meta/guides-data.js`) — jedna pamięć podręczna na wersję; przy aktywacji usuwane są stare `sowiegry-*`; **przy każdej zmianie listy lub strategii trzeba podnieść `VERSION`**;
   - instalacja: `SHELL` (menu z wszystkimi skryptami i stylami, manifest, ikony) z `cache: "reload"`, w tle pliki SDK Firebase 12.19.0 z gstatic (błąd nie blokuje instalacji), `skipWaiting`, przy aktywacji `clients.claim`;
   - pobieranie (tylko `GET`): strony i kod z tej domeny — **najpierw sieć** (aktualizacje z GitHub Pages od razu), przy braku sieci lub po 4 s — pamięć, a dla nawigacji bez kopii — menu `./`; obrazki, czcionki i dźwięki (`png, jpg, webp, gif, svg, ico, woff/woff2, mp3, ogg, wav`) oraz SDK z gstatic — **najpierw pamięć**; zapisywane są tylko odpowiedzi `ok` typu `basic`/`cors`; żądania do Firestore nie są obsługiwane (zapis offline robi SDK w IndexedDB);
   - gry trafiają do pamięci przy pierwszej wizycie (start bez zasięgu działa dla menu i gier już otwieranych);
@@ -622,7 +634,7 @@ Zależności deweloperskie są przypięte tam, gdzie wersja wpływa na przegląd
 
 `pwa.spec.js` (E2a, `serviceWorkers: "allow"`):
 
-- po pierwszej wizycie service worker kontroluje stronę, a pamięć `sowiegry-v1` zawiera wszystkie pliki z listy `SHELL` (lista czytana wprost z `sw.js`);
+- po pierwszej wizycie service worker kontroluje stronę, a pamięć bieżącej wersji zawiera wszystkie pliki z listy `SHELL` (wersja i lista czytane wprost z `sw.js`);
 - w Chromium dodatkowo: bez sieci (`context.setOffline(true)`) menu ładuje się z pamięci podręcznej (5 kart gier, garderoba), bez błędów. Playwright w WebKit nie potrafi przeładować strony offline przez service worker (błąd „WebKit encountered an internal error”), dlatego na profilach WebKit test kończy się na sprawdzeniu zawartości pamięci podręcznej.
 
 `rekordy.spec.js`:
@@ -649,6 +661,12 @@ Zależności deweloperskie są przypięte tam, gdzie wersja wpływa na przegląd
 - `taskProgress`: misja `max`, misja `delta` z `baseline`, misja tygodnia, brak migawki;
 - `createProgress`: błędy (bez `beginRun`, nieznane zdarzenie), liczniki biegu (liście z `count`, punkty, kózki, trafienia, uniki, combo max, gorączka, humbak), nagroda, czas biegu, wywołania Akademii, zadania z `advanced` i `newlyDone`, słuchacze `*` i odłączanie;
 - `guides-data`: każdy przewodnik poprawny (grafiki z katalogu), 7 kart „Poznaj Sowi Świat”, błędy dla nieznanego gestu i grafiki.
+- instrukcje obecnych gier: każda gra z rejestru ma przewodnik (4–6 kart, pierwsza „Cel gry”, karta z gestem), `GUIDE_ORDER`, zachowana treść (np. „podwójnego skoku”, „SIO! SIO!”), `shared/game-guides.js` nie ma już własnej kopii i wczytuje `meta/guides-data.js`.
+
+### Testy galerii (`tests/unit/owl-gallery.test.mjs`, uzupełnienie E3)
+
+- `shared/owl-gallery.js` uruchamiany w piaskownicy `node:vm` (atrapa `window`/`document`): 30 zdjęć z listą `goals` (źródła `level`, `feathers` albo metryka; progi > 0), `owl-01` bez celów, `progressOf` (jeden cel — 0,5; dwa cele — średnia 0,75 i szczegóły; 5 celów wizyt; nieznane id → `null`);
+- miniatury: dla każdego zdjęcia pliki 400 i 600 px z nagłówkiem RIFF/WEBP pod adresem z `thumbUrl`, razem 60 plików, miniatury 400 px poniżej 1 MB.
 
 ### Testy dźwięku (`tests/unit/audio.test.mjs`)
 

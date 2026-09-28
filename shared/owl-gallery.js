@@ -6,6 +6,8 @@
   const cloud = window.SowieCloud;
   const VERSION = 2;
 
+  // goals: lista celów [źródło, próg] — źródło to level, feathers albo metryka Sowiej Akademii;
+  // zdjęcie odblokowuje się, gdy wszystkie cele są osiągnięte (pusta lista = od początku).
   const PHOTOS = Object.freeze([
     {
       id: "owl-01",
@@ -15,7 +17,7 @@
       photographer: "tkirkgoz",
       sourceUrl: "https://www.pexels.com/photo/13681325/",
       requirement: "Prezent powitalny — dostępna od początku.",
-      unlockedBy: () => true,
+      goals: [],
     },
     {
       id: "owl-02",
@@ -25,7 +27,7 @@
       photographer: "tkirkgoz",
       sourceUrl: "https://www.pexels.com/photo/17213746/",
       requirement: "Osiągnij 2. poziom Sowiej Akademii.",
-      unlockedBy: (academy) => academy.level >= 2,
+      goals: [["level", 2]],
     },
     {
       id: "owl-03",
@@ -35,7 +37,7 @@
       photographer: "Erik Karits",
       sourceUrl: "https://www.pexels.com/photo/25559342/",
       requirement: "Przebiegnij 1000 m w SowaRunner.",
-      unlockedBy: (academy) => Number(academy.metrics.runnerDistance || 0) >= 1000,
+      goals: [["runnerDistance", 1000]],
     },
     {
       id: "owl-04",
@@ -45,7 +47,7 @@
       photographer: "Regan Dsouza",
       sourceUrl: "https://www.pexels.com/photo/29082522/",
       requirement: "Osiągnij wysokość 250 m w SowaJumper.",
-      unlockedBy: (academy) => Number(academy.metrics.jumperHeight || 0) >= 250,
+      goals: [["jumperHeight", 250]],
     },
     {
       id: "owl-05",
@@ -55,7 +57,7 @@
       photographer: "Erik Karits",
       sourceUrl: "https://www.pexels.com/photo/10586311/",
       requirement: "Osiągnij combo 8 w Sowa3.",
-      unlockedBy: (academy) => Number(academy.metrics.sowa3Combo || 0) >= 8,
+      goals: [["sowa3Combo", 8]],
     },
     {
       id: "owl-06",
@@ -65,7 +67,7 @@
       photographer: "tkirkgoz",
       sourceUrl: "https://www.pexels.com/photo/17103408/",
       requirement: "Kup 20 roślin lub ulepszeń w Sowich Ogrodach.",
-      unlockedBy: (academy) => Number(academy.metrics.ogrodyBuys || 0) >= 20,
+      goals: [["ogrodyBuys", 20]],
     },
     {
       id: "owl-07",
@@ -75,7 +77,7 @@
       photographer: "petraryan",
       sourceUrl: "https://www.pexels.com/photo/33228723/",
       requirement: "Zbuduj 4 pomieszczenia w Sowiej Szklarni.",
-      unlockedBy: (academy) => Number(academy.metrics.szklarniaRooms || 0) >= 4,
+      goals: [["szklarniaRooms", 4]],
     },
     {
       id: "owl-08",
@@ -85,7 +87,7 @@
       photographer: "Marian Havenga",
       sourceUrl: "https://www.pexels.com/photo/25728668/",
       requirement: "Osiągnij 5. poziom Akademii i zdobądź 30 piórek.",
-      unlockedBy: (academy) => academy.level >= 5 && academy.feathers >= 30,
+      goals: [["level", 5], ["feathers", 30]],
     },
     {
       id: "owl-09",
@@ -95,7 +97,7 @@
       photographer: "Twórca w serwisie Pexels",
       sourceUrl: "https://www.pexels.com/photo/5237476/",
       requirement: "Osiągnij 3. poziom Sowiej Akademii.",
-      unlockedBy: (academy) => academy.level >= 3,
+      goals: [["level", 3]],
     },
     {
       id: "owl-10",
@@ -105,7 +107,7 @@
       photographer: "Twórca w serwisie Pexels",
       sourceUrl: "https://www.pexels.com/photo/23654842/",
       requirement: "Zdobądź 12 piórek w Sowiej Akademii.",
-      unlockedBy: (academy) => academy.feathers >= 12,
+      goals: [["feathers", 12]],
     },
     {
       id: "owl-11",
@@ -115,7 +117,7 @@
       photographer: "Twórca w serwisie Pexels",
       sourceUrl: "https://www.pexels.com/photo/4823989/",
       requirement: "Zdobądź 1800 punktów w SowaRunner.",
-      unlockedBy: (academy) => Number(academy.metrics.runnerScore || 0) >= 1800,
+      goals: [["runnerScore", 1800]],
     },
     {
       id: "owl-12",
@@ -125,7 +127,7 @@
       photographer: "Twórca w serwisie Pexels",
       sourceUrl: "https://www.pexels.com/photo/4823986/",
       requirement: "Zbuduj serię 5 liści w SowaRunner.",
-      unlockedBy: (academy) => Number(academy.metrics.runnerLeafChain || 0) >= 5,
+      goals: [["runnerLeafChain", 5]],
     },
     {
       id: "owl-13",
@@ -135,7 +137,7 @@
       photographer: "Twórca w serwisie Pexels",
       sourceUrl: "https://www.pexels.com/photo/27067203/",
       requirement: "Zdobądź 1200 punktów w SowaJumper.",
-      unlockedBy: (academy) => Number(academy.metrics.jumperScore || 0) >= 1200,
+      goals: [["jumperScore", 1200]],
     },
     {
       id: "owl-14",
@@ -145,7 +147,7 @@
       photographer: "Twórca w serwisie Pexels",
       sourceUrl: "https://www.pexels.com/photo/17817497/",
       requirement: "Wykonaj serię 4 precyzyjnych lądowań w SowaJumper.",
-      unlockedBy: (academy) => Number(academy.metrics.jumperStreak || 0) >= 4,
+      goals: [["jumperStreak", 4]],
     },
     {
       id: "owl-15",
@@ -155,7 +157,7 @@
       photographer: "Twórca w serwisie Pexels",
       sourceUrl: "https://www.pexels.com/photo/23490342/",
       requirement: "Zdobądź 1500 punktów w Sowa3.",
-      unlockedBy: (academy) => Number(academy.metrics.sowa3Score || 0) >= 1500,
+      goals: [["sowa3Score", 1500]],
     },
     {
       id: "owl-16",
@@ -165,7 +167,7 @@
       photographer: "Twórca w serwisie Pexels",
       sourceUrl: "https://www.pexels.com/photo/15994322/",
       requirement: "Ukończ przynajmniej jedną trasę w Sowa3.",
-      unlockedBy: (academy) => Number(academy.metrics.sowa3Finishes || 0) >= 1,
+      goals: [["sowa3Finishes", 1]],
     },
     {
       id: "owl-17",
@@ -175,7 +177,7 @@
       photographer: "Twórca w serwisie Pexels",
       sourceUrl: "https://www.pexels.com/photo/3848270/",
       requirement: "Zbierz liście ręcznie 75 razy w Sowich Ogrodach.",
-      unlockedBy: (academy) => Number(academy.metrics.ogrodyClicks || 0) >= 75,
+      goals: [["ogrodyClicks", 75]],
     },
     {
       id: "owl-18",
@@ -185,7 +187,7 @@
       photographer: "Twórca w serwisie Pexels",
       sourceUrl: "https://www.pexels.com/photo/24012047/",
       requirement: "Posiadaj 18 roślin w Sowich Ogrodach.",
-      unlockedBy: (academy) => Number(academy.metrics.ogrodyPlants || 0) >= 18,
+      goals: [["ogrodyPlants", 18]],
     },
     {
       id: "owl-19",
@@ -195,7 +197,7 @@
       photographer: "Twórca w serwisie Pexels",
       sourceUrl: "https://www.pexels.com/photo/19892683/",
       requirement: "Podlej ogród 8 razy.",
-      unlockedBy: (academy) => Number(academy.metrics.ogrodyWatering || 0) >= 8,
+      goals: [["ogrodyWatering", 8]],
     },
     {
       id: "owl-20",
@@ -205,7 +207,7 @@
       photographer: "Twórca w serwisie Pexels",
       sourceUrl: "https://www.pexels.com/photo/19065539/",
       requirement: "Zbierz 5000 liści łącznie w Sowich Ogrodach.",
-      unlockedBy: (academy) => Number(academy.metrics.ogrodyLeaves || 0) >= 5000,
+      goals: [["ogrodyLeaves", 5000]],
     },
     {
       id: "owl-21",
@@ -215,7 +217,7 @@
       photographer: "Twórca w serwisie Pexels",
       sourceUrl: "https://www.pexels.com/photo/31330685/",
       requirement: "Posiadaj 6 roślin w Sowiej Szklarni.",
-      unlockedBy: (academy) => Number(academy.metrics.szklarniaPlants || 0) >= 6,
+      goals: [["szklarniaPlants", 6]],
     },
     {
       id: "owl-22",
@@ -225,7 +227,7 @@
       photographer: "Twórca w serwisie Pexels",
       sourceUrl: "https://www.pexels.com/photo/23654832/",
       requirement: "Przegoń 3 kozy w Sowiej Szklarni.",
-      unlockedBy: (academy) => Number(academy.metrics.szklarniaGoats || 0) >= 3,
+      goals: [["szklarniaGoats", 3]],
     },
     {
       id: "owl-23",
@@ -235,7 +237,7 @@
       photographer: "Twórca w serwisie Pexels",
       sourceUrl: "https://www.pexels.com/photo/19065545/",
       requirement: "Odkryj pierwszą hybrydę w Sowiej Szklarni.",
-      unlockedBy: (academy) => Number(academy.metrics.szklarniaHybrids || 0) >= 1,
+      goals: [["szklarniaHybrids", 1]],
     },
     {
       id: "owl-24",
@@ -245,7 +247,7 @@
       photographer: "Twórca w serwisie Pexels",
       sourceUrl: "https://www.pexels.com/photo/7190228/",
       requirement: "Osiągnij 5. poziom Sowiej Akademii.",
-      unlockedBy: (academy) => academy.level >= 5,
+      goals: [["level", 5]],
     },
     {
       id: "owl-25",
@@ -255,7 +257,7 @@
       photographer: "Twórca w serwisie Pexels",
       sourceUrl: "https://www.pexels.com/photo/5237543/",
       requirement: "Zdobądź 40 piórek w Sowiej Akademii.",
-      unlockedBy: (academy) => academy.feathers >= 40,
+      goals: [["feathers", 40]],
     },
     {
       id: "owl-26",
@@ -265,10 +267,7 @@
       photographer: "Twórca w serwisie Pexels",
       sourceUrl: "https://www.pexels.com/photo/23490352/",
       requirement: "Odwiedź każdą z pięciu gier przynajmniej raz.",
-      unlockedBy: (academy) =>
-        ["runnerVisits", "jumperVisits", "sowa3Visits", "ogrodyVisits", "szklarniaVisits"].every(
-          (metric) => Number(academy.metrics[metric] || 0) >= 1,
-        ),
+      goals: [["runnerVisits", 1], ["jumperVisits", 1], ["sowa3Visits", 1], ["ogrodyVisits", 1], ["szklarniaVisits", 1]],
     },
     {
       id: "owl-27",
@@ -278,7 +277,7 @@
       photographer: "Twórca w serwisie Pexels",
       sourceUrl: "https://www.pexels.com/photo/28699294/",
       requirement: "Osiągnij 6. poziom Akademii i zdobądź 50 piórek.",
-      unlockedBy: (academy) => academy.level >= 6 && academy.feathers >= 50,
+      goals: [["level", 6], ["feathers", 50]],
     },
     {
       id: "owl-28",
@@ -288,8 +287,7 @@
       photographer: "Twórca w serwisie Pexels",
       sourceUrl: "https://www.pexels.com/photo/24012038/",
       requirement: "Przebiegnij 2500 m w Runnerze i osiągnij 400 m w Jumperze.",
-      unlockedBy: (academy) =>
-        Number(academy.metrics.runnerDistance || 0) >= 2500 && Number(academy.metrics.jumperHeight || 0) >= 400,
+      goals: [["runnerDistance", 2500], ["jumperHeight", 400]],
     },
     {
       id: "owl-29",
@@ -299,8 +297,7 @@
       photographer: "Twórca w serwisie Pexels",
       sourceUrl: "https://www.pexels.com/photo/5651223/",
       requirement: "Osiągnij combo 12 w Sowa3 i wykonaj pierwsze przesadzanie Ogrodów.",
-      unlockedBy: (academy) =>
-        Number(academy.metrics.sowa3Combo || 0) >= 12 && Number(academy.metrics.ogrodyPrestiges || 0) >= 1,
+      goals: [["sowa3Combo", 12], ["ogrodyPrestiges", 1]],
     },
     {
       id: "owl-30",
@@ -310,10 +307,33 @@
       photographer: "Twórca w serwisie Pexels",
       sourceUrl: "https://www.pexels.com/photo/31922777/",
       requirement: "Osiągnij 8. poziom Akademii, zdobądź 80 piórek i zbuduj 5 pomieszczeń Szklarni.",
-      unlockedBy: (academy) =>
-        academy.level >= 8 && academy.feathers >= 80 && Number(academy.metrics.szklarniaRooms || 0) >= 5,
+      goals: [["level", 8], ["feathers", 80], ["szklarniaRooms", 5]],
     },
   ]);
+
+  // Wartość źródła celu w migawce Akademii.
+  function goalValue(academy, source) {
+    if (source === "level") return Number(academy.level || 1);
+    if (source === "feathers") return Number(academy.feathers || 0);
+    return Number(academy.metrics?.[source] || 0);
+  }
+
+  // Czy zdjęcie jest do odblokowania (wszystkie cele osiągnięte).
+  function goalsMet(photo, academy) {
+    return photo.goals.every(([source, target]) => goalValue(academy, source) >= target);
+  }
+
+  // Postęp do odblokowania: udział 0–1 (średnia z celów) i szczegóły każdego celu.
+  function progressOf(photoOrId, academy = academySnapshot()) {
+    const photo = typeof photoOrId === "string" ? PHOTOS.find((entry) => entry.id === photoOrId) : photoOrId;
+    if (!photo) return null;
+    const goals = photo.goals.map(([source, target]) => {
+      const value = goalValue(academy, source);
+      return { source, target, value: Math.min(value, target), done: value >= target };
+    });
+    const share = goals.length ? goals.reduce((sum, goal) => sum + goal.value / goal.target, 0) / goals.length : 1;
+    return { share, goals, done: goals.every((goal) => goal.done) };
+  }
 
   let state = defaultState();
   let loaded = false;
@@ -327,6 +347,7 @@
       unlocked: ["owl-01"],
       viewed: [],
       favorite: null,
+      background: null,
       updatedAt: Date.now(),
     };
   }
@@ -344,6 +365,7 @@
           ? raw.unlocked.filter((id) => PHOTOS.some((photo) => photo.id === id))
           : ["owl-01"],
         viewed: Array.isArray(raw.viewed) ? raw.viewed.filter((id) => PHOTOS.some((photo) => photo.id === id)) : [],
+        background: PHOTOS.some((photo) => photo.id === raw.background) ? raw.background : null,
       }),
     );
   }
@@ -368,12 +390,19 @@
     return new URL(`../Obrazki/${photo.file}`, scriptUrl).href;
   }
 
+  // Miniatura WebP (assets/gallery-thumbs/, szerokość 400 albo 800 px).
+  function thumbUrl(photo, width = 400) {
+    const name = `assets/gallery-thumbs/${photo.file.replace(/\.jpg$/, "")}-${width}.webp`;
+    if (!scriptUrl) return `../${name}`;
+    return new URL(`../${name}`, scriptUrl).href;
+  }
+
   function refreshUnlocks({ notify = false } = {}) {
     if (!loaded) return [];
     const academy = academySnapshot();
     const newlyUnlocked = [];
     for (const photo of PHOTOS) {
-      if (!state.unlocked.includes(photo.id) && photo.unlockedBy(academy)) {
+      if (!state.unlocked.includes(photo.id) && goalsMet(photo, academy)) {
         state.unlocked.push(photo.id);
         newlyUnlocked.push(photo);
       }
@@ -476,7 +505,7 @@
       }
       return `<article class="sowie-gallery-card" data-gallery-photo="${photo.id}">
         <button type="button" class="sowie-gallery-thumb" data-gallery-open="${photo.id}" aria-label="Otwórz fotografię: ${photo.title}">
-          <img src="${photoUrl(photo)}" alt="${photo.alt}" loading="lazy" width="400" height="300" />
+          <img src="${thumbUrl(photo, 400)}" srcset="${thumbUrl(photo, 400)} 400w, ${thumbUrl(photo, 600)} 600w" sizes="(max-width: 700px) 45vw, 220px" alt="${photo.alt}" loading="lazy" decoding="async" width="400" height="300" />
           <span>${favorite ? "⭐" : viewed ? "✓" : "NOWA"}</span>
         </button>
         <div><strong>${photo.title}</strong><p>Fot. ${photo.photographer}</p></div>
@@ -513,26 +542,46 @@
       : `<p>Zdobywaj poziomy i realizuj cele w pięciu grach, aby odkrywać kolejne fotografie. Nagrody pozostają odblokowane na stałe.</p><div class="sowie-gallery-grid">${galleryCards()}</div>`;
   }
 
+  // Oznacza zdjęcie jako obejrzane (po obejrzeniu wszystkich 30 — nagroda Akademii).
+  function markViewed(id) {
+    if (!loaded || !state.unlocked.includes(id) || state.viewed.includes(id)) return false;
+    state.viewed.push(id);
+    save();
+    if (state.viewed.length === PHOTOS.length) {
+      window.SowieAcademy?.award?.("gallery:complete", 100, 10, "Kompletna Galeria Sów");
+    }
+    return true;
+  }
+
   function openPhoto(id) {
     if (!state.unlocked.includes(id)) return;
     selectedId = id;
-    if (!state.viewed.includes(id)) {
-      state.viewed.push(id);
-      save();
-      if (state.viewed.length === PHOTOS.length) {
-        window.SowieAcademy?.award?.("gallery:complete", 100, 10, "Kompletna Galeria Sów");
-      }
-    }
+    markViewed(id);
     render();
     modal.querySelector("[data-gallery-back]")?.focus();
   }
 
-  function toggleFavorite(id) {
-    if (!state.unlocked.includes(id)) return;
+  // Ulubione zdjęcie (jedno) — ponowne wybranie zdejmuje wyróżnienie.
+  function setFavorite(id) {
+    if (!loaded || !state.unlocked.includes(id)) return false;
     state.favorite = state.favorite === id ? null : id;
     save();
+    return state.favorite === id;
+  }
+
+  // Tło menu głównego: odblokowane zdjęcie albo null (domyślne niebo).
+  function setBackground(id) {
+    if (!loaded || (id !== null && !state.unlocked.includes(id))) return false;
+    state.background = id;
+    save();
+    return true;
+  }
+
+  function toggleFavorite(id) {
+    if (!state.unlocked.includes(id)) return;
+    setFavorite(id);
     render();
-    modal.querySelector(`[data-gallery-favorite="${id}"]`)?.focus();
+    modal?.querySelector(`[data-gallery-favorite="${id}"]`)?.focus();
   }
 
   function open(trigger = document.activeElement) {
@@ -595,5 +644,12 @@
     close,
     refreshUnlocks,
     snapshot,
+    progressOf,
+    markViewed,
+    setFavorite,
+    setBackground,
+    photoUrl,
+    thumbUrl,
+    isLoaded: () => loaded,
   });
 })();

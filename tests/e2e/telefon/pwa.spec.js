@@ -5,10 +5,11 @@ const { test, expect, waitForCloud, watchErrors } = require("../fixtures");
 
 test.use({ serviceWorkers: "allow" });
 
-// Lista plików powłoki prosto z sw.js (ta sama, którą service worker zapisuje przy instalacji).
+// Lista plików powłoki i wersja pamięci prosto z sw.js (te same, których używa service worker).
+const SW_SOURCE = fs.readFileSync(path.join(__dirname, "../../../sw.js"), "utf8");
+const CACHE_VERSION = SW_SOURCE.match(/const VERSION = "([^"]+)"/)[1];
 function shellFiles() {
-  const source = fs.readFileSync(path.join(__dirname, "../../../sw.js"), "utf8");
-  const list = source.match(/const SHELL = \[([\s\S]*?)\];/)[1];
+  const list = SW_SOURCE.match(/const SHELL = \[([\s\S]*?)\];/)[1];
   return [...list.matchAll(/"([^"]+)"/g)].map((match) => match[1]);
 }
 
@@ -21,11 +22,14 @@ test("menu startuje bez zasięgu po pierwszej wizycie", async ({ page, context, 
   await expect.poll(() => page.evaluate(() => Boolean(navigator.serviceWorker.controller))).toBe(true);
 
   // Wszystkie pliki powłoki są w pamięci podręcznej bieżącej wersji.
-  const missing = await page.evaluate(async (files) => {
-    const cache = await caches.open("sowiegry-v1");
-    const results = await Promise.all(files.map(async (file) => ((await cache.match(file)) ? null : file)));
-    return results.filter(Boolean);
-  }, shellFiles());
+  const missing = await page.evaluate(
+    async ({ files, version }) => {
+      const cache = await caches.open(version);
+      const results = await Promise.all(files.map(async (file) => ((await cache.match(file)) ? null : file)));
+      return results.filter(Boolean);
+    },
+    { files: shellFiles(), version: CACHE_VERSION },
+  );
   expect(missing).toEqual([]);
 
   // Start bez sieci. Playwright w WebKit nie obsługuje przeładowania strony w trybie offline

@@ -33,7 +33,7 @@ test("menu oferuje osobną instrukcję każdej gry i Sowią Akademię", async ({
 
   await page.locator('[data-game-guide="runner"]').click();
   await expect(page.getByRole("dialog")).toContainText("Instrukcja — SowaRunner");
-  await expect(page.getByRole("dialog")).toContainText("Jak grać");
+  await expect(page.getByRole("dialog")).toContainText("Sterowanie");
   await page.keyboard.press("Escape");
   await expect(page.getByRole("dialog")).toBeHidden();
   expect(errors).toEqual([]);
