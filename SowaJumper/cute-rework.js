@@ -505,6 +505,8 @@
     getPaused: () => cute.paused,
     setPaused: (value) => { cute.paused = Boolean(value); },
     musicTheme: () => "jumper",
+    // Trwa wspinaczka (także bonus) — wspólne komunikaty pokazują wtedy 1 wiadomość u góry ekranu.
+    isPlaying: () => state.scene === "playing" || state.scene === "bonus",
   });
 
   resetCute();

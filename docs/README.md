@@ -27,6 +27,7 @@ Strona testowa `lab/` (adres strony + `/lab/`) służy do sprawdzania na telefon
 
 - **Postacie** (otwiera się od razu) — wszyscy bohaterowie nowych gier w ruchu: Sówka (stoi i mruga, biegnie, skacze, szybuje, jest oszołomiona, cieszy się), 9 dodatków z garderoby, 5 skaczących kózek, humbak z pluskiem, rodzina Pracu Pracu (dymek, telefon, telefon od Magdy, stos papierów, maile, tablica „Przyjmiesz zmianę?”, budzik), rodzina Amic (dystrybutor, cysterna, znak z cenami, wózek z kanistrami, barierka, kanister, sterowiec), liście monstery (zielony, złoty, tęczowy) i serduszka-życia. Przyciski u góry zakładają wybrany dodatek animowanym sowom. **Tu akceptujesz wygląd postaci przed budową nowego menu** — napisz, co zmienić (kolor, kształt, mina);
 - **Dźwięk** — pierwsze dotknięcie włącza dźwięk. Suwaki: głośność ogólna, muzyka i efekty (0–100, zapisują się w profilu i działają na każdym urządzeniu); wibracje (tylko Android); muzyka: „Motyw menu” i „Pieśń humbaka” (grają w kółko bez przerwy), „Ścisz muzykę (jak w bonusie)”, „Zatrzymaj muzykę”; przyciski wszystkich 27 efektów (skok, liść, trafienie przez Pracu i Amic, kózka, plusk humbaka, rekord, koniec gry „hu-hu”…) i „Seria liści (combo)” — każdy kolejny liść brzmi wyżej. Na iPhonie (iOS 17 i nowsze) dźwięk gry respektuje przełącznik wyciszenia i nie wyłącza muzyki z innych aplikacji;
+- **Interfejs** — wspólne elementy nowych gier na małej planszy z biegnącą sową: licznik punktów i liści, serduszka-życia, licznik power-upu, komunikaty (w trakcie gry zawsze jeden, u góry — nie zasłania sowy), menu pauzy (Wznów, Zacznij od nowa, Jak grać, Ustawienia z suwakami dźwięku, wibracjami i Trybem Przytulnym, Garderoba, Wyjdź do menu), odliczanie 3-2-1 po wznowieniu i ekran wyników („Nowy rekord!”, miejsce w top 10, zadania, „Jeszcze raz”). Przyciski pod planszą symulują grę: liście, kózka, trafienie, pięć komunikatów naraz, pauza, koniec gry, okno „Poznaj Sowi Świat”;
 - **Gesty** — stuknij, przytrzymaj, przesuń w cztery strony; różowe pasy przy krawędziach to „martwe strefy” (gest „cofnij” przeglądarki i pasek domowy iPhone’a nie uruchamiają gry);
 - **Informacje** — płynność (klatki na sekundę), rozmiar ekranu, bezpieczne obszary (wycięcie, Dynamic Island), tryb aplikacji, praca bez zasięgu, zapis w chmurze;
 - **Test pauzy i odliczania** — tak zachowa się gra po przejściu do innej aplikacji: pauza, „Graj dalej”, potem 3-2-1;
@@ -52,6 +53,10 @@ Gry zręcznościowe mają:
 - kosmetyki i misje,
 - pauzę i ustawienia dźwięku,
 - tryb diagnostyczny `?debug=1`.
+
+## Komunikaty w grach
+
+W SowaRunner, SowaJumper i Sowa3 komunikaty w trakcie gry pojawiają się pojedynczo, u góry ekranu (pod paskiem narzędzi), żeby nie zasłaniały sowy. W SowaRunner przyciski paska narzędzi i doku działają na telefonie po dotknięciu.
 
 ## Zapis postępu w chmurze
 

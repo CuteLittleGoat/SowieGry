@@ -103,3 +103,15 @@ Strona ładuje `../shared/records.js` po `../shared/owl-gallery.js` (i po `../sh
 ## PWA (etap E2a)
 
 `index.html` ma w `<head>` po `theme-color`: `<link rel="manifest" href="../manifest.webmanifest">`, `<link rel="icon" href="../assets/icons/icon.svg" type="image/svg+xml">`, `<link rel="apple-touch-icon" href="../assets/icons/apple-touch-icon.png">`, `<meta name="mobile-web-app-capable" content="yes">`, `<meta name="apple-mobile-web-app-capable" content="yes">`, `<meta name="apple-mobile-web-app-title" content="SowieGry">`, a po `../shared/password-gate.js` skrypt `../shared/pwa.js` (rejestracja service workera `sw.js`). Gra trafia do pamięci podręcznej przy pierwszym otwarciu i potem uruchamia się także bez zasięgu. Opis: `docs/Documentation.md`, rozdział „PWA”.
+
+## Komunikaty w trakcie gry (etap E2d)
+
+- Adapter gry w `SowaRunner/cute-rework.js` (`SowieCore.registerGame`) ma dodatkowe pole `isPlaying: () => mode === SCREEN.RUN || mode === SCREEN.WHALE` (bieg i bonus humbaka).
+- `SowieCore.isPlaying()` zwraca `true`, gdy trwa rozgrywka i gra nie jest wstrzymana; `registerGame` dodaje klasę `sowie-arcade` do `<html>`.
+- `shared/notification-manager.js` pokazuje wtedy **najwyżej 1 komunikat naraz**, u góry ekranu pod paskiem narzędzi (`top: max(112px, safe-area + 104px)` na telefonie w pionie, w poziomie w rzędzie paska narzędzi), węższy (`min(64vw, 300px)`) i mniejszy (13 px). Pozostałe czekają w kolejce. Dzięki temu komunikaty nie zasłaniają sowy przy dolnej krawędzi (zgłoszenie właściciela). Poza rozgrywką (tytuł, pauza, koniec gry) widać do 2 komunikatów.
+- Test: `tests/e2e/telefon/komunikaty.spec.js`.
+
+## Dotyk przycisków na telefonie (etap E2d)
+
+`sketch.js`: funkcja `onCanvas(event)` (`true`, gdy zdarzenie nie ma celu albo celem jest `<canvas>`). `mousePressed(event)` i `touchStarted(event)` na początku zwracają `true` dla dotknięć poza planszą. Wcześniej p5 blokował domyślną akcję każdego dotknięcia (funkcje zwracały `false`), więc na telefonie przyciski paska narzędzi (⏸ 🎀 ⭐ ⚙) i doku (❓ 🎓 🖼️ 🏆 ✨) nie reagowały, a zamiast tego sowa skakała. Dotknięcie planszy działa jak dotąd (skok / start biegu / wybór poziomu).
+

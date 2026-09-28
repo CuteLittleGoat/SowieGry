@@ -87,3 +87,10 @@ Przycisk **🏆** w prawym górnym rogu otwiera okno **Rekordy**: najlepszy wyni
 ## Gra jako aplikacja na telefonie
 
 SowieGry można dodać do ekranu głównego (Android: menu ⋮ → „Zainstaluj aplikację”; iPhone: „Udostępnij” → „Do ekranu początkowego”). Gra otwierana wcześniej uruchomi się wtedy także bez zasięgu.
+
+## Komunikaty w trakcie gry
+
+W trakcie biegu i bonusu humbaka komunikaty („O włos!”, nagrody, ostrzeżenia) pojawiają się **pojedynczo, u góry ekranu** — nie zasłaniają sowy. Kolejne czekają, aż poprzedni zniknie. Na ekranie tytułowym i w pauzie mogą być widoczne dwa naraz.
+
+Na telefonie przyciski paska narzędzi (pauza, garderoba, misje, ustawienia) i doku (instrukcja, Akademia, galeria, rekordy, rozszerzenia) reagują na dotknięcie — nie wywołują już skoku sowy.
+

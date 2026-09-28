@@ -6,6 +6,8 @@
   if (!core) return;
 
   const MAX_VISIBLE = 2;
+  // W trakcie biegu / wspinaczki najwyżej 1 komunikat naraz (Analiza 2, rozdz. 4.3).
+  const MAX_VISIBLE_PLAYING = 1;
   const MAX_QUEUE = 5;
   const MERGE_WINDOW_MS = 1800;
   const visible = [];
@@ -42,6 +44,26 @@
         box-shadow: 0 9px 22px rgba(43,39,51,.18), inset 0 0 0 2px rgba(255,214,90,.55);
       }
       .sowie-notification-stack .sowie-toast.is-leaving { opacity: 0; transform: translateY(8px) scale(.96); }
+      /* Gry zręcznościowe: komunikaty u góry, pod paskiem narzędzi, węższe — sowa i tor przy dolnej krawędzi zostają odsłonięte. */
+      .sowie-arcade .sowie-toast-stack.sowie-notification-stack {
+        top: max(126px, calc(env(safe-area-inset-top) + 116px));
+        bottom: auto;
+        width: min(64vw, 300px);
+        justify-content: flex-start;
+      }
+      .sowie-arcade .sowie-notification-stack .sowie-toast {
+        min-height: 0;
+        padding: 6px 10px;
+        font-size: 13px;
+        background: rgba(255,255,255,.9);
+      }
+      @media (max-width: 520px) {
+        .sowie-arcade .sowie-toast-stack.sowie-notification-stack { top: max(112px, calc(env(safe-area-inset-top) + 104px)); }
+      }
+      /* Telefon poziomo (niski ekran): komunikat w rzędzie paska narzędzi, obok niego — wyżej nad sową. */
+      @media (max-height: 500px) and (min-width: 600px) {
+        .sowie-arcade .sowie-toast-stack.sowie-notification-stack { top: max(72px, calc(env(safe-area-inset-top) + 62px)); width: min(40vw, 300px); }
+      }
       .sowie-toast-title,.sowie-toast-detail,.sowie-toast-reward { display:block; }
       .sowie-toast-title { font-weight: 900; text-transform: uppercase; letter-spacing: .02em; }
       .sowie-toast-reward { margin-top: 3px; font-size: 13px; }
@@ -129,6 +151,10 @@
     }, item.duration);
   }
 
+  function maxVisible() {
+    return core.isPlaying?.() ? MAX_VISIBLE_PLAYING : MAX_VISIBLE;
+  }
+
   function updateStyles() {
     visible.forEach((item, index) => item.node?.classList.toggle("is-older", index < visible.length - 1));
   }
@@ -157,7 +183,7 @@
     item.node?.remove();
     item.node = null;
     updateStyles();
-    while (visible.length < MAX_VISIBLE && queue.length) show(queue.shift());
+    while (visible.length < maxVisible() && queue.length) show(queue.shift());
   }
 
   function receive(input, options = {}) {
@@ -177,7 +203,9 @@
       }
       return;
     }
-    if (visible.length < MAX_VISIBLE) show(item);
+    // Gdy zaczyna się bieg, starsze komunikaty ustępują miejsca (zostaje najwyżej 1).
+    while (visible.length > maxVisible()) remove(visible[0]);
+    if (visible.length < maxVisible()) show(item);
     else {
       if (item.important) queue.unshift(item);
       else queue.push(item);

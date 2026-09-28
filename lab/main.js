@@ -3,6 +3,7 @@ import { bindInput, createLoop, createShell, createView, DEFAULTS, measureSafeAr
 import { COSMETIC_SPRITES } from "../shared/world/owl.js";
 import { createCharactersPanel } from "./characters.js";
 import { createSoundPanel } from "./sound.js";
+import { createInterfaceDemo } from "./interface.js";
 
 const lab = document.querySelector("[data-lab]");
 const stage = document.querySelector("[data-stage]");
@@ -138,17 +139,40 @@ function refreshCharacters() {
     });
 }
 
+let interfaceDemo = null;
+
 const loop = createLoop({
   update: (dt) => {
     flash = Math.max(0, flash - dt * 2);
     if (activeTab === "postacie") characters.update(dt);
+    else if (activeTab === "interfejs") interfaceDemo?.update(dt);
   },
   render: () => {
     if (activeTab === "gesty") drawStage();
     else if (activeTab === "postacie") characters.render();
+    else if (activeTab === "interfejs") interfaceDemo?.render();
   },
 });
 const shell = createShell({ stage: lab, loop });
+
+// Dział „Dźwięk” (manifest dźwięków wczytywany w tle).
+const soundReady = createSoundPanel({ root: document.querySelector('[data-panel="dzwiek"]') }).catch((error) => {
+  document.querySelector("[data-audio-status]").textContent = "Nie udało się przygotować dźwięku.";
+  console.error(error);
+  return null;
+});
+
+// Dział „Interfejs”: HUD, komunikaty, pauza, wyniki (tworzony przy pierwszym otwarciu).
+function openInterface() {
+  interfaceDemo ||= createInterfaceDemo({
+    root: document.querySelector('[data-panel="interfejs"]'),
+    loop,
+    atlas: characters.atlas,
+    soundReady,
+  });
+  characters.atlas.ensure(64 * Math.min(2, window.devicePixelRatio || 1));
+  interfaceDemo.setActive(true);
+}
 
 // Działy (?dzial=gesty otwiera od razu wybrany dział).
 const tabs = [...document.querySelectorAll("[data-tab]")];
@@ -156,10 +180,12 @@ function showTab(name) {
   activeTab = tabs.some((tab) => tab.dataset.tab === name) ? name : "postacie";
   for (const tab of tabs) tab.setAttribute("aria-pressed", String(tab.dataset.tab === activeTab));
   for (const panel of document.querySelectorAll("[data-panel]")) panel.hidden = panel.dataset.panel !== activeTab;
-  // Auto-pauza działa w dziale gestów (jak w trakcie gry).
+  // Auto-pauza działa w dziale gestów i w biegu działu „Interfejs” (jak w trakcie gry).
   shell.setActive(activeTab === "gesty");
   view.resize();
   if (activeTab === "postacie") refreshCharacters();
+  if (activeTab === "interfejs") openInterface();
+  else interfaceDemo?.setActive(false);
 }
 for (const tab of tabs) tab.addEventListener("click", () => showTab(tab.dataset.tab));
 
@@ -207,6 +233,7 @@ shell.onChange(() => {
 
 window.addEventListener("resize", () => {
   view.resize();
+  if (activeTab === "interfejs") interfaceDemo?.resize();
   if (activeTab === "postacie") refreshCharacters();
 });
 view.resize();
@@ -214,12 +241,13 @@ showTab(new URLSearchParams(location.search).get("dzial") || "postacie");
 refreshInfo();
 loop.start();
 
-// Dział „Dźwięk” (manifest dźwięków wczytywany w tle).
-const soundReady = createSoundPanel({ root: document.querySelector('[data-panel="dzwiek"]') }).catch((error) => {
-  document.querySelector("[data-audio-status]").textContent = "Nie udało się przygotować dźwięku.";
-  console.error(error);
-  return null;
-});
-
 // Dostęp dla testów e2e.
-window.SowieLab = Object.freeze({ loop, shell, view, characters, atlas: characters.atlas, soundReady });
+window.SowieLab = Object.freeze({
+  loop,
+  shell,
+  view,
+  characters,
+  atlas: characters.atlas,
+  soundReady,
+  interface: () => interfaceDemo,
+});

@@ -256,9 +256,16 @@
 
   function registerGame(adapter) {
     gameAdapter = adapter || null;
+    // Gra zręcznościowa: komunikaty w trakcie gry idą na górę ekranu (nie zasłaniają sowy).
+    document.documentElement.classList.toggle("sowie-arcade", Boolean(gameAdapter?.isPlaying));
     ensureUi();
     if (profile().settings.music) startMusic(adapter?.musicTheme?.() || "default");
     platform.emit("game:registered", { adapter: gameAdapter });
+  }
+
+  // Czy trwa rozgrywka (bieg, wspinaczka) i nie ma pauzy — dla komunikatów (max 1 naraz w trakcie gry).
+  function isPlaying() {
+    return Boolean(gameAdapter?.isPlaying?.() && !gameAdapter.getPaused?.());
   }
 
   function togglePause() {
@@ -550,6 +557,7 @@
     settings,
     selectedCosmetic,
     registerGame,
+    isPlaying,
     progressMission,
     recordStat,
     unlockCosmetic,

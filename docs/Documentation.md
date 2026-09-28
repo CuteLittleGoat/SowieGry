@@ -40,6 +40,8 @@ shared/
   pwa.js                  (rejestracja service workera)
   engine/                 (Sowi Silnik — moduły ES: pętla, widok, kamera, gesty, sceny, powłoka telefonu, atlas grafik…)
   world/                  (Sowi Świat — tokeny kolorów, czcionka, Sówka, katalog grafik postaci)
+  ui/                     (wspólny interfejs gier: HUD, komunikaty, okna, menu pauzy, ekran wyników, ui.css)
+  meta/                   (SowieProgress — zdarzenia i most do Akademii; guides-data.js — instrukcje)
 lab/                      (Sowie Laboratorium — strona testowa silnika na telefonie: postacie, gesty, informacje)
 assets/icons/             (ikona aplikacji SVG i PNG)
 assets/svg/               (źródła SVG postaci: sowa/, garderoba/, kozki/, humbak/, pracu/, amic/, liscie/, interfejs/)
@@ -122,10 +124,15 @@ Wymaga `SowiePlatform` i `SowieCloud`. **Profil jest w `SowieCloud`** — moduł
 - `recordStat(key, value, mode)` — tylko klucze z `DEFAULT_STATS`: `"add"` → `SowieCloud.increment("stats.<klucz>", n)` (sumuje się z wielu urządzeń), `"max"` → zapis tylko przy poprawie; inne klucze (np. dawne `runnerDistance`) są pomijane;
 - dźwięk: `play(name)` (piski oscylatora, odstęp min. 90 ms na dźwięk), `startMusic(theme)` / `stopMusic()` (8 nut co 430 ms), `tone(...)`;
 - `toast`, `maybeQuip` (co najmniej 6,5 s odstępu), `setDebugData` (`?debug=1`), `drawCanvasCosmetic(context, x, y, scale, rotation, key)`;
-- `registerGame(adapter)` — adapter pauzy i motyw muzyczny gry; pasek narzędzi ⏸ 🎀 ⭐ ⚙ (`aria-label`: „Pauza”, „Garderoba”, „Misje”, „Ustawienia”);
+- `registerGame(adapter)` — adapter pauzy (`getPaused`, `setPaused`), motyw muzyczny (`musicTheme`) i od E2d opcjonalnie `isPlaying()` (trwa rozgrywka); gdy adapter ma `isPlaying`, na `<html>` pojawia się klasa `sowie-arcade` (gry zręcznościowe); pasek narzędzi ⏸ 🎀 ⭐ ⚙ (`aria-label`: „Pauza”, „Garderoba”, „Misje”, „Ustawienia”);
+- `isPlaying()` (E2d) — `adapter.isPlaying() && !adapter.getPaused()`; używa go menedżer komunikatów;
 - `openModal(tab)`, `closeModal()` — modal z pułapką fokusu, Escape, `inert` na tle;
 - okno **Ustawienia**: przełączniki Muzyka / Efekty dźwiękowe / Komentarze sowy / Ograniczone efekty (`updateProfile`, zapis po 1 s), sekcja „Zapis postępu: <stan>” (`[data-cloud-status]`, aktualizowana przez `SowieCloud.onStatus`; etykiety: czeka na hasło, łączenie…, zapisano w chmurze ☁️, tryb offline — postęp nie jest zapisywany, zapisywanie…, błąd zapisu — spróbujemy ponownie; w trybie `?cloud=memory` — „tryb testowy (pamięć)”) i przycisk **„Wyloguj to urządzenie”** (`SowieCloud.lock()`). Eksport i import zapisu zostały usunięte;
 - po `SowieCloud.ready` i przy ponownym wczytaniu profilu: klasa `sowie-reduced-effects`, zdarzenie `profile:changed`, start/stop muzyki zgodnie z ustawieniem. Zapis przy zejściu do tła wykonuje `SowieCloud` (`visibilitychange → flush`).
+
+### `shared/notification-manager.js` — `window.SowieNotifications`
+
+Przejmuje `SowieCore.toast`: łączy powtórzenia w ciągu 1,8 s („×2 — łącznie +75”), kolejka max 5 (ważne — misje — na początku). Poza rozgrywką widać do **2** komunikatów przy dolnej krawędzi (`bottom: max(8vh, safe-area + 14px)`, szerokość `min(82vw, 360px)`). **Od E2d w trakcie gry (`SowieCore.isPlaying()`) widać najwyżej 1 komunikat**, a nadmiar czeka w kolejce (starsze ustępują przy nowym komunikacie). W grach zręcznościowych (klasa `sowie-arcade`) stos jest **u góry**, pod paskiem narzędzi — `top: max(126px, safe-area + 116px)` (≤ 520 px szerokości: `max(112px, safe-area + 104px)`, telefon poziomo — `max-height: 500px` i szerokość ≥ 600 px: `max(72px, safe-area + 62px)`, w rzędzie paska narzędzi), szerokość `min(64vw, 300px)` (w poziomie `min(40vw, 300px)`), mniejszy komunikat (13 px, margines 6 × 10 px) — sowa i tor przy dolnej krawędzi zostają odsłonięte (zgłoszenie właściciela: komunikaty zasłaniały sowę). `getState()` → `{ visible, queued }`.
 
 ### `shared/sowie-academy.js` — `window.SowieAcademy`
 
@@ -364,6 +371,69 @@ Pliki (wszystkie w repozytorium; opis wyglądu):
   - `lisc-zielony`, `lisc-zloty`, `lisc-teczowy` (0,6), `zycie`, `zycie-puste` (0,6);
 - `GOAT_KINDS` (etykieta, kolor chustki, efekt), `PRACU_VARIANTS`, `AMIC_VARIANTS`, `LEAF_KINDS` (`zielony` 10 pkt / 1 liść, `zloty` 50 / 5, `teczowy` 100 / 1 + gorączka).
 
+## Wspólny interfejs gier (`shared/ui/`) — etap E2d
+
+Moduły ES (`shared/ui/package.json` z `"type": "module"`, `index.js` eksportuje wszystko) i style `shared/ui/ui.css` (wymaga `shared/world/tokens.css` i `shared/engine/shell.css`). Wszystkie elementy liczą rozmiar z `box-sizing: border-box`, czcionka Fredoka, cele dotyku ≥ 48 px, fokus `outline: 3px solid var(--niebieski)`; animacje wyłączane przy `prefers-reduced-motion` i klasie `sowie-reduced-effects`.
+
+### `icons.js`
+
+`ICONS` — ikony SVG 24 × 24 w kolorze tekstu (`currentColor`, kontur 2,4, zaokrąglone): `pause`, `play`, `restart`, `help`, `settings`, `wardrobe` (kokardka), `home`, `close`, `back`, `star`. Bez emoji (wyglądają różnie na każdym telefonie).
+
+### `hud.js` — HUD
+
+`createHud({ root, onPause, maxLives = 3 })` → `.sowie-hud` (absolutnie u góry planszy, siatka 3 kolumn, margines = bezpieczne obszary, `pointer-events: none` poza przyciskiem):
+
+- lewy róg: przycisk pauzy 48 × 48 (`aria-label="Pauza"`, białe koło 85%, cień);
+- środek: wynik `[data-hud-score]` (30 px, biały z konturem 5 px `--kontur` — `-webkit-text-stroke` + `paint-order`, cyfry o stałej szerokości, format `pl-PL`) i liście `[data-hud-leaves]` (ikona zielonego liścia 22 px + liczba w białej „pigułce”);
+- prawy róg: życia `[data-hud-lives]` (serduszka-doniczki 28 px: pełne / puste, `aria-label="Życia: X z Y"`, utracone życie drga) i liczniki power-upów `.sowie-hud-powerup` (ramka w kolorze kózki `POWERUP_STYLE`: Sprężynka — złoty, Tarcza — niebieski, Magnes — fiolet, Turbo — pomarańcz, „×2” — monstera; pasek pozostałego czasu `scaleX`, miganie w ostatnich 2 s, `aria-label="Tarcza: 5 s"`);
+- API: `setScore(n, { animate })` (podskok `.is-bump` przy wzroście), `setLeaves(n)`, `setLives(obecne, max)`, `setPowerups([{ kind, remaining, total }])` (węzły używane ponownie, np. 10 razy na sekundę), `show()`, `hide()`, `state()`, `destroy()`; `formatNumber(n)`.
+
+### `toasts.js` — komunikaty
+
+`createToasts({ root, isInGame, maxInGame = 1, maxOutside = 3, maxQueue = 3, duration = 2200, mergeMs = 1800 })` → kontener `.sowie-toasts` (`role="status"`, `aria-live="polite"`):
+
+- **w trakcie gry (`isInGame()`) najwyżej 1 komunikat**, u góry planszy pod HUD (`top: safe-area + 84px`, szerokość `min(72vw, 300px)`); poza grą do 3 przy dolnej krawędzi;
+- `show(tekst, { kind: "info" | "success" | "warn" | "reward", duration, key, priority })` — ten sam `key` w ciągu 1,8 s zwiększa licznik („×2”) i przedłuża czas; nadmiar trafia do kolejki (max 3, sortowanie po priorytecie, najstarsze pierwsze);
+- `defer(tekst)` / `takeDeferred()` — komunikaty odłożone do ekranu wyników (np. postęp zadań w trakcie biegu); `refresh()` (po zmianie stanu gry — przy wejściu do gry nadmiar znika), `clear()`, `state()` → `{ visible, queued, inGame }`, `destroy()`;
+- wygląd: biała „pigułka” 16 px Fredoka 700, zaokrąglenie 16 px, ramka wewnętrzna 2 px: sukces — monstera, ostrzeżenie — `--pracu`, nagroda — złota na tle `--niebo-dol`; wejście 180 ms, wyjście 200 ms.
+
+### `modal.js` — okna
+
+`openModal({ title, content (Node albo tekst), actions: [{ label, primary, onClick(close) }], onClose, root = document.body, className })` → `{ element, body, close }`: tło `.sowie-ui-backdrop` (fixed, `rgba(59,47,74,.45)`, z-index 9000), arkusz `.sowie-ui-sheet` wysuwany od dołu (zaokrąglenie 24 px u góry, max. 88 dvh, przewijana treść, przyciski akcji na dole z marginesem na pasek domowy; na ekranach ≥ 700 px — okno na środku), `role="dialog"`, `aria-modal`, tytuł w `aria-labelledby`, przycisk zamknięcia 48 px; fokus na przycisku głównym (albo „Zamknij”), pułapka Tab, Escape i dotknięcie tła zamykają, po zamknięciu fokus wraca; dotknięcia nie trafiają do planszy (`pointerdown` → `stopPropagation`). `focusableIn(element)`.
+
+### `guide-view.js` — karty instrukcji
+
+`renderGuide(przewodnik, { atlas, sprites })` → opis + karty przewijane w bok (`scroll-snap`, szerokość `min(78%, 300px)`): obrazek postaci (z atlasu, gdy gra go ma — płótno 96 px w DPR; bez atlasu tylko grafiki z jednego pliku SVG jako `<img>`), tytuł, tekst, nazwa gestu (np. „Stuknij”), wskazówka i numer „1 / 7”.
+
+### `pause-menu.js` — menu pauzy
+
+`createPauseMenu({ root, shell, gameId, audio (obiekt albo funkcja), atlas, sprites, cloud = SowieCloud, platform = SowiePlatform, onResume, onRestart, onExit = → "../" })`:
+
+- nakładka `.sowie-pause-overlay.sowie-ui-pause` (`role="dialog"`, `aria-label="Pauza"`, karta przy dolnej krawędzi — zasięg kciuka) z tytułem „Pauza”, powodem (tło: „Witaj z powrotem 🦉”, fokus: „Gra czeka na Ciebie”, obrót: „Ekran się obrócił”, gracz: „Odpocznij chwilę”) i przyciskami: **Wznów** (główny, 60 px, ikona ▶), siatka 2 × 2: **Zacznij od nowa**, **Jak grać**, **Ustawienia**, **Garderoba**, oraz **Wyjdź do menu**;
+- **Ustawienia**: suwaki Głośność ogólna / Muzyka / Efekty dźwiękowe (silnik audio + `settings.volumeMaster/Music/Sfx`), przełączniki (przyciski `aria-pressed` z „suwakiem” 48 × 28 px): „Efekty (wstrząsy, cząsteczki)” (`settings.reducedEffects` odwrotnie + klasa `sowie-reduced-effects`), „Wibracje” (`settings.vibration`), „Tryb Przytulny (wolniej, bez końca gry)” (`settings.cozy` — gry E4+ czytają to ustawienie); „Gotowe” / strzałka wraca do menu; zapis w profilu po 1 s;
+- **Garderoba**: przyciski dodatków z `SowiePlatform.COSMETICS` (zablokowane wyszarzone z dopiskiem „· zablokowane”), wybór zapisuje `profil.cosmetics.selected`;
+- **Jak grać**: okno z kartami `guideFor(gameId)` (albo „Poznaj Sowi Świat”);
+- z powłoką (`createShell({ overlay: false })`): auto-pauza (`paused`) otwiera menu z powodem, „Wznów” uruchamia `shell.resume()`, a w stanie `countdown` menu pokazuje cyfry `.sowie-countdown` na środku; `running` zamyka i woła `onResume`; bez powłoki „Wznów” zamyka menu i woła `onResume`;
+- Escape: z podwidoku wraca do menu, w menu wznawia; API: `open(powód)`, `countdown(n)`, `close()`, `resume()`, `isOpen()`, `view()` (`menu` / `settings` / `wardrobe` / `countdown` / `null`), `destroy()`.
+
+### `results.js` — ekran wyników
+
+`createResults({ root, onAgain, onMenu = → "../" })` → `show({ title = "Koniec gry!", score, best, isRecord, leaves, rank, tasks: [{ label, progress, target, done, newlyDone }], photo: { title, src }, extra: [{ label, value }], messages: [{ text }] })`: karta przy dolnej krawędzi (`role="dialog"`, tytuł w `aria-labelledby`): odznaka „Nowy rekord!” (złota, animacja 0,9 s: obrót i powiększenie) albo „Rekord: N”, wynik 54 px (liczenie w górę 0,8 s, `ease-out`; bez animacji przy ograniczeniu ruchu), kafelki: liście (ikona), „Twoje top 10 — N. miejsce”, dodatkowe; lista „Zadania” z paskami postępu (ukończone — „Gotowe!”, nowo ukończone — złota ramka), odłożone komunikaty, nowe zdjęcie Galerii; przyciski **„Jeszcze raz”** (główny, 60 px) i „Menu”; `hide()`, `isOpen()`, `destroy()`.
+
+## SowieProgress i instrukcje (`shared/meta/`) — etap E2d
+
+### `progress.js` — `window.SowieProgress`
+
+- `EVENTS`: `run:started`, `run:ended`, `leaf:collected` (`kind`: zielony / zloty / teczowy, `count`, `points`), `goat:caught` (`kind`), `hit` (`by`: pracu / amic), `near-miss`, `combo` (`value`), `fever:start`, `whale:bonus`, `idle:progress`, `game:visit`, `award` (`id`, `xp`, `feathers`, `label`);
+- `bridgeCalls(typ, szczegóły)` — **most do obecnej Sowiej Akademii** (okres przejściowy E4–E8, Analiza 3): koniec biegu → `runnerScore`/`runnerDistance`/`runnerLeafChain`, `jumperScore`/`jumperHeight`/`jumperStreak`, `sowa3Score`/`sowa3Combo`/`sowa3Finishes` (+1 przy `finished`); postęp idle → `ogrodyLeaves`/`Clicks`/`Buys`/`Watering`/`Prestiges`/`Plants`, `szklarniaRooms`/`Plants`/`Goats`/`Hybrids` (tryby `max` / `set` / `add` jak w `gameplay-expansion.js`); wizyta → `<gra>Visits` +1; brak wartości albo nieznana gra → brak wywołań. Misje dnia i tygodnia oraz odblokowywanie zdjęć Galerii (wymagania oparte na metrykach Akademii) działają więc tak samo dla starych i nowych gier;
+- `taskProgress(migawka Akademii)` → `[{ id, label, progress, target, done }]` — misje dnia (`max`: metryka dnia, `delta`: metryka − `baseline`, obcięte do celu) i misja tygodnia („Zagraj w 3 różne gry w tym tygodniu”);
+- `createProgress({ getAcademy = () => window.SowieAcademy, now })` → `emit(typ, szczegóły)` (nieznany typ → błąd; bez `gameId` bierze grę bieżącego biegu; liczniki biegu; most; `award` → `SowieAcademy.award`), `on(typ | "*", słuchacz)` → odłączenie, `beginRun(gra, { difficulty, daily })` (liczniki od zera, migawka zadań „przed”), `endRun(wynik)` → podsumowanie `{ gameId, difficulty, daily, startedAt, leaves: { zielony, zloty, teczowy, total }, leafPoints, goats, hits, nearMisses, fevers, whales, bestCombo, …wynik, durationMs, tasks: [{ …, advanced, newlyDone }] }` (bez `beginRun` → błąd), `current()`, `tasks()`;
+- `progress` — wspólna instancja strony, także `window.SowieProgress`.
+
+### `guides-data.js` — instrukcje
+
+Struktura przewodnika `{ id, title, summary, cards: [{ id, title, text, sprite?, gesture?, tip? }] }`; `GESTURES` (tap „Stuknij”, hold „Przytrzymaj”, swipe-up/down/left/right „Przesuń w …”, drag „Przeciągnij”); `GUIDES.swiat` — „Poznaj Sowi Świat” (7 kart: Sówka, Liście monstery, Pracu Pracu, Amic, Skaczące kózki, Humbak, Serduszka-doniczki); `validateGuide(przewodnik, { sprites })` → lista błędów (brak pól, puste karty, powtórzone id, nieznany gest, brak grafiki w katalogu); `guideFor(id)`. Treść obecnych gier przeniesie tu etap E3 (z `shared/game-guides.js`).
+
 ## Dźwięki (`assets/audio/`, `scripts/make-audio.mjs`) — etap E2c
 
 Wszystkie dźwięki są syntezowane kodem (własna twórczość, CC0 — `assets/audio/LICENSES.md`); `node scripts/make-audio.mjs` (ok. 35 s) generuje pliki i manifest, wynik jest powtarzalny (generator losowy `mulberry32` z ziarnem zależnym od nazwy). Zależność deweloperska `@breezystack/lamejs` **1.2.7** (czysty JavaScript, LGPL-3.0) koduje MP3; nie trafia na stronę.
@@ -392,7 +462,7 @@ Wszystkie dźwięki są syntezowane kodem (własna twórczość, CC0 — `assets
 
 Strona testowa do sprawdzania Sowiego Silnika na prawdziwym telefonie (Analiza 3, E2). `lab/index.html` (`html.sowie-shell`, `viewport-fit=cover`, te same skrypty startowe co gry — hasło obowiązuje; style `cute-ui.css`, `shared/world/tokens.css`, `engine/shell.css`, `lab.css`), `lab/main.js` i `lab/characters.js` (moduły ES; `lab/package.json` z `"type": "module"`). Nie jest w rejestrze gier.
 
-- nagłówek: „← Menu”, „Sowie Laboratorium”, licznik kl./s; przyciski działów **Postacie · Dźwięk · Gesty · Informacje** (`aria-pressed`, min. 48 px); domyślnie otwiera się „Postacie”, a `?dzial=dzwiek` / `?dzial=gesty` / `?dzial=info` otwiera od razu inny dział; jedna pętla silnika aktualizuje i rysuje tylko widoczny dział;
+- nagłówek: „← Menu”, „Sowie Laboratorium”, licznik kl./s; przyciski działów **Postacie · Dźwięk · Interfejs · Gesty · Informacje** (`aria-pressed`, min. 48 px; pasek przewijany w bok); domyślnie otwiera się „Postacie”, a `?dzial=dzwiek` / `?dzial=interfejs` / `?dzial=gesty` / `?dzial=info` otwiera od razu inny dział; jedna pętla silnika aktualizuje i rysuje tylko widoczny dział;
 - **Postacie** (punkt kontrolny właściciela przed E3, `lab/characters.js`): status atlasu („Rysuję postacie…” → „Atlas gotowy: N grafik w X ms. Postacie ruszają się same.”), przyciski garderoby (9 pozycji z `SowiePlatform.COSMETICS`, `aria-pressed`, min. 44 px) zmieniające dodatek na animowanych sowach, a pod nimi siedem działów, każdy z nagłówkiem (Fredoka 700, 18 px) i własnym płótnem (`role="img"`, opis z nazwami postaci):
   - „Sówka — animacje”: stoi i mruga, bieg, skok (łuk 0,55 j. co 1,3 s, rozciągnięcie i spłaszczenie przy lądowaniu, malejący cień), szybowanie (0,35 j. nad ziemią), oszołomienie, radość;
   - „Garderoba (9 pozycji)”: stojąca, mrugająca sowa w każdym dodatku;
@@ -403,9 +473,10 @@ Strona testowa do sprawdzania Sowiego Silnika na prawdziwym telefonie (Analiza 3
   - „Liście monstery i życia”: liście obracają się (`scaleX = cos`), serduszko pełne i puste;
   - układ „jak tekst”: komórki `szerokość × wysokość` jednostek świata × 64 px CSS + 18 px na podpis (Fredoka 500, 13 px), odstęp 8 px, zawijanie do szerokości działu; tło komórki `rgba(255,255,255,0.55)` z zaokrągleniem 14 px; płótna w rozdzielczości DPR (max 2), atlas budowany dla `64 × DPR` px na jednostkę (`atlas.ensure` przy zmianie rozmiaru); rysowane są tylko działy widoczne na ekranie (`IntersectionObserver`);
 - **Dźwięk** (`lab/sound.js`, `createSoundPanel({ root })`): manifest `assets/audio/audio.json` wczytywany przy starcie strony, `createAudio` + `bindUnlock(window)` + `connectAudioSettings`; status (`[data-audio-status]`): „Dotknij dowolnego przycisku…”, potem „Dźwięk: działa · efekty wczytane: N/27 · muzyka: … · sesja: ambient” (stany kontekstu: działa, wstrzymany, zamknięty, czeka na dotknięcie); trzy suwaki `input[type=range]` 0–100 (Głośność ogólna, Muzyka, Efekty; `accent-color` monstery, pole min. 44 px, wartość obok) — zmiana od razu w silniku i w profilu (`volumeMaster` / `volumeMusic` / `volumeSfx`, przesunięcie suwaka muzyki/efektów ustawia też `music`/`sfx: true`); „Wibracje (Android)” (`settings.vibration`, nieaktywny bez `navigator.vibrate`); **Muzyka**: „Motyw menu”, „Pieśń humbaka” (`aria-pressed` = gra), „Ścisz muzykę (jak w bonusie)” (przełącznik `duck(0.3)`), „Zatrzymaj muzykę”; **Efekty**: przycisk na każdy efekt z podpisem z manifestu (szybowanie włącza/wyłącza pętlę; trafienia wibrują `[40, 30, 40]`) i „Seria liści (combo)” — 8 liści co 110 ms, każdy o pół tonu wyżej; siatka przycisków `repeat(auto-fill, minmax(140px, 1fr))`, min. 48 px;
+- **Interfejs** (`lab/interface.js`, `createInterfaceDemo({ root, loop, atlas, soundReady })`, tworzony przy pierwszym otwarciu): plansza `[data-ui-stage]` (wysokość `min(58dvh, 520px)`, min. 300 px) z niebem, trawą przesuwaną w rytm biegu i biegnącą Sówką (atlas z działu Postacie, 64 px na jednostkę) oraz prawdziwe moduły `shared/ui/` — HUD, komunikaty, menu pauzy (z drugą powłoką `createShell({ overlay: false })`, aktywną tylko w trakcie biegu tego działu), ekran wyników — i `SowieProgress` (gra `laboratorium`, bez Akademii, więc Laboratorium nie zmienia prawdziwych misji). Przyciski: „Liść +10”, „Złoty liść +50” (komunikat nagrody + odłożony postęp zadania), „Kózka: Tarcza” (licznik power-upu 10 s; tarcza chroni przed jednym trafieniem), „Trafienie (Pracu)” (−1 życie, oszołomienie, dźwięk i wibracja; przy 0 — koniec gry), „5 komunikatów naraz” (w grze widać 1, reszta w kolejce), „Menu pauzy”, „Koniec gry” (ekran wyników: rekord w pamięci strony, top 10, przykładowe zadania „Zbierz 20 liści w jednym biegu” i „Złap 2 złote liście”, kózki), „Okno: Poznaj Sowi Świat”; „Jeszcze raz” zaczyna nowy bieg;
 - **Gesty**: pole sięgające krawędzi ekranu (`.lab-stage`, `touch-action: none`) z płótnem: różowe pasy martwych stref (18 px po bokach, 20 px + pasek domowy u dołu, podpis „martwa strefa”), zielony ślad palca, żółty błysk przy dotknięciu; nazwa ostatniego gestu (`[data-last-gesture]`: Stuknięcie, Przytrzymanie, Koniec przytrzymania, Przesunięcie w lewo/prawo/górę/dół, Przeciąganie, Koniec przeciągania, Martwa strefa (gest pominięty), Pauza (klawisz P)) i dziennik 6 ostatnich gestów z godziną; w tym dziale działa auto-pauza (jak w grze);
 - **Informacje**: płynność, ekran CSS, widoczny obszar (`visualViewport`), DPR (i DPR rysowania), bezpieczne obszary, tryb (aplikacja / przeglądarka), praca bez zasięgu (czy service worker kontroluje stronę), sieć, stan zapisu w chmurze, oszczędzanie baterii; przyciski: „Test pauzy i odliczania”, „Oszczędzanie baterii” (przełącznik), „Pokaż propozycję oszczędzania”, „Pokaż bezpieczne obszary” (czerwone ramki wg `env(safe-area-inset-*)`);
-- `window.SowieLab = { loop, shell, view, characters, atlas, soundReady }` — dostęp dla testów (`characters.cosmetic()`, `characters.setCosmetic(klucz)`, `atlas.has(nazwa)`, `(await soundReady).audio`).
+- `window.SowieLab = { loop, shell, view, characters, atlas, soundReady, interface() }` — dostęp dla testów (`characters.cosmetic()`, `characters.setCosmetic(klucz)`, `atlas.has(nazwa)`, `(await soundReady).audio`, `interface()` → `{ hud, toasts, pause, results, shell, state() }`).
 
 ## Profil (Firestore: `sowiegry/profil`)
 
@@ -457,7 +528,7 @@ Pełny zestaw uruchamiany przed każdym wypchnięciem na `main` i w CI (`.github
 |---|---|---|
 | składnia | `npm run syntax` (`scripts/check-syntax.sh`) | `node --check` dla każdego pliku `.js` poza `node_modules/`, `.git/`, `playwright-report/` |
 | lint | `npm run lint` | ESLint 9 (`eslint.config.js`) |
-| formatowanie | `npm run format:check` | Prettier 3 (`.prettierrc.json`: szerokość 120, 2 spacje, średniki, cudzysłowy podwójne, przecinki końcowe) dla plików konfiguracyjnych, `firebase.json`, `manifest.webmanifest`, `sw.js`, `shared/engine/`, `shared/world/`, `lab/main.js`, `lab/characters.js`, `lab/sound.js`, `lab/lab.css`, `scripts/make-icons.cjs`, `scripts/make-audio.mjs`, `assets/audio/audio.json`, workflow i katalogów `tests/e2e`, `tests/unit`, `tests/rules` |
+| formatowanie | `npm run format:check` | Prettier 3 (`.prettierrc.json`: szerokość 120, 2 spacje, średniki, cudzysłowy podwójne, przecinki końcowe) dla plików konfiguracyjnych, `firebase.json`, `manifest.webmanifest`, `sw.js`, `shared/engine/`, `shared/world/`, `shared/ui/`, `shared/meta/`, `lab/main.js`, `lab/characters.js`, `lab/sound.js`, `lab/interface.js`, `lab/lab.css`, `scripts/make-icons.cjs`, `scripts/make-audio.mjs`, `assets/audio/audio.json`, workflow i katalogów `tests/e2e`, `tests/unit`, `tests/rules` |
 | HTML | `npm run html` | `html-validate` (`.htmlvalidate.json`) dla `index.html`, stron pięciu gier, `lab/index.html` i `tests/smoke.html` |
 | jednostkowe | `npm run test:unit` | `node --test tests/unit/*.test.mjs` |
 | reguły i przeglądarkowe | `npm run test:e2e` | emulator Firestore: `firebase emulators:exec --only firestore --project demo-sowiegry "npm run test:rules && playwright test"` — najpierw testy reguł (`test:rules` = `node --test tests/rules/*.test.mjs`, wymaga działającego emulatora), potem Playwright |
@@ -523,6 +594,16 @@ Zależności deweloperskie są przypięte tam, gdzie wersja wpływa na przegląd
 - emulator: zejście do tła zapisuje stan Ogrodów od razu, a powrót po 10 minutach pokazuje okno postępu offline;
 - ekran hasła przykrywa dok przycisków gry (instrukcja, rekordy, galeria).
 
+`interfejs.spec.js` (E2d, `lab/?dzial=interfejs`):
+
+- HUD: pauza ≥ 48 px w lewej części planszy; liście (10 + 50 pkt) → wynik „60”, liście „6”; kózka → licznik „Tarcza”; „5 komunikatów naraz” → widoczny 1 komunikat (kolejka ≤ 3), w górnych 45% planszy; tarcza chroni przed trafieniem, kolejne odbiera życie („Życia: 2 z 3”); `SowieProgress.current()` liczy liście (1 zielony + 5 ze złotego), kózkę i trafienie; brak przewijania w bok;
+- menu pauzy: „Wznów” ≥ 56 px, pozostałe ≥ 48 px, powłoka w stanie `paused`; Ustawienia: suwak muzyki 40 → `settings.volumeMusic`, Tryb Przytulny → `settings.cozy`; Garderoba: „Kokardka” → `cosmetics.selected = "bow"`; „Jak grać” → okno „Jak grać — Poznaj Sowi Świat” z 7 kartami; „Wznów” → cyfra 3, potem `running`; auto-pauza po przejściu w tło otwiera menu z „Witaj z powrotem”;
+- ekran wyników: wynik 50, „Nowy rekord!”, „1. miejsce”, 2 zadania, „Jeszcze raz” ≥ 56 px zaczyna nowy bieg (wynik 0).
+
+`komunikaty.spec.js` (E2d, SowaRunner, SowaJumper, Sowa3):
+
+- po starcie gry (Spacja) `SowieCore.isPlaying()` = `true`, klasa `sowie-arcade`; 3 komunikaty → widoczny 1 („O włos nad Amic! +25”), 2 w kolejce; komunikat w górnych 45% ekranu i w całości w jego szerokości (także telefon poziomo); dotknięcie ⏸ na pasku narzędzi pauzuje grę (w SowaRunner wymagało poprawki obsługi dotyku), a w pauzie widać 2 komunikaty.
+
 `dzwiek.spec.js` (E2c, `lab/?dzial=dzwiek`):
 
 - przed dotknięciem status „czeka na dotknięcie”; wszystkie przyciski dźwięku (co najmniej 29) mają ≥ 48 px; dotknięcie „Skok” odblokowuje dźwięk („Dźwięk: działa”), gra efekt (`stats().played ≥ 1`), wczytuje co najmniej 25 efektów bez błędów dekodowania (`failed = 0`);
@@ -561,6 +642,13 @@ Zależności deweloperskie są przypięte tam, gdzie wersja wpływa na przegląd
 
 - RNG zgodny z algorytmem `SowiePlatform` i powtarzalny; pętla: 120 kroków na sekundę przy 60 kl./s, `alpha` w [0, 1), pauza, limit 0,25 s po przerwie, brak spirali śmierci, 30 kl./s w oszczędzaniu baterii; pula; kolizje; animacje i funkcje łagodzenia; cząsteczki (limit, gęstość); widok (skala 40 dla 360 × 800 i świata 9 × 16, DPR max 2, stała skala przy pasku adresu, nowa przy obrocie, odwrotność przekształceń); kamera; gesty (stuknięcie, przytrzymanie, 4 kierunki swipe, przeciąganie, przytrzymanie → przeciąganie, martwe strefy, drugi palec, klawisze); sceny; monitor płynności; auto-pauza z odliczaniem;
 - PWA: pola manifestu i rozmiary ikon PNG, manifest i rejestracja na każdej stronie, `VERSION`, istnienie plików z `SHELL`, wszystkie skrypty i style menu w `SHELL`, SDK w pamięci, brak obsługi Firestore, usuwanie starych wersji.
+
+### Testy SowieProgress i instrukcji (`tests/unit/meta.test.mjs`)
+
+- most do Akademii: metryki dla końca biegu w Runner / Jumper / Sowa3, postępu Ogrodów i Szklarni, wizyty; brak wywołań bez wartości i dla nieznanej gry;
+- `taskProgress`: misja `max`, misja `delta` z `baseline`, misja tygodnia, brak migawki;
+- `createProgress`: błędy (bez `beginRun`, nieznane zdarzenie), liczniki biegu (liście z `count`, punkty, kózki, trafienia, uniki, combo max, gorączka, humbak), nagroda, czas biegu, wywołania Akademii, zadania z `advanced` i `newlyDone`, słuchacze `*` i odłączanie;
+- `guides-data`: każdy przewodnik poprawny (grafiki z katalogu), 7 kart „Poznaj Sowi Świat”, błędy dla nieznanego gestu i grafiki.
 
 ### Testy dźwięku (`tests/unit/audio.test.mjs`)
 

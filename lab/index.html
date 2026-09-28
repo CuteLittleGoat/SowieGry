@@ -19,6 +19,7 @@
   <link rel="stylesheet" href="../shared/cute-ui.css" />
   <link rel="stylesheet" href="../shared/world/tokens.css" />
   <link rel="stylesheet" href="../shared/engine/shell.css" />
+  <link rel="stylesheet" href="../shared/ui/ui.css" />
   <link rel="stylesheet" href="lab.css" />
   <script type="module" src="main.js"></script>
 </head>
@@ -32,6 +33,7 @@
     <nav class="lab-tabs" aria-label="Działy Laboratorium">
       <button type="button" data-tab="postacie" aria-pressed="true">Postacie</button>
       <button type="button" data-tab="dzwiek" aria-pressed="false">Dźwięk</button>
+      <button type="button" data-tab="interfejs" aria-pressed="false">Interfejs</button>
       <button type="button" data-tab="gesty" aria-pressed="false">Gesty</button>
       <button type="button" data-tab="info" aria-pressed="false">Informacje</button>
     </nav>
@@ -74,6 +76,22 @@
       <h2 class="lab-subtitle">Efekty</h2>
       <div class="lab-sound-grid" data-sfx-buttons>
         <button type="button" data-audio-action="combo">Seria liści (combo)</button>
+      </div>
+    </section>
+
+    <section class="lab-panel lab-panel-ui" data-panel="interfejs" aria-label="Wspólny interfejs gier" hidden>
+      <div class="lab-ui-stage" data-ui-stage>
+        <canvas aria-hidden="true"></canvas>
+      </div>
+      <div class="lab-sound-grid lab-ui-actions">
+        <button type="button" data-ui-action="lisc">Liść +10</button>
+        <button type="button" data-ui-action="zloty">Złoty liść +50</button>
+        <button type="button" data-ui-action="kozka">Kózka: Tarcza</button>
+        <button type="button" data-ui-action="trafienie">Trafienie (Pracu)</button>
+        <button type="button" data-ui-action="komunikaty">5 komunikatów naraz</button>
+        <button type="button" data-ui-action="pauza">Menu pauzy</button>
+        <button type="button" data-ui-action="koniec">Koniec gry</button>
+        <button type="button" data-ui-action="okno">Okno: Poznaj Sowi Świat</button>
       </div>
     </section>
 

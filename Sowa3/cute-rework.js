@@ -384,6 +384,8 @@
     getPaused: () => stateCute.paused,
     setPaused: (value) => { stateCute.paused = Boolean(value); },
     musicTheme: () => ["market", "flowers", "estate"][state.stage] || "default",
+    // Trwa bieg (także finał z basenem) — wspólne komunikaty pokazują wtedy 1 wiadomość u góry ekranu.
+    isPlaying: () => state.mode === "run" || state.mode === "finish",
   });
 
   resetCuteRun();

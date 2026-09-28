@@ -340,6 +340,8 @@
     getPaused: () => cute.paused,
     setPaused: (value) => { cute.paused = Boolean(value); },
     musicTheme: () => "runner",
+    // Trwa bieg (także bonus humbaka) — wspólne komunikaty pokazują wtedy 1 wiadomość u góry ekranu.
+    isPlaying: () => mode === SCREEN.RUN || mode === SCREEN.WHALE,
   });
 
   resetCute();

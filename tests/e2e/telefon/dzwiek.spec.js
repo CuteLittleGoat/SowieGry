@@ -10,7 +10,7 @@ test("dźwięk startuje po dotknięciu, gra efekty i muzykę, a suwaki zapisują
   await expect(status).toContainText("czeka na dotknięcie");
 
   // Wszystkie przyciski dźwięku są wygodne dla palca.
-  const buttons = page.locator(".lab-sound-grid button");
+  const buttons = page.locator('[data-panel="dzwiek"] .lab-sound-grid button');
   expect(await buttons.count()).toBeGreaterThanOrEqual(29);
   for (const box of await buttons.evaluateAll((nodes) => nodes.map((node) => node.getBoundingClientRect().height))) {
     expect(box).toBeGreaterThanOrEqual(48);

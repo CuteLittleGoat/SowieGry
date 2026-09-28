@@ -110,7 +110,7 @@
   background: rgba(255, 255, 255, 0.35);
 }
 
-.lab-stage canvas {
+.lab-stage > canvas {
   position: absolute;
   inset: 0;
 }
@@ -300,6 +300,40 @@
 .lab-sound-grid button:focus-visible {
   outline: 3px solid #4d8fd6;
   outline-offset: 2px;
+}
+
+/* Dział „Interfejs”: plansza z HUD (bezpieczne obszary jak w grze) i przyciski pod nią. */
+.lab-panel-ui {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.lab-panel-ui[hidden] {
+  display: none;
+}
+
+.lab-ui-stage {
+  position: relative;
+  flex: 0 0 auto;
+  height: min(58vh, 520px);
+  height: min(58dvh, 520px);
+  min-height: 300px;
+  overflow: hidden;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.lab-ui-stage > canvas {
+  position: absolute;
+  inset: 0;
+}
+
+.lab-ui-actions {
+  padding: 0 max(16px, env(safe-area-inset-right)) 0 max(16px, env(safe-area-inset-left));
 }
 
 .lab-safe-overlay {

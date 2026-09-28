@@ -1,0 +1,794 @@
+/* Wspólny interfejs gier (Analiza 2, rozdz. 4.3). Wymaga shared/world/tokens.css (kolory i czcionka Fredoka)
+   i shared/engine/shell.css (tło pauzy .sowie-pause-overlay i cyfry .sowie-countdown). */
+
+.sowie-icon {
+  width: 24px;
+  height: 24px;
+  flex: none;
+}
+
+/* Karty i paski liczą rozmiar razem z marginesem wewnętrznym (max-height: 100% nie wychodzi poza ekran). */
+.sowie-hud,
+.sowie-hud *,
+.sowie-toasts,
+.sowie-toasts *,
+.sowie-ui-pause,
+.sowie-ui-pause *,
+.sowie-ui-results,
+.sowie-ui-results *,
+.sowie-ui-backdrop,
+.sowie-ui-backdrop * {
+  box-sizing: border-box;
+}
+
+/* ---------- HUD ---------- */
+
+.sowie-hud {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 30;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: start;
+  gap: 8px;
+  padding: max(8px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) 0
+    max(12px, env(safe-area-inset-left));
+  color: var(--kontur);
+  font-family: var(--czcionka-sowia);
+  pointer-events: none;
+}
+
+.sowie-hud[hidden] {
+  display: none;
+}
+
+.sowie-hud-pause {
+  justify-self: start;
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border: 0;
+  border-radius: 50%;
+  color: var(--kontur);
+  background: rgba(255, 255, 255, 0.85);
+  box-shadow: 0 4px 12px rgba(59, 47, 74, 0.18);
+  pointer-events: auto;
+  touch-action: manipulation;
+  cursor: pointer;
+}
+
+.sowie-hud-center {
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+}
+
+.sowie-hud-score {
+  font-size: 30px;
+  font-weight: var(--czcionka-pogrubiona);
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+  color: var(--bialy);
+  -webkit-text-stroke: 5px var(--kontur);
+  paint-order: stroke fill;
+}
+
+.sowie-hud-leaves {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 10px 2px 6px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.8);
+  font-size: 17px;
+  font-weight: var(--czcionka-pogrubiona);
+  font-variant-numeric: tabular-nums;
+}
+
+.sowie-hud-right {
+  justify-self: end;
+  display: grid;
+  justify-items: end;
+  gap: 4px;
+}
+
+.sowie-hud-lives {
+  display: flex;
+  gap: 2px;
+}
+
+.sowie-hud-lives img.is-lost {
+  animation: sowieLifeLost 400ms ease-out;
+}
+
+.sowie-hud-powerups {
+  display: grid;
+  gap: 4px;
+  justify-items: end;
+}
+
+.sowie-hud-powerup {
+  display: grid;
+  gap: 2px;
+  min-width: 76px;
+  padding: 3px 8px 5px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.85);
+  box-shadow: inset 0 0 0 2px var(--kolor);
+  font-size: 13px;
+  font-weight: var(--czcionka-pogrubiona);
+}
+
+.sowie-hud-powerup-bar {
+  height: 5px;
+  border-radius: 3px;
+  background: rgba(59, 47, 74, 0.12);
+  overflow: hidden;
+}
+
+.sowie-hud-powerup-bar span {
+  display: block;
+  height: 100%;
+  background: var(--kolor);
+  transform-origin: left;
+}
+
+.sowie-hud-powerup.is-ending {
+  animation: sowieBlink 400ms steps(2) infinite;
+}
+
+.is-bump {
+  animation: sowieBump 220ms ease-out;
+}
+
+@keyframes sowieBump {
+  40% {
+    transform: scale(1.18);
+  }
+}
+
+@keyframes sowieLifeLost {
+  30% {
+    transform: scale(1.3) rotate(-10deg);
+  }
+}
+
+@keyframes sowieBlink {
+  50% {
+    opacity: 0.45;
+  }
+}
+
+/* ---------- Komunikaty ---------- */
+
+.sowie-toasts {
+  position: absolute;
+  left: 50%;
+  bottom: max(20px, calc(env(safe-area-inset-bottom) + 12px));
+  z-index: 35;
+  display: grid;
+  gap: 6px;
+  width: min(86vw, 360px);
+  transform: translateX(-50%);
+  pointer-events: none;
+  font-family: var(--czcionka-sowia);
+}
+
+/* W trakcie gry: jeden komunikat u góry, pod HUD — nie zasłania sowy ani strefy gestów. */
+.sowie-toasts.is-in-game {
+  top: calc(max(8px, env(safe-area-inset-top)) + 84px);
+  bottom: auto;
+  width: min(72vw, 300px);
+}
+
+.sowie-toast-chip {
+  padding: 8px 14px;
+  border-radius: 16px;
+  color: var(--kontur);
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 6px 16px rgba(59, 47, 74, 0.18);
+  text-align: center;
+  font-size: 16px;
+  font-weight: var(--czcionka-pogrubiona);
+  line-height: 1.25;
+  animation: sowieToastIn 180ms ease-out both;
+  transition:
+    opacity 180ms ease,
+    transform 180ms ease;
+}
+
+.sowie-toast-chip.is-success {
+  box-shadow:
+    0 6px 16px rgba(59, 47, 74, 0.18),
+    inset 0 0 0 2px var(--monstera);
+}
+
+.sowie-toast-chip.is-warn {
+  box-shadow:
+    0 6px 16px rgba(59, 47, 74, 0.18),
+    inset 0 0 0 2px var(--pracu);
+}
+
+.sowie-toast-chip.is-reward {
+  background: rgba(255, 246, 227, 0.97);
+  box-shadow:
+    0 6px 16px rgba(59, 47, 74, 0.18),
+    inset 0 0 0 2px var(--zloto);
+}
+
+.sowie-toast-chip.is-leaving {
+  opacity: 0;
+  transform: translateY(-6px) scale(0.96);
+}
+
+@keyframes sowieToastIn {
+  from {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.96);
+  }
+}
+
+/* ---------- Przyciski ---------- */
+
+.sowie-ui-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 52px;
+  padding: 8px 14px;
+  border: 0;
+  border-radius: 16px;
+  color: var(--kontur);
+  background: var(--bialy);
+  box-shadow: inset 0 0 0 2px rgba(59, 47, 74, 0.14);
+  font:
+    var(--czcionka-pogrubiona) 16px/1.2 var(--czcionka-sowia),
+    sans-serif;
+  touch-action: manipulation;
+  cursor: pointer;
+}
+
+.sowie-ui-button.is-primary {
+  color: var(--bialy);
+  background: var(--monstera);
+  box-shadow: inset 0 -4px 0 var(--monstera-ciemna);
+}
+
+.sowie-ui-button.is-big {
+  min-height: 60px;
+  font-size: 20px;
+}
+
+.sowie-ui-button.is-quiet {
+  background: transparent;
+  box-shadow: none;
+}
+
+.sowie-ui-button:active {
+  transform: translateY(1px) scale(0.98);
+}
+
+.sowie-ui-icon-button {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  flex: none;
+  border: 0;
+  border-radius: 50%;
+  color: var(--kontur);
+  background: rgba(59, 47, 74, 0.08);
+  touch-action: manipulation;
+  cursor: pointer;
+}
+
+.sowie-ui-button:focus-visible,
+.sowie-ui-icon-button:focus-visible,
+.sowie-hud-pause:focus-visible,
+.sowie-ui-toggle:focus-visible,
+.sowie-ui-chip:focus-visible,
+.sowie-ui-slider input:focus-visible {
+  outline: 3px solid var(--niebieski);
+  outline-offset: 3px;
+}
+
+/* ---------- Menu pauzy ---------- */
+
+.sowie-ui-pause[hidden] {
+  display: none;
+}
+
+.sowie-ui-pause.is-countdown {
+  align-items: center;
+}
+
+.sowie-ui-pause-card {
+  display: grid;
+  gap: 10px;
+  width: min(100%, 440px);
+  max-height: 100%;
+  overflow: auto;
+  padding: 20px;
+  border-radius: 24px;
+  color: var(--kontur);
+  background: var(--niebo-dol);
+  box-shadow: 0 20px 60px rgba(20, 22, 30, 0.3);
+  font:
+    var(--czcionka-tekst) 16px/1.4 var(--czcionka-sowia),
+    sans-serif;
+  text-align: center;
+}
+
+.sowie-ui-pause-card h2 {
+  margin: 0;
+  font-size: 28px;
+  font-weight: var(--czcionka-pogrubiona);
+}
+
+.sowie-ui-pause-reason {
+  margin: -4px 0 4px;
+}
+
+.sowie-ui-pause-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.sowie-ui-pause-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sowie-ui-pause-title h2 {
+  flex: 1;
+  text-align: left;
+}
+
+.sowie-ui-slider {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 3ch;
+  gap: 2px 8px;
+  align-items: center;
+  padding: 8px 12px;
+  border-radius: 14px;
+  background: var(--bialy);
+  text-align: left;
+  font-weight: var(--czcionka-pogrubiona);
+}
+
+.sowie-ui-slider input {
+  grid-column: 1 / -1;
+  grid-row: 2;
+  width: 100%;
+  min-height: 44px;
+  margin: 0;
+  accent-color: var(--monstera);
+}
+
+.sowie-ui-slider output {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.sowie-ui-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 52px;
+  padding: 8px 12px;
+  border: 0;
+  border-radius: 14px;
+  color: var(--kontur);
+  background: var(--bialy);
+  font:
+    var(--czcionka-pogrubiona) 16px/1.25 var(--czcionka-sowia),
+    sans-serif;
+  text-align: left;
+  touch-action: manipulation;
+  cursor: pointer;
+}
+
+.sowie-ui-switch {
+  position: relative;
+  width: 48px;
+  height: 28px;
+  flex: none;
+  border-radius: 999px;
+  background: var(--szary);
+  transition: background 150ms ease;
+}
+
+.sowie-ui-switch::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--bialy);
+  box-shadow: 0 1px 3px rgba(59, 47, 74, 0.3);
+  transition: transform 150ms ease;
+}
+
+.sowie-ui-toggle[aria-pressed="true"] .sowie-ui-switch {
+  background: var(--monstera);
+}
+
+.sowie-ui-toggle[aria-pressed="true"] .sowie-ui-switch::after {
+  transform: translateX(20px);
+}
+
+.sowie-ui-chips {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+
+.sowie-ui-chip {
+  min-height: 48px;
+  padding: 6px 14px;
+  border: 0;
+  border-radius: 999px;
+  color: var(--kontur);
+  background: var(--bialy);
+  box-shadow: inset 0 0 0 2px rgba(59, 47, 74, 0.14);
+  font:
+    var(--czcionka-tekst) 15px/1.2 var(--czcionka-sowia),
+    sans-serif;
+  touch-action: manipulation;
+  cursor: pointer;
+}
+
+.sowie-ui-chip[aria-pressed="true"] {
+  background: var(--zloto);
+  font-weight: var(--czcionka-pogrubiona);
+}
+
+.sowie-ui-chip:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+/* ---------- Okno modalne (arkusz od dołu) ---------- */
+
+.sowie-ui-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 9000;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  background: rgba(59, 47, 74, 0.45);
+  touch-action: manipulation;
+}
+
+.sowie-ui-sheet {
+  display: flex;
+  flex-direction: column;
+  width: min(100%, 560px);
+  max-height: 88vh;
+  max-height: 88dvh;
+  border-radius: 24px 24px 0 0;
+  color: var(--kontur);
+  background: var(--niebo-dol);
+  box-shadow: 0 -10px 40px rgba(20, 22, 30, 0.25);
+  font:
+    var(--czcionka-tekst) 16px/1.45 var(--czcionka-sowia),
+    sans-serif;
+  animation: sowieSheetIn 220ms ease-out both;
+}
+
+.sowie-ui-sheet-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px max(16px, env(safe-area-inset-right)) 6px max(16px, env(safe-area-inset-left));
+}
+
+.sowie-ui-sheet-header h2 {
+  flex: 1;
+  margin: 0;
+  font-size: 22px;
+  font-weight: var(--czcionka-pogrubiona);
+}
+
+.sowie-ui-sheet-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  padding: 4px max(16px, env(safe-area-inset-right)) 12px max(16px, env(safe-area-inset-left));
+}
+
+.sowie-ui-sheet-actions {
+  display: grid;
+  gap: 8px;
+  padding: 8px max(16px, env(safe-area-inset-right)) max(16px, env(safe-area-inset-bottom))
+    max(16px, env(safe-area-inset-left));
+}
+
+.sowie-ui-sheet-actions[hidden] {
+  display: none;
+}
+
+@media (min-width: 700px) {
+  .sowie-ui-backdrop {
+    align-items: center;
+  }
+
+  .sowie-ui-sheet {
+    border-radius: 24px;
+  }
+}
+
+@keyframes sowieSheetIn {
+  from {
+    transform: translateY(40px);
+    opacity: 0;
+  }
+}
+
+/* ---------- Karty instrukcji ---------- */
+
+.sowie-guide-summary {
+  margin: 0 0 10px;
+}
+
+.sowie-guide-cards {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: min(78%, 300px);
+  gap: 12px;
+  overflow-x: auto;
+  padding: 2px 2px 10px;
+  scroll-snap-type: x mandatory;
+  overscroll-behavior-x: contain;
+}
+
+.sowie-guide-card {
+  position: relative;
+  display: grid;
+  align-content: start;
+  justify-items: center;
+  gap: 6px;
+  padding: 14px 14px 28px;
+  border-radius: 18px;
+  background: var(--bialy);
+  box-shadow: inset 0 0 0 2px rgba(59, 47, 74, 0.1);
+  text-align: center;
+  scroll-snap-align: center;
+}
+
+.sowie-guide-card h3 {
+  margin: 0;
+  font-size: 19px;
+  font-weight: var(--czcionka-pogrubiona);
+}
+
+.sowie-guide-card p {
+  margin: 0;
+}
+
+.sowie-guide-picture {
+  display: block;
+  max-width: 96px;
+  height: auto;
+}
+
+.sowie-guide-gesture {
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: var(--niebo-gora);
+  font-weight: var(--czcionka-pogrubiona);
+}
+
+.sowie-guide-tip {
+  font-size: 15px;
+  opacity: 0.85;
+}
+
+.sowie-guide-page {
+  position: absolute;
+  right: 12px;
+  bottom: 6px;
+  font-size: 13px;
+  opacity: 0.6;
+}
+
+/* ---------- Ekran wyników ---------- */
+
+.sowie-ui-results {
+  position: absolute;
+  inset: 0;
+  z-index: 55;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: max(16px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right))
+    max(16px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+  background: rgba(59, 47, 74, 0.5);
+  touch-action: manipulation;
+}
+
+.sowie-ui-results[hidden] {
+  display: none;
+}
+
+.sowie-ui-results-card {
+  display: grid;
+  gap: 10px;
+  width: min(100%, 440px);
+  max-height: 100%;
+  overflow: auto;
+  padding: 20px;
+  border-radius: 24px;
+  color: var(--kontur);
+  background: var(--niebo-dol);
+  box-shadow: 0 20px 60px rgba(20, 22, 30, 0.3);
+  text-align: center;
+  font:
+    var(--czcionka-tekst) 16px/1.4 var(--czcionka-sowia),
+    sans-serif;
+}
+
+.sowie-ui-results-card h2 {
+  margin: 0;
+  font-size: 26px;
+  font-weight: var(--czcionka-pogrubiona);
+}
+
+.sowie-ui-results-card h3 {
+  margin: 4px 0 0;
+  font-size: 18px;
+  text-align: left;
+}
+
+.sowie-ui-score {
+  font-size: 54px;
+  font-weight: var(--czcionka-pogrubiona);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  color: var(--bialy);
+  -webkit-text-stroke: 7px var(--kontur);
+  paint-order: stroke fill;
+}
+
+.sowie-ui-best {
+  margin: -4px 0 0;
+}
+
+.sowie-ui-record {
+  display: inline-flex;
+  align-items: center;
+  justify-self: center;
+  gap: 6px;
+  margin: 0;
+  padding: 4px 14px;
+  border-radius: 999px;
+  color: var(--kontur);
+  background: var(--zloto);
+  font-size: 20px;
+  font-weight: var(--czcionka-pogrubiona);
+  animation: sowieRecord 900ms ease-out both;
+}
+
+@keyframes sowieRecord {
+  0% {
+    transform: scale(0.3) rotate(-12deg);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.15) rotate(4deg);
+    opacity: 1;
+  }
+}
+
+.sowie-ui-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 8px;
+}
+
+.sowie-ui-stat {
+  display: grid;
+  gap: 2px;
+  padding: 8px;
+  border-radius: 14px;
+  background: var(--bialy);
+}
+
+.sowie-ui-stat strong {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  font-size: 20px;
+  font-variant-numeric: tabular-nums;
+}
+
+.sowie-ui-tasks,
+.sowie-ui-messages {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  text-align: left;
+}
+
+.sowie-ui-tasks li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 4px 8px;
+  padding: 8px 10px;
+  border-radius: 12px;
+  background: var(--bialy);
+}
+
+.sowie-ui-task-bar {
+  grid-column: 1 / -1;
+  height: 8px;
+  border-radius: 4px;
+  background: rgba(59, 47, 74, 0.1);
+  overflow: hidden;
+}
+
+.sowie-ui-task-bar span {
+  display: block;
+  height: 100%;
+  background: var(--monstera);
+  transform-origin: left;
+}
+
+.sowie-ui-tasks li.is-done .sowie-ui-task-value {
+  color: var(--monstera-ciemna);
+  font-weight: var(--czcionka-pogrubiona);
+}
+
+.sowie-ui-tasks li.is-new {
+  box-shadow: inset 0 0 0 2px var(--zloto);
+}
+
+.sowie-ui-photo {
+  margin: 0;
+}
+
+.sowie-ui-photo img {
+  width: 100%;
+  max-height: 160px;
+  object-fit: cover;
+  border-radius: 14px;
+}
+
+.sowie-ui-results-actions {
+  display: grid;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+/* Ograniczenie ruchu (ustawienie systemowe albo „Efekty” wyłączone w grze). */
+@media (prefers-reduced-motion: reduce) {
+  .is-bump,
+  .sowie-hud-lives img.is-lost,
+  .sowie-hud-powerup.is-ending,
+  .sowie-toast-chip,
+  .sowie-ui-sheet,
+  .sowie-ui-record {
+    animation: none;
+  }
+}
+
+.sowie-reduced-effects .is-bump,
+.sowie-reduced-effects .sowie-hud-lives img.is-lost,
+.sowie-reduced-effects .sowie-ui-record,
+.sowie-reduced-effects .sowie-ui-sheet {
+  animation: none;
+}
