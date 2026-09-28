@@ -891,10 +891,15 @@
   border-radius: 14px;
 }
 
+/* Przyciski przyklejone do dołu karty: „Jeszcze raz” zawsze w zasięgu kciuka, także przy długiej liście zadań. */
 .sowie-ui-results-actions {
+  position: sticky;
+  bottom: -20px;
   display: grid;
   gap: 6px;
-  margin-top: 4px;
+  margin: 4px -20px -20px;
+  padding: 10px 20px 20px;
+  background: linear-gradient(180deg, rgba(255, 246, 227, 0), var(--niebo-dol) 14px);
 }
 
 /* Ograniczenie ruchu (ustawienie systemowe albo „Efekty” wyłączone w grze). */

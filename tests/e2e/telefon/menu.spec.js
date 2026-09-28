@@ -41,6 +41,9 @@ test("zakładka „Gry”: pięć kart z rejestru, „Graj” otwiera grę", asy
   // Rekord z profilu (tu: jeszcze bez gry) zastępuje szkielet karty po wczytaniu chmury.
   await expect(page.locator(".game-card-record.is-loading")).toHaveCount(0);
   await expect(page.locator('[data-game="runner"] [data-record]')).toHaveText(/Jeszcze bez rekordu/);
+  // Nowa wersja SowaRunner w podglądzie (E4): „Wypróbuj nową wersję: Sowia Ucieczka”.
+  await expect(page.locator('[data-preview="runner"]')).toHaveAttribute("href", "SowiaUcieczka/");
+  await expect(page.locator("[data-preview]")).toHaveCount(1);
   // Ilustracje rysują postacie z atlasu.
   await page.waitForFunction(() => window.SowieMenu.atlas.ready() && window.SowieMenu.frames() > 3);
 

@@ -138,6 +138,9 @@ export const KEY_MAP = Object.freeze({
   Escape: "menu",
 });
 
+// Elementy, na których dotknięcie nie jest gestem gry.
+export const INTERACTIVE = "button, a[href], input, select, textarea, label, [data-no-gesture]";
+
 // Podpina rozpoznawanie gestów do elementu planszy. Zwraca funkcję odpinającą.
 export function bindInput(element, onGesture, options = {}) {
   const recognizer = createGestureRecognizer({ ...options, onGesture });
@@ -153,6 +156,9 @@ export function bindInput(element, onGesture, options = {}) {
 
   const onDown = (event) => {
     if (event.button !== undefined && event.button > 0) return;
+    // Przyciski, odnośniki i pola na planszy (HUD, ekran tytułowy) działają zwykłym kliknięciem —
+    // przechwycenie wskaźnika przez planszę zabrałoby im „click”.
+    if (event.target?.closest?.(INTERACTIVE)) return;
     const point = local(event);
     if (recognizer.down(event.pointerId, point.x, point.y, now())) {
       element.setPointerCapture?.(event.pointerId);

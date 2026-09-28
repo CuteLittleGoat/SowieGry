@@ -1,0 +1,112 @@
+/* Sowia Ucieczka — ekran tytułowy (plansza, HUD, pauza i wyniki: shared/engine/shell.css i shared/ui/ui.css). */
+
+.ucieczka-stage {
+  background: var(--niebo-gora);
+  font-family: var(--czcionka-sowia);
+  color: var(--kontur);
+}
+
+.ucieczka-stage canvas {
+  position: absolute;
+  inset: 0;
+}
+
+/* Ekran tytułowy: karta przy dolnej krawędzi (zasięg kciuka), plansza widoczna nad nią. */
+.ucieczka-title {
+  position: absolute;
+  inset: 0;
+  z-index: 40;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: max(16px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right))
+    max(20px, calc(env(safe-area-inset-bottom) + 12px)) max(16px, env(safe-area-inset-left));
+  box-sizing: border-box;
+  background: linear-gradient(180deg, rgba(191, 233, 255, 0) 30%, rgba(59, 47, 74, 0.25));
+  touch-action: manipulation;
+}
+
+.ucieczka-title[hidden] {
+  display: none;
+}
+
+.ucieczka-title-card {
+  display: grid;
+  gap: 10px;
+  width: min(100%, 440px);
+  max-height: 100%;
+  overflow-y: auto;
+  padding: 18px;
+  border-radius: 24px;
+  box-sizing: border-box;
+  background: rgba(255, 246, 227, 0.96);
+  box-shadow: 0 16px 40px rgba(59, 47, 74, 0.25);
+  text-align: center;
+}
+
+.ucieczka-title-card h1 {
+  margin: 0;
+  font-size: 34px;
+  font-weight: var(--czcionka-pogrubiona);
+  line-height: 1.05;
+  color: var(--bialy);
+  -webkit-text-stroke: 7px var(--kontur);
+  paint-order: stroke fill;
+}
+
+.ucieczka-title-card p {
+  margin: 0;
+}
+
+.ucieczka-title-lead {
+  font-size: 16px;
+}
+
+.ucieczka-difficulty {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.ucieczka-difficulty .sowie-ui-chip {
+  min-height: 48px;
+  justify-content: center;
+}
+
+.ucieczka-title-record {
+  font-weight: var(--czcionka-pogrubiona);
+  font-variant-numeric: tabular-nums;
+}
+
+.ucieczka-title-note,
+.ucieczka-title-preview {
+  font-size: 14px;
+  opacity: 0.85;
+}
+
+.ucieczka-title-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.ucieczka-title-actions a {
+  text-decoration: none;
+}
+
+/* Telefon poziomo: niższa karta. */
+@media (max-height: 500px) {
+  .ucieczka-title-card {
+    gap: 6px;
+    padding: 12px 16px;
+  }
+
+  .ucieczka-title-card h1 {
+    font-size: 26px;
+  }
+
+  .ucieczka-title-lead,
+  .ucieczka-title-preview {
+    display: none;
+  }
+}

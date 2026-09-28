@@ -115,6 +115,53 @@ export const GUIDES = Object.freeze({
       },
     ],
   },
+  // Sowia Ucieczka — nowa wersja SowaRunner (podgląd w SowiaUcieczka/; po akceptacji zastąpi „runner”).
+  ucieczka: {
+    id: "ucieczka",
+    title: "Sowia Ucieczka",
+    summary:
+      "Sówka ucieka przed Chmurą Pracu przez coraz bardziej zwariowane okolice. Skacz, szybuj i ślizgaj się, zbieraj liście monstery i nie daj się dogonić.",
+    cards: [
+      {
+        id: "cel",
+        title: "Cel gry",
+        text: "Biegnij jak najdalej. Każde trafienie przybliża Chmurę Pracu — gdy dogoni sowę, bieg się kończy.",
+        sprite: "sowa-bieg-2",
+        tip: "400 m bez trafienia oddala chmurę o krok.",
+      },
+      {
+        id: "skok",
+        title: "Skok",
+        text: "Stuknij w dowolnym miejscu ekranu. Drugie stuknięcie w powietrzu to podwójny skok.",
+        gesture: "tap",
+        sprite: "sowa-skok",
+        tip: "Łuk liści nad przeszkodą pokazuje, jak ją przeskoczyć.",
+      },
+      {
+        id: "szybowanie",
+        title: "Szybowanie",
+        text: "Przytrzymaj palec w powietrzu — sowa rozkłada skrzydła i opada powoli.",
+        gesture: "hold",
+        sprite: "sowa-szybuje",
+        tip: "Długą cysternę Amic pokonasz podwójnym skokiem albo szybowaniem.",
+      },
+      {
+        id: "slizg",
+        title: "Ślizg",
+        text: "Przesuń palcem w dół: na ziemi ślizg, w powietrzu szybkie opadanie, na platformie zeskok.",
+        gesture: "swipe-down",
+        sprite: "pracu-dymek",
+        tip: "Pod dymkiem Pracu Pracu i znakiem z cenami Amic przejdziesz ślizgiem.",
+      },
+      {
+        id: "przeszkody",
+        title: "Pracu i Amic",
+        text: "Pracu Pracu rusza się i zaskakuje (dymki, telefony, maile, karteczki). Amic stoi i jest ciężki (dystrybutory, cysterny, znaki, wózki).",
+        sprite: "amic-dystrybutor",
+        tip: "Znak „!” przy prawej krawędzi zapowiada coś, co jedzie szybciej niż reszta.",
+      },
+    ],
+  },
   jumper: {
     id: "jumper",
     title: "SowaJumper",

@@ -324,8 +324,8 @@
 
   function attachButton() {
     if (document.getElementById("academyButton") || document.querySelector("[data-academy-fab]")) return;
-    // Nowe menu główne (E3) ma własną zakładkę — nie doklejamy przycisku.
-    if (document.querySelector("[data-sowie-menu]")) return;
+    // Nowe menu główne (E3) ma własną zakładkę, a przebudowane gry (E4+) — ekran wyników; nie doklejamy przycisku.
+    if (document.querySelector("[data-sowie-menu], [data-sowie-game]")) return;
     const onMenu = Boolean(document.querySelector("[data-game-cards]"));
     const button = document.createElement("button");
     button.type = "button";

@@ -32,6 +32,7 @@ module.exports = [
       "shared/meta/**/*.js",
       "shared/menu/**/*.js",
       "lab/**/*.js",
+      "SowiaUcieczka/**/*.js",
     ],
     languageOptions: {
       sourceType: "module",

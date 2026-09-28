@@ -16,7 +16,15 @@ const gameIndexes = [
 
 test("katalog instrukcji (shared/meta/guides-data.js) obejmuje pięć gier i „Poznaj Sowi Świat”", async () => {
   const { GUIDES } = await import("../../shared/meta/guides-data.js");
-  assert.deepEqual(Object.keys(GUIDES).sort(), ["jumper", "ogrody", "runner", "sowa3", "swiat", "szklarnia"]);
+  assert.deepEqual(Object.keys(GUIDES).sort(), [
+    "jumper",
+    "ogrody",
+    "runner",
+    "sowa3",
+    "swiat",
+    "szklarnia",
+    "ucieczka",
+  ]);
   for (const id of ["runner", "jumper", "sowa3", "ogrody", "szklarnia"]) {
     assert.ok(GUIDES[id].summary && GUIDES[id].cards.length >= 4, id);
   }

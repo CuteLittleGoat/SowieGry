@@ -3,9 +3,19 @@
   "use strict";
 
   // Rejestr gier. Identyfikatory (id) są stałe — są wpisane w opublikowane reguły Firestore.
-  // kind: "arcade" (rozgrywki z wynikiem) albo "idle" (pełny stan gry); dailyMetric: wartość rekordu wyzwania dnia.
+  // kind: "arcade" (rozgrywki z wynikiem) albo "idle" (pełny stan gry); dailyMetric: wartość rekordu wyzwania dnia;
+  // preview: nowa wersja gry w osobnym folderze (Analiza 3, „Podgląd przed podmianą”).
   const GAME_REGISTRY = Object.freeze([
-    { id: "runner", name: "SowaRunner", path: "SowaRunner/", icon: "🏃", kind: "arcade", dailyMetric: "distance" },
+    {
+      id: "runner",
+      name: "SowaRunner",
+      path: "SowaRunner/",
+      icon: "🏃",
+      kind: "arcade",
+      dailyMetric: "distance",
+      // Nowa wersja w podglądzie (E4): ten sam identyfikator i te same rekordy.
+      preview: Object.freeze({ path: "SowiaUcieczka/", name: "Sowia Ucieczka" }),
+    },
     { id: "jumper", name: "SowaJumper", path: "SowaJumper/", icon: "🪶", kind: "arcade", dailyMetric: "height" },
     { id: "sowa3", name: "Sowa3", path: "Sowa3/", icon: "🛣️", kind: "arcade", dailyMetric: "score" },
     { id: "ogrody", name: "Sowie Ogrody", path: "SowieOgrody/", icon: "🌿", kind: "idle", saveVersion: 2 },

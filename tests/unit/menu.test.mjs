@@ -9,7 +9,9 @@ const { CLOUD_STATUS, cloudStatusInfo } = await import("../../shared/menu/cloud-
 const { isIos } = await import("../../shared/menu/install.js");
 
 const read = (file) => fs.readFileSync(file, "utf8");
-const registryIds = [...read("shared/sowie-platform.js").matchAll(/\{ id: "([a-z0-9]+)"/g)].map((match) => match[1]);
+const registryIds = [...read("shared/sowie-platform.js").matchAll(/^\s*(?:\{ )?id: "([a-z0-9]+)"/gm)].map(
+  (match) => match[1],
+);
 
 test("każda gra z rejestru ma w menu przystanek, opis i kolory biomu", () => {
   assert.deepEqual(Object.keys(MENU_GAMES), registryIds);

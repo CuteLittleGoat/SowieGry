@@ -15,7 +15,9 @@ const gamePages = [
 
 test("centralny rejestr zawiera dokładnie pięć gier", async () => {
   const platform = await read("shared/sowie-platform.js");
-  const ids = [...platform.matchAll(/\{ id: "(runner|jumper|sowa3|ogrody|szklarnia)"/g)].map((match) => match[1]);
+  const ids = [...platform.matchAll(/^\s*(?:\{ )?id: "(runner|jumper|sowa3|ogrody|szklarnia)"/gm)].map(
+    (match) => match[1],
+  );
   assert.deepEqual(ids, ["runner", "jumper", "sowa3", "ogrody", "szklarnia"]);
 });
 

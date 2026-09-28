@@ -27,6 +27,8 @@ export function createPauseMenu({
   onResume = () => {},
   onRestart = () => {},
   onExit = () => globalThis.location?.assign?.("../"),
+  // Opcjonalnie „Zakończ bieg” (np. Tryb Przytulny bez końca gry): { label, onClick } albo null.
+  endAction = null,
 } = {}) {
   const overlay = document.createElement("div");
   overlay.className = "sowie-pause-overlay sowie-ui-pause";
@@ -57,6 +59,7 @@ export function createPauseMenu({
         <button type="button" class="sowie-ui-button" data-pause="settings">${ICONS.settings}<span>Ustawienia</span></button>
         <button type="button" class="sowie-ui-button" data-pause="wardrobe">${ICONS.wardrobe}<span>Garderoba</span></button>
       </div>
+      ${endAction?.visible?.() !== false && endAction ? `<button type="button" class="sowie-ui-button" data-pause="end">${ICONS.star}<span>${endAction.label || "Zakończ bieg"}</span></button>` : ""}
       <button type="button" class="sowie-ui-button is-quiet" data-pause="exit">${ICONS.home}<span>Wyjdź do menu</span></button>
     </div>`;
   }
@@ -134,6 +137,10 @@ export function createPauseMenu({
       view = "menu";
       render();
     } else if (action === "exit") onExit();
+    else if (action === "end") {
+      api.close();
+      endAction?.onClick?.();
+    }
     const setting = event.target.closest("[data-setting]");
     if (setting) {
       const on = setting.getAttribute("aria-pressed") !== "true";

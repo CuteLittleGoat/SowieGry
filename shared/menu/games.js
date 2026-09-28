@@ -195,6 +195,7 @@ export function renderGameCards({ root, platform, onGuide }) {
         <div class="game-card-actions">
           <a class="menu-button is-primary" href="${game.path}" data-play="${game.id}">${ICONS.play}<span>Graj</span></a>
           <button type="button" class="menu-button" data-guide="${game.id}" aria-label="Jak grać w ${game.name}?">Jak grać?</button>
+          ${game.preview ? `<a class="menu-button is-preview" href="${game.preview.path}" data-preview="${game.id}">${ICONS.play}<span>Wypróbuj nową wersję: ${game.preview.name}</span></a>` : ""}
         </div>
       </div>`;
     card.querySelector("[data-guide]").addEventListener("click", (event) => onGuide(game.id, event.currentTarget));

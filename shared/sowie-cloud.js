@@ -1106,7 +1106,11 @@
   }
 
   const { mode, project } = resolveMode();
-  const currentGame = platform.GAME_REGISTRY.find((entry) => location.pathname.includes(`/${entry.path}`)) || null;
+  // Bieżąca gra po folderze strony — także wersja podglądowa (preview.path) z tym samym identyfikatorem.
+  const currentGame =
+    platform.GAME_REGISTRY.find((entry) =>
+      [entry.path, entry.preview?.path].some((path) => path && location.pathname.includes(`/${path}`)),
+    ) || null;
   const gameKinds = Object.fromEntries(platform.GAME_REGISTRY.map((entry) => [entry.id, entry.kind]));
 
   // Import SDK startuje od razu, równolegle z ekranem gry (także gdy czeka ekran hasła).
