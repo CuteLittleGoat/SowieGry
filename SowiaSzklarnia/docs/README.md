@@ -36,3 +36,7 @@ W zakładce **Staty** jest przycisk ręcznego zapisu oraz reset szklarni. **Rese
 ## Offline progress
 
 Po powrocie do gry (także po przełączeniu się na inną aplikację na telefonie) sowa podsumuje, ile zebrała podczas nieobecności. Offline progress nalicza liście, wodę, nasiona, pyłek, kompost i postęp wzrostu roślin.
+
+## Okno rekordów
+
+Przycisk **🏆** w prawym górnym rogu pokazuje podsumowanie postępu zapisane w chmurze (np. liście zebrane w całej grze).

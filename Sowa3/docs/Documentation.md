@@ -147,3 +147,7 @@ Wszystko w Firestore przez `SowieCloud`:
 4. Warstwy scenografii muszą być ładowane przed `visibility-corridor.js`, chyba że końcowy moduł sam rysuje czysty korytarz tak jak `amic-stage.js`.
 5. Modyfikatory finału muszą respektować pauzę.
 6. Dokumentację należy aktualizować razem z kodem.
+
+## Okno „🏆 Rekordy”
+
+Strona ładuje `../shared/records.js` po `../shared/owl-gallery.js` (i po `../shared/game-guides.js`, który tworzy dok przycisków). Moduł dodaje do doku przycisk 🏆 i okno rekordów zasilane przez `SowieCloud` (top 10 na poziom trudności, ostatnie gry, rekordy wyzwania dnia). Opis modułu: `docs/Documentation.md`, sekcja „`shared/records.js`”.

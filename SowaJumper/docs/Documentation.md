@@ -129,3 +129,7 @@ Rekordy są w Firestore (`SowieCloud`):
 - `sowiegry_gry/jumper` — `top10` na poziom, `dailyBest` (rekord wyzwania dnia = wysokość), historia `sowiegry_historia`.
 
 `endGame()` w `script.js` po ustawieniu `lastScore`, `lastHeight` i lokalnych maksimów wywołuje `SowieCloud.submitRun("jumper", { score, height, difficulty: state.difficultyKey })`. Start gry (Spacja/Enter, dotknięcie planszy na ekranie tytułowym i końcowym) jest możliwy dopiero, gdy `jumperCloudReady()` (`SowieCloud.isReady()`) zwraca `true`.
+
+## Okno „🏆 Rekordy”
+
+Strona ładuje `../shared/records.js` po `../shared/owl-gallery.js` (i po `../shared/game-guides.js`, który tworzy dok przycisków). Moduł dodaje do doku przycisk 🏆 i okno rekordów zasilane przez `SowieCloud` (top 10 na poziom trudności, ostatnie gry, rekordy wyzwania dnia). Opis modułu: `docs/Documentation.md`, sekcja „`shared/records.js`”.

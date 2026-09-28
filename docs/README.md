@@ -54,6 +54,8 @@ Stare wyniki zapisane w przeglądarce przed przejściem na chmurę zostały skas
 
 W grach zręcznościowych zapisywane są najlepszy wynik (i dystans lub wysokość) dla każdego poziomu trudności, 10 najlepszych rozgrywek, ostatnie gry oraz rekordy wyzwania dnia.
 
+Przycisk **🏆** w prawym górnym rogu gry otwiera okno **Rekordy**: przełącz poziom (Chill / Arcade / Chaos), zobacz najlepszy wynik, top 10, ostatnie 10 gier i rekordy wyzwania dnia. W grach idle okno pokazuje podsumowanie postępu (np. liście zebrane w całej grze).
+
 ## Ustawienia i wylogowanie
 
 Przycisk ⚙ w grze otwiera okno **Ustawienia**:

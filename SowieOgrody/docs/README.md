@@ -145,3 +145,7 @@ Gra zapisuje postęp automatycznie w chmurze (Firestore) — ten sam ogród na t
 ## Debug
 
 Dodaj `?debug=1` do adresu gry, aby zobaczyć dane debugowe wspólnej warstwy `SowieCore`.
+
+## Okno rekordów
+
+Przycisk **🏆** w prawym górnym rogu pokazuje podsumowanie postępu zapisane w chmurze (np. liście zebrane w całej grze).

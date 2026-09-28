@@ -136,6 +136,20 @@ test("kod SowieGry pisze tylko w kolekcji sowiegry i jej podkolekcjach", async (
   }
 });
 
+test("każda gra ma okno Rekordów zasilane przez SowieCloud", async () => {
+  const records = await read("shared/records.js");
+  assert.match(records, /cloud\.history\(gameId, 10\)/);
+  assert.match(records, /top10/);
+  assert.match(records, /dailyBest/);
+  for (const path of gamePages) {
+    const html = await read(path);
+    assert.ok(
+      html.indexOf("shared/records.js") > html.indexOf("shared/game-guides.js"),
+      `${path}: brak records.js po game-guides.js`,
+    );
+  }
+});
+
 test("gry idle korzystają ze stabilnego panelu, obsługi modali i zapisu SowieCloud", async () => {
   for (const [path, script, gameId] of [
     ["SowieOgrody/index.html", "SowieOgrody/script.js", "ogrody"],

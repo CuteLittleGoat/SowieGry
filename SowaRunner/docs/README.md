@@ -79,3 +79,7 @@ Rekord zrobiony na telefonie widać też na komputerze (i odwrotnie). Bez intern
 ## Diagnostyka
 
 Dodaj `?debug=1` do adresu gry, aby zobaczyć liczbę przeszkód, prędkość, combo i aktywne wydarzenie.
+
+## Okno rekordów
+
+Przycisk **🏆** w prawym górnym rogu otwiera okno **Rekordy**: najlepszy wynik dla wybranego poziomu trudności (Chill / Arcade / Chaos), 10 najlepszych gier, 10 ostatnich gier i rekordy wyzwania dnia. Rekordy są zapisane w chmurze, więc te same widać na telefonie i komputerze.

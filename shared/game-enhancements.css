@@ -273,3 +273,29 @@
     transition: none;
   }
 }
+
+/* Okno „🏆 Rekordy” (shared/records.js) */
+.sowie-records-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.sowie-records-tabs .sowie-feature-button {
+  margin-top: 0;
+  min-height: 44px;
+}
+
+.sowie-records-tabs [aria-pressed="true"] {
+  background: #f0e5ff;
+  border-color: rgba(87, 58, 112, 0.48);
+}
+
+.sowie-records-list {
+  margin: 0.3rem 0 0;
+}
+
+.sowie-records-list li span {
+  color: #6b5a78;
+  font-size: 0.9em;
+}

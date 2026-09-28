@@ -315,3 +315,7 @@ Główne `index.html` zawiera kartę:
 - Zmiany balansu najlepiej robić przez wartości w `PLANTS`, `UPGRADES` i `PRESTIGE_TREE`.
 - Zapis wyłącznie przez `SowieCloud` (`loadGameState` / `saveGameState`); gra nie używa pamięci przeglądarki.
 - Zmiana formatu stanu wymaga podniesienia `VERSION` i obsługi starszego stanu w `mergeSave`.
+
+## Okno „🏆 Rekordy”
+
+Strona ładuje `../shared/records.js` po `../shared/owl-gallery.js` (i po `../shared/game-guides.js`, który tworzy dok przycisków). Moduł dodaje do doku przycisk 🏆 i okno rekordów zasilane przez `SowieCloud` (podsumowanie `profil.records.ogrody`). Opis modułu: `docs/Documentation.md`, sekcja „`shared/records.js`”.

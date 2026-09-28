@@ -141,3 +141,7 @@ Interfejs jest zgodny ze stylem `cute`:
 16. Koza po kliknięciu ucieka.
 17. Offline progress działa po przerwie.
 18. UI jest czytelne na telefonie.
+
+## Okno „🏆 Rekordy”
+
+Strona ładuje `../shared/records.js` po `../shared/owl-gallery.js` (i po `../shared/game-guides.js`, który tworzy dok przycisków). Moduł dodaje do doku przycisk 🏆 i okno rekordów zasilane przez `SowieCloud` (podsumowanie `profil.records.szklarnia`). Opis modułu: `docs/Documentation.md`, sekcja „`shared/records.js`”.

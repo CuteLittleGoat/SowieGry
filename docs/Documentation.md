@@ -34,6 +34,7 @@ shared/
   gameplay-expansion.js   (serie, precyzja, combo, wyzwanie dnia, kontrakty, album cech)
   stable-panel.js         (stabilny panel gier idle)
   modal-accessibility.js  (dostępność modali gier idle)
+  records.js              (okno „🏆 Rekordy” w grach)
   main-menu.js/.css       (karty gier w menu)
   cute-ui.css, game-enhancements.css
 tests/
@@ -128,6 +129,17 @@ Mechaniki dodatkowe per gra (seria liści w Runnerze, precyzyjne lądowania w Ju
 - stan dnia kontraktów `{ date, baseline, claimed }` jest w dokumencie gry `sowiegry_gry/{gra}.daily` (`SowieCloud.game` / `updateGame`); dane z poprzedniego dnia są zastępowane;
 - album cech Szklarni: `sowiegry_gry/szklarnia.traitAlbum` (tablica kluczy `wzrost|zapach`);
 - rekord wyzwania dnia zapisuje gra przez `SowieCloud.submitRun()` (`dailyBest` w dokumencie gry); moduł nie zapisuje go sam.
+
+### `shared/records.js` — okno „🏆 Rekordy” (`window.SowieRecords`)
+
+Ładowane w każdej grze po `game-guides.js` (potrzebuje doku `SowieGameGuides.getDock()`). Gra bieżącej strony: `SowieCloud.gameId()`; bez niej moduł nic nie robi. Dodaje do doku przycisk 🏆 (`.sowie-tool-button`, `data-records-fab`, `aria-label="Otwórz rekordy"`), który otwiera modal `.sowie-modal-backdrop.sowie-records-backdrop` z kartą `role="dialog"` i nagłówkiem „🏆 Rekordy — <nazwa gry>”:
+
+- **gry zręcznościowe:** przyciski poziomów Chill / Arcade / Chaos (`data-records-difficulty`, `aria-pressed`; startowo poziom wybrany w grze — Runner: `RUNNER_LEVEL_IDS[level]`, Jumper i Sowa3: `state.difficultyKey`), kafelki „Najlepszy wynik” (`[data-records-best]`), „Dystans” (Runner) lub „Wysokość” (Jumper) i „Rozgrywki (wszystkie poziomy)” z `SowieCloud.records`; „Top 10 — <poziom>” z `SowieCloud.game(id).top10[poziom]` (wynik, dystans/wysokość, data `pl-PL`) albo „Brak rozgrywek na tym poziomie…”; „Ostatnie gry” — `SowieCloud.history(id, 10)` wczytywane asynchronicznie („Wczytuję…”, przy błędzie „Nie udało się wczytać ostatnich gier.”), z poziomem i oznaczeniem „wyzwanie dnia”; „Wyzwanie dnia” — 7 najnowszych wpisów `dailyBest` (jednostka „m” dla dystansu/wysokości, „pkt” dla wyniku);
+- **gry idle:** podsumowanie z `profil.records` — Ogrody: liście w całej grze, Wielkie Przesadzania, strefa; Szklarnia: liście w całej grze, pomieszczenia, odkryte hybrydy;
+- przed `SowieCloud.ready` — „Wczytuję rekordy…”; liczby formatowane `toLocaleString("pl-PL")`, teksty z bazy przepuszczane przez `escapeHtml`;
+- zamykanie: „Zamknij”, Escape, kliknięcie tła; fokus wraca do przycisku 🏆.
+
+Style (`shared/game-enhancements.css`): `.sowie-records-tabs` (flex, odstęp 8 px, przyciski min. 44 px, wybrany poziom tło `#f0e5ff`), `.sowie-records-list` (daty w kolorze `#6b5a78`, 0,9 em); kafelki jak w Akademii (`.sowie-academy-grid`, `.sowie-academy-stat`).
 
 ### `shared/sowie-runtime.js`
 
@@ -244,11 +256,17 @@ Zależności deweloperskie są przypięte tam, gdzie wersja wpływa na przegląd
 
 `chmura.spec.js` (Analiza 3, zadanie 1.9):
 
-- ekran „Hasło sowy”: atrybuty pola (`autocapitalize`, `autocorrect`, `spellcheck`, `enterkeyhint`), czcionka ≥ 16 px, przycisk „Wejdź” ≥ 48 px, w całości na ekranie i w dolnej połowie, brak przewijania w bok i powiększenia po dotknięciu pola, błąd dla „hu hu”, oczko, wejście przez „ Huhu ” + Enter, w `localStorage` tylko `sowiegry:urzadzenie`, po przeładowaniu brak ekranu hasła;
+- ekran „Hasło sowy”: atrybuty pola (`autocapitalize`, `autocorrect`, `spellcheck`, `enterkeyhint`), czcionka ≥ 16 px, przycisk „Wejdź” ≥ 48 px, w całości na ekranie i w dolnej połowie, pole, oczko i przycisk w całości w szerokości ekranu, brak przewijania w bok i powiększenia po dotknięciu pola, błąd dla „hu hu”, oczko, wejście przez „ Huhu ” + Enter, w `localStorage` tylko `sowiegry:urzadzenie`, po przeładowaniu brak ekranu hasła;
 - pisanie hasła na stronie SowaRunner nie uruchamia gry; po wejściu stuknięcie startuje bieg;
 - emulator: pierwsze połączenie tworzy `sowiegry/meta` (schemaVersion 1, 5 gier, `createdAt`) i `sowiegry/profil`; status `online`;
 - emulator: koniec gry w SowaJumper zapisuje rekord (`records.jumper.arcade`, `runs`, `top10`, historia), a **drugi kontekst przeglądarki (drugie urządzenie)** widzi ten rekord w `SowieCloud.records` i na ekranie gry;
-- emulator: zejście do tła zapisuje stan Ogrodów od razu, a powrót po 10 minutach pokazuje okno postępu offline.
+- emulator: zejście do tła zapisuje stan Ogrodów od razu, a powrót po 10 minutach pokazuje okno postępu offline;
+- ekran hasła przykrywa dok przycisków gry (instrukcja, rekordy, galeria).
+
+`rekordy.spec.js`:
+
+- emulator, SowaJumper z `?daily=1`: dwie rozgrywki → okno 🏆 pokazuje najlepszy wynik, top 10 (2 wpisy), ostatnie gry (z oznaczeniem wyzwania dnia) i rekord dnia; poziom Chaos ma osobne, puste rekordy;
+- Sowie Ogrody: okno 🏆 pokazuje podsumowanie gry idle; Escape zamyka.
 
 ### Emulator Firestore
 
@@ -537,15 +555,15 @@ Każda nakładka zatrzymuje propagację zdarzeń klawiatury, wskaźnika, dotyku,
 
 **Style** (`shared/cute-ui.css`, sekcje „SowieCloud”), zaprojektowane pod telefon w pionie od 320 px:
 
-- `.sowie-gate`: `position: fixed`, `z-index: 9000`, `top: var(--sowie-gate-top, 0)`, `height: var(--sowie-gate-height, 100dvh)` (zapasowo `100vh`), kolumna flex `space-between`, odstęp 16 px, marginesy wewnętrzne z bezpiecznymi obszarami (`max(20px, env(safe-area-inset-top))`, boki `max(16px, …)`), tło `linear-gradient(180deg, #bfe9ff, #fff6e3)`, czcionka `500 16px/1.4 system-ui`, `touch-action: manipulation` (bez powiększania podwójnym tapnięciem);
+- `.sowie-gate`: `position: fixed`, `z-index: 20000` (ponad dokiem gier `9000` i modalami `12000`), `top: var(--sowie-gate-top, 0)`, `height: var(--sowie-gate-height, 100dvh)` (zapasowo `100vh`), kolumna flex `space-between`, odstęp 16 px, marginesy wewnętrzne z bezpiecznymi obszarami (`max(20px, env(safe-area-inset-top))`, boki `max(16px, …)`), tło `linear-gradient(180deg, #bfe9ff, #fff6e3)`, czcionka `500 16px/1.4 system-ui`, `touch-action: manipulation` (bez powiększania podwójnym tapnięciem);
 - `.sowie-gate-hero`: środek ekranu, może się kurczyć (`min-height: 0`); sowa `clamp(56px, 18vw, 96px)` z animacją `sowieGateBob` (2,4 s, ±6 px); nagłówek `clamp(26px, 8vw, 34px)`; przy wysokości ≤ 460 px (otwarta klawiatura) sowa i opis są ukrywane;
-- `.sowie-gate-form`: przy dolnej krawędzi (strefa kciuka), szerokość do 420 px;
+- `.sowie-gate-form`: przy dolnej krawędzi (strefa kciuka), szerokość do 420 px, siatka z jedną kolumną `minmax(0, 1fr)` (bez tego kolumna rośnie do minimalnej szerokości pola i na 320 px wychodzi poza ekran); pole hasła `flex: 1 1 0%; width: 0; min-width: 0`;
 - pole: wysokość min. 52 px, ramka 2 px `rgba(59,47,74,.25)`, zaokrąglenie 16 px, **czcionka 18 px** (≥ 16 px — iOS nie powiększa strony przy dotknięciu pola);
 - oczko 52 × 52 px (żółte `--sowie-yellow`, gdy hasło widoczne); „Wejdź” na całą szerokość, min. 52 px wysokości, żółte, cień `0 10px 24px`; fokus: obrys 3 px `#4d8fd6`;
 - komunikat błędu: tło `rgba(255,95,130,.16)`, kolor `#8f1d33`, pogrubiony, wyśrodkowany; animacja `sowieGateShake` 320 ms;
-- `.sowie-cloud-loading`: `z-index: 8900`, cały ekran, tło `rgba(255,246,227,.86)` z rozmyciem 6 px, sowa 64 px z animacją 1,2 s i tekst „Wczytuję postęp…” (`role="status"`);
-- `.sowie-cloud-offline`: `z-index: 8800`, u góry z bezpiecznym obszarem, szerokość `min(92vw, 420px)`, żółte tło, 14 px, `pointer-events: none`;
-- `.sowie-cloud-dialog`: `z-index: 8950`, karta przy dolnej krawędzi (strefa kciuka), przyciski min. 52 px;
+- `.sowie-cloud-loading`: `z-index: 19900`, cały ekran, tło `rgba(255,246,227,.86)` z rozmyciem 6 px, sowa 64 px z animacją 1,2 s i tekst „Wczytuję postęp…” (`role="status"`);
+- `.sowie-cloud-offline`: `z-index: 19800`, u góry z bezpiecznym obszarem, szerokość `min(92vw, 420px)`, żółte tło, 14 px, `pointer-events: none`;
+- `.sowie-cloud-dialog`: `z-index: 19950`, karta przy dolnej krawędzi (strefa kciuka), przyciski min. 52 px;
 - przy `prefers-reduced-motion: reduce` animacje sowy i potrząśnięcia są wyłączone.
 
 `window.SowiePasswordGate = { show, hide }` — ręczne pokazanie/ukrycie ekranu (diagnostyka).

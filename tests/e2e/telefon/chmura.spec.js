@@ -31,6 +31,12 @@ test.describe("ekran „Hasło sowy”", () => {
     expect(box.y + box.height).toBeLessThanOrEqual(viewport.height);
     expect(box.y + box.height / 2).toBeGreaterThan(viewport.height / 2);
     expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBeLessThanOrEqual(0);
+    // Pole, oczko i przycisk mieszczą się w całości w szerokości ekranu (od 320 px).
+    for (const element of [input, gate.getByRole("button", { name: "Pokaż hasło" }), submit]) {
+      const rect = await element.boundingBox();
+      expect(rect.x).toBeGreaterThanOrEqual(0);
+      expect(rect.x + rect.width).toBeLessThanOrEqual(viewport.width);
+    }
 
     await input.tap();
     expect(await page.evaluate(() => window.visualViewport?.scale ?? 1)).toBe(1);
@@ -62,6 +68,14 @@ test.describe("ekran „Hasło sowy”", () => {
     await page.goto("/SowaRunner/?seed=haslo-gra", { waitUntil: "load" });
     const gate = page.getByRole("dialog", { name: "Hasło sowy" });
     const input = gate.getByLabel("Hasło", { exact: true });
+    // Ekran hasła przykrywa także dok przycisków gry (instrukcja, rekordy, galeria).
+    await expect(page.locator("[data-records-fab]")).toHaveCount(1);
+    const covered = await page.evaluate(() => {
+      const rect = document.querySelector("[data-records-fab]").getBoundingClientRect();
+      const top = document.elementFromPoint(rect.x + rect.width / 2, rect.y + rect.height / 2);
+      return Boolean(top?.closest(".sowie-gate"));
+    });
+    expect(covered).toBe(true);
     await input.tap();
     await input.pressSequentially(" huhu ");
     await expect(input).toHaveValue(" huhu ");
@@ -95,7 +109,8 @@ test("pierwsze połączenie tworzy sowiegry/meta i sowiegry/profil", async ({ pa
   expect(profile.name).toBe("Sowa");
   expect(profile.cosmetics).toEqual({ unlocked: ["none", "bow"], selected: "none" });
   expect(Object.keys(profile).length).toBeLessThanOrEqual(30);
-  expect(await page.evaluate(() => window.SowieCloud.status())).toBe("online");
+  // Po potwierdzeniu zapisu przez bazę status przechodzi z „zapisywanie” w „online”.
+  await expect.poll(() => page.evaluate(() => window.SowieCloud.status())).toBe("online");
   expect(errors).toEqual([]);
 });
 
