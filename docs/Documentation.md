@@ -359,7 +359,8 @@ Zależności deweloperskie są przypięte tam, gdzie wersja wpływa na przegląd
 
 `pwa.spec.js` (E2a, `serviceWorkers: "allow"`):
 
-- po pierwszej wizycie service worker kontroluje stronę; bez sieci (`context.setOffline(true)`) menu ładuje się z pamięci podręcznej (5 kart gier, garderoba), bez błędów.
+- po pierwszej wizycie service worker kontroluje stronę, a pamięć `sowiegry-v1` zawiera wszystkie pliki z listy `SHELL` (lista czytana wprost z `sw.js`);
+- w Chromium dodatkowo: bez sieci (`context.setOffline(true)`) menu ładuje się z pamięci podręcznej (5 kart gier, garderoba), bez błędów. Playwright w WebKit nie potrafi przeładować strony offline przez service worker (błąd „WebKit encountered an internal error”), dlatego na profilach WebKit test kończy się na sprawdzeniu zawartości pamięci podręcznej.
 
 `rekordy.spec.js`:
 
