@@ -57,8 +57,8 @@ jobs:
       - name: Run unit tests
         run: npm run test:unit
 
-      # Testy przeglądarkowe biegną na emulatorze Firestore (projekt demo-sowiegry), nigdy na produkcji.
-      - name: Run browser tests on Firestore emulator
+      # Testy reguł i testy przeglądarkowe biegną na emulatorze Firestore (projekt demo-sowiegry), nigdy na produkcji.
+      - name: Run rules and browser tests on Firestore emulator
         run: npm run test:e2e
 
       - name: Upload Playwright report
