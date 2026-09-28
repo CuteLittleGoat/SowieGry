@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <!-- Serduszko-doniczka (życie w HUD): doniczka w kształcie serca, ziemia u góry i kiełek monstery. -->
+  <defs>
+    <clipPath id="serce">
+      <path d="M64 122 C40 106 14 88 14 64 C14 50 24 42 36 42 C48 42 58 48 64 58 C70 48 80 42 92 42 C104 42 114 50 114 64 C114 88 88 106 64 122 Z"/>
+    </clipPath>
+  </defs>
+  <g stroke="#3b2f4a" stroke-width="4" stroke-linejoin="round" stroke-linecap="round">
+    <path d="M64 56 Q62 38 64 22" fill="none" stroke-width="5"/>
+    <path d="M64 30 C54 16 38 18 36 28 C46 34 56 34 64 30 Z" fill="#3fae6a"/>
+    <path d="M65 24 C74 8 92 10 94 20 C84 28 72 28 65 24 Z" fill="#3fae6a"/>
+  </g>
+  <path d="M64 122 C40 106 14 88 14 64 C14 50 24 42 36 42 C48 42 58 48 64 58 C70 48 80 42 92 42 C104 42 114 50 114 64 C114 88 88 106 64 122 Z" fill="#ff6f91"/>
+  <g clip-path="url(#serce)">
+    <path d="M0 40 L128 40 L128 58 Q112 62 96 58 Q80 54 64 62 Q48 54 32 58 Q16 62 0 58 Z" fill="#8a5a3b"/>
+    <path d="M0 58 Q16 62 32 58 Q48 54 64 62 Q80 54 96 58 Q112 62 128 58" fill="none" stroke="#e57a5c" stroke-width="5"/>
+  </g>
+  <path d="M64 122 C40 106 14 88 14 64 C14 50 24 42 36 42 C48 42 58 48 64 58 C70 48 80 42 92 42 C104 42 114 50 114 64 C114 88 88 106 64 122 Z" fill="none" stroke="#3b2f4a" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M26 74 Q26 68 30 64" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round"/>
+  <ellipse cx="44" cy="86" rx="7" ry="4.5" fill="#ff9fb2"/>
+  <ellipse cx="84" cy="86" rx="7" ry="4.5" fill="#ff9fb2"/>
+  <circle cx="50" cy="78" r="3.5" fill="#3b2f4a"/>
+  <circle cx="78" cy="78" r="3.5" fill="#3b2f4a"/>
+  <path d="M58 88 Q64 94 70 88" fill="none" stroke="#3b2f4a" stroke-width="3" stroke-linecap="round"/>
+  <path d="M42 26 Q50 26 58 29 M72 21 Q80 18 88 19" fill="none" stroke="#2e8b57" stroke-width="2" stroke-linecap="round"/>
+</svg>

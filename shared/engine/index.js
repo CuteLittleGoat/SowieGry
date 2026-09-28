@@ -11,3 +11,5 @@ export * from "./input.js";
 export * from "./scene.js";
 export * from "./safe-area.js";
 export * from "./shell.js";
+export * from "./assets.js";
+export * from "./sprites.js";

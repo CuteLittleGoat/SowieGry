@@ -17,6 +17,7 @@
   <script src="../shared/password-gate.js"></script>
   <script src="../shared/pwa.js"></script>
   <link rel="stylesheet" href="../shared/cute-ui.css" />
+  <link rel="stylesheet" href="../shared/world/tokens.css" />
   <link rel="stylesheet" href="../shared/engine/shell.css" />
   <link rel="stylesheet" href="lab.css" />
   <script type="module" src="main.js"></script>
@@ -29,11 +30,18 @@
       <span class="lab-fps" data-fps>— kl./s</span>
     </header>
     <nav class="lab-tabs" aria-label="Działy Laboratorium">
-      <button type="button" data-tab="gesty" aria-pressed="true">Gesty</button>
+      <button type="button" data-tab="postacie" aria-pressed="true">Postacie</button>
+      <button type="button" data-tab="gesty" aria-pressed="false">Gesty</button>
       <button type="button" data-tab="info" aria-pressed="false">Informacje</button>
     </nav>
 
-    <section class="lab-panel lab-panel-stage" data-panel="gesty" aria-label="Test gestów">
+    <section class="lab-panel" data-panel="postacie" aria-label="Postacie Sowiego Świata">
+      <p class="lab-note" data-characters-status aria-live="polite">Rysuję postacie…</p>
+      <div class="lab-chips" role="group" aria-label="Dodatek z garderoby na animowanej sowie" data-cosmetics></div>
+      <div class="lab-characters" data-characters></div>
+    </section>
+
+    <section class="lab-panel lab-panel-stage" data-panel="gesty" aria-label="Test gestów" hidden>
       <div class="lab-stage" data-stage>
         <canvas data-gesture-canvas role="img" aria-label="Pole testu gestów z zaznaczonymi martwymi strefami"></canvas>
         <p class="lab-last" data-last-gesture aria-live="polite">Dotknij, przytrzymaj albo przesuń palcem</p>

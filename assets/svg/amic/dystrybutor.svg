@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <!-- Amic — Dystrybutor (ciężka, stała przeszkoda). Nazwę „Amic” na czerwonym pasie dokłada atlas czcionką Fredoka. -->
+  <g stroke="#3b2f4a" stroke-width="4" stroke-linejoin="round" stroke-linecap="round">
+    <path d="M92 48 C110 48 112 62 110 80 L108 100" fill="none" stroke="#7d7590" stroke-width="5"/>
+    <rect x="30" y="8" width="62" height="108" rx="10" fill="#ffffff"/>
+    <path d="M30 34 L30 18 Q30 8 40 8 L82 8 Q92 8 92 18 L92 34 Z" fill="#d9303e"/>
+    <rect x="30" y="80" width="62" height="12" fill="#2fa84f"/>
+    <rect x="40" y="42" width="42" height="28" rx="5" fill="#dff5fb"/>
+    <rect x="22" y="112" width="78" height="12" rx="4" fill="#c9c3d3"/>
+    <path d="M100 96 L114 96 L116 110 L104 112 Z" fill="#7d7590"/>
+  </g>
+  <g stroke="#3a86b8" stroke-width="3" stroke-linecap="round">
+    <path d="M46 52 L66 52 M46 61 L58 61 M70 61 L76 61"/>
+  </g>
+  <path d="M36 98 L36 108 M86 98 L86 108" stroke="#c9c3d3" stroke-width="3" stroke-linecap="round"/>
+</svg>

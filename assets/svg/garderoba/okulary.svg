@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <!-- Okulary: okrągłe oprawki na oczach sowy, lekko niebieskie szkła. -->
+  <g fill="#bfe9ff" fill-opacity="0.35" stroke="#3b2f4a" stroke-width="4.5">
+    <circle cx="46" cy="57" r="17"/>
+    <circle cx="82" cy="57" r="17"/>
+  </g>
+  <g fill="none" stroke="#3b2f4a" stroke-width="4" stroke-linecap="round">
+    <path d="M60 53 Q64 49 68 53"/>
+    <path d="M29 55 L22 51"/>
+    <path d="M99 55 L106 51"/>
+  </g>
+  <path d="M36 50 Q39 45 44 44 M72 50 Q75 45 80 44" fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/>
+</svg>

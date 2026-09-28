@@ -38,12 +38,16 @@ shared/
   main-menu.js/.css       (karty gier w menu)
   cute-ui.css, game-enhancements.css
   pwa.js                  (rejestracja service workera)
-  engine/                 (Sowi Silnik — moduły ES: pętla, widok, kamera, gesty, sceny, powłoka telefonu…)
-lab/                      (Sowie Laboratorium — strona testowa silnika na telefonie)
+  engine/                 (Sowi Silnik — moduły ES: pętla, widok, kamera, gesty, sceny, powłoka telefonu, atlas grafik…)
+  world/                  (Sowi Świat — tokeny kolorów, czcionka, Sówka, katalog grafik postaci)
+lab/                      (Sowie Laboratorium — strona testowa silnika na telefonie: postacie, gesty, informacje)
 assets/icons/             (ikona aplikacji SVG i PNG)
+assets/svg/               (źródła SVG postaci: sowa/, garderoba/, kozki/, humbak/, pracu/, amic/, liscie/, interfejs/)
+assets/fonts/             (Fredoka 500 i 700 z polskimi literami, WOFF2, licencja OFL.txt)
 manifest.webmanifest      (PWA)
 sw.js                     (service worker — w katalogu głównym, żeby obejmował całą stronę)
 scripts/make-icons.cjs    (generowanie ikon PNG z SVG)
+scripts/make-fonts.py     (budowa czcionek Fredoka z polskimi literami — jednorazowo, wynik w repo)
 tests/
   smoke.html
   e2e/            (testy Playwright; telefon/ — testy na profilach telefonów)
@@ -215,6 +219,128 @@ Moduły ES (`<script type="module">`, bez etapu budowania) dla przebudowanych gi
   - blokada `gesturestart` (szczypanie na iOS) i `dblclick` na planszy;
 - `shell.css`: `html.sowie-shell` (bez przewijania, `overscroll-behavior: none` — bez „pociągnij, aby odświeżyć”), `.sowie-stage` (`position: fixed`, `height: 100dvh`, `touch-action: none`, `user-select: none`, `-webkit-touch-callout: none`), przyciski i linki `touch-action: manipulation`, style okna pauzy (karta `#fff6e3`, zaokrąglenie 24 px), odliczania (biały, `min(40vw, 180px)`, cień `#3b2f4a`) i paska oszczędzania.
 
+### `assets.js` i `sprites.js` — atlas grafik (E2b)
+
+Grafiki postaci powstają w SVG (`assets/svg/`), a przy starcie są rasteryzowane do atlasu w rozdzielczości urządzenia. W trakcie gry każda postać to jedno `drawImage` z wycinka atlasu.
+
+`assets.js`:
+
+- `loadText(url, { fetchImpl })` — pobiera plik tekstowy raz na sesję strony (pamięć `Map`, po błędzie wpis jest usuwany);
+- `viewBoxOf(svg)` — `[x, y, szerokość, wysokość]` z atrybutu `viewBox` głównego `<svg>` (błąd, gdy go brak lub jest niepoprawny);
+- `sizeSvg(svg, width, height)` — usuwa `width`/`height` z głównego `<svg>` i wstawia zaokrąglone nowe (`<svg width="…" height="…" …>`); dzięki temu przeglądarka rysuje wektor ostro w docelowym rozmiarze (Safari skalowałby już zrasteryzowany obrazek);
+- `svgToImage(svg, width, height, { createImage })` — `Blob` (`image/svg+xml`) → `URL.createObjectURL` → `Image` (`decoding = "async"`, `await image.decode()` albo `onload`), adres zwalniany w `finally`;
+- `loadFonts(opisy = ['500 16px "Fredoka"', '700 16px "Fredoka"'], { timeoutMs = 3000, fonts })` — `document.fonts.load(opis, "AaĄąŻż0123")` dla każdej odmiany; po 3 s albo przy błędzie zwraca `false` (napisy rysują się wtedy czcionką zapasową).
+
+`sprites.js`:
+
+- `packShelves(items, { maxSize = 2048, padding = 2 })` — czysta funkcja: prostokąty `{ name, w, h }` (piksele, zaokrąglane w górę) sortowane od najwyższych (potem najszerszych, potem po nazwie) i układane w półkach od lewej; gdy wiersz się nie mieści — nowa półka, gdy półka nie mieści się w wysokości — nowa strona; wynik `{ pages: [{ width, height }], placements: { nazwa: { page, x, y, w, h } } }` (strony przycięte do zajętego obszaru + margines); grafika większa niż strona → błąd „nie mieści się na stronie”;
+- `cellSize(sprite, ppu)` — rozmiar komórki `ceil(size × ppu)` (min. 1 px);
+- `svgFiles(catalog)` — lista plików SVG użytych w katalogu, bez powtórzeń;
+- `createAtlas({ catalog, baseUrl, maxSize, padding, createCanvas, fontFor, load, rasterize, fonts })`:
+  - `catalog` — `{ nazwa: { box: [szer, wys] (jednostki SVG), size: [szer, wys] (jednostki świata), anchor: [ax, ay] (0–1), layers: [...] } }`; warstwa SVG: `{ svg, dx, dy, rotate (stopnie), pivot: [x, y], scale, alpha }` (przekształcenia w jednostkach pudełka: przesunięcie, potem obrót i skala wokół `pivot`); warstwa napisu: `{ text, x, y, size, weight = 700, color, align = "center", maxWidth, stroke, strokeWidth }` (linia bazowa `middle`);
+  - `build(ppu)` — czeka na czcionki, wczytuje wszystkie pliki SVG, układa komórki `packShelves`, rasteryzuje każdy plik raz na rozmiar (pamięć `plik@szer×wys`), a potem dla każdej grafiki: przycięcie do komórki, skala `komórka / box`, warstwy po kolei (`drawImage` obrazka w rozmiarze jego `viewBox` albo `fillText`/`strokeText` czcionką `fontFor(size, weight)` = `"<waga> <rozmiar>px "Fredoka", system-ui, sans-serif"`); kolejne wywołanie unieważnia wcześniejszą, niedokończoną budowę; zwraca `true` po podmianie stron;
+  - `ensure(ppu, tolerance = 0.15)` — buduje tylko przy pierwszym razie albo zmianie gęstości o ponad 15% (np. obrót tabletu); w przeciwnym razie `false`;
+  - `ready()`, `pixelsPerUnit()`, `has(nazwa)`, `names()`, `pages()` (płótna stron), `sprite(nazwa)`, `frame(nazwa)` (wycinek);
+  - `draw(ctx, nazwa, x, y, { width, height, anchor, scaleX, scaleY, rotation, alpha, flipX })` — rysuje w bieżących jednostkach kontekstu (zwykle świata); `(x, y)` to punkt kotwicy; domyślny rozmiar = `size` z katalogu (sama `width` zachowuje proporcje); bez obrotu, skali i przezroczystości — jedno `drawImage(strona, sx, sy, sw, sh, x − w·ax, y − h·ay, w, h)`, w pozostałych przypadkach `save → translate → rotate → scale → drawImage → restore`; nieznana nazwa → `false`;
+  - gęstość `ppu` = piksele urządzenia na jednostkę świata (`skala widoku × DPR`, DPR max 2), więc grafika w grze trafia na ekran 1:1;
+- `drawShadow(ctx, x, y, szerokość, { lift = 0, color = "#3b2f4a", alpha = 0.18 })` — miękki cień-elipsa (promienie `szerokość/2` i `szerokość/8`); `lift` 0–1 (wysokość nad ziemią) zmniejsza cień do 40% i rozjaśnia do połowy.
+
+`shared/engine/index.js` eksportuje także `assets.js` i `sprites.js`.
+
+## Sowi Świat (`shared/world/`, `assets/svg/`, `assets/fonts/`) — etap E2b
+
+Biblia wyglądu wspólna dla wszystkich przebudowanych gier (Analiza 2, rozdz. 2.2–2.3). Moduły ES (`shared/world/package.json` z `"type": "module"`), `shared/world/index.js` eksportuje `tokens.js`, `owl.js` i `catalog.js`.
+
+### Tokeny (`tokens.css` i `tokens.js`)
+
+Te same kolory w CSS (`:root`, nazwy z myślnikami) i JS (`COLORS`, nazwy camelCase; `cssName("nieboGora")` → `--niebo-gora`). Test jednostkowy pilnuje zgodności obu list.
+
+| Token | Kolor | Użycie |
+|---|---|---|
+| `--niebo-gora` / `--niebo-dol` | `#bfe9ff` / `#fff6e3` | tła |
+| `--monstera` / `--monstera-ciemna` / `--monstera-jasna` | `#3fae6a` / `#2e8b57` / `#8fdcaa` | liście, sukces, nerwy i odblaski liści |
+| `--zloto` / `--zloto-ciemne` | `#f4c542` / `#d99a1e` | złote liście, rekordy, słomkowy kapelusz |
+| `--policzki` | `#ff9fb2` | policzki postaci |
+| `--kontur` | `#3b2f4a` | kontury i tekst (nigdy czysta czerń) |
+| `--pracu` | `#e8465a` | Pracu Pracu, zagrożenie |
+| `--amic-zielony` / `--amic-czerwony` | `#2fa84f` / `#d9303e` | Amic |
+| `--woda` / `--woda-ciemna` / `--woda-jasna` | `#5cc8e8` / `#3a86b8` / `#dff5fb` | woda, humbak, bąbelki, szyby |
+| `--sowa` / `--sowa-ciemna` / `--sowa-twarz` / `--sowa-brzuszek` | `#b07a52` / `#8a5a3b` / `#e2b98f` / `#f3e3c8` | Sówka (tułów, skrzydła i uszka, tarcza twarzy, brzuszek); ziemia w doniczce, drewno |
+| `--dziobek` | `#f59e3b` | dziobek i stopy |
+| `--bialy` | `#ffffff` | białka oczu, odblaski, papier |
+| `--pomaranczowy`, `--fiolet`, `--niebieski`, `--serce` | `#ff9d4d`, `#9b6ddb`, `#4d9de0`, `#ff6f91` | chustki kózek, garderoba, serduszko |
+| `--koza` / `--koza-cien` / `--rogi` | `#fffaf2` / `#eadcc6` / `#c9a47e` | kózki |
+| `--szary` / `--szary-ciemny` | `#c9c3d3` / `#7d7590` | metal, koła, utracone życie |
+| `--doniczka` | `#e57a5c` | brzeg ziemi w doniczce |
+
+Poza kolorami: `--kontur-grubosc: 3px`, `--czcionka-sowia: "Fredoka", system-ui, -apple-system, "Segoe UI", sans-serif`, `--czcionka-tekst: 500`, `--czcionka-pogrubiona: 700`. W JS: `OUTLINE = 4` (grubość konturu w pliku 128 × 128 ≈ 3 px przy sowie wysokiej na 96 px), `FONT_FAMILY`, `FONT_WEIGHTS = { tekst: 500, pogrubiony: 700 }`, `font(rozmiar, waga = 700)` → napis do `ctx.font`.
+
+### Czcionka Fredoka (`assets/fonts/`)
+
+Fredoka z Google Fonts **nie ma gotowych polskich liter** z ogonkami i kreskami (ą ć ę ń ś ź ż i wielkie; ma tylko ł, ó), ma natomiast znaki łączące (U+0301, U+0307, U+0328 i ich wersje `.case` dla wielkich liter) z kotwicami GPOS. `scripts/make-fonts.py` (Python + `fonttools`, `brotli`; licencja SIL OFL 1.1 bez zastrzeżonej nazwy pozwala na modyfikację):
+
+1. z czcionki zmiennej `Fredoka[wdth,wght].ttf` (repozytorium google/fonts) tworzy statyczne odmiany **500** i **700** przy szerokości 100 (`instantiateVariableFont`, nazwy „Fredoka Medium” / „Fredoka Bold”);
+2. dokłada 14 liter jako glify złożone: litera bazowa (flagi `ROUND_XY_TO_GRID | USE_MY_METRICS`) + znak łączący w miejscu wyliczonym z kotwic mark-to-base (`kotwica bazy − kotwica znaku`), szerokość jak litera bazowa, wpis w `cmap`: `aogonek, cacute, eogonek, nacute, sacute, zacute, zdotaccent` (`uni0328`, `acutecomb`, `uni0307`) i wielkie `Aogonek, Eogonek` (`uni0328`), `Cacute, Nacute, Sacute, Zacute` (`acutecomb.case`), `Zdotaccent` (`uni0307.case`);
+3. zostawia tylko potrzebne znaki (ASCII, Latin-1, polskie litery, Łł, – — ‘ ’ ‚ “ ” „ • … € −) i funkcje `kern, liga, mark, mkmk, ccmp`, zapisuje WOFF2: `fredoka-500.woff2` (~15 KB), `fredoka-700.woff2` (~15 KB).
+
+`tokens.css` deklaruje `@font-face` „Fredoka” 500 i 700 (`font-display: swap`, ścieżki `../../assets/fonts/…`). Licencja: `assets/fonts/OFL.txt`.
+
+### Zasady plików SVG (`assets/svg/`)
+
+- główny element dokładnie `<svg xmlns="http://www.w3.org/2000/svg" viewBox="…" width="…" height="…">`; postacie w pudełku **128 × 128** (humbak, cysterna, sterowiec 256 × 128; znak z cenami 128 × 256; bąbelek 32 × 32);
+- kolory **wyłącznie z palety** tokenów, bez czystej czerni; kontur `#3b2f4a`, zwykle `stroke-width="4"` (detale 2–3,5), `stroke-linejoin="round"`, `stroke-linecap="round"`; zaokrąglone kształty, odblaski białe;
+- bez `<text>`, `<image>`, `<script>`, `<style>`, `<foreignObject>` i adresów zewnętrznych — napisy (np. „Pracu pracu!”, „Amic”, ceny) dokłada atlas czcionką Fredoka (obrazek SVG nie widzi czcionek strony); dozwolone `<defs>`, `<use href="#…">`, `<clipPath>`, `<linearGradient>` (identyfikatory są lokalne dla pliku);
+- komentarz na początku pliku opisuje grafikę po polsku.
+
+Pliki (wszystkie w repozytorium; opis wyglądu):
+
+| Plik | Wygląd |
+|---|---|
+| `sowa/cialo.svg` | tułów: uszka `--sowa-ciemna` (trójkąty), owal `--sowa` 84 × 92, brzuszek `--sowa-brzuszek` z trzema „v” piórek, tarcza twarzy `--sowa-twarz` (dwa połączone koła), policzki `--policzki` (44, 79) i (84, 79), dziobek `--dziobek` (57–71, 66–80) |
+| `sowa/oczy.svg`, `sowa/zrenice.svg` | białka r = 14 w (46, 57) i (82, 57) z konturem 4; źrenice r = 9 w (47, 58)/(83, 58) z odblaskami r = 3,4 i 1,6 (osobna warstwa — przesuwana, gdy sowa patrzy w bok) |
+| `sowa/oczy-zamkniete.svg`, `oczy-radosc.svg`, `oczy-oszolomione.svg` | mrugnięcie (łuki w dół), radość „^ ^”, spirale w białkach |
+| `sowa/skrzydlo-lewe.svg`, `skrzydlo-prawe.svg` | skrzydła-łezki `--sowa-ciemna` z dwoma piórkami, obrót wokół barków (34, 68) i (94, 68) |
+| `sowa/stopa-lewa.svg`, `stopa-prawa.svg` | stopy z trzema paluszkami w (50, 117) i (78, 117) |
+| `sowa/gwiazdki.svg` | trzy złote gwiazdki nad głową |
+| `garderoba/kokardka.svg`, `okulary.svg`, `wianek.svg`, `kapelusz-ogrodnika.svg`, `czapka.svg`, `szalik.svg`, `plecak.svg` (za sową), `plecak-szelki.svg` (przed sową), `babelki.svg`, `babelek.svg` | 9 pozycji garderoby jako nakładki w układzie sowy: różowa kokardka przy prawym uszku, okrągłe okulary z niebieskawymi szkłami, wianek z 5 kwiatkami (`<use>`), słomkowy kapelusz z zieloną wstążką i listkiem, niebieska czapka z daszkiem w prawo, różowy szalik w białe paski, fioletowy plecak z szelkami, bąbelki przy lewym boku; pojedynczy bąbelek to cząsteczka śladu |
+| `kozki/koza.svg`, `koza-skok.svg` | biała kózka z profilu (w prawo): rogi, uszko, bródka, ogonek, łatka; stoi (oko z odblaskiem) albo leci z podkulonymi nóżkami (oko zmrużone, języczek) |
+| `kozki/koza-sprezynka.svg`, `-tarcza`, `-magnes`, `-turbo`, `-podwajaczka` | nakładki: chustka na szyi w kolorze kózki (żółta, niebieska, fioletowa, pomarańczowa, zielona) i biała plakietka z ikoną (sprężyna, bańka, magnes, błyskawica, „×2” narysowane ścieżkami) |
+| `humbak/humbak.svg` | niebieski humbak płynący w prawo: płetwa ogonowa, długa płetwa piersiowa, jasny brzuch z bruzdami, guzki na głowie, oko z odblaskiem, policzek, uśmiech |
+| `humbak/plusk.svg` | korona wody z okrągłymi czubkami, krople-łezki, fala u dołu |
+| `pracu/dymek.svg`, `telefon.svg`, `teczka.svg`, `mail.svg`, `tablica.svg`, `budzik.svg` | czerwono-białe „chochliki obowiązków” z groźnymi brewkami i oczkami: dymek z ogonkiem (napis „Pracu / pracu!”), wibrujący telefon ze słuchawką (wariant z napisem „Magda”), stos papierów z czerwoną teczką, koperta ze skrzydełkami, tablica na nóżkach („Przyjmiesz / zmianę?”), budzik z dzwonkami |
+| `amic/dystrybutor.svg`, `cysterna.svg`, `znak-cen.svg`, `wozek.svg`, `barierka.svg`, `kanister.svg`, `sterowiec.svg` | ciężka infrastruktura stacji w bieli, czerwieni i zielonym pasie, **bez twarzy** i bez logotypu marki (nazwa „Amic” pisana Fredoką): dystrybutor z wężem, cysterna jadąca w lewo, wysoki znak z cenami na dwóch słupkach (pod tablicą da się przejść ślizgiem), wózek z trzema kanistrami, barierka w pasy, kanister, sterowiec |
+| `liscie/zielony.svg`, `zloty.svg`, `teczowy.svg` | liść monstery z sześcioma nacięciami, nerwami i ogonkiem; złoty z błyskami; tęczowy z gradientem (czerwony → pomarańczowy → złoty → zielony → woda → fiolet) |
+| `interfejs/serduszko-doniczka.svg`, `serduszko-puste.svg` | życie w HUD: doniczka-serce z ziemią (`clipPath`), kiełkiem monstery, oczkami i uśmiechem; utracone życie — szare, puste, smutne |
+
+### Sówka (`owl.js`)
+
+- `OWL_BOX = 128`, `OWL_ANCHOR = [0.5, 122/128]` (ziemia pod stopami), `OWL_SIZE = 1.2` jednostki świata;
+- `OWL_POSES` — pozy składane z części: `body` (przesunięcie tułowia, oczu i skrzydeł w pionie), `wings` (obrót skrzydeł w stopniach; lewe `+`, prawe `−` = uniesione), `feet` (`[dx, dy, obrót]` dla każdej stopy wokół (50, 117) i (78, 117)), `eyes` (plik oczu), `pupils` (przesunięcie źrenic albo `null`):
+  - `stoi` (0, 0, oczy, źrenice 0/0), `mruga` (oczy zamknięte),
+  - `bieg-1…6`: tułów `[0, −3, −5, 0, −3, −5]`, skrzydła `[15, 35, 20, 5, 30, 15]`, stopy na przemian unoszone (np. klatka 1: lewa `[−2, 0, −10]`, prawa `[2, −6, 15]`), źrenice `[3, 0]` (patrzy w prawo),
+  - `skok` (tułów −2, skrzydła 60, stopy podkulone `[2, −6, −25]`/`[−2, −6, 25]`, źrenice `[2, −3]`), `szybuje` (skrzydła 95, stopy `[±2, −5, ∓30]`, źrenice `[3, 1]`), `oszolomiona` (skrzydła −12, oczy-spirale), `radosc` (tułów −2, skrzydła 70, oczy „^ ^”);
+- `owlLayers(poza)` — warstwy: stopa lewa, stopa prawa, tułów, skrzydło lewe, skrzydło prawe, oczy, (źrenice); wartości 0 pomijane;
+- `COSMETIC_SPRITES` — klucze jak `SowiePlatform.COSMETICS` → nakładki: `bow` → `garderoba-kokardka`, `glasses` → `garderoba-okulary`, `flowerCrown` → `garderoba-wianek`, `gardenerHat` → `garderoba-kapelusz-ogrodnika`, `cap` → `garderoba-czapka`, `scarf` → `garderoba-szalik`, `backpack` → za sową `garderoba-plecak` + przed sową `garderoba-plecak-szelki`, `bubbleTrail` → `garderoba-babelki`, `none` → brak;
+- `OWL_ACTIONS = ["stoi", "bieg", "skok", "szybowanie", "oszolomienie", "radosc"]`;
+- `createOwlAnimator({ random, runFps = 12 })`:
+  - `set(akcja)` (nieznana → błąd; zmiana zeruje czas akcji), `action()`, `land(siła 0–1)` (spłaszczenie), `blink()`;
+  - `update(dt, { vy })` — mrugnięcie na 0,12 s co `3 + random()·2` s; spłaszczenie wygasa w 0,18 s; w skoku rozciągnięcie `clamp(−vy·0,02, −0,08, 0,16)` (vy w jednostkach świata na sekundę, ujemne = w górę);
+  - `state()` → `{ sprite, scaleX, scaleY, rotation, offsetY, body, stars, time }`: stoi — `sowa-stoi`/`sowa-mruga` i „oddech” (±1,5% w pionie); bieg — `sowa-bieg-N` (12 kl./s), pochylenie 0,08 rad; skok — `sowa-skok`, skala `1 + s` / `1 − 0,6·s`; szybowanie — kołysanie ±3 jednostki pudełka i ±0,04 rad; oszołomienie — gwiazdki i chwianie ±0,06 rad; radość — podskoki do 8 jednostek; spłaszczenie po lądowaniu: `scaleY × (1 − 0,22·squash)`, `scaleX × (1 + 0,22·squash)`;
+- `drawOwl(ctx, atlas, x, y, { state, size = 1.2, cosmetic = "none", flipX, alpha, lift = 0, shadow = true })` — cień (`drawShadow`, szerokość 0,7 × rozmiar), potem w przekształceniu stanu (przesunięcie, obrót, skala, odbicie): nakładka „za”, klatka sowy, nakładka „przed” (przesunięte o `body`, żeby dodatek poruszał się z głową), gwiazdki (`sowa-gwiazdki` nad głową z kołysaniem ±0,2 rad).
+
+### Katalog grafik (`catalog.js`)
+
+- `SVG_BASE` — adres `assets/svg/` liczony z `import.meta.url` (działa z każdej strony i w Node);
+- `SPRITES` — 54 grafiki (nazwy małymi literami z myślnikami):
+  - `sowa-stoi`, `sowa-mruga`, `sowa-bieg-1…6`, `sowa-skok`, `sowa-szybuje`, `sowa-oszolomiona`, `sowa-radosc` (1,2 × 1,2, kotwica stóp), `sowa-gwiazdki` (kotwica (0,5, 14/128));
+  - `garderoba-*` (9 plików; 1,2 × 1,2, kotwica jak sowa), `babelek` (0,3 × 0,3);
+  - `kozka-<rodzaj>` i `kozka-<rodzaj>-skok` dla `sprezynka, tarcza, magnes, turbo, podwajaczka` (kózka + nakładka; 1,2 × 1,2, kotwica (0,5, 116/128));
+  - `humbak` (3,2 × 1,6), `plusk` (1,6 × 1,6, kotwica u dołu);
+  - `pracu-dymek` (1,2; napisy „Pracu” (64, 56) i „pracu!” (64, 74), 21 px, `--pracu`), `pracu-telefon` (1,2), `pracu-telefon-magda` („Magda” (64, 31), 12 px), `pracu-teczka` (1,2, kotwica u dołu), `pracu-mail` (0,9), `pracu-tablica` (1,4; „Przyjmiesz” (64, 52) i „zmianę?” (64, 69), 17 px, szer. max 94), `pracu-budzik` (1,1);
+  - `amic-dystrybutor` (1,6; „Amic” biały (61, 22), 17 px), `amic-cysterna` (4 × 2; „Amic” `--amic-czerwony` (170, 47), 26 px), `amic-znak-cen` (1,6 × 3,2; „Amic” (64, 27) 24 px, „95”/„ON” 11 px białe w zielonych polach, ceny „6,19” i „6,49” 24 px `--kontur`), `amic-wozek` (1,3), `amic-barierka` (1,4), `amic-kanister` (0,9), `amic-sterowiec` (4 × 2; „Amic” (124, 54), 34 px);
+  - `lisc-zielony`, `lisc-zloty`, `lisc-teczowy` (0,6), `zycie`, `zycie-puste` (0,6);
+- `GOAT_KINDS` (etykieta, kolor chustki, efekt), `PRACU_VARIANTS`, `AMIC_VARIANTS`, `LEAF_KINDS` (`zielony` 10 pkt / 1 liść, `zloty` 50 / 5, `teczowy` 100 / 1 + gorączka).
+
 ## PWA — instalacja na telefonie i start bez zasięgu
 
 - `manifest.webmanifest` (katalog główny): `name`/`short_name` „SowieGry”, `lang: "pl"`, `id`/`start_url`/`scope` `"./"`, `display: "standalone"`, `orientation: "portrait"`, `background_color: #fff6e3`, `theme_color: #bfe9ff`, ikony 192 i 512 (`any`), 512 `maskable`, SVG;
@@ -225,16 +351,26 @@ Moduły ES (`<script type="module">`, bez etapu budowania) dla przebudowanych gi
   - `VERSION = "sowiegry-v1"` — jedna pamięć podręczna na wersję; przy aktywacji usuwane są stare `sowiegry-*`; **przy każdej zmianie listy lub strategii trzeba podnieść `VERSION`**;
   - instalacja: `SHELL` (menu z wszystkimi skryptami i stylami, manifest, ikony) z `cache: "reload"`, w tle pliki SDK Firebase 12.19.0 z gstatic (błąd nie blokuje instalacji), `skipWaiting`, przy aktywacji `clients.claim`;
   - pobieranie (tylko `GET`): strony i kod z tej domeny — **najpierw sieć** (aktualizacje z GitHub Pages od razu), przy braku sieci lub po 4 s — pamięć, a dla nawigacji bez kopii — menu `./`; obrazki, czcionki i dźwięki (`png, jpg, webp, gif, svg, ico, woff/woff2, mp3, ogg, wav`) oraz SDK z gstatic — **najpierw pamięć**; zapisywane są tylko odpowiedzi `ok` typu `basic`/`cors`; żądania do Firestore nie są obsługiwane (zapis offline robi SDK w IndexedDB);
-  - gry trafiają do pamięci przy pierwszej wizycie (start bez zasięgu działa dla menu i gier już otwieranych).
+  - gry trafiają do pamięci przy pierwszej wizycie (start bez zasięgu działa dla menu i gier już otwieranych);
+  - grafiki SVG i czcionki są „najpierw z pamięci”, więc **po zmianie grafiki lub czcionki trzeba podnieść `VERSION`**, żeby telefony pobrały nową wersję.
 
 ## Sowie Laboratorium (`lab/`)
 
-Strona testowa do sprawdzania Sowiego Silnika na prawdziwym telefonie (Analiza 3, E2). `lab/index.html` (`html.sowie-shell`, `viewport-fit=cover`, te same skrypty startowe co gry — hasło obowiązuje), `lab/lab.css`, `lab/main.js` (moduł ES; `lab/package.json` z `"type": "module"`). Nie jest w rejestrze gier.
+Strona testowa do sprawdzania Sowiego Silnika na prawdziwym telefonie (Analiza 3, E2). `lab/index.html` (`html.sowie-shell`, `viewport-fit=cover`, te same skrypty startowe co gry — hasło obowiązuje; style `cute-ui.css`, `shared/world/tokens.css`, `engine/shell.css`, `lab.css`), `lab/main.js` i `lab/characters.js` (moduły ES; `lab/package.json` z `"type": "module"`). Nie jest w rejestrze gier.
 
-- nagłówek: „← Menu”, „Sowie Laboratorium”, licznik kl./s; przyciski działów (`aria-pressed`, min. 48 px);
+- nagłówek: „← Menu”, „Sowie Laboratorium”, licznik kl./s; przyciski działów **Postacie · Gesty · Informacje** (`aria-pressed`, min. 48 px); domyślnie otwiera się „Postacie”, a `?dzial=gesty` / `?dzial=info` otwiera od razu inny dział; jedna pętla silnika aktualizuje i rysuje tylko widoczny dział;
+- **Postacie** (punkt kontrolny właściciela przed E3, `lab/characters.js`): status atlasu („Rysuję postacie…” → „Atlas gotowy: N grafik w X ms. Postacie ruszają się same.”), przyciski garderoby (9 pozycji z `SowiePlatform.COSMETICS`, `aria-pressed`, min. 44 px) zmieniające dodatek na animowanych sowach, a pod nimi siedem działów, każdy z nagłówkiem (Fredoka 700, 18 px) i własnym płótnem (`role="img"`, opis z nazwami postaci):
+  - „Sówka — animacje”: stoi i mruga, bieg, skok (łuk 0,55 j. co 1,3 s, rozciągnięcie i spłaszczenie przy lądowaniu, malejący cień), szybowanie (0,35 j. nad ziemią), oszołomienie, radość;
+  - „Garderoba (9 pozycji)”: stojąca, mrugająca sowa w każdym dodatku;
+  - „Skaczące kózki (power-upy)”: 5 kózek skaczących łukiem 0,6 j. (w locie wersja `-skok`), podpisy Sprężynka, Tarcza, Magnes, Turbo, Podwajaczka;
+  - „Humbak (poziomy bonusowe)”: humbak kołyszący się na wodzie, plusk pulsujący co 1,6 s;
+  - „Rodzina Pracu Pracu”: dymek płynie falą, telefony drżą seriami (dzwonienie), stos papierów „oddycha”, mail trzepocze, tablica się chwieje, budzik drga;
+  - „Rodzina Amic”: grafiki stojące, sterowiec się kołysze, kanister spada;
+  - „Liście monstery i życia”: liście obracają się (`scaleX = cos`), serduszko pełne i puste;
+  - układ „jak tekst”: komórki `szerokość × wysokość` jednostek świata × 64 px CSS + 18 px na podpis (Fredoka 500, 13 px), odstęp 8 px, zawijanie do szerokości działu; tło komórki `rgba(255,255,255,0.55)` z zaokrągleniem 14 px; płótna w rozdzielczości DPR (max 2), atlas budowany dla `64 × DPR` px na jednostkę (`atlas.ensure` przy zmianie rozmiaru); rysowane są tylko działy widoczne na ekranie (`IntersectionObserver`);
 - **Gesty**: pole sięgające krawędzi ekranu (`.lab-stage`, `touch-action: none`) z płótnem: różowe pasy martwych stref (18 px po bokach, 20 px + pasek domowy u dołu, podpis „martwa strefa”), zielony ślad palca, żółty błysk przy dotknięciu; nazwa ostatniego gestu (`[data-last-gesture]`: Stuknięcie, Przytrzymanie, Koniec przytrzymania, Przesunięcie w lewo/prawo/górę/dół, Przeciąganie, Koniec przeciągania, Martwa strefa (gest pominięty), Pauza (klawisz P)) i dziennik 6 ostatnich gestów z godziną; w tym dziale działa auto-pauza (jak w grze);
 - **Informacje**: płynność, ekran CSS, widoczny obszar (`visualViewport`), DPR (i DPR rysowania), bezpieczne obszary, tryb (aplikacja / przeglądarka), praca bez zasięgu (czy service worker kontroluje stronę), sieć, stan zapisu w chmurze, oszczędzanie baterii; przyciski: „Test pauzy i odliczania”, „Oszczędzanie baterii” (przełącznik), „Pokaż propozycję oszczędzania”, „Pokaż bezpieczne obszary” (czerwone ramki wg `env(safe-area-inset-*)`);
-- `window.SowieLab = { loop, shell, view }` — dostęp dla testów.
+- `window.SowieLab = { loop, shell, view, characters, atlas }` — dostęp dla testów (`characters.cosmetic()`, `characters.setCosmetic(klucz)`, `atlas.has(nazwa)`).
 
 ## Profil (Firestore: `sowiegry/profil`)
 
@@ -285,7 +421,7 @@ Pełny zestaw uruchamiany przed każdym wypchnięciem na `main` i w CI (`.github
 |---|---|---|
 | składnia | `npm run syntax` (`scripts/check-syntax.sh`) | `node --check` dla każdego pliku `.js` poza `node_modules/`, `.git/`, `playwright-report/` |
 | lint | `npm run lint` | ESLint 9 (`eslint.config.js`) |
-| formatowanie | `npm run format:check` | Prettier 3 (`.prettierrc.json`: szerokość 120, 2 spacje, średniki, cudzysłowy podwójne, przecinki końcowe) dla plików konfiguracyjnych, `firebase.json`, `manifest.webmanifest`, `sw.js`, `shared/engine/`, `lab/main.js`, `lab/lab.css`, `scripts/make-icons.cjs`, workflow i katalogów `tests/e2e`, `tests/unit`, `tests/rules` |
+| formatowanie | `npm run format:check` | Prettier 3 (`.prettierrc.json`: szerokość 120, 2 spacje, średniki, cudzysłowy podwójne, przecinki końcowe) dla plików konfiguracyjnych, `firebase.json`, `manifest.webmanifest`, `sw.js`, `shared/engine/`, `shared/world/`, `lab/main.js`, `lab/characters.js`, `lab/lab.css`, `scripts/make-icons.cjs`, workflow i katalogów `tests/e2e`, `tests/unit`, `tests/rules` |
 | HTML | `npm run html` | `html-validate` (`.htmlvalidate.json`) dla `index.html`, stron pięciu gier, `lab/index.html` i `tests/smoke.html` |
 | jednostkowe | `npm run test:unit` | `node --test tests/unit/*.test.mjs` |
 | reguły i przeglądarkowe | `npm run test:e2e` | emulator Firestore: `firebase emulators:exec --only firestore --project demo-sowiegry "npm run test:rules && playwright test"` — najpierw testy reguł (`test:rules` = `node --test tests/rules/*.test.mjs`, wymaga działającego emulatora), potem Playwright |
@@ -351,7 +487,11 @@ Zależności deweloperskie są przypięte tam, gdzie wersja wpływa na przegląd
 - emulator: zejście do tła zapisuje stan Ogrodów od razu, a powrót po 10 minutach pokazuje okno postępu offline;
 - ekran hasła przykrywa dok przycisków gry (instrukcja, rekordy, galeria).
 
-`laboratorium.spec.js` (E2a):
+`postacie.spec.js` (E2b):
+
+- Laboratorium otwiera się w dziale „Postacie”; status „Atlas gotowy”; każda nazwa z `SPRITES` jest w atlasie (co najmniej 50); `document.fonts.check('700 16px "Fredoka"', "Zażółć")`; każde z 7 płócien ma narysowane piksele; przycisk „Kokardka” (≥ 44 px) zmienia dodatek (`characters.cosmetic() === "bow"`); brak przewijania w bok i błędów.
+
+`laboratorium.spec.js` (E2a, otwiera `lab/?dzial=gesty`):
 
 - gesty w Laboratorium: stuknięcie, przesunięcia w 4 kierunkach, przytrzymanie, pominięcie gestu od lewej krawędzi, przy prawej krawędzi i przy pasku domowym; brak przewijania w bok;
 - auto-pauza po przejściu w tło (okno „Pauza” z „Witaj z powrotem”, pętla zatrzymana), przycisk „Graj dalej” ≥ 48 px w dolnej połowie, odliczanie 3 → 2 → wznowienie;
@@ -379,6 +519,17 @@ Zależności deweloperskie są przypięte tam, gdzie wersja wpływa na przegląd
 
 - RNG zgodny z algorytmem `SowiePlatform` i powtarzalny; pętla: 120 kroków na sekundę przy 60 kl./s, `alpha` w [0, 1), pauza, limit 0,25 s po przerwie, brak spirali śmierci, 30 kl./s w oszczędzaniu baterii; pula; kolizje; animacje i funkcje łagodzenia; cząsteczki (limit, gęstość); widok (skala 40 dla 360 × 800 i świata 9 × 16, DPR max 2, stała skala przy pasku adresu, nowa przy obrocie, odwrotność przekształceń); kamera; gesty (stuknięcie, przytrzymanie, 4 kierunki swipe, przeciąganie, przytrzymanie → przeciąganie, martwe strefy, drugi palec, klawisze); sceny; monitor płynności; auto-pauza z odliczaniem;
 - PWA: pola manifestu i rozmiary ikon PNG, manifest i rejestracja na każdej stronie, `VERSION`, istnienie plików z `SHELL`, wszystkie skrypty i style menu w `SHELL`, SDK w pamięci, brak obsługi Firestore, usuwanie starych wersji.
+
+### Testy Sowiego Świata (`tests/unit/world.test.mjs`)
+
+- tokeny w `tokens.css` i `tokens.js` identyczne; kolory z Analizy 2; `cssName`, `font`;
+- `@font-face` wskazuje dwa istniejące pliki WOFF2 (sygnatura `wOF2`), jest `OFL.txt`;
+- każdy plik SVG (co najmniej 45): wymagany początek `<svg xmlns viewBox width height>`, brak `<text>`, `<image>`, `<script>`, `<foreignObject>`, `<style>`, adresów `http(s):`/`data:` i czystej czerni, wszystkie kolory `#…` z palety;
+- katalog: pliki warstw istnieją, `viewBox` każdej warstwy = `box` grafiki, proporcje `size` = proporcje `box`, kotwice w [0, 1], nazwy `[a-z0-9-]`, napisy w kolorach palety; liczby postaci (5 kózek, 7 Pracu, 7 Amic, 3 liście, humbak, plusk, życia, gwiazdki, bąbelek);
+- garderoba: klucze `COSMETIC_SPRITES` = 9 kluczy `COSMETICS` z `shared/sowie-platform.js`, każda nakładka jest w katalogu;
+- animator sowy: odstępy mrugnięć 3–5 s, 6 klatek biegu, rozciągnięcie przy wybiciu i spłaszczenie po lądowaniu, gwiazdki, błąd dla nieznanej akcji, każda klatka w katalogu;
+- `packShelves`: brak nakładania, granice stron, wiele stron, błąd dla zbyt dużej grafiki; `cellSize`; `sizeSvg`/`viewBoxOf`;
+- `createAtlas` z atrapami płótna, wczytywania i rasteryzacji: wszystkie nazwy w atlasie, komórka sowy 96 × 96 przy 80 px/j., `draw` z właściwego wycinka i kotwicy, `false` dla nieznanej nazwy, `ensure` bez przebudowy przy zmianie < 15% i z przebudową przy większej.
 
 ### Test architektury (`tests/unit/architecture.test.mjs`)
 

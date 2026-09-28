@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <!-- Szalik: różowy w białe paski, pod dziobkiem, z końcówką opadającą w prawo. -->
+  <g stroke="#3b2f4a" stroke-width="4" stroke-linejoin="round">
+    <path d="M78 84 L92 86 L96 110 L84 111 Z" fill="#ff6f91"/>
+    <path d="M26 80 C44 90 84 90 102 80 L102 92 C84 102 44 102 26 92 Z" fill="#ff6f91"/>
+  </g>
+  <g stroke="#ffffff" stroke-width="3.5" stroke-linecap="round">
+    <path d="M40 87 L40 97 M56 90 L56 100 M72 90 L72 100 M88 87 L88 97"/>
+    <path d="M86 96 L94 96 M87 104 L95 104"/>
+  </g>
+  <path d="M86 111 L85 116 M90 111 L90 116 M94 110 L95 115" stroke="#3b2f4a" stroke-width="2.5" stroke-linecap="round"/>
+</svg>

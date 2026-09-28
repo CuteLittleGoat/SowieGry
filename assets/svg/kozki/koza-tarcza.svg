@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <!-- Nakładka „Tarcza”: niebieska chustka + ikona bańki (chroni przed 1 trafieniem). -->
+  <path d="M82 52 C90 62 98 67 107 68 L105 78 C101 79 98 81 96 83 L80 100 L73 66 Z" fill="#4d9de0" stroke="#3b2f4a" stroke-width="3.5" stroke-linejoin="round"/>
+  <circle cx="86" cy="80" r="10" fill="#ffffff" stroke="#3b2f4a" stroke-width="3"/>
+  <g transform="translate(0 4)">
+  <circle cx="86" cy="76" r="6.5" fill="#bfe9ff" stroke="#3a86b8" stroke-width="2.5"/>
+  <circle cx="84" cy="73.5" r="1.8" fill="#ffffff"/>
+  </g>
+</svg>

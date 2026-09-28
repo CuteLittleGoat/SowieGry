@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <!-- Pracu Pracu — Telefon (dzwoni i wibruje, zmienia tor). Wariant „Telefon od Magdy” dopisuje imię na ekranie (warstwa tekstowa). -->
+  <g fill="none" stroke="#e8465a" stroke-width="4" stroke-linecap="round">
+    <path d="M26 44 Q18 64 26 84 M16 36 Q4 64 16 92"/>
+    <path d="M102 44 Q110 64 102 84 M112 36 Q124 64 112 92"/>
+  </g>
+  <rect x="36" y="8" width="56" height="112" rx="14" fill="#e8465a" stroke="#3b2f4a" stroke-width="4"/>
+  <rect x="42" y="22" width="44" height="80" rx="8" fill="#ffffff"/>
+  <path d="M56 15 L72 15" stroke="#3b2f4a" stroke-width="3" stroke-linecap="round"/>
+  <circle cx="64" cy="111" r="4" fill="#ffffff" stroke="#3b2f4a" stroke-width="2.5"/>
+  <g fill="none" stroke="#3b2f4a" stroke-width="4.5" stroke-linecap="round">
+    <path d="M47 42 L58 46"/>
+    <path d="M81 42 L70 46"/>
+  </g>
+  <circle cx="54" cy="53" r="4" fill="#3b2f4a"/>
+  <circle cx="74" cy="53" r="4" fill="#3b2f4a"/>
+  <ellipse cx="64" cy="67" rx="6" ry="5" fill="#3b2f4a"/>
+  <path d="M55 86 C55 80 61 80 61 84 L60 88 C62 92 66 96 70 97 L73 95 C77 95 78 101 72 102 C62 101 54 94 55 86 Z" fill="#3fae6a" stroke="#3b2f4a" stroke-width="2" stroke-linejoin="round"/>
+</svg>

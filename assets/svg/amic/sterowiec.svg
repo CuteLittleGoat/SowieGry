@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 128" width="256" height="128">
+  <!-- Amic — Sterowiec (tło, w Sowie w Chmurach przeszkoda). Nazwę „Amic” na boku dokłada atlas. -->
+  <g stroke="#3b2f4a" stroke-width="4" stroke-linejoin="round" stroke-linecap="round">
+    <path d="M214 50 L246 22 L250 50 Z" fill="#d9303e"/>
+    <path d="M214 74 L246 102 L250 74 Z" fill="#d9303e"/>
+    <path d="M98 94 L100 108 Q102 114 110 114 L150 114 Q158 114 160 108 L162 94 Z" fill="#c9c3d3"/>
+    <ellipse cx="124" cy="60" rx="112" ry="44" fill="#ffffff"/>
+    <path d="M30 34 Q20 46 14 60 Q20 74 30 86 Q44 60 30 34 Z" fill="#d9303e"/>
+    <path d="M18 70 Q124 92 230 70 L228 80 Q124 100 20 80 Z" fill="#2fa84f"/>
+    <path d="M234 60 L244 60" fill="none"/>
+    <path d="M244 50 L244 70" fill="none" stroke-width="3"/>
+  </g>
+  <g fill="#dff5fb" stroke="#3b2f4a" stroke-width="2.5">
+    <rect x="110" y="98" width="12" height="9" rx="2"/>
+    <rect x="128" y="98" width="12" height="9" rx="2"/>
+  </g>
+  <path d="M60 30 Q120 14 190 28" fill="none" stroke="#dff5fb" stroke-width="5" stroke-linecap="round"/>
+</svg>

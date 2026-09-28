@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <!-- Gwiazdki nad głową oszołomionej sowy (warstwa obracana w grze). -->
+  <g fill="#f4c542" stroke="#3b2f4a" stroke-width="2.5" stroke-linejoin="round">
+    <path d="M26 10 l2.6 5.4 5.9 .8 -4.3 4.1 1 5.9 -5.2 -2.8 -5.2 2.8 1 -5.9 -4.3 -4.1 5.9 -.8 Z"/>
+    <path d="M64 1 l2.6 5.4 5.9 .8 -4.3 4.1 1 5.9 -5.2 -2.8 -5.2 2.8 1 -5.9 -4.3 -4.1 5.9 -.8 Z"/>
+    <path d="M102 10 l2.6 5.4 5.9 .8 -4.3 4.1 1 5.9 -5.2 -2.8 -5.2 2.8 1 -5.9 -4.3 -4.1 5.9 -.8 Z"/>
+  </g>
+</svg>

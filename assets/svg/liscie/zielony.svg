@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <!-- Liść monstery — zielony (10 pkt / 1 liść). Kształt z nacięciami od brzegu do nerwu. -->
+  <path d="M60 94 Q58 110 52 122" fill="none" stroke="#3b2f4a" stroke-width="9" stroke-linecap="round"/>
+  <path d="M60 94 Q58 110 52 122" fill="none" stroke="#2e8b57" stroke-width="3.5" stroke-linecap="round"/>
+  <path fill="#3fae6a" stroke="#3b2f4a" stroke-width="4" stroke-linejoin="round"
+    d="M64 10 C77 10 89 15 97 24 L75 45 L103 35 C108 41 111 48 111 56 L83 62 L111 67 C111 75 107 81 102 86 L79 76 L94 92 C89 96 83 98 77 98 C71 98 67 95 64 91 C61 95 57 98 51 98 C45 98 39 96 34 92 L49 76 L26 86 C21 81 17 75 17 67 L45 62 L17 56 C17 48 20 41 25 35 L53 45 L31 24 C39 15 51 10 64 10 Z"/>
+  <g fill="none" stroke="#2e8b57" stroke-width="3" stroke-linecap="round">
+    <path d="M64 16 L64 90"/>
+    <path d="M64 30 L84 24 M64 46 L92 44 M64 62 L96 72 M64 30 L44 24 M64 46 L36 44 M64 62 L32 72"/>
+  </g>
+  <path d="M40 22 Q48 16 58 15" fill="none" stroke="#8fdcaa" stroke-width="3.5" stroke-linecap="round"/>
+</svg>

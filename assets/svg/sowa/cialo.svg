@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <!-- Sówka: tułów z uszkami, tarczą twarzy, brzuszkiem, dziobkiem i policzkami. Oczy, skrzydła i stopy to osobne warstwy. -->
+  <g stroke="#3b2f4a" stroke-width="4" stroke-linejoin="round" stroke-linecap="round">
+    <path d="M36 44 L27 17 Q41 22 52 33 Z" fill="#8a5a3b"/>
+    <path d="M92 44 L101 17 Q87 22 76 33 Z" fill="#8a5a3b"/>
+    <path d="M64 26 C92 26 106 46 106 74 C106 102 88 118 64 118 C40 118 22 102 22 74 C22 46 36 26 64 26 Z" fill="#b07a52"/>
+  </g>
+  <ellipse cx="64" cy="94" rx="26" ry="21" fill="#f3e3c8"/>
+  <g fill="none" stroke="#e2b98f" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M52 88 l4 4 l4 -4"/>
+    <path d="M68 88 l4 4 l4 -4"/>
+    <path d="M60 100 l4 4 l4 -4"/>
+  </g>
+  <path d="M64 44 C58 38 50 36 44 37 C32 39 26 48 26 58 C26 70 36 78 46 78 C54 78 60 74 64 70 C68 74 74 78 82 78 C92 78 102 70 102 58 C102 48 96 39 84 37 C78 36 70 38 64 44 Z" fill="#e2b98f"/>
+  <ellipse cx="44" cy="79" rx="6.5" ry="4" fill="#ff9fb2"/>
+  <ellipse cx="84" cy="79" rx="6.5" ry="4" fill="#ff9fb2"/>
+  <path d="M57 69 Q64 66 71 69 Q68 76 64 80 Q60 76 57 69 Z" fill="#f59e3b" stroke="#3b2f4a" stroke-width="3" stroke-linejoin="round"/>
+</svg>

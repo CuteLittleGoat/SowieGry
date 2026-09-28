@@ -1,5 +1,7 @@
 // Sowie Laboratorium — strona testowa do sprawdzania Sowiego Silnika na telefonie (Analiza 3, E2).
 import { bindInput, createLoop, createShell, createView, DEFAULTS, measureSafeAreas } from "../shared/engine/index.js";
+import { COSMETIC_SPRITES } from "../shared/world/owl.js";
+import { createCharactersPanel } from "./characters.js";
 
 const lab = document.querySelector("[data-lab]");
 const stage = document.querySelector("[data-stage]");
@@ -100,22 +102,63 @@ function drawStage() {
   }
 }
 
+// Dział „Postacie”: atlas grafik i animacje wszystkich postaci.
+const characters = createCharactersPanel({ root: document.querySelector("[data-characters]") });
+const charactersStatus = document.querySelector("[data-characters-status]");
+const cosmeticsGroup = document.querySelector("[data-cosmetics]");
+for (const key of Object.keys(COSMETIC_SPRITES)) {
+  const chip = document.createElement("button");
+  chip.type = "button";
+  chip.dataset.cosmetic = key;
+  chip.textContent = window.SowiePlatform?.COSMETICS?.[key]?.label || key;
+  chip.setAttribute("aria-pressed", String(key === characters.cosmetic()));
+  chip.addEventListener("click", () => {
+    characters.setCosmetic(key);
+    for (const other of cosmeticsGroup.children) other.setAttribute("aria-pressed", String(other === chip));
+  });
+  cosmeticsGroup.append(chip);
+}
+let activeTab = "postacie";
+
+function refreshCharacters() {
+  const started = performance.now();
+  return characters
+    .resize()
+    .then((rebuilt) => {
+      if (rebuilt) {
+        const ms = Math.round(performance.now() - started);
+        const count = characters.atlas.names().length;
+        charactersStatus.textContent = `Atlas gotowy: ${count} grafik w ${ms} ms. Postacie ruszają się same.`;
+      }
+    })
+    .catch((error) => {
+      charactersStatus.textContent = "Nie udało się narysować postaci.";
+      console.error(error);
+    });
+}
+
 const loop = createLoop({
   update: (dt) => {
     flash = Math.max(0, flash - dt * 2);
+    if (activeTab === "postacie") characters.update(dt);
   },
-  render: drawStage,
+  render: () => {
+    if (activeTab === "gesty") drawStage();
+    else if (activeTab === "postacie") characters.render();
+  },
 });
 const shell = createShell({ stage: lab, loop });
 
-// Działy.
+// Działy (?dzial=gesty otwiera od razu wybrany dział).
 const tabs = [...document.querySelectorAll("[data-tab]")];
 function showTab(name) {
-  for (const tab of tabs) tab.setAttribute("aria-pressed", String(tab.dataset.tab === name));
-  for (const panel of document.querySelectorAll("[data-panel]")) panel.hidden = panel.dataset.panel !== name;
+  activeTab = tabs.some((tab) => tab.dataset.tab === name) ? name : "postacie";
+  for (const tab of tabs) tab.setAttribute("aria-pressed", String(tab.dataset.tab === activeTab));
+  for (const panel of document.querySelectorAll("[data-panel]")) panel.hidden = panel.dataset.panel !== activeTab;
   // Auto-pauza działa w dziale gestów (jak w trakcie gry).
-  shell.setActive(name === "gesty");
+  shell.setActive(activeTab === "gesty");
   view.resize();
+  if (activeTab === "postacie") refreshCharacters();
 }
 for (const tab of tabs) tab.addEventListener("click", () => showTab(tab.dataset.tab));
 
@@ -161,11 +204,14 @@ shell.onChange(() => {
   document.documentElement.dataset.shellState = shell.state();
 });
 
-window.addEventListener("resize", () => view.resize());
+window.addEventListener("resize", () => {
+  view.resize();
+  if (activeTab === "postacie") refreshCharacters();
+});
 view.resize();
-showTab("gesty");
+showTab(new URLSearchParams(location.search).get("dzial") || "postacie");
 refreshInfo();
 loop.start();
 
 // Dostęp dla testów e2e.
-window.SowieLab = Object.freeze({ loop, shell, view });
+window.SowieLab = Object.freeze({ loop, shell, view, characters, atlas: characters.atlas });

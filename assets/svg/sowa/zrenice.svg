@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <!-- Źrenice z odblaskami (duży i mały błysk). -->
+  <circle cx="47" cy="58" r="9" fill="#3b2f4a"/>
+  <circle cx="83" cy="58" r="9" fill="#3b2f4a"/>
+  <circle cx="50.5" cy="54.5" r="3.4" fill="#ffffff"/>
+  <circle cx="86.5" cy="54.5" r="3.4" fill="#ffffff"/>
+  <circle cx="44" cy="62" r="1.6" fill="#ffffff"/>
+  <circle cx="80" cy="62" r="1.6" fill="#ffffff"/>
+</svg>

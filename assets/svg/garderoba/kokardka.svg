@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <!-- Kokardka: nakładka w układzie sowy (128 × 128), przy prawym uszku. -->
+  <g stroke="#3b2f4a" stroke-width="3.5" stroke-linejoin="round">
+    <path d="M84 33 C76 22 64 22 64 31 C64 40 76 41 84 33 Z" fill="#ff6f91"/>
+    <path d="M84 33 C92 22 104 22 104 31 C104 40 92 41 84 33 Z" fill="#ff6f91"/>
+    <path d="M81 35 L76 47 L82 44 L84 49 L86 36 Z" fill="#ff6f91"/>
+    <circle cx="84" cy="33" r="5.5" fill="#f4c542"/>
+  </g>
+  <path d="M69 29 Q72 26 76 27 M92 27 Q96 26 99 29" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round"/>
+</svg>

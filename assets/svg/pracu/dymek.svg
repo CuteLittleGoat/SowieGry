@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <!-- Pracu Pracu — Dymek (lata falą). Napis „Pracu / pracu!” dokłada atlas czcionką Fredoka (warstwa tekstowa). -->
+  <path d="M30 10 L98 10 Q120 10 120 32 L120 70 Q120 92 98 92 L46 92 L24 118 L28 92 Q8 92 8 70 L8 32 Q8 10 30 10 Z" fill="#e8465a" stroke="#3b2f4a" stroke-width="4" stroke-linejoin="round"/>
+  <rect x="16" y="18" width="96" height="66" rx="16" fill="#ffffff"/>
+  <g fill="none" stroke="#3b2f4a" stroke-width="5" stroke-linecap="round">
+    <path d="M40 24 L55 29"/>
+    <path d="M88 24 L73 29"/>
+  </g>
+  <circle cx="50" cy="36" r="4.5" fill="#3b2f4a"/>
+  <circle cx="78" cy="36" r="4.5" fill="#3b2f4a"/>
+  <path d="M102 20 Q108 22 110 28" fill="none" stroke="#ff9fb2" stroke-width="3" stroke-linecap="round"/>
+</svg>

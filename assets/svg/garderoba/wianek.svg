@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <!-- Wianek: gałązka z listkami i pięć kwiatków na czubku głowy. -->
+  <defs>
+    <g id="kwiat" stroke="#3b2f4a" stroke-width="2">
+      <circle cx="0" cy="-5" r="4"/>
+      <circle cx="4.8" cy="-1.5" r="4"/>
+      <circle cx="3" cy="4" r="4"/>
+      <circle cx="-3" cy="4" r="4"/>
+      <circle cx="-4.8" cy="-1.5" r="4"/>
+      <circle cx="0" cy="0" r="3" fill="#f4c542"/>
+    </g>
+  </defs>
+  <path d="M30 42 Q64 20 98 42" fill="none" stroke="#2e8b57" stroke-width="5" stroke-linecap="round"/>
+  <g fill="#3fae6a" stroke="#3b2f4a" stroke-width="2.5" stroke-linejoin="round">
+    <path d="M41 35 q-9 -6 -13 1 q7 5 13 -1 Z"/>
+    <path d="M87 35 q9 -6 13 1 q-7 5 -13 -1 Z"/>
+    <path d="M57 27 q-4 -9 -10 -7 q1 8 10 7 Z"/>
+    <path d="M71 27 q4 -9 10 -7 q-1 8 -10 7 Z"/>
+  </g>
+  <use href="#kwiat" transform="translate(34 38)" fill="#ff9fb2"/>
+  <use href="#kwiat" transform="translate(49 29) scale(1.1)" fill="#ffffff"/>
+  <use href="#kwiat" transform="translate(64 25) scale(1.2)" fill="#ff6f91"/>
+  <use href="#kwiat" transform="translate(79 29) scale(1.1)" fill="#9b6ddb"/>
+  <use href="#kwiat" transform="translate(94 38)" fill="#ff9d4d"/>
+</svg>

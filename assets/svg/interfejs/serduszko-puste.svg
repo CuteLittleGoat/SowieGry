@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <!-- Utracone życie: szara doniczka-serduszko z pustą ziemią (bez kiełka). -->
+  <defs>
+    <clipPath id="serce">
+      <path d="M64 122 C40 106 14 88 14 64 C14 50 24 42 36 42 C48 42 58 48 64 58 C70 48 80 42 92 42 C104 42 114 50 114 64 C114 88 88 106 64 122 Z"/>
+    </clipPath>
+  </defs>
+  <path d="M64 122 C40 106 14 88 14 64 C14 50 24 42 36 42 C48 42 58 48 64 58 C70 48 80 42 92 42 C104 42 114 50 114 64 C114 88 88 106 64 122 Z" fill="#c9c3d3"/>
+  <g clip-path="url(#serce)">
+    <path d="M0 40 L128 40 L128 58 Q112 62 96 58 Q80 54 64 62 Q48 54 32 58 Q16 62 0 58 Z" fill="#7d7590"/>
+  </g>
+  <path d="M64 122 C40 106 14 88 14 64 C14 50 24 42 36 42 C48 42 58 48 64 58 C70 48 80 42 92 42 C104 42 114 50 114 64 C114 88 88 106 64 122 Z" fill="none" stroke="#7d7590" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M44 78 L54 78 M74 78 L84 78" stroke="#7d7590" stroke-width="3.5" stroke-linecap="round"/>
+  <path d="M56 92 Q64 86 72 92" fill="none" stroke="#7d7590" stroke-width="3" stroke-linecap="round"/>
+</svg>

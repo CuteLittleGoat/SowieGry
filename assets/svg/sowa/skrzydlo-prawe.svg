@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <!-- Prawe skrzydło w pozycji spoczynku; obrót wokół barku (94, 68). -->
+  <path d="M94 67 C105 71 112 86 110 103 C100 99 93 91 90 81 C89 74 91 68 94 67 Z" fill="#8a5a3b" stroke="#3b2f4a" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M103 94 Q98 90 96 85 M105 86 Q100 82 98 78" fill="none" stroke="#b07a52" stroke-width="2.5" stroke-linecap="round"/>
+</svg>

@@ -1,0 +1,55 @@
+/* Tokeny „Sowiego Świata” (Analiza 2, rozdz. 2.3). Kopia wartości z shared/world/tokens.js — pilnuje tego test jednostkowy. */
+@font-face {
+  font-family: "Fredoka";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("../../assets/fonts/fredoka-500.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Fredoka";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("../../assets/fonts/fredoka-700.woff2") format("woff2");
+}
+
+:root {
+  --niebo-gora: #bfe9ff;
+  --niebo-dol: #fff6e3;
+  --monstera: #3fae6a;
+  --monstera-ciemna: #2e8b57;
+  --zloto: #f4c542;
+  --policzki: #ff9fb2;
+  --kontur: #3b2f4a;
+  --pracu: #e8465a;
+  --amic-zielony: #2fa84f;
+  --amic-czerwony: #d9303e;
+  --woda: #5cc8e8;
+  --sowa: #b07a52;
+  --sowa-brzuszek: #f3e3c8;
+  --bialy: #ffffff;
+  --sowa-ciemna: #8a5a3b;
+  --sowa-twarz: #e2b98f;
+  --dziobek: #f59e3b;
+  --monstera-jasna: #8fdcaa;
+  --zloto-ciemne: #d99a1e;
+  --pomaranczowy: #ff9d4d;
+  --fiolet: #9b6ddb;
+  --niebieski: #4d9de0;
+  --woda-ciemna: #3a86b8;
+  --woda-jasna: #dff5fb;
+  --koza: #fffaf2;
+  --koza-cien: #eadcc6;
+  --rogi: #c9a47e;
+  --serce: #ff6f91;
+  --szary: #c9c3d3;
+  --szary-ciemny: #7d7590;
+  --doniczka: #e57a5c;
+
+  --kontur-grubosc: 3px;
+  --czcionka-sowia: "Fredoka", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --czcionka-tekst: 500;
+  --czcionka-pogrubiona: 700;
+}

@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <!-- Plusk: korona wody z okrągłymi czubkami i krople (wejście do bonusu humbaka). -->
+  <g stroke="#3b2f4a" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round">
+    <path d="M16 112 C18 96 22 80 28 70 C33 66 38 70 38 76 C38 84 40 92 44 98 C46 82 52 60 58 48 C62 42 68 42 70 48 C76 62 82 82 84 98 C88 92 90 84 90 76 C90 70 95 66 100 70 C106 80 110 96 112 112 Z" fill="#5cc8e8"/>
+    <path d="M32 112 C34 104 38 98 42 96 C46 100 50 104 54 104 C56 96 60 88 64 84 C68 88 72 96 74 104 C78 104 82 100 86 96 C90 98 94 104 96 112 Z" fill="#dff5fb"/>
+    <path d="M6 114 Q64 106 122 114 Q124 120 116 122 L12 122 Q4 120 6 114 Z" fill="#3a86b8"/>
+  </g>
+  <g fill="#5cc8e8" stroke="#3b2f4a" stroke-width="3" stroke-linejoin="round">
+    <path d="M30 26 C34 34 38 38 38 42 A8 8 0 0 1 22 42 C22 38 26 34 30 26 Z"/>
+    <path d="M98 20 C102 28 106 32 106 37 A8 8 0 0 1 90 37 C90 32 94 28 98 20 Z"/>
+    <path d="M64 8 C67 14 70 17 70 21 A6 6 0 0 1 58 21 C58 17 61 14 64 8 Z"/>
+    <circle cx="114" cy="56" r="4"/>
+    <circle cx="14" cy="60" r="4.5"/>
+  </g>
+  <g fill="#ffffff">
+    <circle cx="27" cy="41" r="2"/>
+    <circle cx="95" cy="36" r="2.2"/>
+    <circle cx="62" cy="20" r="1.6"/>
+    <circle cx="48" cy="76" r="2.5"/>
+  </g>
+</svg>

@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <!-- Lewe skrzydło w pozycji spoczynku; obrót wokół barku (34, 68). -->
+  <path d="M34 67 C23 71 16 86 18 103 C28 99 35 91 38 81 C39 74 37 68 34 67 Z" fill="#8a5a3b" stroke="#3b2f4a" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M25 94 Q30 90 32 85 M23 86 Q28 82 30 78" fill="none" stroke="#b07a52" stroke-width="2.5" stroke-linecap="round"/>
+</svg>

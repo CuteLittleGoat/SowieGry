@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <!-- Nakładka „Turbo”: pomarańczowa chustka + ikona błyskawicy (sprint z nietykalnością). -->
+  <path d="M82 52 C90 62 98 67 107 68 L105 78 C101 79 98 81 96 83 L80 100 L73 66 Z" fill="#ff9d4d" stroke="#3b2f4a" stroke-width="3.5" stroke-linejoin="round"/>
+  <circle cx="86" cy="80" r="10" fill="#ffffff" stroke="#3b2f4a" stroke-width="3"/>
+  <g transform="translate(0 4)">
+  <path d="M88 68 L81 78 L86 78 L84 85 L91 74 L86 74 Z" fill="#f4c542" stroke="#3b2f4a" stroke-width="2" stroke-linejoin="round"/>
+  </g>
+</svg>

@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <!-- Amic — Barierka w czerwono-białe pasy. -->
+  <g stroke="#3b2f4a" stroke-width="4" stroke-linejoin="round">
+    <rect x="18" y="56" width="12" height="60" rx="3" fill="#c9c3d3"/>
+    <rect x="98" y="56" width="12" height="60" rx="3" fill="#c9c3d3"/>
+    <rect x="6" y="44" width="116" height="26" rx="6" fill="#ffffff"/>
+  </g>
+  <g fill="#d9303e">
+    <path d="M12 46 L28 46 L16 68 L8 68 L8 52 Z"/>
+    <path d="M42 46 L58 46 L46 68 L30 68 Z"/>
+    <path d="M72 46 L88 46 L76 68 L60 68 Z"/>
+    <path d="M102 46 L118 46 L106 68 L90 68 Z"/>
+  </g>
+  <rect x="6" y="44" width="116" height="26" rx="6" fill="none" stroke="#3b2f4a" stroke-width="4"/>
+  <rect x="8" y="112" width="32" height="10" rx="3" fill="#2fa84f" stroke="#3b2f4a" stroke-width="3"/>
+  <rect x="88" y="112" width="32" height="10" rx="3" fill="#2fa84f" stroke="#3b2f4a" stroke-width="3"/>
+  <circle cx="64" cy="36" r="6" fill="#f4c542" stroke="#3b2f4a" stroke-width="3"/>
+</svg>

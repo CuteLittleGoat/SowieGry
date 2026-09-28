@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 256" width="128" height="256">
+  <!-- Amic — Znak z cenami (wysoki; pod tablicą da się przejść ślizgiem). Nazwę i ceny dokłada atlas czcionką Fredoka. -->
+  <g stroke="#3b2f4a" stroke-width="4" stroke-linejoin="round">
+    <rect x="22" y="140" width="14" height="112" rx="3" fill="#c9c3d3"/>
+    <rect x="92" y="140" width="14" height="112" rx="3" fill="#c9c3d3"/>
+    <rect x="10" y="8" width="108" height="140" rx="10" fill="#ffffff"/>
+    <path d="M10 44 L10 18 Q10 8 20 8 L108 8 Q118 8 118 18 L118 44 Z" fill="#d9303e"/>
+    <path d="M10 124 L118 124 L118 138 Q118 148 108 148 L20 148 Q10 148 10 138 Z" fill="#2fa84f"/>
+  </g>
+  <g stroke="#c9c3d3" stroke-width="3" stroke-linecap="round">
+    <path d="M18 84 L110 84"/>
+  </g>
+  <g fill="#2fa84f">
+    <rect x="18" y="54" width="18" height="22" rx="4"/>
+    <rect x="18" y="92" width="18" height="22" rx="4"/>
+  </g>
+  <rect x="14" y="244" width="30" height="10" rx="3" fill="#7d7590"/>
+  <rect x="84" y="244" width="30" height="10" rx="3" fill="#7d7590"/>
+</svg>

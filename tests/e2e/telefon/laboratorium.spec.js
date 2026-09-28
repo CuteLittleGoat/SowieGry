@@ -3,7 +3,7 @@ const { test, expect, setVisibility, waitForCloud, watchErrors } = require("../f
 
 async function openLab(page) {
   const errors = watchErrors(page);
-  await page.goto("/lab/?seed=laboratorium", { waitUntil: "load" });
+  await page.goto("/lab/?seed=laboratorium&dzial=gesty", { waitUntil: "load" });
   await waitForCloud(page);
   await page.waitForFunction(() => Boolean(window.SowieLab));
   const stage = await page.locator("[data-stage]").boundingBox();

@@ -25,6 +25,7 @@ Po instalacji Safari nie zapomina hasła po 7 dniach bez wizyty.
 
 Strona testowa `lab/` (adres strony + `/lab/`) służy do sprawdzania na telefonie nowego silnika gier:
 
+- **Postacie** (otwiera się od razu) — wszyscy bohaterowie nowych gier w ruchu: Sówka (stoi i mruga, biegnie, skacze, szybuje, jest oszołomiona, cieszy się), 9 dodatków z garderoby, 5 skaczących kózek, humbak z pluskiem, rodzina Pracu Pracu (dymek, telefon, telefon od Magdy, stos papierów, maile, tablica „Przyjmiesz zmianę?”, budzik), rodzina Amic (dystrybutor, cysterna, znak z cenami, wózek z kanistrami, barierka, kanister, sterowiec), liście monstery (zielony, złoty, tęczowy) i serduszka-życia. Przyciski u góry zakładają wybrany dodatek animowanym sowom. **Tu akceptujesz wygląd postaci przed budową nowego menu** — napisz, co zmienić (kolor, kształt, mina);
 - **Gesty** — stuknij, przytrzymaj, przesuń w cztery strony; różowe pasy przy krawędziach to „martwe strefy” (gest „cofnij” przeglądarki i pasek domowy iPhone’a nie uruchamiają gry);
 - **Informacje** — płynność (klatki na sekundę), rozmiar ekranu, bezpieczne obszary (wycięcie, Dynamic Island), tryb aplikacji, praca bez zasięgu, zapis w chmurze;
 - **Test pauzy i odliczania** — tak zachowa się gra po przejściu do innej aplikacji: pauza, „Graj dalej”, potem 3-2-1;
@@ -94,6 +95,8 @@ Pełne testy automatyczne (dla osoby rozwijającej gry):
 4. `npm test`
 
 `npm test` sprawdza składnię, styl, HTML, testy jednostkowe, reguły bazy i testy w przeglądarce. Testy w przeglądarce działają na **emulatorze** bazy (projekt testowy `demo-sowiegry`) i na profilach telefonów (iPhone SE, iPhone 13 w pionie i poziomie, Pixel 7, Android 360 × 800) w Chromium i Safari (WebKit). Testy nigdy nie zapisują niczego w prawdziwej bazie.
+
+Grafiki postaci to pliki SVG w `assets/svg/` — można je poprawiać w dowolnym edytorze grafiki wektorowej (np. Inkscape), używając kolorów z palety (`shared/world/tokens.css`). Po zmianie grafiki podnieś numer `VERSION` w `sw.js`, żeby zainstalowana aplikacja pobrała nową wersję. Czcionka to Fredoka (licencja OFL, `assets/fonts/OFL.txt`) z dołożonymi polskimi literami.
 
 Jeśli na komputerze nie da się uruchomić WebKit, można jednorazowo pominąć go poleceniem `SOWIE_E2E_BEZ_WEBKIT=1 npm test` (w automatycznych testach na GitHubie WebKit działa zawsze).
 
