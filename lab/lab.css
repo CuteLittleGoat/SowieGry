@@ -220,6 +220,88 @@
   max-width: 100%;
 }
 
+.lab-subtitle {
+  margin: 16px 0 8px;
+  font:
+    700 18px/1.2 var(--czcionka-sowia, system-ui),
+    sans-serif;
+}
+
+.lab-sliders {
+  display: grid;
+  gap: 8px;
+  margin: 0 0 12px;
+}
+
+.lab-slider {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 3ch;
+  grid-template-areas:
+    "label value"
+    "range range";
+  align-items: center;
+  gap: 4px 8px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.8);
+  font-weight: 700;
+}
+
+.lab-slider span {
+  grid-area: label;
+}
+
+.lab-slider output {
+  grid-area: value;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Suwak z dużym uchwytem (min. 44 px wysokości pola dotyku). */
+.lab-slider input {
+  grid-area: range;
+  width: 100%;
+  min-height: 44px;
+  margin: 0;
+  accent-color: var(--monstera, #3fae6a);
+  touch-action: manipulation;
+}
+
+.lab-sound-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 8px;
+}
+
+.lab-sound-grid button {
+  min-height: 48px;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 16px;
+  color: var(--kontur, #3b2f4a);
+  background: rgba(255, 255, 255, 0.85);
+  box-shadow: inset 0 0 0 2px rgba(59, 47, 74, 0.15);
+  font:
+    500 15px/1.2 var(--czcionka-sowia, system-ui),
+    sans-serif;
+  touch-action: manipulation;
+  cursor: pointer;
+}
+
+.lab-sound-grid button[aria-pressed="true"] {
+  background: var(--zloto, #f4c542);
+  font-weight: 700;
+}
+
+.lab-sound-grid button:active {
+  transform: scale(0.97);
+}
+
+.lab-sound-grid button:focus-visible {
+  outline: 3px solid #4d8fd6;
+  outline-offset: 2px;
+}
+
 .lab-safe-overlay {
   position: fixed;
   inset: 0;

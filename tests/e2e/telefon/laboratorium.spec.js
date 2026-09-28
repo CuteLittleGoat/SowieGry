@@ -69,10 +69,18 @@ test("auto-pauza po przejściu w tło i powrót przez odliczanie 3-2-1", async (
   const viewport = page.viewportSize();
   expect(box.height).toBeGreaterThanOrEqual(48);
   expect(box.y + box.height / 2).toBeGreaterThan(viewport.height / 2);
+  // Kolejne cyfry odliczania zapisuje obserwator (niezależnie od tempa sprawdzania przez test).
+  await page.evaluate(() => {
+    window.__odliczanie = [];
+    new MutationObserver(() => {
+      const text = document.querySelector(".sowie-countdown")?.textContent;
+      if (text && window.__odliczanie.at(-1) !== text) window.__odliczanie.push(text);
+    }).observe(document.body, { subtree: true, childList: true, characterData: true });
+  });
   await resume.tap();
   await expect(page.locator(".sowie-countdown")).toHaveText("3");
-  await expect(page.locator(".sowie-countdown")).toHaveText("2", { timeout: 2500 });
-  await expect(dialog).toBeHidden({ timeout: 5000 });
+  await expect(dialog).toBeHidden({ timeout: 6000 });
+  expect(await page.evaluate(() => window.__odliczanie)).toEqual(["3", "2", "1"]);
   expect(await page.evaluate(() => window.SowieLab.loop.isPaused())).toBe(false);
   expect(errors).toEqual([]);
 });

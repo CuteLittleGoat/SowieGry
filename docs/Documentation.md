@@ -44,10 +44,12 @@ lab/                      (Sowie Laboratorium — strona testowa silnika na tele
 assets/icons/             (ikona aplikacji SVG i PNG)
 assets/svg/               (źródła SVG postaci: sowa/, garderoba/, kozki/, humbak/, pracu/, amic/, liscie/, interfejs/)
 assets/fonts/             (Fredoka 500 i 700 z polskimi literami, WOFF2, licencja OFL.txt)
+assets/audio/             (dźwięki: sfx/ — 27 efektów, music/ — motyw menu i pieśń humbaka, audio.json, LICENSES.md)
 manifest.webmanifest      (PWA)
 sw.js                     (service worker — w katalogu głównym, żeby obejmował całą stronę)
 scripts/make-icons.cjs    (generowanie ikon PNG z SVG)
 scripts/make-fonts.py     (budowa czcionek Fredoka z polskimi literami — jednorazowo, wynik w repo)
+scripts/make-audio.mjs    (syntezator efektów i muzyki → MP3 + manifest; wynik w repo)
 tests/
   smoke.html
   e2e/            (testy Playwright; telefon/ — testy na profilach telefonów)
@@ -245,7 +247,28 @@ Grafiki postaci powstają w SVG (`assets/svg/`), a przy starcie są rasteryzowan
   - gęstość `ppu` = piksele urządzenia na jednostkę świata (`skala widoku × DPR`, DPR max 2), więc grafika w grze trafia na ekran 1:1;
 - `drawShadow(ctx, x, y, szerokość, { lift = 0, color = "#3b2f4a", alpha = 0.18 })` — miękki cień-elipsa (promienie `szerokość/2` i `szerokość/8`); `lift` 0–1 (wysokość nad ziemią) zmniejsza cień do 40% i rozjaśnia do połowy.
 
-`shared/engine/index.js` eksportuje także `assets.js` i `sprites.js`.
+`shared/engine/index.js` eksportuje także `assets.js`, `sprites.js` i `audio.js`.
+
+### `audio.js` — dźwięk (E2c)
+
+Web Audio z trzema szynami: efekty → `sfx` → `master`, muzyka → `music` → `duck` (ściszanie) → `master` → wyjście.
+
+- stałe: `DEFAULT_VOLUMES = { master: 80, music: 60, sfx: 80 }`, `MAX_VOICES = 16`, `PITCH_VARIATION = 0.05`;
+- `volumeToGain(0–100)` — krzywa kwadratowa (`(v/100)²`, obcięcie do 0–100); `volumesFromSettings(settings)` — suwaki z profilu `volumeMaster`, `volumeMusic`, `volumeSfx` (domyślne wartości przy braku), a stare przełączniki `music: false` / `sfx: false` (obecne gry) wyciszają szynę do 0;
+- `findOnset(dane, próg, limit)` — pierwsza próbka o |x| > progu; `loopPoints({ decodedOnset, onset, duration, bufferDuration })` → `{ offset, loopStart, loopEnd }` (przesunięcie = początek w buforze − początek w oryginale, obcięte do 0–0,2 s; koniec pętli nie dalej niż koniec bufora);
+- `decodeFingerprint(base64)` → `Int8Array`; `alignByFingerprint(dane, sampleRate, odcisk, 44100, maxLag = 0,1 s)` — znormalizowana korelacja odcisku (co druga próbka, indeksy przeskalowane przy innej częstotliwości kontekstu, np. 48 kHz) z początkiem zdekodowanego bufora; zwraca przesunięcie w sekundach. Dekodery MP3 różnie traktują opóźnienie kodera (lamejs: 1105 próbek mono, 1524 stereo), a odcisk pozwala znaleźć je dokładnie — pętle muzyki nie mają szwu;
+- `variedRate(pitch, random)` — `pitch × (1 ± 5%)`;
+- `createAudio({ manifest, baseUrl, createContext, fetchImpl, random, doc, nav })`:
+  - kontekst `AudioContext` (albo `webkitAudioContext`, `latencyHint: "interactive"`) powstaje dopiero przy odblokowaniu; wcześniej `navigator.audioSession.type = "ambient"` (Safari 17+: dźwięk gry nie przerywa muzyki z innych aplikacji i respektuje przełącznik wyciszenia);
+  - `unlock()` — w geście użytkownika: kontekst, cichy bufor 1 próbki (iOS), `resume()`, potem `preload()`; zwraca `true`, gdy kontekst działa; `bindUnlock(window)` — jednorazowo na `pointerdown`, `touchend`, `keydown` (faza przechwytywania);
+  - wczytywanie: `fetch` → `decodeAudioData` (także starsza wersja z wywołaniami zwrotnymi) → wyznaczenie przesunięcia (pętle — odcisk, efekty — pierwsza głośna próbka) → pamięć `sfx:nazwa` / `music:nazwa`; błąd = `console.warn` i licznik `failed` (bez przerywania gry); `preload(nazwy = wszystkie efekty)`, `loaded(nazwa)`;
+  - `play(nazwa, { pitch = 1, volume = 1, pan = 0, variation = true })` — cisza (i licznik `skipped`), gdy dźwięk nie jest odblokowany, szyna ma głośność 0 albo efekt nie jest jeszcze wczytany (wtedy zaczyna się wczytywanie); odstęp `minGap` między tym samym efektem; ponad `maxVoices` tego efektu albo `MAX_VOICES` łącznie — wygaszenie najstarszego głosu (30 ms); źródło: `AudioBufferSourceNode` (`playbackRate` = wariacja, pętla dla efektów `loop`) → wzmocnienie `volume × głośność z manifestu` → opcjonalny `StereoPanner` → szyna; start od przesunięcia (bez ciszy dekodera); zwraca `{ stop(fade), rate }`; nieznana nazwa → błąd;
+  - `playMusic(nazwa, { fade = 0.8 })` — muzyka wczytywana przy pierwszym użyciu, pętla `loopStart`/`loopEnd`, narastanie do głośności z manifestu i wygaszenie poprzedniego utworu (przenikanie); `stopMusic({ fade = 0.6 })`, `currentMusic()`;
+  - `duck(0.35, { attack = 0.25 })` / `unduck({ release = 0.6 })` — ściszenie muzyki (np. na czas pieśni humbaka);
+  - `setVolume(szyna, 0–100)` (zaokrąglenie, płynna zmiana 50 ms), `volume(szyna)`, `applySettings(settings)` (suwaki, przełączniki, `vibration`), `setVibration(bool)`, `vibrate(wzór)` (tylko gdy włączone i jest `navigator.vibrate` — Android), `canVibrate()`;
+  - przejście strony w tło → `context.suspend()`, powrót → `resume()` (gdy odblokowany);
+  - `state()` → `{ unlocked, context (stan albo "brak"), session, loaded, voices, music, ducked, volumes, vibration }`, `stats()` → `{ played, skipped, failed }`, `onChange(listener)`, `context()`;
+- `connectAudioSettings(audio, cloud = window.SowieCloud)` — po `cloud.ready` i przy przeładowaniu profilu stosuje `profil.settings`; zwraca `save(zmiany)` = `cloud.updateProfile(p => Object.assign(p.settings, zmiany), { delayMs: 1000 })`.
 
 ## Sowi Świat (`shared/world/`, `assets/svg/`, `assets/fonts/`) — etap E2b
 
@@ -341,6 +364,17 @@ Pliki (wszystkie w repozytorium; opis wyglądu):
   - `lisc-zielony`, `lisc-zloty`, `lisc-teczowy` (0,6), `zycie`, `zycie-puste` (0,6);
 - `GOAT_KINDS` (etykieta, kolor chustki, efekt), `PRACU_VARIANTS`, `AMIC_VARIANTS`, `LEAF_KINDS` (`zielony` 10 pkt / 1 liść, `zloty` 50 / 5, `teczowy` 100 / 1 + gorączka).
 
+## Dźwięki (`assets/audio/`, `scripts/make-audio.mjs`) — etap E2c
+
+Wszystkie dźwięki są syntezowane kodem (własna twórczość, CC0 — `assets/audio/LICENSES.md`); `node scripts/make-audio.mjs` (ok. 35 s) generuje pliki i manifest, wynik jest powtarzalny (generator losowy `mulberry32` z ziarnem zależnym od nazwy). Zależność deweloperska `@breezystack/lamejs` **1.2.7** (czysty JavaScript, LGPL-3.0) koduje MP3; nie trafia na stronę.
+
+- **Syntezator** (44,1 kHz, `Float32Array`): obwiednia ADSR (`envelope`), oscylatory o ograniczonym paśmie (suma harmonicznych do połowy częstotliwości próbkowania, max 40: sinus, prostokąt, piła, trójkąt; albo własna lista harmonicznych), szum, `voice(wyjście, start, długość, { frequency (liczba albo funkcja czasu), wave, env, gain, vibrato { rate, depth, delay }, lowpass (liczba albo funkcja), pan, harmonics })` (mono albo stereo z panoramą równej mocy), filtry: pasmowy biquad RBJ (`bandpass` — formanty głosów), górnoprzepustowy i dolnoprzepustowy jednobiegunowy, `echo` (opóźnienie ze sprzężeniem), `reverb` (Schroeder: 4 filtry grzebieniowe 1557/1617/1491/1422 próbek × rozmiar, tłumienie 0,2, sprzężenie 0,78, 2 wszechprzepustowe 556/441), `trimSilence`, `fadeOut` (10 ms), `normalize` (szczyt 0,89 ≈ −1 dBFS, miękkie obcięcie `tanh`);
+- **Efekty** (27, mono 64 kb/s; w nawiasie charakter): `skok` (prostokąt+sinus 280→720 Hz), `podwojny-skok` (dwa wznoszące „bip” + iskra), `szybowanie` (pętla 2 s: szum pasmowy 700 Hz falujący 0,5 Hz, zapętlenie przez przenikanie dwóch kopii), `slizg` (szum z opadającym filtrem + ton 300→140 Hz), `ladowanie` (tąpnięcie 190→55 Hz), `lisc` (dzwoneczek E6 + B6; w grze wyższy z combo), `lisc-zloty` (E6–B6–E7), `lisc-teczowy` (arpeggio C6–E7 + wibrujący ton), `goraczka-start` (narastający szum + akord C-dur piłą + stopa), `trafienie-pracu` (dwa piski „pra-cu!” z formantami 1300/2700 Hz), `trafienie-amic` (metaliczny „bonk”: 220/563/1130/1790/2650 Hz + tąpnięcie), `koza-meee` (piła 470→400 Hz z drżeniem 18 Hz, formanty 600/2300 Hz), `powerup-start` (arpeggio w górę), `powerup-koniec` (w dół), `humbak-plusk` (szum + tąpnięcie + 9 bąbelków), `humbak-piesn` (zawołanie wieloryba 300→520→260 Hz z echem i pogłosem), `bonus-start` (fanfara C–E–G–C), `zycie` (G5–C6–E6–G6), `rekord` (fanfara z iskrami), `klik`, `zakup` (moneta B5→E6), `polaczenie` („blup” + dzwoneczek), `odliczanie` (A5), `odliczanie-start` (E6+E5), `koniec-gry` (smutne „hu-hu” G4→F4, E4→C4), `hu-hu` (wesołe A4, C5→D5), `dzwonek` (zapowiedź Pracu: 1400+1750 Hz z drżeniem 20 Hz, dwa razy); pohukiwanie (`hoots`) = sinus z harmonicznymi i vibrato + oddech (szum przez filtr pasmowy) + pogłos;
+- **Muzyka** (stereo 96 kb/s, renderowanie „po okręgu” — wybrzmienie za końcem pętli trafia na jej początek): `menu` — 112 BPM, C-dur, 8 taktów (C–Am–F–G ×2): bas trójkątny (pryma i kwinta), akordy marimbą na słabe ósemki, melodia prostokątem z vibrato + dzwoneczek oktawę wyżej, perkusja (stopa, werbel, hi-hat); `humbak` — 72 BPM, D-dur, 8 taktów (Dmaj7–Bm7–Gmaj7–A): pady z rozstrojonych pił przez filtr 900 Hz, sub-bas, krople marimby, 5 zawołań wieloryba z echem, szum fal; normalizacja `tanh` do 0,8;
+- **Nagrania właściciela**: `assets/audio/glosy/<nazwa>.wav` (PCM 16 bit, dowolna częstotliwość i liczba kanałów → mono, przepróbkowanie liniowe do 44,1 kHz) zastępuje efekt o tej nazwie (`"recorded": true` w manifeście);
+- **Manifest** `assets/audio/audio.json`: `{ version: 1, sampleRate: 44100, onsetThreshold: 0.02, sfx: { nazwa: { file, bytes, duration, samples, onset, label, volume, loop, maxVoices (domyślnie 3; liść 4), minGap (domyślnie 0,06 s; liść, klik 0,03), recorded? } }, music: { menu|humbak: { …, label, bpm, volume, loop: true, fingerprint } } }` — dla pętli (`szybowanie`, obie muzyki) `fingerprint` to pierwsze 4096 próbek oryginału (Int8, base64);
+- razem ok. 720 KB (efekty ok. 205 KB, muzyka ok. 515 KB); service worker trzyma MP3 „najpierw z pamięci”.
+
 ## PWA — instalacja na telefonie i start bez zasięgu
 
 - `manifest.webmanifest` (katalog główny): `name`/`short_name` „SowieGry”, `lang: "pl"`, `id`/`start_url`/`scope` `"./"`, `display: "standalone"`, `orientation: "portrait"`, `background_color: #fff6e3`, `theme_color: #bfe9ff`, ikony 192 i 512 (`any`), 512 `maskable`, SVG;
@@ -358,7 +392,7 @@ Pliki (wszystkie w repozytorium; opis wyglądu):
 
 Strona testowa do sprawdzania Sowiego Silnika na prawdziwym telefonie (Analiza 3, E2). `lab/index.html` (`html.sowie-shell`, `viewport-fit=cover`, te same skrypty startowe co gry — hasło obowiązuje; style `cute-ui.css`, `shared/world/tokens.css`, `engine/shell.css`, `lab.css`), `lab/main.js` i `lab/characters.js` (moduły ES; `lab/package.json` z `"type": "module"`). Nie jest w rejestrze gier.
 
-- nagłówek: „← Menu”, „Sowie Laboratorium”, licznik kl./s; przyciski działów **Postacie · Gesty · Informacje** (`aria-pressed`, min. 48 px); domyślnie otwiera się „Postacie”, a `?dzial=gesty` / `?dzial=info` otwiera od razu inny dział; jedna pętla silnika aktualizuje i rysuje tylko widoczny dział;
+- nagłówek: „← Menu”, „Sowie Laboratorium”, licznik kl./s; przyciski działów **Postacie · Dźwięk · Gesty · Informacje** (`aria-pressed`, min. 48 px); domyślnie otwiera się „Postacie”, a `?dzial=dzwiek` / `?dzial=gesty` / `?dzial=info` otwiera od razu inny dział; jedna pętla silnika aktualizuje i rysuje tylko widoczny dział;
 - **Postacie** (punkt kontrolny właściciela przed E3, `lab/characters.js`): status atlasu („Rysuję postacie…” → „Atlas gotowy: N grafik w X ms. Postacie ruszają się same.”), przyciski garderoby (9 pozycji z `SowiePlatform.COSMETICS`, `aria-pressed`, min. 44 px) zmieniające dodatek na animowanych sowach, a pod nimi siedem działów, każdy z nagłówkiem (Fredoka 700, 18 px) i własnym płótnem (`role="img"`, opis z nazwami postaci):
   - „Sówka — animacje”: stoi i mruga, bieg, skok (łuk 0,55 j. co 1,3 s, rozciągnięcie i spłaszczenie przy lądowaniu, malejący cień), szybowanie (0,35 j. nad ziemią), oszołomienie, radość;
   - „Garderoba (9 pozycji)”: stojąca, mrugająca sowa w każdym dodatku;
@@ -368,9 +402,10 @@ Strona testowa do sprawdzania Sowiego Silnika na prawdziwym telefonie (Analiza 3
   - „Rodzina Amic”: grafiki stojące, sterowiec się kołysze, kanister spada;
   - „Liście monstery i życia”: liście obracają się (`scaleX = cos`), serduszko pełne i puste;
   - układ „jak tekst”: komórki `szerokość × wysokość` jednostek świata × 64 px CSS + 18 px na podpis (Fredoka 500, 13 px), odstęp 8 px, zawijanie do szerokości działu; tło komórki `rgba(255,255,255,0.55)` z zaokrągleniem 14 px; płótna w rozdzielczości DPR (max 2), atlas budowany dla `64 × DPR` px na jednostkę (`atlas.ensure` przy zmianie rozmiaru); rysowane są tylko działy widoczne na ekranie (`IntersectionObserver`);
+- **Dźwięk** (`lab/sound.js`, `createSoundPanel({ root })`): manifest `assets/audio/audio.json` wczytywany przy starcie strony, `createAudio` + `bindUnlock(window)` + `connectAudioSettings`; status (`[data-audio-status]`): „Dotknij dowolnego przycisku…”, potem „Dźwięk: działa · efekty wczytane: N/27 · muzyka: … · sesja: ambient” (stany kontekstu: działa, wstrzymany, zamknięty, czeka na dotknięcie); trzy suwaki `input[type=range]` 0–100 (Głośność ogólna, Muzyka, Efekty; `accent-color` monstery, pole min. 44 px, wartość obok) — zmiana od razu w silniku i w profilu (`volumeMaster` / `volumeMusic` / `volumeSfx`, przesunięcie suwaka muzyki/efektów ustawia też `music`/`sfx: true`); „Wibracje (Android)” (`settings.vibration`, nieaktywny bez `navigator.vibrate`); **Muzyka**: „Motyw menu”, „Pieśń humbaka” (`aria-pressed` = gra), „Ścisz muzykę (jak w bonusie)” (przełącznik `duck(0.3)`), „Zatrzymaj muzykę”; **Efekty**: przycisk na każdy efekt z podpisem z manifestu (szybowanie włącza/wyłącza pętlę; trafienia wibrują `[40, 30, 40]`) i „Seria liści (combo)” — 8 liści co 110 ms, każdy o pół tonu wyżej; siatka przycisków `repeat(auto-fill, minmax(140px, 1fr))`, min. 48 px;
 - **Gesty**: pole sięgające krawędzi ekranu (`.lab-stage`, `touch-action: none`) z płótnem: różowe pasy martwych stref (18 px po bokach, 20 px + pasek domowy u dołu, podpis „martwa strefa”), zielony ślad palca, żółty błysk przy dotknięciu; nazwa ostatniego gestu (`[data-last-gesture]`: Stuknięcie, Przytrzymanie, Koniec przytrzymania, Przesunięcie w lewo/prawo/górę/dół, Przeciąganie, Koniec przeciągania, Martwa strefa (gest pominięty), Pauza (klawisz P)) i dziennik 6 ostatnich gestów z godziną; w tym dziale działa auto-pauza (jak w grze);
 - **Informacje**: płynność, ekran CSS, widoczny obszar (`visualViewport`), DPR (i DPR rysowania), bezpieczne obszary, tryb (aplikacja / przeglądarka), praca bez zasięgu (czy service worker kontroluje stronę), sieć, stan zapisu w chmurze, oszczędzanie baterii; przyciski: „Test pauzy i odliczania”, „Oszczędzanie baterii” (przełącznik), „Pokaż propozycję oszczędzania”, „Pokaż bezpieczne obszary” (czerwone ramki wg `env(safe-area-inset-*)`);
-- `window.SowieLab = { loop, shell, view, characters, atlas }` — dostęp dla testów (`characters.cosmetic()`, `characters.setCosmetic(klucz)`, `atlas.has(nazwa)`).
+- `window.SowieLab = { loop, shell, view, characters, atlas, soundReady }` — dostęp dla testów (`characters.cosmetic()`, `characters.setCosmetic(klucz)`, `atlas.has(nazwa)`, `(await soundReady).audio`).
 
 ## Profil (Firestore: `sowiegry/profil`)
 
@@ -378,7 +413,8 @@ Jedyny profil gracza (Analiza 1, rozdział 4.1), wczytywany i zapisywany przez `
 
 ```text
 schemaVersion: 1, name: "Sowa", createdAt, updatedAt, lastSeenAt (znaczniki czasu serwera)
-settings:  { music, sfx, quips, reducedEffects }
+settings:  { music, sfx, quips, reducedEffects,
+             batterySaver (E2a), volumeMaster, volumeMusic, volumeSfx, vibration (E2c) — nowe klucze opcjonalne }
 cosmetics: { unlocked: ["none", "bow", …], selected: "none" }
 missions:  { leaves20: { progress, target, done, reward }, … }
 stats:     { leaves, nearMisses, extraLives, finishes, maxCombo }
@@ -421,12 +457,12 @@ Pełny zestaw uruchamiany przed każdym wypchnięciem na `main` i w CI (`.github
 |---|---|---|
 | składnia | `npm run syntax` (`scripts/check-syntax.sh`) | `node --check` dla każdego pliku `.js` poza `node_modules/`, `.git/`, `playwright-report/` |
 | lint | `npm run lint` | ESLint 9 (`eslint.config.js`) |
-| formatowanie | `npm run format:check` | Prettier 3 (`.prettierrc.json`: szerokość 120, 2 spacje, średniki, cudzysłowy podwójne, przecinki końcowe) dla plików konfiguracyjnych, `firebase.json`, `manifest.webmanifest`, `sw.js`, `shared/engine/`, `shared/world/`, `lab/main.js`, `lab/characters.js`, `lab/lab.css`, `scripts/make-icons.cjs`, workflow i katalogów `tests/e2e`, `tests/unit`, `tests/rules` |
+| formatowanie | `npm run format:check` | Prettier 3 (`.prettierrc.json`: szerokość 120, 2 spacje, średniki, cudzysłowy podwójne, przecinki końcowe) dla plików konfiguracyjnych, `firebase.json`, `manifest.webmanifest`, `sw.js`, `shared/engine/`, `shared/world/`, `lab/main.js`, `lab/characters.js`, `lab/sound.js`, `lab/lab.css`, `scripts/make-icons.cjs`, `scripts/make-audio.mjs`, `assets/audio/audio.json`, workflow i katalogów `tests/e2e`, `tests/unit`, `tests/rules` |
 | HTML | `npm run html` | `html-validate` (`.htmlvalidate.json`) dla `index.html`, stron pięciu gier, `lab/index.html` i `tests/smoke.html` |
 | jednostkowe | `npm run test:unit` | `node --test tests/unit/*.test.mjs` |
 | reguły i przeglądarkowe | `npm run test:e2e` | emulator Firestore: `firebase emulators:exec --only firestore --project demo-sowiegry "npm run test:rules && playwright test"` — najpierw testy reguł (`test:rules` = `node --test tests/rules/*.test.mjs`, wymaga działającego emulatora), potem Playwright |
 
-Zależności deweloperskie są przypięte tam, gdzie wersja wpływa na przeglądarki, emulator i SDK: `@playwright/test` **1.56.1** (Chromium 141, rewizja 1194), `firebase-tools` **15.31.0**, `firebase` **12.19.0** (ta sama wersja SDK co w `shared/sowie-cloud.js`; pliki `firebase-app.js` i `firebase-firestore.js` z pakietu npm są bajt w bajt identyczne z plikami na gstatic) i `@firebase/rules-unit-testing` **5.0.2**. Pozostałe (`eslint`, `globals`, `html-validate`, `http-server`, `prettier`) mają zakresy `^`. `package-lock.json` nie jest wersjonowany (`.gitignore`).
+Zależności deweloperskie są przypięte tam, gdzie wersja wpływa na przeglądarki, emulator i SDK: `@playwright/test` **1.56.1** (Chromium 141, rewizja 1194), `firebase-tools` **15.31.0**, `firebase` **12.19.0** (ta sama wersja SDK co w `shared/sowie-cloud.js`; pliki `firebase-app.js` i `firebase-firestore.js` z pakietu npm są bajt w bajt identyczne z plikami na gstatic) , `@firebase/rules-unit-testing` **5.0.2** i `@breezystack/lamejs` **1.2.7** (kodowanie MP3 w `scripts/make-audio.mjs`). Pozostałe (`eslint`, `globals`, `html-validate`, `http-server`, `prettier`) mają zakresy `^`. `package-lock.json` nie jest wersjonowany (`.gitignore`).
 
 ### Playwright (`playwright.config.js`)
 
@@ -487,6 +523,12 @@ Zależności deweloperskie są przypięte tam, gdzie wersja wpływa na przegląd
 - emulator: zejście do tła zapisuje stan Ogrodów od razu, a powrót po 10 minutach pokazuje okno postępu offline;
 - ekran hasła przykrywa dok przycisków gry (instrukcja, rekordy, galeria).
 
+`dzwiek.spec.js` (E2c, `lab/?dzial=dzwiek`):
+
+- przed dotknięciem status „czeka na dotknięcie”; wszystkie przyciski dźwięku (co najmniej 29) mają ≥ 48 px; dotknięcie „Skok” odblokowuje dźwięk („Dźwięk: działa”), gra efekt (`stats().played ≥ 1`), wczytuje co najmniej 25 efektów bez błędów dekodowania (`failed = 0`);
+- „Motyw menu” gra w pętli (`currentMusic() === "menu"`, kontekst `running`), ściszanie włącza się i wyłącza, „Pieśń humbaka” zastępuje motyw menu, „Zatrzymaj muzykę”;
+- suwak muzyki na 35 → silnik `volume("music") === 35` i profil `settings.volumeMusic === 35`; „Seria liści (combo)” gra 8 efektów; brak przewijania w bok i błędów.
+
 `postacie.spec.js` (E2b):
 
 - Laboratorium otwiera się w dziale „Postacie”; status „Atlas gotowy”; każda nazwa z `SPRITES` jest w atlasie (co najmniej 50); `document.fonts.check('700 16px "Fredoka"', "Zażółć")`; każde z 7 płócien ma narysowane piksele; przycisk „Kokardka” (≥ 44 px) zmienia dodatek (`characters.cosmetic() === "bow"`); brak przewijania w bok i błędów.
@@ -494,7 +536,7 @@ Zależności deweloperskie są przypięte tam, gdzie wersja wpływa na przegląd
 `laboratorium.spec.js` (E2a, otwiera `lab/?dzial=gesty`):
 
 - gesty w Laboratorium: stuknięcie, przesunięcia w 4 kierunkach, przytrzymanie, pominięcie gestu od lewej krawędzi, przy prawej krawędzi i przy pasku domowym; brak przewijania w bok;
-- auto-pauza po przejściu w tło (okno „Pauza” z „Witaj z powrotem”, pętla zatrzymana), przycisk „Graj dalej” ≥ 48 px w dolnej połowie, odliczanie 3 → 2 → wznowienie;
+- auto-pauza po przejściu w tło (okno „Pauza” z „Witaj z powrotem”, pętla zatrzymana), przycisk „Graj dalej” ≥ 48 px w dolnej połowie, odliczanie 3 → 2 → 1 → wznowienie (kolejne cyfry zapisuje `MutationObserver` w stronie, więc wynik nie zależy od tempa sprawdzania przez test);
 - dział „Informacje”: płynność, bezpieczne obszary, tryb przeglądarki; „Oszczędzanie baterii” włącza 30 kl./s i zapisuje `settings.batterySaver` w profilu; propozycja oszczędzania i test pauzy.
 
 `pwa.spec.js` (E2a, `serviceWorkers: "allow"`):
@@ -519,6 +561,13 @@ Zależności deweloperskie są przypięte tam, gdzie wersja wpływa na przegląd
 
 - RNG zgodny z algorytmem `SowiePlatform` i powtarzalny; pętla: 120 kroków na sekundę przy 60 kl./s, `alpha` w [0, 1), pauza, limit 0,25 s po przerwie, brak spirali śmierci, 30 kl./s w oszczędzaniu baterii; pula; kolizje; animacje i funkcje łagodzenia; cząsteczki (limit, gęstość); widok (skala 40 dla 360 × 800 i świata 9 × 16, DPR max 2, stała skala przy pasku adresu, nowa przy obrocie, odwrotność przekształceń); kamera; gesty (stuknięcie, przytrzymanie, 4 kierunki swipe, przeciąganie, przytrzymanie → przeciąganie, martwe strefy, drugi palec, klawisze); sceny; monitor płynności; auto-pauza z odliczaniem;
 - PWA: pola manifestu i rozmiary ikon PNG, manifest i rejestracja na każdej stronie, `VERSION`, istnienie plików z `SHELL`, wszystkie skrypty i style menu w `SHELL`, SDK w pamięci, brak obsługi Firestore, usuwanie starych wersji.
+
+### Testy dźwięku (`tests/unit/audio.test.mjs`)
+
+- manifest: co najmniej 25 efektów (w tym skok, liść, trafienia, kózka, plusk, rekord, koniec gry, odliczanie, klik, połączenie, zakup), muzyka `menu` i `humbak`, każdy plik istnieje, ma rozmiar z manifestu i nagłówek MP3, `samples/44100 = duration`, głośność 0–1, podpis; pętle mają odcisk 4096 próbek; razem < 3 MB; `LICENSES.md` z CC0;
+- `volumeToGain`, `volumesFromSettings` (domyślne, własne, obcięcie, wyłączone szyny), `findOnset`, `loopPoints`, `variedRate` (0,95–1,05);
+- `alignByFingerprint` odnajduje przesunięcia 0, 529, 1105 i 1524 próbek co do próbki, a przy buforze 48 kHz z dokładnością 2 próbek;
+- silnik na atrapie Web Audio: cisza przed odblokowaniem, wczytanie wszystkich efektów, `pitch`, odstęp `minGap`, limit głosów (zatrzymanie najstarszych), błąd dla nieznanej nazwy; muzyka w pętli z przenikaniem, ściszanie, suwaki, ustawienia z profilu (wyłączone efekty = cisza), wibracje, wstrzymanie w tle; `audioSession.type = "ambient"`; brak Web Audio → `unlock()` = `false`.
 
 ### Testy Sowiego Świata (`tests/unit/world.test.mjs`)
 

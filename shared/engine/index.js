@@ -13,3 +13,4 @@ export * from "./safe-area.js";
 export * from "./shell.js";
 export * from "./assets.js";
 export * from "./sprites.js";
+export * from "./audio.js";

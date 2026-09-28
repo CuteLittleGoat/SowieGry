@@ -2,6 +2,7 @@
 import { bindInput, createLoop, createShell, createView, DEFAULTS, measureSafeAreas } from "../shared/engine/index.js";
 import { COSMETIC_SPRITES } from "../shared/world/owl.js";
 import { createCharactersPanel } from "./characters.js";
+import { createSoundPanel } from "./sound.js";
 
 const lab = document.querySelector("[data-lab]");
 const stage = document.querySelector("[data-stage]");
@@ -213,5 +214,12 @@ showTab(new URLSearchParams(location.search).get("dzial") || "postacie");
 refreshInfo();
 loop.start();
 
+// Dział „Dźwięk” (manifest dźwięków wczytywany w tle).
+const soundReady = createSoundPanel({ root: document.querySelector('[data-panel="dzwiek"]') }).catch((error) => {
+  document.querySelector("[data-audio-status]").textContent = "Nie udało się przygotować dźwięku.";
+  console.error(error);
+  return null;
+});
+
 // Dostęp dla testów e2e.
-window.SowieLab = Object.freeze({ loop, shell, view, characters, atlas: characters.atlas });
+window.SowieLab = Object.freeze({ loop, shell, view, characters, atlas: characters.atlas, soundReady });

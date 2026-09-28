@@ -31,6 +31,7 @@
     </header>
     <nav class="lab-tabs" aria-label="Działy Laboratorium">
       <button type="button" data-tab="postacie" aria-pressed="true">Postacie</button>
+      <button type="button" data-tab="dzwiek" aria-pressed="false">Dźwięk</button>
       <button type="button" data-tab="gesty" aria-pressed="false">Gesty</button>
       <button type="button" data-tab="info" aria-pressed="false">Informacje</button>
     </nav>
@@ -39,6 +40,41 @@
       <p class="lab-note" data-characters-status aria-live="polite">Rysuję postacie…</p>
       <div class="lab-chips" role="group" aria-label="Dodatek z garderoby na animowanej sowie" data-cosmetics></div>
       <div class="lab-characters" data-characters></div>
+    </section>
+
+    <section class="lab-panel" data-panel="dzwiek" aria-label="Test dźwięku" hidden>
+      <p class="lab-note" data-audio-status aria-live="polite">Dotknij dowolnego przycisku, żeby włączyć dźwięk.</p>
+      <div class="lab-sliders">
+        <label class="lab-slider">
+          <span>Głośność ogólna</span>
+          <input type="range" min="0" max="100" step="1" data-volume="master" />
+          <output data-volume-value="master">—</output>
+        </label>
+        <label class="lab-slider">
+          <span>Muzyka</span>
+          <input type="range" min="0" max="100" step="1" data-volume="music" />
+          <output data-volume-value="music">—</output>
+        </label>
+        <label class="lab-slider">
+          <span>Efekty</span>
+          <input type="range" min="0" max="100" step="1" data-volume="sfx" />
+          <output data-volume-value="sfx">—</output>
+        </label>
+      </div>
+      <div class="lab-actions">
+        <button type="button" data-audio-action="vibration" aria-pressed="true">Wibracje (Android)</button>
+      </div>
+      <h2 class="lab-subtitle">Muzyka</h2>
+      <div class="lab-sound-grid">
+        <button type="button" data-music="menu" aria-pressed="false">Motyw menu</button>
+        <button type="button" data-music="humbak" aria-pressed="false">Pieśń humbaka</button>
+        <button type="button" data-audio-action="duck" aria-pressed="false">Ścisz muzykę (jak w bonusie)</button>
+        <button type="button" data-audio-action="stop">Zatrzymaj muzykę</button>
+      </div>
+      <h2 class="lab-subtitle">Efekty</h2>
+      <div class="lab-sound-grid" data-sfx-buttons>
+        <button type="button" data-audio-action="combo">Seria liści (combo)</button>
+      </div>
     </section>
 
     <section class="lab-panel lab-panel-stage" data-panel="gesty" aria-label="Test gestów" hidden>

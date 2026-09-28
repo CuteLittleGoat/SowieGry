@@ -7,8 +7,8 @@
     "serve": "http-server . -p 4173 -c-1",
     "syntax": "bash scripts/check-syntax.sh",
     "lint": "eslint .",
-    "format": "prettier --write package.json .prettierrc.json .htmlvalidate.json firebase.json manifest.webmanifest playwright.config.js eslint.config.js sw.js shared/engine shared/world lab/main.js lab/characters.js lab/lab.css scripts/make-icons.cjs tests/e2e tests/unit tests/rules .github/workflows/js-check.yml",
-    "format:check": "prettier --check package.json .prettierrc.json .htmlvalidate.json firebase.json manifest.webmanifest playwright.config.js eslint.config.js sw.js shared/engine shared/world lab/main.js lab/characters.js lab/lab.css scripts/make-icons.cjs tests/e2e tests/unit tests/rules .github/workflows/js-check.yml",
+    "format": "prettier --write package.json .prettierrc.json .htmlvalidate.json firebase.json manifest.webmanifest playwright.config.js eslint.config.js sw.js shared/engine shared/world lab/main.js lab/characters.js lab/sound.js lab/lab.css scripts/make-icons.cjs scripts/make-audio.mjs assets/audio/audio.json tests/e2e tests/unit tests/rules .github/workflows/js-check.yml",
+    "format:check": "prettier --check package.json .prettierrc.json .htmlvalidate.json firebase.json manifest.webmanifest playwright.config.js eslint.config.js sw.js shared/engine shared/world lab/main.js lab/characters.js lab/sound.js lab/lab.css scripts/make-icons.cjs scripts/make-audio.mjs assets/audio/audio.json tests/e2e tests/unit tests/rules .github/workflows/js-check.yml",
     "html": "html-validate index.html SowaRunner/index.html SowaJumper/index.html Sowa3/index.html SowieOgrody/index.html SowiaSzklarnia/index.html lab/index.html tests/smoke.html",
     "test:unit": "node --test tests/unit/*.test.mjs",
     "test:rules": "node --test tests/rules/*.test.mjs",
@@ -17,6 +17,7 @@
     "test": "npm run syntax && npm run lint && npm run format:check && npm run html && npm run test:unit && npm run test:e2e"
   },
   "devDependencies": {
+    "@breezystack/lamejs": "1.2.7",
     "@firebase/rules-unit-testing": "5.0.2",
     "@playwright/test": "1.56.1",
     "eslint": "^9.28.0",
