@@ -17,7 +17,9 @@ import { createRunCamera } from "./camera.js";
 import { BIOMES } from "./backgrounds.js";
 import { CLOUD, DIFFICULTIES, DIFFICULTY_ORDER, FEVER, GAME_ID, GOATS, VIEW, WHALE } from "./config.js";
 import { createRun } from "./game.js";
+import { TUTORIAL_PATTERNS } from "./patterns.js";
 import { createRenderer } from "./render.js";
+import { createTutorial } from "./tutorial.js";
 import { LEVEL_MAX, TASKS_PER_LEVEL, createTaskTracker, describeTasks, normalizeTasks } from "./tasks.js";
 
 const cloud = window.SowieCloud;
@@ -66,6 +68,9 @@ let tasksData = normalizeTasks(null);
 let tracker = null;
 let lastQuip = -Infinity;
 let startQuip = false;
+// Samouczek: przy pierwszym biegu (brak `tutorialDone` w dokumencie gry), z „Jak grać?” albo z ?samouczek=1.
+let tutorial = null;
+let forceTutorial = params.get("samouczek") === "1";
 
 const settings = () => cloud?.profile?.()?.settings || {};
 const cosmetic = () => cloud?.profile?.()?.cosmetics?.selected || "none";
@@ -126,6 +131,37 @@ function updateSplash(state) {
     "aria-label",
     bonus ? `Rejs na humbaku: ${Math.ceil(bonus.time)} s` : `Plusk-o-metr: ${percent}%`,
   );
+}
+
+// Samouczek: podpowiedź w górnej części planszy (sowa biegnie nisko, przy lewej krawędzi) z animacją gestu.
+const tutorialNode = document.createElement("div");
+tutorialNode.className = "ucieczka-tutorial";
+tutorialNode.hidden = true;
+tutorialNode.setAttribute("role", "status");
+tutorialNode.setAttribute("aria-live", "assertive");
+tutorialNode.innerHTML =
+  '<span class="ucieczka-tutorial-step" data-tutorial-step></span><span class="sowie-gesture-demo" aria-hidden="true"><span class="sowie-gesture-finger"></span></span><p data-tutorial-text></p>';
+stage.appendChild(tutorialNode);
+
+function showTutorialPrompt(item) {
+  tutorialNode.hidden = !item;
+  if (!item) return;
+  tutorialNode.querySelector("[data-tutorial-step]").textContent = `Samouczek · krok ${item.step} z ${item.steps}`;
+  tutorialNode.querySelector(".sowie-gesture-demo").dataset.gesture = item.gesture;
+  tutorialNode.querySelector("[data-tutorial-text]").textContent = item.text;
+}
+
+function wantsTutorial() {
+  if (forceTutorial) return true;
+  return !DAILY && !params.get("seed") && !cloud?.game?.(GAME_ID)?.tutorialDone;
+}
+
+function tutorialFinished() {
+  game?.setSafe(false);
+  tutorial = null;
+  play("zakup");
+  toasts.show("Świetnie! Teraz uciekaj przed Chmurą Pracu!", { kind: "success", key: "samouczek", priority: 2 });
+  cloud?.updateGame?.(GAME_ID, { tutorialDone: true });
 }
 
 const GOAT_TEXT = {
@@ -245,7 +281,17 @@ function openGuide(trigger) {
     content: renderGuide(guideFor(GUIDE_ID), { atlas, sprites: SPRITES }),
     root: stage,
     className: "is-guide",
-    actions: [{ label: "Rozumiem", primary: true, onClick: (close) => close() }],
+    actions: [
+      {
+        label: "Zagraj samouczek",
+        onClick: (close) => {
+          close();
+          forceTutorial = true;
+          startRun();
+        },
+      },
+      { label: "Rozumiem", primary: true, onClick: (close) => close() },
+    ],
     onClose: () => trigger?.focus?.({ preventScroll: true }),
   });
 }
@@ -271,7 +317,18 @@ function startRun() {
   renderer.clearPopups();
   particles.clear();
   tracker = createTaskTracker({ saved: tasksData });
-  game = createRun({ difficulty, seed: seedFor(), cozy: cozyEnabled(), multiplier: tracker.multiplier });
+  const withTutorial = wantsTutorial();
+  forceTutorial = false;
+  game = createRun({
+    difficulty,
+    seed: seedFor(),
+    cozy: cozyEnabled(),
+    multiplier: tracker.multiplier,
+    intro: withTutorial ? TUTORIAL_PATTERNS : [],
+    safe: withTutorial,
+  });
+  tutorial = withTutorial ? createTutorial({ onPrompt: showTutorialPrompt, onDone: tutorialFinished }) : null;
+  showTutorialPrompt(null);
   lastQuip = -Infinity;
   startQuip = false;
   screen = "playing";
@@ -292,6 +349,7 @@ function startRun() {
   toasts.refresh();
   if (game.state.cozy) toasts.show("Tryb Przytulny — bez końca gry", { kind: "success" });
   if (DAILY) toasts.show("Wyzwanie dnia — powodzenia!", { kind: "success" });
+  if (tutorial) toasts.show("Samouczek: 4 krótkie kroki. Chmura Pracu poczeka!", { kind: "info", key: "samouczek" });
 }
 
 function finishRun() {
@@ -303,6 +361,8 @@ function finishRun() {
   view.lockScale(false);
   hud.hide();
   splashNode.hidden = true;
+  showTutorialPrompt(null);
+  tutorial = null;
   audio?.stopMusic?.();
   const summary = game.summary();
   // Zadania: ukończone wymieniamy, Sowi mnożnik rośnie co 3 zadania; zapis razem z wynikiem (ten sam zapis zbiorczy).
@@ -403,6 +463,7 @@ function nearMissText(event) {
 function handleEvents() {
   for (const event of game.takeEvents()) {
     const owl = game.state.owl;
+    tutorial?.handleEvent(event);
     if (tracker && screen === "playing") tasksDone(tracker.handle(event));
     switch (event.type) {
       case "jump":
@@ -592,14 +653,18 @@ function update(step) {
   if (screen === "playing" && game) {
     if (hitStop > 0) hitStop -= step;
     else if (shell.state() === "running") {
-      game.update(step);
-      handleEvents();
-      if (tracker && screen === "playing") tasksDone(tracker.tick(game.state, step));
-      if (!startQuip && game.state.time > 1.2) {
-        startQuip = true;
-        quip(QUIPS.start);
+      // Samouczek zatrzymuje grę przed przeszkodą, dopóki gracz nie wykona pokazanego ruchu.
+      if (!tutorial?.frozen()) {
+        game.update(step);
+        handleEvents();
+        if (tracker && screen === "playing") tasksDone(tracker.tick(game.state, step));
+        if (!startQuip && game.state.time > 1.2 && !tutorial) {
+          startQuip = true;
+          quip(QUIPS.start);
+        }
+        bubbleTrail(step);
       }
-      bubbleTrail(step);
+      if (screen === "playing") tutorial?.update(game.state);
     }
     const owl = game.state.owl;
     if (game.state.bonus) animator.set(game.state.bonus.y < -0.1 ? "radosc" : "stoi");
@@ -661,6 +726,18 @@ bindInput(stage, (gesture) => {
     return;
   }
   if (shell.state() !== "running") return;
+  // Samouczek: w zatrzymaniu przepuszczamy tylko pokazany ruch (przesunięcie w górę = skok).
+  if (tutorial) {
+    const kind =
+      gesture.type === "press" || (gesture.type === "swipe" && gesture.direction === "up")
+        ? "press"
+        : gesture.type === "swipe" && gesture.direction === "down"
+          ? "down"
+          : gesture.type === "release"
+            ? "release"
+            : "other";
+    if (!tutorial.accept(kind)) return;
+  }
   if (gesture.type === "press") game.press(gesture.source === "keyboard" ? "keyboard" : "touch");
   else if (gesture.type === "release") game.release();
   else if (gesture.type === "swipe") game.swipe(gesture.direction);
@@ -744,6 +821,7 @@ window.SowiaUcieczka = Object.freeze({
   bonus: () => (game?.state.bonus ? { ...game.state.bonus } : null),
   tasks: () => ({ ...tasksData, list: tracker && screen === "playing" ? tracker.list() : describeTasks(tasksData) }),
   seed: () => baseSeed(),
+  tutorial: () => (tutorial ? tutorial.progress() : null),
   powerups: () => (game ? { ...game.state.powerups, fever: game.state.fever } : null),
   camera: () => ({ x: camera.x, y: camera.y, zoom: camera.zoom }),
   atlasReady: () => atlas.ready(),

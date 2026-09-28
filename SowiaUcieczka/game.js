@@ -112,11 +112,14 @@ export function createRun({
   startDistance = 0,
   // Sowi mnożnik (zadania biegu, poziom 1–20): mnoży punkty za dystans.
   multiplier = 1,
+  // Samouczek: wzory wstępne i tryb bezpieczny (trafienia nie liczą się).
+  intro = [],
+  safe = false,
 } = {}) {
   const rng = random || createRng(seed).next;
   const config = DIFFICULTIES[difficulty] ? difficulty : "arcade";
   const world = createWorld();
-  const track = createTrack({ difficulty: config, random: rng, patterns });
+  const track = createTrack({ difficulty: config, random: rng, patterns, intro });
   const owl = createOwlBody(startDistance);
   const controls = { jump: false, down: false, hold: false, holdTime: 0 };
   const obstacles = [];
@@ -175,6 +178,7 @@ export function createRun({
     perfects: 0,
     perfectPoints: 0,
     lastPerfect: -Infinity,
+    safe: Boolean(safe),
   };
   state.nextGoatAt = GOATS.every[0] * 0.5 + rng() * (GOATS.every[1] - GOATS.every[0]) * 0.5;
   state.nextBubbleAt = SPLASH.bubbleEvery[0] + rng() * (SPLASH.bubbleEvery[1] - SPLASH.bubbleEvery[0]);
@@ -248,6 +252,7 @@ export function createRun({
         leaves.sort((a, b) => a.x - b.x);
       }
       state.patterns.push(chosen.id);
+      emit("pattern", { id: chosen.id, start, length: chosen.length });
       if (state.patterns.length > 12) state.patterns.shift();
       state.patternCount += 1;
       const gap = gapAfter(state.speed, config);
@@ -265,7 +270,7 @@ export function createRun({
   }
 
   function hit(by, variant = null) {
-    if (state.ended || state.invulnerable > 0 || state.powerups.turbo > 0 || state.bonus) return false;
+    if (state.ended || state.safe || state.invulnerable > 0 || state.powerups.turbo > 0 || state.bonus) return false;
     // Tarcza pochłania jedno trafienie.
     if (state.powerups.tarcza > 0) {
       state.powerups.tarcza = 0;
@@ -646,6 +651,10 @@ export function createRun({
     },
     end,
     hit,
+    // Samouczek: tryb bezpieczny (trafienia nie liczą się) włączany i wyłączany przez stronę.
+    setSafe(value) {
+      state.safe = Boolean(value);
+    },
     // Testy i diagnostyka: kózka od razu, pełny Plusk-o-metr.
     giveGoat(kind) {
       catchGoat({ kind, x: owl.x, taken: false });

@@ -161,6 +161,42 @@
   background: var(--zloto);
 }
 
+/* Samouczek: podpowiedź w górnej części planszy (sowa biegnie nisko, przy lewej krawędzi), nie łapie dotyku. */
+.ucieczka-tutorial {
+  position: absolute;
+  top: max(120px, 24%);
+  left: 50%;
+  z-index: 32;
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  width: min(calc(100% - 32px), 360px);
+  padding: 14px 16px;
+  border-radius: 20px;
+  box-sizing: border-box;
+  background: rgba(255, 246, 227, 0.95);
+  box-shadow: 0 10px 28px rgba(59, 47, 74, 0.22);
+  transform: translateX(-50%);
+  text-align: center;
+  pointer-events: none;
+}
+
+.ucieczka-tutorial[hidden] {
+  display: none;
+}
+
+.ucieczka-tutorial p {
+  margin: 0;
+  font-size: 18px;
+  font-weight: var(--czcionka-pogrubiona);
+  line-height: 1.25;
+}
+
+.ucieczka-tutorial-step {
+  font-size: 13px;
+  opacity: 0.75;
+}
+
 /* Telefon poziomo: niższa karta. */
 @media (max-height: 500px) {
   .ucieczka-title-card {

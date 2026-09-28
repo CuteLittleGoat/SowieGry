@@ -269,3 +269,88 @@ test("wyzwanie dnia: ziarno z daty, poziom Arcade, rekord dnia w dokumencie gry 
   );
   expect(errors).toEqual([]);
 });
+
+async function swipeDown(page, x, y) {
+  await page.mouse.move(x, y);
+  await page.mouse.down();
+  await page.mouse.move(x, y + 80, { steps: 4 });
+  await page.mouse.up();
+}
+
+test("samouczek pierwszego biegu: gra czeka na pokazany ruch, 4 kroki bez trafień, potem zapis w dokumencie gry (emulator)", async ({
+  page,
+}, testInfo) => {
+  const project = uniqueProject(testInfo);
+  const errors = watchErrors(page);
+  await openGame(page, cloudUrl("/SowiaUcieczka/", project));
+  await page.locator("[data-start]").click();
+  const prompt = page.locator(".ucieczka-tutorial");
+  const box = await page.locator("[data-stage]").boundingBox();
+  const cx = box.x + box.width / 2;
+  const cy = box.y + box.height / 2;
+
+  // 1. Skok: gra stoi, dopóki gracz nie stuknie.
+  await expect(prompt).toContainText("Stuknij ekran — skok nad telefonem!");
+  await expect(prompt).toContainText("krok 1 z 4");
+  await expect(prompt.locator(".sowie-gesture-demo")).toHaveAttribute("data-gesture", "tap");
+  const frozen = (await state(page)).distance;
+  await page.waitForTimeout(400);
+  expect((await state(page)).distance).toBe(frozen);
+  await page.mouse.click(cx, cy);
+  await expect(prompt).toBeHidden();
+
+  // 2. Ślizg: stuknięcie nie wznawia gry, przesunięcie w dół — tak.
+  await expect(prompt).toContainText("Przesuń palcem w dół");
+  await expect(prompt.locator(".sowie-gesture-demo")).toHaveAttribute("data-gesture", "swipe-down");
+  await page.mouse.click(cx, cy);
+  await page.waitForTimeout(200);
+  await expect(prompt).toBeVisible();
+  await swipeDown(page, cx, cy - 60);
+  await expect(prompt).toBeHidden();
+
+  // 3. Podwójny skok na wysoką platformę.
+  await expect(prompt).toContainText("Liście na wysokiej platformie");
+  await page.mouse.click(cx, cy);
+  await expect(prompt).toContainText("podwójny skok");
+  await page.mouse.click(cx, cy);
+  await expect(prompt).toBeHidden();
+
+  // 4. Szybowanie: palec trzymany do lądowania za dziurą.
+  await expect(prompt).toContainText("szybowanie");
+  await expect(prompt.locator(".sowie-gesture-demo")).toHaveAttribute("data-gesture", "hold");
+  await page.mouse.move(cx, cy);
+  await page.mouse.down();
+  await expect.poll(async () => (await state(page)).owl.grounded).toBe(false);
+  await expect.poll(async () => (await state(page)).owl.grounded, { timeout: 8000 }).toBe(true);
+  await page.mouse.up();
+
+  await expect(
+    page.locator(".sowie-toast-chip", { hasText: "Świetnie! Teraz uciekaj przed Chmurą Pracu!" }),
+  ).toBeVisible();
+  expect(await page.evaluate(() => window.SowiaUcieczka.tutorial())).toBeNull();
+  expect((await state(page)).hits).toBe(0);
+  await page.evaluate(() => window.SowieCloud.flush());
+  const doc = await readDoc(project, "sowiegry/profil/sowiegry_gry/runner");
+  expect(doc.tutorialDone).toBe(true);
+
+  // Kolejny bieg już bez samouczka.
+  await page.evaluate(() => window.SowiaUcieczka.end());
+  await page
+    .getByRole("dialog", { name: /Koniec biegu/ })
+    .getByRole("button", { name: "Jeszcze raz" })
+    .click();
+  expect(await page.evaluate(() => window.SowiaUcieczka.tutorial())).toBeNull();
+  expect(errors).toEqual([]);
+});
+
+test("„Jak grać?” na ekranie tytułowym uruchamia samouczek od nowa", async ({ page }) => {
+  const errors = watchErrors(page);
+  await openGame(page);
+  await page.locator("[data-guide]").click();
+  const guide = page.getByRole("dialog", { name: /Jak grać/ });
+  await guide.getByRole("button", { name: "Zagraj samouczek" }).click();
+  await expect(guide).toBeHidden();
+  expect(await page.evaluate(() => window.SowiaUcieczka.screen())).toBe("playing");
+  await expect(page.locator(".ucieczka-tutorial")).toContainText("krok 1 z 4");
+  expect(errors).toEqual([]);
+});

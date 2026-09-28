@@ -208,6 +208,22 @@ export const PATTERNS = Object.freeze([
   ),
 ]);
 
+// Samouczek pierwszego uruchomienia (tutorial.js): te wzory idą pierwsze, w tej kolejności, przed generatorem.
+// Każdy uczy jednego ruchu: skok (telefon), ślizg (dymek), podwójny skok (wysoka platforma z liśćmi — osiągalna
+// tylko podwójnym skokiem przy każdej prędkości), szybowanie (szeroka dziura).
+export const TUTORIAL_PATTERNS = Object.freeze([
+  pattern("samouczek-skok", 0, 16, ["tutorial"], [ob("telefon", 10), arc(7.8, 12.2, 2.6)]),
+  pattern("samouczek-slizg", 0, 16, ["tutorial", "slide"], [ob("dymek", 10), row(8.6, 11.4, 0.35, 4)]),
+  pattern(
+    "samouczek-podwojny",
+    0,
+    20,
+    ["tutorial", "platform"],
+    [platform(9, 9, 2), row(10, 17, 0.8, 5, 2), leaf(13.5, 1.8, "zloty", 2)],
+  ),
+  pattern("samouczek-szybowanie", 0, 22, ["tutorial", "hole"], [hole(9, 6), arc(8.4, 15.6, 2.8, 7)]),
+]);
+
 export const PATTERN_BY_ID = Object.freeze(Object.fromEntries(PATTERNS.map((item) => [item.id, item])));
 
 // Najwyższy próg dostępny na tym dystansie (progi mnożone przez tierScale poziomu trudności).
@@ -224,11 +240,18 @@ export function tierAt(distance, difficulty = "arcade") {
  * Generator trasy: wybiera kolejne wzory. Wagi: bieżący próg ×3, niższe ×1 (rozgrzewka tylko na początku);
  * bez powtórzeń ostatnich `recent` wzorów; po wzorze „hard” — oddech; pierwszy wzór to zawsze oddech.
  */
-export function createTrack({ difficulty = "arcade", random = Math.random, patterns = PATTERNS } = {}) {
+export function createTrack({ difficulty = "arcade", random = Math.random, patterns = PATTERNS, intro = [] } = {}) {
   const recent = [];
   let needBreather = true;
+  // Wzory wstępne (np. samouczek) — najpierw one, po kolei; potem oddech i zwykłe losowanie.
+  const queue = [...intro];
 
   function choose(distance) {
+    if (queue.length) {
+      const next = queue.shift();
+      needBreather = true;
+      return next;
+    }
     const tier = tierAt(distance, difficulty);
     let pool = patterns.filter((item) => item.tier <= tier && (tier === 0 || item.tier > 0 || distance < 120));
     const breathers = pool.filter((item) => item.tags.includes("breather"));

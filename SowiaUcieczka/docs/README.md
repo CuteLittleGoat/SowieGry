@@ -10,6 +10,10 @@ Na razie to **wersja podglądowa**: otwierasz ją w menu przyciskiem **„Wypró
 2. Stuknij **Start**.
 3. **Zadania ×N** pokazuje Twoje 3 zadania biegu i Sowi mnożnik, **Wyzwanie dnia** otwiera trasę dnia, **Jak grać?** pokazuje krótką instrukcję, **Menu** wraca do menu SowieGry.
 
+## Samouczek
+
+Przy pierwszym biegu gra uczy ruchów w 4 krótkich krokach: skok nad telefonem, ślizg pod dymkiem, podwójny skok na wysoką platformę i szybowanie nad szeroką dziurą. Tuż przed przeszkodą gra się zatrzymuje i pokazuje, co zrobić (animowany palec i krótki opis) — rusza dopiero, gdy wykonasz ten ruch. W samouczku nic Ci nie grozi. Samouczek możesz powtórzyć: **Jak grać?** → **Zagraj samouczek**.
+
 ## Sterowanie (jedną ręką, w dowolnym miejscu ekranu)
 
 | Ruch                          | Telefon                         | Klawiatura         |
@@ -105,4 +109,4 @@ Dodatek wybrany w garderobie (menu pauzy albo menu główne) sowa nosi w biegu. 
 
 ## W przygotowaniu
 
-W kolejnych krokach dojdą: samouczek przy pierwszym uruchomieniu i własna muzyka gry.
+W kolejnym kroku dojdzie własna muzyka gry.

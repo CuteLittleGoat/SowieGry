@@ -534,7 +534,7 @@ Demonstracja gestu (od E3): `span.sowie-gesture-demo[data-gesture]` (`aria-hidde
 
 Struktura przewodnika `{ id, title, summary, cards: [{ id, title, text, sprite?, gesture?, tip? }] }`; `GESTURES` (tap „Stuknij”, hold „Przytrzymaj”, swipe-up/down/left/right „Przesuń w …”, drag „Przeciągnij”); `GUIDES.swiat` — „Poznaj Sowi Świat” (7 kart: Sówka, Liście monstery, Pracu Pracu, Amic, Skaczące kózki, Humbak, Serduszka-doniczki); `validateGuide(przewodnik, { sprites })` → lista błędów (brak pól, puste karty, powtórzone id, nieznany gest, brak grafiki w katalogu); `guideFor(id)`; `GUIDE_ORDER = ["swiat", "runner", "jumper", "sowa3", "ogrody", "szklarnia"]` (kolejność w zakładce „Jak grać”).
 
-Od E4 jest też przewodnik **`ucieczka`** — Sowia Ucieczka (podgląd; nie ma go w `GUIDE_ORDER`, zastąpi `runner` po akceptacji): „Cel gry” (Chmura Pracu, 400 m bez trafienia), „Skok” (`tap`), „Szybowanie” (`hold`), „Ślizg” (`swipe-down`), „Pracu i Amic” (rodziny przeszkód, znak „!”).
+Od E4 jest też przewodnik **`ucieczka`** — Sowia Ucieczka (podgląd; nie ma go w `GUIDE_ORDER`, zastąpi `runner` po akceptacji): „Cel gry” (Chmura Pracu, 400 m bez trafienia), „Skok” (`tap`), „Szybowanie” (`hold`), „Ślizg” (`swipe-down`), „Pracu i Amic” (rodziny przeszkód, znak „!”), od E4e „Kózki i humbak” (grafika `kozka-magnes-skok`: 5 kózek, Plusk-o-metr — 60 liści albo 3 bąbelki, 20 s rejsu; wskazówka o zadaniach biegu i Sowim mnożniku). Okno „Jak grać?” na ekranie tytułowym Sowiej Ucieczki ma też przycisk „Zagraj samouczek”.
 
 Od E3 w pliku są też przewodniki **obecnych gier** (treść przeniesiona z `shared/game-guides.js`, bez zmian merytorycznych) — każdy ma opis `summary` i 5 kart: „Cel gry”, „Sterowanie” (z gestem: SowaRunner `tap`, SowaJumper `hold`, Sowa3 `swipe-right`, Ogrody i Szklarnia `tap`) oraz 3 karty ze wskazówkami (np. „Podwójny skok”, „Liście i seria”, „Humbak”; „Przez krawędź”, „Precyzyjne lądowanie”, „Platformy”; „Patrz na horyzont”, „Combo liści”, „Plansze”; „Najpierw rośliny”, „Podlewanie”, „Ogród rośnie beze mnie”; „Woda i nasiona”, „Krzyżowanie”, „Cele laboratorium”), każda z grafiką z katalogu. Po przebudowie gry podmieniamy tylko jej karty.
 
@@ -605,7 +605,7 @@ records:   { runner: { runs, lastPlayedAt, chill|arcade|chaos: { bestScore, best
              ogrody: { lifetimeLeaves, prestiges, zone }, szklarnia: { lifetimeLeaves, rooms, hybrids } }
 ```
 
-Dokumenty gier: `sowiegry/profil/sowiegry_gry/{runner|jumper|sowa3|ogrody|szklarnia}` (`difficulty`, `finishSeen`, `top10`, `dailyBest`, `daily`, `traitAlbum`, `historyCount`; Sowia Ucieczka od E4d także `tasks` — zadania biegu i Sowi mnożnik; gry idle: `state`, `saveVersion`, `summary`, `savedAt`, `clientSavedAt`, `rev`, `deviceId`) i historia `…/sowiegry_historia/{autoId}`. Profil ma 12–15 pól najwyższego poziomu (reguły dopuszczają 30).
+Dokumenty gier: `sowiegry/profil/sowiegry_gry/{runner|jumper|sowa3|ogrody|szklarnia}` (`difficulty`, `finishSeen`, `top10`, `dailyBest`, `daily`, `traitAlbum`, `historyCount`; Sowia Ucieczka od E4d także `tasks` — zadania biegu i Sowi mnożnik, od E4e `tutorialDone` — samouczek ukończony; gry idle: `state`, `saveVersion`, `summary`, `savedAt`, `clientSavedAt`, `rev`, `deviceId`) i historia `…/sowiegry_historia/{autoId}`. Profil ma 12–15 pól najwyższego poziomu (reguły dopuszczają 30).
 
 ## Kosmetyki
 
@@ -767,6 +767,8 @@ Zależności deweloperskie są przypięte tam, gdzie wersja wpływa na przegląd
 ### Testy Sowiej Ucieczki (`tests/unit/ucieczka.test.mjs`, E4)
 
 Fizyka, kamera i czas reakcji ≥ 1,1 s, przeszkody, 37 wzorów (każdy do przejścia przy 4,25 / 7 / 11,55 j./s — przeszukiwanie wszerz ruchów), generator, Chmura Pracu, combo, dotyk; od E4c kózki (rozstaw i 5 efektów), Gorączka Monster, Plusk-o-metr i „Rejs na humbaku”, 6 biomów z przenikaniem i szybszymi okrążeniami. Szczegóły: `SowiaUcieczka/docs/Documentation.md`, rozdział „Testy”. Plik biegnie ok. 30 s (przeszukiwanie wzorów).
+
+`tests/unit/ucieczka-samouczek.test.mjs` (E4e): samouczek pierwszego uruchomienia (`SowiaUcieczka/tutorial.js`) — bot ruszający się tylko po podpowiedziach przechodzi go bez trafień na każdym poziomie.
 
 `tests/unit/ucieczka-zadania.test.mjs` (E4d): zadania biegu i Sowi mnożnik (`SowiaUcieczka/tasks.js`) oraz punktacja z mnożnikiem, „Idealnie!” i zdarzenie mijania przeszkody dołem / górą.
 
