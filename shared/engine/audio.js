@@ -284,10 +284,13 @@ export function createAudio({
         });
     },
     // Odblokowanie przy pierwszym dotknięciu / klawiszu; zwraca funkcję sprzątającą.
-    bindUnlock(target = globalThis.window) {
+    // ignore(zdarzenie) → true pomija gest (np. stuknięcie w odnośnik, po którym strona i tak się zmieni —
+    // pobieranie dźwięków zostałoby przerwane).
+    bindUnlock(target = globalThis.window, { ignore = () => false } = {}) {
       if (!target?.addEventListener) return () => {};
       const events = ["pointerdown", "touchend", "keydown"];
-      const handler = () => {
+      const handler = (event) => {
+        if (ignore(event)) return;
         api.unlock();
         events.forEach((type) => target.removeEventListener(type, handler, true));
       };

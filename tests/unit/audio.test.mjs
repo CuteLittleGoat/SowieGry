@@ -210,6 +210,7 @@ function setup(extra = {}) {
     random: () => 0.5,
     doc,
     nav,
+    ...extra.options,
   });
   return { audio, context, doc, listeners, vibrations, fetches: () => fetches };
 }
@@ -288,4 +289,33 @@ test("silnik audio: sesja „ambient” w Safari i brak Web Audio", async () => 
   });
   assert.equal(await silent.unlock(), false);
   assert.equal(silent.canVibrate(), false);
+});
+
+test("silnik audio: odblokowanie pierwszym gestem z pominięciem wskazanych gestów i wybrane efekty", async () => {
+  const { audio, fetches } = setup({ options: { preloadOnUnlock: ["klik", "hu-hu"] } });
+  const target = new EventTarget();
+  audio.bindUnlock(target, { ignore: (event) => event.naOdnosnik === true });
+  const tap = (type, naOdnosnik) => {
+    const event = new Event(type);
+    event.naOdnosnik = naOdnosnik;
+    target.dispatchEvent(event);
+  };
+  const settle = () => new Promise((resolve) => setTimeout(resolve, 0));
+
+  // Stuknięcie w odnośnik (strona zaraz się zmieni): bez odblokowania i bez pobierania.
+  tap("pointerdown", true);
+  await settle();
+  assert.equal(audio.state().unlocked, false);
+  assert.equal(fetches(), 0);
+
+  // Zwykłe dotknięcie odblokowuje i wczytuje tylko wskazane efekty; kolejne gesty nic nie zmieniają.
+  tap("pointerdown", false);
+  await settle();
+  await settle();
+  assert.equal(audio.state().unlocked, true);
+  assert.equal(fetches(), 2);
+  assert.ok(audio.loaded("klik") && audio.loaded("hu-hu") && !audio.loaded("skok"));
+  tap("keydown", false);
+  await settle();
+  assert.equal(fetches(), 2);
 });

@@ -44,8 +44,15 @@ test("zakładka „Gry”: pięć kart z rejestru, „Graj” otwiera grę", asy
   // Ilustracje rysują postacie z atlasu.
   await page.waitForFunction(() => window.SowieMenu.atlas.ready() && window.SowieMenu.frames() > 3);
 
+  // Stuknięcie w „Graj” nie zaczyna pobierać dźwięków menu (strona zaraz się zmienia; WebKit zgłasza
+  // przerwane pobieranie jako błąd strony).
+  const audioRequests = [];
+  page.on("request", (request) => {
+    if (/assets\/audio\/(sfx|music)\//.test(request.url())) audioRequests.push(request.url());
+  });
   await page.locator('[data-play="runner"]').click();
   await expect(page).toHaveURL(/\/SowaRunner\/$/);
+  expect(audioRequests.filter((url) => !url.includes("/SowaRunner/"))).toEqual([]);
   await expect(page.locator("canvas").first()).toBeVisible({ timeout: 15_000 });
   expect(errors).toEqual([]);
 });

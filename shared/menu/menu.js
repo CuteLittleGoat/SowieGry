@@ -75,7 +75,9 @@ fetch(new URL("audio.json", AUDIO_BASE))
   .then((manifest) => {
     audio = createAudio({ manifest, baseUrl: AUDIO_BASE, preloadOnUnlock: MENU_SOUNDS });
     connectAudioSettings(audio, cloud);
-    audio.bindUnlock(window);
+    // Stuknięcie w „Graj” (odnośnik do gry) nie odblokowuje dźwięku: strona zaraz się zmieni, a rozpoczęte
+    // pobieranie efektów i muzyki (ok. 230 KB) zostałoby przerwane.
+    audio.bindUnlock(window, { ignore: (event) => Boolean(event.target?.closest?.("a[href]")) });
     // Cicha muzyka menu po pierwszym dotknięciu (zgodnie z ustawieniami: głośność muzyki > 0).
     audio.onChange((state) => {
       owlTab.updateAudio();
@@ -87,9 +89,9 @@ fetch(new URL("audio.json", AUDIO_BASE))
   })
   .catch((error) => console.warn("SowieGry: menu bez dźwięku", error));
 
-// Kliknięcia przycisków i odnośników.
+// Kliknięcia przycisków (odnośniki zmieniają stronę, więc bez dźwięku).
 document.addEventListener("click", (event) => {
-  if (event.target.closest("button:not([disabled]), a[href]")) sound("klik");
+  if (event.target.closest("button:not([disabled])")) sound("klik");
 });
 
 // ---------- Zakładki ----------
