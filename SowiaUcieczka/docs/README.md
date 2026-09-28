@@ -43,18 +43,51 @@ Trzy serduszka w prawym górnym rogu to odległość chmury za sową. Każde tra
 - 1 punkt za każdy metr,
 - liście: zielony 10 pkt, złoty 50 pkt (liczy się jak 5 liści), tęczowy 100 pkt,
 - **combo** ×1–×5: co 10 liści bez trafienia punkty za liście rosną o jeden poziom; trafienie obniża combo o jeden poziom,
-- **„O włos!”** +25 pkt za minięcie przeszkody o włos.
+- **„O włos!”** +25 pkt za minięcie przeszkody o włos,
+- złapana kózka +50 pkt, **Rejs na humbaku** — premia 200 pkt + 10 pkt za każdy liść z rejsu.
 
 Łuk liści nad przeszkodą podpowiada, jak ją przeskoczyć, a rząd liści nisko — że trzeba się prześlizgnąć.
 
+## Skaczące kózki (power-upy)
+
+Co kilkaset metrów między przeszkodami podskakuje kózka. Wbiegnij w nią albo złap ją w skoku — przez chwilę jedzie na grzbiecie sowy i daje:
+
+| Kózka           | Co robi                                                       | Jak długo |
+| --------------- | ------------------------------------------------------------- | --------- |
+| **Sprężynka**   | od razu wyrzuca sowę bardzo wysoko (super-skok)               | raz       |
+| **Tarcza**      | niebieska bańka — pochłania jedno trafienie („Tarcza pękła…”) | 15 s      |
+| **Magnes**      | liście z okolicy same lecą do sowy                            | 8 s       |
+| **Turbo**       | sprint ×1,5 — sowa przebija się przez przeszkody bez obrażeń  | 4 s       |
+| **Podwajaczka** | każdy liść liczy się podwójnie                                | 10 s      |
+
+Aktywne kózki widać w prawym górnym rogu z paskiem pozostałego czasu (miga, gdy się kończy).
+
+## Gorączka Monster
+
+Tęczowy liść włącza **Gorączkę Monster** na 8 sekund: tęczowa ramka ekranu, liście liczą się podwójnie (razem z Podwajaczką — poczwórnie), a nad trasą pojawia się dodatkowy rząd liści. Przeszkód nie przybywa.
+
+## Plusk-o-metr i Rejs na humbaku
+
+Pasek z humbakiem pod przyciskiem pauzy to **Plusk-o-metr**. Napełnia się liśćmi (60 liści) albo **bąbelkami humbaka** (3 bąbelki) — bąbelki unoszą się wysoko nad trasą co kilkaset metrów, trzeba po nie skoczyć.
+
+Gdy Plusk-o-metr jest pełny, zaczyna się **Rejs na humbaku**: 20 sekund na grzbiecie humbaka, bez przeszkód i bez Chmury Pracu. **Stukaj**, żeby humbak wyskakiwał z wody i zbierał łuki liści w powietrzu. Pasek pokazuje wtedy (na złoto) pozostały czas. Na koniec: „Humbacza premia +N”, a trasa zaczyna się od spokojnego fragmentu.
+
+## Okolice (biomy)
+
+Co 1000 m zmienia się okolica: **Łąka → Miasto → Osiedle PRL → Stacja Amic → Plaża → Noc nad morzem**, z płynnym przejściem i komunikatem z nazwą. Po Nocy nad morzem trasa wraca na Łąkę — **każde kolejne okrążenie jest trochę szybsze** (najwyżej o 10%).
+
 ## Po biegu
 
-Ekran wyników pokazuje wynik, rekord („Nowy rekord!”), zebrane liście, miejsce w Twoim top 10, dystans, najlepsze combo, liczbę „O włos!” i postęp zadań Sowiej Akademii. **Jeszcze raz** zaczyna nowy bieg na tym samym poziomie, **Menu** wraca do menu. Wynik zapisuje się w chmurze.
+Ekran wyników pokazuje wynik, rekord („Nowy rekord!”), zebrane liście, miejsce w Twoim top 10, dystans, najlepsze combo, liczbę „O włos!”, złapane kózki, rejsy na humbaku i postęp zadań Sowiej Akademii. **Jeszcze raz** zaczyna nowy bieg na tym samym poziomie, **Menu** wraca do menu. Wynik zapisuje się w chmurze.
 
 ## Przerwy
 
 Gra sama się wstrzymuje, gdy przejdziesz do innej aplikacji, zablokujesz ekran, ściągniesz pasek powiadomień albo obrócisz telefon — bieg się nie resetuje. Po **Wznów** gra odlicza 3-2-1.
 
+## Garderoba
+
+Dodatek wybrany w garderobie (menu pauzy albo menu główne) sowa nosi w biegu. **Ślad bąbelków** zostawia za sową unoszące się bąbelki (nie przy włączonym ograniczeniu ruchu).
+
 ## W przygotowaniu
 
-W kolejnych krokach dojdą: skaczące kózki (power-upy), Plusk-o-metr i „Rejs na humbaku”, sześć okolic (Łąka, Miasto, Osiedle PRL, Stacja Amic, Plaża, Noc nad morzem), zadania biegu i Sowi mnożnik, wyzwanie dnia, samouczek przy pierwszym uruchomieniu i własna muzyka gry.
+W kolejnych krokach dojdą: zadania biegu i Sowi mnożnik, wyzwanie dnia, samouczek przy pierwszym uruchomieniu i własna muzyka gry.

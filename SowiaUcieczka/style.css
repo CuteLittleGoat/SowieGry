@@ -94,6 +94,47 @@
   text-decoration: none;
 }
 
+/* Plusk-o-metr pod przyciskiem pauzy: humbak i pasek (woda; w rejsie — złoty pasek pozostałego czasu). */
+.ucieczka-splash {
+  position: absolute;
+  top: calc(max(8px, env(safe-area-inset-top)) + 64px);
+  left: max(12px, env(safe-area-inset-left));
+  z-index: 31;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px 4px 6px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.85);
+  box-shadow: 0 2px 8px rgba(59, 47, 74, 0.15);
+  pointer-events: none;
+}
+
+.ucieczka-splash[hidden] {
+  display: none;
+}
+
+.ucieczka-splash-bar {
+  display: block;
+  width: 64px;
+  height: 10px;
+  border-radius: 5px;
+  background: rgba(59, 47, 74, 0.12);
+  overflow: hidden;
+}
+
+.ucieczka-splash-bar span {
+  display: block;
+  height: 100%;
+  background: var(--woda);
+  transform: scaleX(0);
+  transform-origin: left;
+}
+
+.ucieczka-splash.is-bonus .ucieczka-splash-bar span {
+  background: var(--zloto);
+}
+
 /* Telefon poziomo: niższa karta. */
 @media (max-height: 500px) {
   .ucieczka-title-card {

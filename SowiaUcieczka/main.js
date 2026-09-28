@@ -14,7 +14,8 @@ import { SPRITES, SVG_BASE } from "../shared/world/catalog.js";
 import { createOwlAnimator } from "../shared/world/owl.js";
 import { COLORS } from "../shared/world/tokens.js";
 import { createRunCamera } from "./camera.js";
-import { CLOUD, DIFFICULTIES, DIFFICULTY_ORDER, GAME_ID, VIEW } from "./config.js";
+import { BIOMES } from "./backgrounds.js";
+import { CLOUD, DIFFICULTIES, DIFFICULTY_ORDER, FEVER, GAME_ID, GOATS, VIEW, WHALE } from "./config.js";
 import { createRun } from "./game.js";
 import { createRenderer } from "./render.js";
 
@@ -86,6 +87,42 @@ const pause = createPauseMenu({
   endAction: { label: "Zakończ bieg", visible: () => Boolean(game?.state.cozy), onClick: () => game?.end("gracz") },
 });
 const results = createResults({ root: stage, onAgain: () => startRun(), onMenu: () => location.assign("../") });
+
+// Plusk-o-metr (pod przyciskiem pauzy): 60 liści albo 3 bąbelki → „Rejs na humbaku”; w rejsie — pozostały czas.
+const splashNode = document.createElement("div");
+splashNode.className = "ucieczka-splash";
+splashNode.hidden = true;
+splashNode.setAttribute("role", "progressbar");
+splashNode.setAttribute("aria-valuemin", "0");
+splashNode.setAttribute("aria-valuemax", "100");
+splashNode.innerHTML =
+  '<img src="../assets/svg/humbak/humbak.svg" alt="" width="34" height="17" /><span class="ucieczka-splash-bar"><span></span></span>';
+stage.appendChild(splashNode);
+const splashFill = splashNode.querySelector(".ucieczka-splash-bar span");
+let splashShown = -1;
+
+function updateSplash(state) {
+  const bonus = state.bonus;
+  const share = bonus ? Math.max(0, bonus.time / WHALE.duration) : state.splash;
+  const percent = Math.round(share * 100);
+  if (percent === splashShown && splashNode.classList.contains("is-bonus") === Boolean(bonus)) return;
+  splashShown = percent;
+  splashFill.style.transform = `scaleX(${share})`;
+  splashNode.classList.toggle("is-bonus", Boolean(bonus));
+  splashNode.setAttribute("aria-valuenow", String(percent));
+  splashNode.setAttribute(
+    "aria-label",
+    bonus ? `Rejs na humbaku: ${Math.ceil(bonus.time)} s` : `Plusk-o-metr: ${percent}%`,
+  );
+}
+
+const GOAT_TEXT = {
+  sprezynka: "Kózka Sprężynka — super-skok!",
+  tarcza: "Kózka Tarcza — chroni przed 1 trafieniem",
+  magnes: "Kózka Magnes — przyciąga liście",
+  turbo: "Kózka Turbo — sprint bez obrażeń!",
+  podwajaczka: "Kózka Podwajaczka — liście ×2",
+};
 
 // Akademia i Galeria: w trakcie biegu komunikaty czekają na ekran wyników (Analiza 2, rozdz. 4.3).
 window.SowieNotifications ||= {
@@ -167,6 +204,8 @@ function startRun() {
   hud.setLeaves(0);
   hud.setLives(CLOUD.steps, CLOUD.steps);
   hud.setPowerups([]);
+  splashNode.hidden = false;
+  splashShown = -1;
   animator.set("bieg");
   view.lockScale(true);
   camera.track(game.state.owl, game.state.speed, view.layout(), 0, { snap: true });
@@ -185,6 +224,8 @@ function finishRun() {
   glideVoice = null;
   view.lockScale(false);
   hud.hide();
+  splashNode.hidden = true;
+  audio?.stopMusic?.();
   const summary = game.summary();
   const saved = cloud?.submitRun?.(GAME_ID, {
     score: summary.score,
@@ -214,6 +255,8 @@ function finishRun() {
       { label: "Dystans", value: `${summary.distance.toLocaleString("pl-PL")} m` },
       { label: "Najlepsze combo", value: `×${summary.bestCombo}` },
       { label: "O włos!", value: String(summary.nearMisses) },
+      { label: "Kózki", value: String(summary.goats) },
+      { label: "Rejsy na humbaku", value: String(summary.bonuses) },
     ],
     messages: toasts.takeDeferred(),
   });
@@ -305,6 +348,66 @@ function handleEvents() {
         play("zycie");
         toasts.show("Chmura Pracu się oddala!", { kind: "success", key: "chmura" });
         break;
+      case "goat":
+        play("koza-meee");
+        play("powerup-start");
+        audio?.vibrate?.(20);
+        particles.emit(event.x, owl.y - 0.6, { count: 12, speed: 3, tint: COLORS.zloto, radius: 0.09 });
+        renderer.popup(`+${event.bonus}`, event.x, owl.y - 1.5, COLORS.zloto);
+        toasts.show(GOAT_TEXT[event.kind] || "Kózka!", { kind: "reward", key: `goat-${event.kind}` });
+        progress.emit(EVENTS.GOAT, { kind: event.kind });
+        break;
+      case "powerupEnd":
+        play("powerup-koniec");
+        break;
+      case "shieldBreak":
+        play("powerup-koniec");
+        particles.emit(owl.x, owl.y - 0.6, { count: 14, speed: 3.5, tint: COLORS.niebieski, radius: 0.08 });
+        toasts.show("Tarcza pękła — nic się nie stało!", { kind: "success", key: "tarcza" });
+        break;
+      case "smash":
+        play("trafienie-amic", { volume: 0.4, pitch: 1.3 });
+        particles.emit(event.x, owl.y - 0.6, { count: 10, speed: 4, tint: COLORS.pomaranczowy, radius: 0.09 });
+        break;
+      case "fever":
+        play("goraczka-start");
+        toasts.show(`Gorączka Monster! Liście ×${FEVER.multiplier}`, { kind: "reward", key: "fever" });
+        progress.emit(EVENTS.FEVER, {});
+        break;
+      case "bubble":
+        play("humbak-plusk", { volume: 0.5, pitch: 1.4 });
+        particles.emit(event.x, event.y, { count: 10, speed: 2.5, tint: COLORS.wodaJasna, radius: 0.08 });
+        break;
+      case "bonusStart":
+        play("bonus-start");
+        play("humbak-plusk");
+        audio?.playMusic?.("humbak")?.catch?.(() => {});
+        toasts.show("Rejs na humbaku! Stukaj, żeby humbak wyskakiwał", { kind: "reward", key: "bonus" });
+        break;
+      case "whaleJump":
+        play("skok", { pitch: 0.7 });
+        break;
+      case "whaleSplash":
+        play("humbak-plusk", { volume: 0.7 });
+        particles.emit(event.x, 0, { count: 16, speed: 4, tint: COLORS.wodaJasna, radius: 0.1, spread: 1.6 });
+        break;
+      case "bonusEnd":
+        audio?.stopMusic?.();
+        play("zycie");
+        toasts.show(`Humbacza premia +${event.premium}`, { kind: "reward", key: "bonus" });
+        progress.emit(EVENTS.WHALE, { leaves: event.leaves });
+        break;
+      case "biome":
+        if (event.index !== 0 || event.loop > 0) {
+          toasts.show(
+            event.loop > 0 && event.index === 0 ? "Kolejne okrążenie — szybciej!" : BIOMES[event.index].name,
+            {
+              kind: "success",
+              key: `biome-${event.loop}-${event.index}`,
+            },
+          );
+        }
+        break;
       case "end":
         finishRun();
         break;
@@ -316,6 +419,26 @@ function handleEvents() {
 
 // ---------- Pętla ----------
 
+// Garderoba „Ślad bąbelków” (bubbleTrail): bąbelki zostają za sową i unoszą się (jak w SowaRunner).
+let bubbleTimer = 0;
+function bubbleTrail(step) {
+  bubbleTimer -= step;
+  if (bubbleTimer > 0) return;
+  bubbleTimer = 0.12;
+  if (cosmetic() !== "bubbleTrail" || reducedMotion()) return;
+  const owl = game.state.owl;
+  particles.emit(owl.x - 0.45, owl.y - 0.55, {
+    count: 1,
+    speed: 0.8,
+    angle: Math.PI,
+    spread: 1.2,
+    lifetime: 1,
+    radius: 0.1,
+    fall: -1.5,
+    tint: COLORS.wodaJasna,
+  });
+}
+
 function update(step) {
   const layout = view.layout();
   if (screen === "playing" && game) {
@@ -323,9 +446,11 @@ function update(step) {
     else if (shell.state() === "running") {
       game.update(step);
       handleEvents();
+      bubbleTrail(step);
     }
     const owl = game.state.owl;
-    if (game.state.stunned > 0) animator.set("oszolomienie");
+    if (game.state.bonus) animator.set(game.state.bonus.y < -0.1 ? "radosc" : "stoi");
+    else if (game.state.stunned > 0) animator.set("oszolomienie");
     else if (!owl.grounded) animator.set(owl.gliding ? "szybowanie" : "skok");
     else animator.set("bieg");
     animator.update(step, { vy: owl.vy });
@@ -348,11 +473,26 @@ function render() {
   const dt = lastFrame ? Math.min(0.1, (now - lastFrame) / 1000) : 0;
   lastFrame = now;
   if (!game) return;
-  renderer.draw({ state: game.state, animator, cosmetic: cosmetic(), particles, dt, showCloud: screen !== "title" });
+  renderer.draw({
+    state: game.state,
+    animator,
+    cosmetic: cosmetic(),
+    particles,
+    dt,
+    showCloud: screen !== "title",
+    reducedMotion: reducedMotion(),
+  });
   if (screen === "playing") {
-    hud.setScore(game.state.score);
-    hud.setLeaves(game.state.leafCount);
-    hud.setLives(game.state.cloud, CLOUD.steps);
+    const state = game.state;
+    hud.setScore(state.score);
+    hud.setLeaves(state.leafCount);
+    hud.setLives(state.cloud, CLOUD.steps);
+    const active = Object.entries(state.powerups)
+      .filter(([, remaining]) => remaining > 0)
+      .map(([kind, remaining]) => ({ kind, remaining, total: GOATS.duration[kind] }));
+    if (state.fever > 0) active.push({ kind: "goraczka", remaining: state.fever, total: FEVER.duration });
+    hud.setPowerups(active);
+    updateSplash(state);
   }
 }
 
@@ -436,6 +576,11 @@ window.SowiaUcieczka = Object.freeze({
   },
   end: () => game?.end("gracz"),
   hit: (by = "pracu") => game?.hit(by),
+  goat: (kind) => game?.giveGoat(kind),
+  fillSplash: () => game?.fillSplash(),
+  warp: (meters) => game?.warp(meters),
+  bonus: () => (game?.state.bonus ? { ...game.state.bonus } : null),
+  powerups: () => (game ? { ...game.state.powerups, fever: game.state.fever } : null),
   camera: () => ({ x: camera.x, y: camera.y, zoom: camera.zoom }),
   atlasReady: () => atlas.ready(),
 });

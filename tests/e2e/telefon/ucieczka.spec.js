@@ -96,6 +96,35 @@ test("koniec biegu: wyniki z rekordem i top 10, „Jeszcze raz” zaczyna nowy b
   expect(errors).toEqual([]);
 });
 
+test("kózka daje power-up w HUD, pełny Plusk-o-metr uruchamia rejs na humbaku, nowy biom ma komunikat", async ({
+  page,
+}) => {
+  const errors = watchErrors(page);
+  await openGame(page);
+  await page.locator("[data-start]").click();
+  await page.waitForTimeout(600);
+  const splash = page.locator(".ucieczka-splash");
+  await expect(splash).toBeVisible();
+  await expect(splash).toHaveAttribute("aria-valuenow", "0");
+
+  await page.evaluate(() => window.SowiaUcieczka.goat("tarcza"));
+  await expect(page.locator(".sowie-hud-powerup", { hasText: "Tarcza" })).toBeVisible();
+  expect((await page.evaluate(() => window.SowiaUcieczka.powerups())).tarcza).toBeGreaterThan(0);
+
+  await page.evaluate(() => window.SowiaUcieczka.fillSplash());
+  await expect.poll(() => page.evaluate(() => Boolean(window.SowiaUcieczka.bonus()))).toBe(true);
+  await expect(splash).toHaveClass(/is-bonus/);
+  await expect(splash).toHaveAttribute("aria-label", /Rejs na humbaku/);
+  await expect(page.locator(".sowie-toast-chip", { hasText: "Rejs na humbaku!" })).toBeVisible();
+  const box = await page.locator("[data-stage]").boundingBox();
+  await page.mouse.click(box.x + box.width / 2, box.y + box.height * 0.5);
+  await expect.poll(() => page.evaluate(() => window.SowiaUcieczka.bonus()?.y ?? 0)).toBeLessThan(-0.5);
+
+  await page.evaluate(() => window.SowiaUcieczka.warp(1000));
+  await expect(page.locator(".sowie-toast-chip", { hasText: "Miasto" })).toBeVisible();
+  expect(errors).toEqual([]);
+});
+
 test.describe("najmniejszy telefon (320 × 568)", () => {
   test.use({ viewport: { width: 320, height: 568 } });
 

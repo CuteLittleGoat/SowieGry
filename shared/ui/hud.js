@@ -14,6 +14,8 @@ export const POWERUP_STYLE = Object.freeze({
   magnes: { label: "Magnes", color: "var(--fiolet)" },
   turbo: { label: "Turbo", color: "var(--pomaranczowy)" },
   podwajaczka: { label: "×2", color: "var(--monstera)" },
+  // Gorączka Monster (tęczowy liść) — licznik jak power-up.
+  goraczka: { label: "Gorączka", color: "var(--policzki)" },
 });
 
 export const formatNumber = (value) => Math.floor(Number(value) || 0).toLocaleString("pl-PL");

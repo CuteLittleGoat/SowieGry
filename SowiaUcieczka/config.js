@@ -47,8 +47,15 @@ export const DIFFICULTY_ORDER = Object.freeze(["chill", "arcade", "chaos"]);
 // Tryb Przytulny (ustawienie profilu, tylko z poziomem Chill): wolniej i bez końca gry.
 export const COZY_SPEED = 0.85;
 
+// Biomy co 1000 m (Łąka → Miasto → Osiedle PRL → Stacja Amic → Plaża → Noc nad morzem), potem pętla:
+// każde kolejne okrążenie +5% prędkości (najwyżej +10%).
+export const BIOME_LENGTH = 1000;
+export const BIOME_COUNT = 6;
+export const LOOP_SPEEDUP = Object.freeze({ step: 0.05, max: 0.1 });
+
 export const MIN_SPEED = DIFFICULTIES.chill.speedStart * COZY_SPEED;
-export const MAX_SPEED = Math.max(...Object.values(DIFFICULTIES).map((item) => item.speedMax));
+// Największa prędkość, przy której trzeba zdążyć zareagować (Turbo daje nietykalność, więc się nie liczy).
+export const MAX_SPEED = Math.max(...Object.values(DIFFICULTIES).map((item) => item.speedMax)) * (1 + LOOP_SPEEDUP.max);
 
 // Progi dystansu wzorów (m, mnożone przez tierScale): 0 — rozgrzewka, 1–3 — coraz trudniej.
 export const TIER_DISTANCE = Object.freeze([0, 300, 900, 1800]);
@@ -86,3 +93,41 @@ export const SCORE = Object.freeze({
 
 // Generator: odstęp między wzorami (j.) rośnie z prędkością; po trudnym wzorze — „oddech”.
 export const TRACK = Object.freeze({ gapSeconds: 0.45, gapMin: 3, lookahead: 40, cleanupBehind: 12, recent: 3 });
+
+// Skaczące kózki (power-upy, Analiza 2, rozdz. 2.2): pojawiają się co 180–320 m w odstępie między wzorami.
+export const GOATS = Object.freeze({
+  every: Object.freeze([180, 320]),
+  hopHeight: 1.3,
+  hopPeriod: 1.1,
+  radius: 0.6,
+  bonus: 50,
+  weights: Object.freeze({ sprezynka: 1, tarcza: 1.2, magnes: 1, turbo: 0.8, podwajaczka: 1 }),
+  duration: Object.freeze({ tarcza: 15, magnes: 8, turbo: 4, podwajaczka: 10 }),
+  springVelocity: 20, // Sprężynka: super-skok (ok. 5,3 j.)
+  turboSpeed: 1.5, // Turbo: sprint ×1,5 z nietykalnością
+  magnetRadius: 3.5,
+  magnetPull: 14,
+  ride: 1.2, // złapana kózka przez chwilę jedzie na grzbiecie sowy
+});
+
+// Gorączka Monster (tęczowy liść): 8 s, liście ×2 i gęstsze układy liści, bez dodatkowych przeszkód.
+export const FEVER = Object.freeze({ duration: 8, multiplier: 2, extraHeight: 3.1, extraSpacing: 1.3 });
+
+// Plusk-o-metr: 60 liści albo 3 bąbelki humbaka → „Rejs na humbaku”.
+export const SPLASH = Object.freeze({
+  leaves: 60,
+  bubbles: 3,
+  bubbleEvery: Object.freeze([500, 900]),
+  bubbleHeight: 2.6,
+});
+
+// „Rejs na humbaku”: 20 s bez przeszkód, stuknięcie = humbak wyskakuje z wody, łuki liści w powietrzu.
+export const WHALE = Object.freeze({
+  duration: 20,
+  jumpVelocity: 12.5,
+  gravity: 24,
+  bonus: 200, // + 10 pkt za każdy liść z rejsu
+  perLeaf: 10,
+  leafEvery: 1.3,
+  reach: 0.9,
+});

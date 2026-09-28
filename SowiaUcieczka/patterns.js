@@ -252,7 +252,14 @@ export function createTrack({ difficulty = "arcade", random = Math.random, patte
     return chosen;
   }
 
-  return { choose, recent: () => [...recent] };
+  return {
+    choose,
+    recent: () => [...recent],
+    // Po bonusie (np. „Rejs na humbaku”) następny wzór to oddech.
+    rest() {
+      needBreather = true;
+    },
+  };
 }
 
 // Odstęp między wzorami rośnie z prędkością (więcej miejsca na reakcję), mniejszy w Chaos.

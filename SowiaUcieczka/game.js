@@ -2,7 +2,22 @@
 // Stan w jednym obiekcie; zdarzenia (skok, liść, trafienie, „O włos!”…) trafiają do kolejki `events`,
 // z której korzysta strona (dźwięk, komunikaty, cząsteczki, SowieProgress).
 import { createRng } from "../shared/engine/rng.js";
-import { CLOUD, COZY_SPEED, DIFFICULTIES, PHYSICS, PLATFORM_LEVELS, SCORE, TRACK } from "./config.js";
+import {
+  BIOME_COUNT,
+  BIOME_LENGTH,
+  CLOUD,
+  COZY_SPEED,
+  DIFFICULTIES,
+  FEVER,
+  GOATS,
+  LOOP_SPEEDUP,
+  PHYSICS,
+  PLATFORM_LEVELS,
+  SCORE,
+  SPLASH,
+  TRACK,
+  WHALE,
+} from "./config.js";
 import { moverTriggerDistance } from "./camera.js";
 import { OBSTACLES, obstacleBox, overlaps } from "./obstacles.js";
 import { createTrack, gapAfter, PATTERNS } from "./patterns.js";
@@ -14,6 +29,23 @@ export function speedAt(time, difficulty = "arcade", cozy = false) {
   const u = Math.min(1, Math.max(0, time / config.rampSeconds));
   const speed = config.speedStart + (config.speedMax - config.speedStart) * (1 - (1 - u) * (1 - u));
   return cozy ? speed * COZY_SPEED : speed;
+}
+
+// Biom na danym dystansie: indeks 0–5 (co 1000 m) i numer okrążenia (po 6000 m od nowa, szybciej).
+export function biomeAt(distance) {
+  const index = Math.floor(Math.max(0, distance) / BIOME_LENGTH);
+  return { index: index % BIOME_COUNT, loop: Math.floor(index / BIOME_COUNT) };
+}
+
+// Mnożnik prędkości okrążenia: +5% za każde kolejne, najwyżej +10%.
+export function loopFactor(distance) {
+  return 1 + Math.min(LOOP_SPEEDUP.max, biomeAt(distance).loop * LOOP_SPEEDUP.step);
+}
+
+// Kózka: wysokość podskoku (łuk co hopPeriod s).
+export function goatLift(time, phase = 0) {
+  const t = ((time + phase) % GOATS.hopPeriod) / GOATS.hopPeriod;
+  return t < 0.7 ? GOATS.hopHeight * 4 * (t / 0.7) * (1 - t / 0.7) : 0;
 }
 
 // Poziom combo (×1–×5): +1 co 10 liści bez trafienia.
@@ -119,7 +151,26 @@ export function createRun({
     endReason: null,
     pendingPress: 0,
     patterns: [],
+    // E4c: kózki, bąbelki, power-upy, Gorączka Monster, Plusk-o-metr, „Rejs na humbaku”, biomy.
+    goats: [],
+    bubbles: [],
+    powerups: { tarcza: 0, magnes: 0, turbo: 0, podwajaczka: 0 },
+    fever: 0,
+    riding: null,
+    splash: 0,
+    bonus: null,
+    bonusCount: 0,
+    bonusPoints: 0,
+    goatCount: 0,
+    goatPoints: 0,
+    smashed: 0,
+    nextGoatAt: 0,
+    nextBubbleAt: 0,
+    biome: 0,
+    loop: 0,
   };
+  state.nextGoatAt = GOATS.every[0] * 0.5 + rng() * (GOATS.every[1] - GOATS.every[0]) * 0.5;
+  state.nextBubbleAt = SPLASH.bubbleEvery[0] + rng() * (SPLASH.bubbleEvery[1] - SPLASH.bubbleEvery[0]);
 
   function emit(type, detail = {}) {
     events.push({ type, ...detail });
@@ -164,19 +215,57 @@ export function createRun({
     world.holes.sort((a, b) => a.x - b.x);
   }
 
+  const GOAT_KINDS = Object.keys(GOATS.weights);
+  let lastGoat = null;
+  function pickGoat() {
+    const pool = GOAT_KINDS.filter((kind) => kind !== lastGoat);
+    let pick = rng() * pool.reduce((sum, kind) => sum + GOATS.weights[kind], 0);
+    for (const kind of pool) {
+      pick -= GOATS.weights[kind];
+      if (pick < 0) return (lastGoat = kind);
+    }
+    return (lastGoat = pool[pool.length - 1]);
+  }
+
   function spawn() {
+    if (state.bonus) return;
     while (state.trackEnd < owl.x + TRACK.lookahead) {
-      const chosen = track.choose(state.trackEnd - startDistance);
-      place(chosen, state.trackEnd);
+      const start = state.trackEnd;
+      const chosen = track.choose(start - startDistance);
+      place(chosen, start);
+      // Gorączka Monster: dodatkowy rząd liści nad wzorem (bez dodatkowych przeszkód).
+      if (state.fever > 0) {
+        for (let x = start + 1; x < start + chosen.length - 0.5; x += FEVER.extraSpacing) {
+          leaves.push({ kind: "zielony", x, y: -FEVER.extraHeight, taken: false, phase: rng() * 6 });
+        }
+        leaves.sort((a, b) => a.x - b.x);
+      }
       state.patterns.push(chosen.id);
       if (state.patterns.length > 12) state.patterns.shift();
       state.patternCount += 1;
-      state.trackEnd += chosen.length + gapAfter(state.speed, config);
+      const gap = gapAfter(state.speed, config);
+      // Kózka albo bąbelek humbaka na środku odstępu między wzorami.
+      const middle = start + chosen.length + gap / 2 - startDistance;
+      if (middle >= state.nextGoatAt) {
+        state.goats.push({ kind: pickGoat(), x: middle + startDistance, phase: rng(), taken: false });
+        state.nextGoatAt = middle + GOATS.every[0] + rng() * (GOATS.every[1] - GOATS.every[0]);
+      } else if (middle >= state.nextBubbleAt) {
+        state.bubbles.push({ x: middle + startDistance, y: -SPLASH.bubbleHeight, taken: false, phase: rng() * 6 });
+        state.nextBubbleAt = middle + SPLASH.bubbleEvery[0] + rng() * (SPLASH.bubbleEvery[1] - SPLASH.bubbleEvery[0]);
+      }
+      state.trackEnd += chosen.length + gap;
     }
   }
 
   function hit(by, variant = null) {
-    if (state.ended || state.invulnerable > 0) return false;
+    if (state.ended || state.invulnerable > 0 || state.powerups.turbo > 0 || state.bonus) return false;
+    // Tarcza pochłania jedno trafienie.
+    if (state.powerups.tarcza > 0) {
+      state.powerups.tarcza = 0;
+      state.invulnerable = 1;
+      emit("shieldBreak", { by, variant });
+      return false;
+    }
     state.hits += 1;
     state.cloud -= 1;
     state.sinceHit = 0;
@@ -202,15 +291,124 @@ export function createRun({
 
   function collect(item) {
     item.taken = true;
-    const points = SCORE.leaf[item.kind];
-    const count = SCORE.leafCount[item.kind];
+    // Podwajaczka i Gorączka Monster: liście ×2 (razem ×4).
+    const multiplier = (state.powerups.podwajaczka > 0 ? 2 : 1) * (state.fever > 0 ? FEVER.multiplier : 1);
+    const points = SCORE.leaf[item.kind] * multiplier;
+    const count = SCORE.leafCount[item.kind] * multiplier;
+    if (!state.bonus) state.splash = Math.min(1, state.splash + SCORE.leafCount[item.kind] / SPLASH.leaves);
     state.streak += count;
     state.combo = comboLevel(state.streak);
     state.bestCombo = Math.max(state.bestCombo, state.combo);
     const gained = points * state.combo;
     state.leafPoints += gained;
     state.leafCount += count;
+    if (state.bonus) {
+      state.bonus.points += gained;
+      state.bonus.leaves += count;
+    }
     emit("leaf", { kind: item.kind, points: gained, count, combo: state.combo, x: item.x, y: item.y });
+    if (item.kind === "teczowy") {
+      if (state.fever <= 0) emit("fever");
+      state.fever = FEVER.duration;
+    }
+  }
+
+  // Złapana kózka: +50 pkt i efekt (Sprężynka od razu, pozostałe na czas).
+  function catchGoat(goat) {
+    goat.taken = true;
+    state.goatCount += 1;
+    state.goatPoints += GOATS.bonus;
+    state.riding = { kind: goat.kind, time: GOATS.ride };
+    if (goat.kind === "sprezynka") {
+      owl.vy = -GOATS.springVelocity;
+      owl.grounded = false;
+      owl.jumps = 1;
+      owl.sliding = 0;
+      owl.diving = false;
+    } else {
+      state.powerups[goat.kind] = GOATS.duration[goat.kind];
+    }
+    emit("goat", { kind: goat.kind, x: goat.x, bonus: GOATS.bonus });
+  }
+
+  // ---------- „Rejs na humbaku” ----------
+
+  function startBonus() {
+    const from = owl.x - 1;
+    const keep = (list) => list.filter((item) => item.x < from);
+    obstacles.splice(0, obstacles.length, ...keep(obstacles));
+    leaves.splice(0, leaves.length, ...keep(leaves));
+    state.goats = keep(state.goats);
+    state.bubbles = keep(state.bubbles);
+    world.platforms.splice(0, world.platforms.length, ...world.platforms.filter((item) => item.x + item.width < from));
+    world.holes.splice(0, world.holes.length, ...world.holes.filter((item) => item.x + item.width < from));
+    Object.assign(owl, { y: 0, vy: 0, grounded: true, surface: 0, sliding: 0, gliding: false, diving: false });
+    state.splash = 0;
+    state.bonusCount += 1;
+    state.bonus = { time: WHALE.duration, y: 0, vy: 0, leafTimer: 0.6, points: 0, leaves: 0 };
+    emit("bonusStart");
+  }
+
+  function endBonus() {
+    const bonus = state.bonus;
+    const premium = WHALE.bonus + bonus.leaves * WHALE.perLeaf;
+    state.bonusPoints += premium;
+    state.bonus = null;
+    leaves.splice(0, leaves.length, ...leaves.filter((item) => item.x < owl.x - 1));
+    Object.assign(owl, { y: 0, vy: 0, grounded: true, surface: 0, jumps: 1 });
+    state.invulnerable = Math.max(state.invulnerable, 1);
+    state.trackEnd = owl.x + 6;
+    track.rest();
+    emit("bonusEnd", { premium, leaves: bonus.leaves });
+  }
+
+  function updateBonus(dt) {
+    const bonus = state.bonus;
+    bonus.time -= dt;
+    owl.x += state.speed * dt;
+    // Stuknięcie: humbak wyskakuje z wody (tylko z wody).
+    if (controls.jump) {
+      controls.jump = false;
+      if (bonus.y >= -0.05) {
+        bonus.vy = -WHALE.jumpVelocity;
+        emit("whaleJump");
+      }
+    }
+    controls.down = false;
+    bonus.vy += WHALE.gravity * dt;
+    bonus.y += bonus.vy * dt;
+    if (bonus.y > 0) {
+      if (bonus.vy > 6) emit("whaleSplash", { x: owl.x });
+      bonus.y = 0;
+      bonus.vy = 0;
+    }
+    owl.y = bonus.y - 0.55;
+    owl.vy = bonus.vy;
+    // Łuki liści w powietrzu przed humbakiem.
+    bonus.leafTimer -= dt;
+    if (bonus.leafTimer <= 0 && bonus.time > 1.5) {
+      bonus.leafTimer = WHALE.leafEvery;
+      const start = owl.x + 13 + state.speed;
+      const peak = 2.2 + rng() * 2.4;
+      for (let index = 0; index < 5; index += 1) {
+        const u = index / 4;
+        leaves.push({
+          kind: index === 2 && rng() < 0.25 ? "zloty" : "zielony",
+          x: start + index * 1.1,
+          y: -(1 + (peak - 1) * 4 * u * (1 - u)),
+          taken: false,
+          phase: rng() * 6,
+        });
+      }
+    }
+    const cx = owl.x;
+    const cy = owl.y - 0.4;
+    for (const item of leaves) {
+      if (item.x > cx + WHALE.reach + 0.5) break;
+      if (item.taken || item.x < cx - WHALE.reach - 0.5) continue;
+      if ((item.x - cx) ** 2 + (item.y - cy) ** 2 <= WHALE.reach ** 2) collect(item);
+    }
+    if (bonus.time <= 0) endBonus();
   }
 
   function updateObjects(dt) {
@@ -228,7 +426,11 @@ export function createRun({
       if (other.left > box.right + 0.5) continue;
       if (overlaps(box, other)) {
         item.hit = true;
-        if (hit(item.family, item.kind)) item.passed = true;
+        if (state.powerups.turbo > 0) {
+          // Turbo: sowa przebija się przez przeszkodę bez obrażeń.
+          state.smashed += 1;
+          emit("smash", { kind: item.kind, family: item.family, x: item.x });
+        } else if (hit(item.family, item.kind)) item.passed = true;
         continue;
       }
       // „O włos!”: najmniejszy odstęp w pionie, gdy sowa jest nad / pod przeszkodą.
@@ -242,6 +444,41 @@ export function createRun({
           state.nearMisses += 1;
           emit("nearMiss", { kind: item.kind, family: item.family, bonus: SCORE.nearMiss });
         }
+      }
+    }
+    // Magnes: liście w promieniu 3,5 j. lecą do sowy.
+    if (state.powerups.magnes > 0) {
+      const cx = owl.x;
+      const cy = owl.y - 0.5;
+      for (const item of leaves) {
+        if (item.x > cx + GOATS.magnetRadius) break;
+        if (item.taken || item.x < cx - GOATS.magnetRadius) continue;
+        const dx = cx - item.x;
+        const dy = cy - item.y;
+        const distance = Math.hypot(dx, dy);
+        if (distance > GOATS.magnetRadius || distance < 1e-6) continue;
+        const step = Math.min(distance, GOATS.magnetPull * dt);
+        item.x += (dx / distance) * step;
+        item.y += (dy / distance) * step;
+      }
+    }
+    // Kózki (skaczą łukami; złapanie z dowolnej strony).
+    for (const goat of state.goats) {
+      if (goat.taken || Math.abs(goat.x - owl.x) > 2) continue;
+      const gy = -goatLift(state.time, goat.phase) - 0.5;
+      const dx = Math.max(box.left - goat.x, 0, goat.x - box.right);
+      const dy = Math.max(box.top - gy, 0, gy - box.bottom);
+      if (dx * dx + dy * dy <= GOATS.radius * GOATS.radius) catchGoat(goat);
+    }
+    // Bąbelki humbaka (1/3 Plusk-o-metru).
+    for (const bubble of state.bubbles) {
+      if (bubble.taken || Math.abs(bubble.x - owl.x) > 2) continue;
+      const dx = Math.max(box.left - bubble.x, 0, bubble.x - box.right);
+      const dy = Math.max(box.top - bubble.y, 0, bubble.y - box.bottom);
+      if (dx * dx + dy * dy <= 0.45 * 0.45) {
+        bubble.taken = true;
+        state.splash = Math.min(1, state.splash + 1 / SPLASH.bubbles);
+        emit("bubble", { x: bubble.x, y: bubble.y, splash: state.splash });
       }
     }
     // Liście (okrąg 0,4 j. z polem sowy).
@@ -258,6 +495,8 @@ export function createRun({
     const before = owl.x - TRACK.cleanupBehind;
     while (obstacles.length && obstacles[0].x < before && (obstacles[0].passed || obstacles[0].hit)) obstacles.shift();
     while (leaves.length && leaves[0].x < before) leaves.shift();
+    state.goats = state.goats.filter((goat) => goat.x >= before);
+    state.bubbles = state.bubbles.filter((bubble) => bubble.x >= before);
     world.cleanup(before);
   }
 
@@ -293,7 +532,26 @@ export function createRun({
     update(dt) {
       if (state.ended) return;
       state.time += dt;
-      state.speed = speedAt(state.time, config, state.cozy);
+      const base = speedAt(state.time, config, state.cozy) * loopFactor(state.distance);
+      state.speed = state.powerups.turbo > 0 ? base * GOATS.turboSpeed : base;
+      // Czasy power-upów i Gorączki.
+      for (const key of Object.keys(state.powerups)) {
+        if (state.powerups[key] > 0) {
+          state.powerups[key] = Math.max(0, state.powerups[key] - dt);
+          if (state.powerups[key] === 0) {
+            if (key === "turbo") state.invulnerable = Math.max(state.invulnerable, 1);
+            emit("powerupEnd", { kind: key });
+          }
+        }
+      }
+      if (state.fever > 0) {
+        state.fever = Math.max(0, state.fever - dt);
+        if (state.fever === 0) emit("feverEnd");
+      }
+      if (state.riding) {
+        state.riding.time -= dt;
+        if (state.riding.time <= 0) state.riding = null;
+      }
       if (state.pendingPress > 0) {
         state.pendingPress -= dt;
         if (state.pendingPress <= 0) {
@@ -303,7 +561,8 @@ export function createRun({
       }
       if (controls.hold) controls.holdTime += dt;
       const before = owl.x;
-      stepOwl(owl, controls, dt, world, events, state.speed);
+      if (state.bonus) updateBonus(dt);
+      else stepOwl(owl, controls, dt, world, events, state.speed);
       const moved = owl.x - before;
       state.distance = owl.x - startDistance;
       state.sinceHit += moved;
@@ -329,13 +588,51 @@ export function createRun({
         owl.gliding = false;
         emit("fall");
       }
+      // Nowy biom co 1000 m.
+      const biome = biomeAt(state.distance);
+      if (biome.index !== state.biome || biome.loop !== state.loop) {
+        state.biome = biome.index;
+        state.loop = biome.loop;
+        emit("biome", { index: biome.index, loop: biome.loop });
+      }
       spawn();
-      updateObjects(dt);
-      state.score = Math.floor(state.distance * SCORE.perMeter) + state.leafPoints + state.nearMisses * SCORE.nearMiss;
+      if (!state.bonus) updateObjects(dt);
+      // Pełny Plusk-o-metr: „Rejs na humbaku” (na ziemi, nie w trakcie szybowania przez dziurę).
+      if (!state.bonus && state.splash >= 1 && owl.grounded && owl.surface === 0) startBonus();
+      state.score =
+        Math.floor(state.distance * SCORE.perMeter) +
+        state.leafPoints +
+        state.nearMisses * SCORE.nearMiss +
+        state.goatPoints +
+        state.bonusPoints;
       cleanup();
     },
     end,
     hit,
+    // Testy i diagnostyka: kózka od razu, pełny Plusk-o-metr.
+    giveGoat(kind) {
+      catchGoat({ kind, x: owl.x, taken: false });
+    },
+    fillSplash() {
+      state.splash = 1;
+    },
+    // Testy i zrzuty: przeskok o `meters` do przodu (czysta trasa od nowego miejsca, np. do innego biomu).
+    warp(meters) {
+      const keep = (list) => list.filter((item) => item.x < owl.x - 1);
+      obstacles.splice(0, obstacles.length, ...keep(obstacles));
+      leaves.splice(0, leaves.length, ...keep(leaves));
+      state.goats = keep(state.goats);
+      state.bubbles = keep(state.bubbles);
+      world.platforms.splice(0, world.platforms.length);
+      world.holes.splice(0, world.holes.length);
+      owl.x += meters;
+      Object.assign(owl, { y: 0, vy: 0, grounded: true, surface: 0 });
+      state.distance = owl.x - startDistance;
+      state.nextGoatAt = Math.max(state.nextGoatAt, state.distance);
+      state.nextBubbleAt = Math.max(state.nextBubbleAt, state.distance);
+      state.trackEnd = owl.x + 6;
+      track.rest();
+    },
     // Pierwsze wzory od razu (przed pierwszą klatką).
     prime() {
       spawn();
@@ -353,6 +650,9 @@ export function createRun({
         hits: state.hits,
         durationMs: Math.round(state.time * 1000),
         difficulty: state.difficulty,
+        goats: state.goatCount,
+        bonuses: state.bonusCount,
+        smashed: state.smashed,
       };
     },
   };

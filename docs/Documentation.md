@@ -4,13 +4,13 @@
 
 Repozytorium zawiera menu główne i pięć samodzielnych gier przeglądarkowych (bez etapu budowania, serwowanych przez GitHub Pages):
 
-| Gra | Folder | Identyfikator w bazie | Rodzaj |
-|---|---|---|---|
-| SowaRunner | `SowaRunner/` | `runner` | arcade (p5.js) |
-| SowaJumper | `SowaJumper/` | `jumper` | arcade (Canvas 2D) |
-| Sowa3 | `Sowa3/` | `sowa3` | arcade (Canvas 2D, pseudo-3D) |
-| Sowie Ogrody | `SowieOgrody/` | `ogrody` | idle |
-| Sowia Szklarnia | `SowiaSzklarnia/` | `szklarnia` | idle |
+| Gra             | Folder            | Identyfikator w bazie | Rodzaj                        |
+| --------------- | ----------------- | --------------------- | ----------------------------- |
+| SowaRunner      | `SowaRunner/`     | `runner`              | arcade (p5.js)                |
+| SowaJumper      | `SowaJumper/`     | `jumper`              | arcade (Canvas 2D)            |
+| Sowa3           | `Sowa3/`          | `sowa3`               | arcade (Canvas 2D, pseudo-3D) |
+| Sowie Ogrody    | `SowieOgrody/`    | `ogrody`              | idle                          |
+| Sowia Szklarnia | `SowiaSzklarnia/` | `szklarnia`           | idle                          |
 
 Identyfikatory w bazie są stałe (są wpisane w opublikowane reguły Firestore) i nie zmieniają się przy zmianie nazw gier ani folderów. Wspólna warstwa w `shared/` zapewnia rejestr gier, **zapis postępu w Firestore (`SowieCloud`)**, ekran hasła, profil, kosmetyki, misje, Sowią Akademię, Galerię Sów, instrukcje, ustawienia, audio, pauzę i powiadomienia. Plan dalszych zmian: `Analizy/`.
 
@@ -381,23 +381,23 @@ Biblia wyglądu wspólna dla wszystkich przebudowanych gier (Analiza 2, rozdz. 2
 
 Te same kolory w CSS (`:root`, nazwy z myślnikami) i JS (`COLORS`, nazwy camelCase; `cssName("nieboGora")` → `--niebo-gora`). Test jednostkowy pilnuje zgodności obu list.
 
-| Token | Kolor | Użycie |
-|---|---|---|
-| `--niebo-gora` / `--niebo-dol` | `#bfe9ff` / `#fff6e3` | tła |
-| `--monstera` / `--monstera-ciemna` / `--monstera-jasna` | `#3fae6a` / `#2e8b57` / `#8fdcaa` | liście, sukces, nerwy i odblaski liści |
-| `--zloto` / `--zloto-ciemne` | `#f4c542` / `#d99a1e` | złote liście, rekordy, słomkowy kapelusz |
-| `--policzki` | `#ff9fb2` | policzki postaci |
-| `--kontur` | `#3b2f4a` | kontury i tekst (nigdy czysta czerń) |
-| `--pracu` | `#e8465a` | Pracu Pracu, zagrożenie |
-| `--amic-zielony` / `--amic-czerwony` | `#2fa84f` / `#d9303e` | Amic |
-| `--woda` / `--woda-ciemna` / `--woda-jasna` | `#5cc8e8` / `#3a86b8` / `#dff5fb` | woda, humbak, bąbelki, szyby |
+| Token                                                           | Kolor                                         | Użycie                                                                              |
+| --------------------------------------------------------------- | --------------------------------------------- | ----------------------------------------------------------------------------------- |
+| `--niebo-gora` / `--niebo-dol`                                  | `#bfe9ff` / `#fff6e3`                         | tła                                                                                 |
+| `--monstera` / `--monstera-ciemna` / `--monstera-jasna`         | `#3fae6a` / `#2e8b57` / `#8fdcaa`             | liście, sukces, nerwy i odblaski liści                                              |
+| `--zloto` / `--zloto-ciemne`                                    | `#f4c542` / `#d99a1e`                         | złote liście, rekordy, słomkowy kapelusz                                            |
+| `--policzki`                                                    | `#ff9fb2`                                     | policzki postaci                                                                    |
+| `--kontur`                                                      | `#3b2f4a`                                     | kontury i tekst (nigdy czysta czerń)                                                |
+| `--pracu`                                                       | `#e8465a`                                     | Pracu Pracu, zagrożenie                                                             |
+| `--amic-zielony` / `--amic-czerwony`                            | `#2fa84f` / `#d9303e`                         | Amic                                                                                |
+| `--woda` / `--woda-ciemna` / `--woda-jasna`                     | `#5cc8e8` / `#3a86b8` / `#dff5fb`             | woda, humbak, bąbelki, szyby                                                        |
 | `--sowa` / `--sowa-ciemna` / `--sowa-twarz` / `--sowa-brzuszek` | `#b07a52` / `#8a5a3b` / `#e2b98f` / `#f3e3c8` | Sówka (tułów, skrzydła i uszka, tarcza twarzy, brzuszek); ziemia w doniczce, drewno |
-| `--dziobek` | `#f59e3b` | dziobek i stopy |
-| `--bialy` | `#ffffff` | białka oczu, odblaski, papier |
-| `--pomaranczowy`, `--fiolet`, `--niebieski`, `--serce` | `#ff9d4d`, `#9b6ddb`, `#4d9de0`, `#ff6f91` | chustki kózek, garderoba, serduszko |
-| `--koza` / `--koza-cien` / `--rogi` | `#fffaf2` / `#eadcc6` / `#c9a47e` | kózki |
-| `--szary` / `--szary-ciemny` | `#c9c3d3` / `#7d7590` | metal, koła, utracone życie |
-| `--doniczka` | `#e57a5c` | brzeg ziemi w doniczce |
+| `--dziobek`                                                     | `#f59e3b`                                     | dziobek i stopy                                                                     |
+| `--bialy`                                                       | `#ffffff`                                     | białka oczu, odblaski, papier                                                       |
+| `--pomaranczowy`, `--fiolet`, `--niebieski`, `--serce`          | `#ff9d4d`, `#9b6ddb`, `#4d9de0`, `#ff6f91`    | chustki kózek, garderoba, serduszko                                                 |
+| `--koza` / `--koza-cien` / `--rogi`                             | `#fffaf2` / `#eadcc6` / `#c9a47e`             | kózki                                                                               |
+| `--szary` / `--szary-ciemny`                                    | `#c9c3d3` / `#7d7590`                         | metal, koła, utracone życie                                                         |
+| `--doniczka`                                                    | `#e57a5c`                                     | brzeg ziemi w doniczce                                                              |
 
 Poza kolorami: `--kontur-grubosc: 3px`, `--czcionka-sowia: "Fredoka", system-ui, -apple-system, "Segoe UI", sans-serif`, `--czcionka-tekst: 500`, `--czcionka-pogrubiona: 700`. W JS: `OUTLINE = 4` (grubość konturu w pliku 128 × 128 ≈ 3 px przy sowie wysokiej na 96 px), `FONT_FAMILY`, `FONT_WEIGHTS = { tekst: 500, pogrubiony: 700 }`, `font(rozmiar, waga = 700)` → napis do `ctx.font`.
 
@@ -420,23 +420,23 @@ Fredoka z Google Fonts **nie ma gotowych polskich liter** z ogonkami i kreskami 
 
 Pliki (wszystkie w repozytorium; opis wyglądu):
 
-| Plik | Wygląd |
-|---|---|
-| `sowa/cialo.svg` | tułów: uszka `--sowa-ciemna` (trójkąty), owal `--sowa` 84 × 92, brzuszek `--sowa-brzuszek` z trzema „v” piórek, tarcza twarzy `--sowa-twarz` (dwa połączone koła), policzki `--policzki` (44, 79) i (84, 79), dziobek `--dziobek` (57–71, 66–80) |
-| `sowa/oczy.svg`, `sowa/zrenice.svg` | białka r = 14 w (46, 57) i (82, 57) z konturem 4; źrenice r = 9 w (47, 58)/(83, 58) z odblaskami r = 3,4 i 1,6 (osobna warstwa — przesuwana, gdy sowa patrzy w bok) |
-| `sowa/oczy-zamkniete.svg`, `oczy-radosc.svg`, `oczy-oszolomione.svg` | mrugnięcie (łuki w dół), radość „^ ^”, spirale w białkach |
-| `sowa/skrzydlo-lewe.svg`, `skrzydlo-prawe.svg` | skrzydła-łezki `--sowa-ciemna` z dwoma piórkami, obrót wokół barków (34, 68) i (94, 68) |
-| `sowa/stopa-lewa.svg`, `stopa-prawa.svg` | stopy z trzema paluszkami w (50, 117) i (78, 117) |
-| `sowa/gwiazdki.svg` | trzy złote gwiazdki nad głową |
+| Plik                                                                                                                                                                                                | Wygląd                                                                                                                                                                                                                                                                                                                                                                        |
+| --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `sowa/cialo.svg`                                                                                                                                                                                    | tułów: uszka `--sowa-ciemna` (trójkąty), owal `--sowa` 84 × 92, brzuszek `--sowa-brzuszek` z trzema „v” piórek, tarcza twarzy `--sowa-twarz` (dwa połączone koła), policzki `--policzki` (44, 79) i (84, 79), dziobek `--dziobek` (57–71, 66–80)                                                                                                                              |
+| `sowa/oczy.svg`, `sowa/zrenice.svg`                                                                                                                                                                 | białka r = 14 w (46, 57) i (82, 57) z konturem 4; źrenice r = 9 w (47, 58)/(83, 58) z odblaskami r = 3,4 i 1,6 (osobna warstwa — przesuwana, gdy sowa patrzy w bok)                                                                                                                                                                                                           |
+| `sowa/oczy-zamkniete.svg`, `oczy-radosc.svg`, `oczy-oszolomione.svg`                                                                                                                                | mrugnięcie (łuki w dół), radość „^ ^”, spirale w białkach                                                                                                                                                                                                                                                                                                                     |
+| `sowa/skrzydlo-lewe.svg`, `skrzydlo-prawe.svg`                                                                                                                                                      | skrzydła-łezki `--sowa-ciemna` z dwoma piórkami, obrót wokół barków (34, 68) i (94, 68)                                                                                                                                                                                                                                                                                       |
+| `sowa/stopa-lewa.svg`, `stopa-prawa.svg`                                                                                                                                                            | stopy z trzema paluszkami w (50, 117) i (78, 117)                                                                                                                                                                                                                                                                                                                             |
+| `sowa/gwiazdki.svg`                                                                                                                                                                                 | trzy złote gwiazdki nad głową                                                                                                                                                                                                                                                                                                                                                 |
 | `garderoba/kokardka.svg`, `okulary.svg`, `wianek.svg`, `kapelusz-ogrodnika.svg`, `czapka.svg`, `szalik.svg`, `plecak.svg` (za sową), `plecak-szelki.svg` (przed sową), `babelki.svg`, `babelek.svg` | 9 pozycji garderoby jako nakładki w układzie sowy: różowa kokardka przy prawym uszku, okrągłe okulary z niebieskawymi szkłami, wianek z 5 kwiatkami (`<use>`), słomkowy kapelusz z zieloną wstążką i listkiem, niebieska czapka z daszkiem w prawo, różowy szalik w białe paski, fioletowy plecak z szelkami, bąbelki przy lewym boku; pojedynczy bąbelek to cząsteczka śladu |
-| `kozki/koza.svg`, `koza-skok.svg` | biała kózka z profilu (w prawo): rogi, uszko, bródka, ogonek, łatka; stoi (oko z odblaskiem) albo leci z podkulonymi nóżkami (oko zmrużone, języczek) |
-| `kozki/koza-sprezynka.svg`, `-tarcza`, `-magnes`, `-turbo`, `-podwajaczka` | nakładki: chustka na szyi w kolorze kózki (żółta, niebieska, fioletowa, pomarańczowa, zielona) i biała plakietka z ikoną (sprężyna, bańka, magnes, błyskawica, „×2” narysowane ścieżkami) |
-| `humbak/humbak.svg` | niebieski humbak płynący w prawo: płetwa ogonowa, długa płetwa piersiowa, jasny brzuch z bruzdami, guzki na głowie, oko z odblaskiem, policzek, uśmiech |
-| `humbak/plusk.svg` | korona wody z okrągłymi czubkami, krople-łezki, fala u dołu |
-| `pracu/dymek.svg`, `telefon.svg`, `teczka.svg`, `mail.svg`, `tablica.svg`, `budzik.svg` | czerwono-białe „chochliki obowiązków” z groźnymi brewkami i oczkami: dymek z ogonkiem (napis „Pracu / pracu!”), wibrujący telefon ze słuchawką (wariant z napisem „Magda”), stos papierów z czerwoną teczką, koperta ze skrzydełkami, tablica na nóżkach („Przyjmiesz / zmianę?”), budzik z dzwonkami |
-| `amic/dystrybutor.svg`, `cysterna.svg`, `znak-cen.svg`, `wozek.svg`, `barierka.svg`, `kanister.svg`, `sterowiec.svg` | ciężka infrastruktura stacji w bieli, czerwieni i zielonym pasie, **bez twarzy** i bez logotypu marki (nazwa „Amic” pisana Fredoką): dystrybutor z wężem, cysterna jadąca w lewo, wysoki znak z cenami na dwóch słupkach (pod tablicą da się przejść ślizgiem), wózek z trzema kanistrami, barierka w pasy, kanister, sterowiec |
-| `liscie/zielony.svg`, `zloty.svg`, `teczowy.svg` | liść monstery z sześcioma nacięciami, nerwami i ogonkiem; złoty z błyskami; tęczowy z gradientem (czerwony → pomarańczowy → złoty → zielony → woda → fiolet) |
-| `interfejs/serduszko-doniczka.svg`, `serduszko-puste.svg` | życie w HUD: doniczka-serce z ziemią (`clipPath`), kiełkiem monstery, oczkami i uśmiechem; utracone życie — szare, puste, smutne |
+| `kozki/koza.svg`, `koza-skok.svg`                                                                                                                                                                   | biała kózka z profilu (w prawo): rogi, uszko, bródka, ogonek, łatka; stoi (oko z odblaskiem) albo leci z podkulonymi nóżkami (oko zmrużone, języczek)                                                                                                                                                                                                                         |
+| `kozki/koza-sprezynka.svg`, `-tarcza`, `-magnes`, `-turbo`, `-podwajaczka`                                                                                                                          | nakładki: chustka na szyi w kolorze kózki (żółta, niebieska, fioletowa, pomarańczowa, zielona) i biała plakietka z ikoną (sprężyna, bańka, magnes, błyskawica, „×2” narysowane ścieżkami)                                                                                                                                                                                     |
+| `humbak/humbak.svg`                                                                                                                                                                                 | niebieski humbak płynący w prawo: płetwa ogonowa, długa płetwa piersiowa, jasny brzuch z bruzdami, guzki na głowie, oko z odblaskiem, policzek, uśmiech                                                                                                                                                                                                                       |
+| `humbak/plusk.svg`                                                                                                                                                                                  | korona wody z okrągłymi czubkami, krople-łezki, fala u dołu                                                                                                                                                                                                                                                                                                                   |
+| `pracu/dymek.svg`, `telefon.svg`, `teczka.svg`, `mail.svg`, `tablica.svg`, `budzik.svg`                                                                                                             | czerwono-białe „chochliki obowiązków” z groźnymi brewkami i oczkami: dymek z ogonkiem (napis „Pracu / pracu!”), wibrujący telefon ze słuchawką (wariant z napisem „Magda”), stos papierów z czerwoną teczką, koperta ze skrzydełkami, tablica na nóżkach („Przyjmiesz / zmianę?”), budzik z dzwonkami                                                                         |
+| `amic/dystrybutor.svg`, `cysterna.svg`, `znak-cen.svg`, `wozek.svg`, `barierka.svg`, `kanister.svg`, `sterowiec.svg`                                                                                | ciężka infrastruktura stacji w bieli, czerwieni i zielonym pasie, **bez twarzy** i bez logotypu marki (nazwa „Amic” pisana Fredoką): dystrybutor z wężem, cysterna jadąca w lewo, wysoki znak z cenami na dwóch słupkach (pod tablicą da się przejść ślizgiem), wózek z trzema kanistrami, barierka w pasy, kanister, sterowiec                                               |
+| `liscie/zielony.svg`, `zloty.svg`, `teczowy.svg`                                                                                                                                                    | liść monstery z sześcioma nacięciami, nerwami i ogonkiem; złoty z błyskami; tęczowy z gradientem (czerwony → pomarańczowy → złoty → zielony → woda → fiolet)                                                                                                                                                                                                                  |
+| `interfejs/serduszko-doniczka.svg`, `serduszko-puste.svg`                                                                                                                                           | życie w HUD: doniczka-serce z ziemią (`clipPath`), kiełkiem monstery, oczkami i uśmiechem; utracone życie — szare, puste, smutne                                                                                                                                                                                                                                              |
 
 ### Sówka (`owl.js`)
 
@@ -481,7 +481,7 @@ Moduły ES (`shared/ui/package.json` z `"type": "module"`, `index.js` eksportuje
 
 - lewy róg: przycisk pauzy 48 × 48 (`aria-label="Pauza"`, białe koło 85%, cień);
 - środek: wynik `[data-hud-score]` (30 px, biały z konturem 5 px `--kontur` — `-webkit-text-stroke` + `paint-order`, cyfry o stałej szerokości, format `pl-PL`) i liście `[data-hud-leaves]` (ikona zielonego liścia 22 px + liczba w białej „pigułce”);
-- prawy róg: życia `[data-hud-lives]` (serduszka-doniczki 28 px: pełne / puste, `aria-label="Życia: X z Y"`, utracone życie drga) i liczniki power-upów `.sowie-hud-powerup` (ramka w kolorze kózki `POWERUP_STYLE`: Sprężynka — złoty, Tarcza — niebieski, Magnes — fiolet, Turbo — pomarańcz, „×2” — monstera; pasek pozostałego czasu `scaleX`, miganie w ostatnich 2 s, `aria-label="Tarcza: 5 s"`);
+- prawy róg: życia `[data-hud-lives]` (serduszka-doniczki 28 px: pełne / puste, `aria-label="Życia: X z Y"`, utracone życie drga) i liczniki power-upów `.sowie-hud-powerup` (ramka w kolorze kózki `POWERUP_STYLE`: Sprężynka — złoty, Tarcza — niebieski, Magnes — fiolet, Turbo — pomarańcz, „×2” — monstera, od E4c także `goraczka` — „Gorączka”, `--policzki` (licznik Gorączki Monster w Sowiej Ucieczce); pasek pozostałego czasu `scaleX`, miganie w ostatnich 2 s, `aria-label="Tarcza: 5 s"`);
 - API: `setScore(n, { animate })` (podskok `.is-bump` przy wzroście), `setLeaves(n)`, `setLives(obecne, max)`, `setPowerups([{ kind, remaining, total }])` (węzły używane ponownie, np. 10 razy na sekundę), `show()`, `hide()`, `state()`, `destroy()`; `formatNumber(n)`.
 
 ### `toasts.js` — komunikaty
@@ -633,14 +633,14 @@ Dekoracje są dopuszczalne tylko po bokach ekranu, wysoko nad horyzontem i poza 
 
 Pełny zestaw uruchamiany przed każdym wypchnięciem na `main` i w CI (`.github/workflows/js-check.yml`):
 
-| Krok | Skrypt | Co sprawdza |
-|---|---|---|
-| składnia | `npm run syntax` (`scripts/check-syntax.sh`) | `node --check` dla każdego pliku `.js` poza `node_modules/`, `.git/`, `playwright-report/` |
-| lint | `npm run lint` | ESLint 9 (`eslint.config.js`) |
-| formatowanie | `npm run format:check` | Prettier 3 (`.prettierrc.json`: szerokość 120, 2 spacje, średniki, cudzysłowy podwójne, przecinki końcowe) dla plików konfiguracyjnych, `firebase.json`, `manifest.webmanifest`, `sw.js`, `shared/engine/`, `shared/world/`, `shared/ui/`, `shared/meta/`, `shared/menu/`, `SowiaUcieczka/` (także HTML, CSS i dokumentacja gry), `lab/main.js`, `lab/characters.js`, `lab/sound.js`, `lab/interface.js`, `lab/lab.css`, `scripts/make-icons.cjs`, `scripts/make-audio.mjs`, `assets/audio/audio.json`, workflow i katalogów `tests/e2e`, `tests/unit`, `tests/rules` |
-| HTML | `npm run html` | `html-validate` (`.htmlvalidate.json`) dla `index.html`, stron pięciu gier, `lab/index.html`, `SowiaUcieczka/index.html` i `tests/smoke.html` |
-| jednostkowe | `npm run test:unit` | `node --test tests/unit/*.test.mjs` |
-| reguły i przeglądarkowe | `npm run test:e2e` | emulator Firestore: `firebase emulators:exec --only firestore --project demo-sowiegry "npm run test:rules && playwright test"` — najpierw testy reguł (`test:rules` = `node --test tests/rules/*.test.mjs`, wymaga działającego emulatora), potem Playwright |
+| Krok                    | Skrypt                                       | Co sprawdza                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| ----------------------- | -------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| składnia                | `npm run syntax` (`scripts/check-syntax.sh`) | `node --check` dla każdego pliku `.js` poza `node_modules/`, `.git/`, `playwright-report/`                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| lint                    | `npm run lint`                               | ESLint 9 (`eslint.config.js`)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| formatowanie            | `npm run format:check`                       | Prettier 3 (`.prettierrc.json`: szerokość 120, 2 spacje, średniki, cudzysłowy podwójne, przecinki końcowe) dla plików konfiguracyjnych, `firebase.json`, `manifest.webmanifest`, `sw.js`, `shared/engine/`, `shared/world/`, `shared/ui/`, `shared/meta/`, `shared/menu/`, `SowiaUcieczka/` (także HTML, CSS i dokumentacja gry), `lab/main.js`, `lab/characters.js`, `lab/sound.js`, `lab/interface.js`, `lab/lab.css`, `scripts/make-icons.cjs`, `scripts/make-audio.mjs`, `assets/audio/audio.json`, workflow i katalogów `tests/e2e`, `tests/unit`, `tests/rules` |
+| HTML                    | `npm run html`                               | `html-validate` (`.htmlvalidate.json`) dla `index.html`, stron pięciu gier, `lab/index.html`, `SowiaUcieczka/index.html` i `tests/smoke.html`                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| jednostkowe             | `npm run test:unit`                          | `node --test tests/unit/*.test.mjs`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| reguły i przeglądarkowe | `npm run test:e2e`                           | emulator Firestore: `firebase emulators:exec --only firestore --project demo-sowiegry "npm run test:rules && playwright test"` — najpierw testy reguł (`test:rules` = `node --test tests/rules/*.test.mjs`, wymaga działającego emulatora), potem Playwright                                                                                                                                                                                                                                                                                                          |
 
 Zależności deweloperskie są przypięte tam, gdzie wersja wpływa na przeglądarki, emulator i SDK: `@playwright/test` **1.56.1** (Chromium 141, rewizja 1194), `firebase-tools` **15.31.0**, `firebase` **12.19.0** (ta sama wersja SDK co w `shared/sowie-cloud.js`; pliki `firebase-app.js` i `firebase-firestore.js` z pakietu npm są bajt w bajt identyczne z plikami na gstatic) , `@firebase/rules-unit-testing` **5.0.2** i `@breezystack/lamejs` **1.2.7** (kodowanie MP3 w `scripts/make-audio.mjs`). Pozostałe (`eslint`, `globals`, `html-validate`, `http-server`, `prettier`) mają zakresy `^`. `package-lock.json` nie jest wersjonowany (`.gitignore`).
 
@@ -651,13 +651,13 @@ Zależności deweloperskie są przypięte tam, gdzie wersja wpływa na przegląd
 - projekt `desktop-chromium` (`devices["Desktop Chrome"]`) uruchamia testy obecnych gier z `tests/e2e/*.spec.js` (bez katalogu `telefon/`);
 - projekty telefonów uruchamiają testy z `tests/e2e/telefon/`. Każdy profil biegnie w dwóch silnikach — Chromium i WebKit (Safari) — więc powstaje 10 projektów o nazwach `telefon-<profil>-<silnik>`:
 
-| Profil | Źródło | Ekran CSS |
-|---|---|---|
-| `iphone-se` | `devices["iPhone SE"]` | 320 × 568 |
-| `iphone-13` | `devices["iPhone 13"]` | 390 × 664 (okno przeglądarki) |
-| `pixel-7` | `devices["Pixel 7"]` | 412 × 839 |
-| `android-360x800` | własny: 360 × 800, DPR 3, `isMobile`, `hasTouch`, UA Androida 14 | 360 × 800 |
-| `iphone-13-poziomo` | `devices["iPhone 13 landscape"]` | 750 × 342 |
+| Profil              | Źródło                                                           | Ekran CSS                     |
+| ------------------- | ---------------------------------------------------------------- | ----------------------------- |
+| `iphone-se`         | `devices["iPhone SE"]`                                           | 320 × 568                     |
+| `iphone-13`         | `devices["iPhone 13"]`                                           | 390 × 664 (okno przeglądarki) |
+| `pixel-7`           | `devices["Pixel 7"]`                                             | 412 × 839                     |
+| `android-360x800`   | własny: 360 × 800, DPR 3, `isMobile`, `hasTouch`, UA Androida 14 | 360 × 800                     |
+| `iphone-13-poziomo` | `devices["iPhone 13 landscape"]`                                 | 750 × 342                     |
 
 - `serviceWorkers: "block"` — w testach service worker (PWA) nie jest rejestrowany i nie przechwytuje żądań; test PWA włącza go jawnie (`test.use({ serviceWorkers: "allow" })`);
 - zmienna `SOWIE_E2E_BEZ_WEBKIT=1` pomija projekty WebKit **tylko lokalnie** (np. w środowisku bez przeglądarki WebKit) i wypisuje ostrzeżenie; przy ustawionym `CI` zmienna jest ignorowana, więc w CI WebKit biegnie zawsze.
@@ -766,7 +766,7 @@ Zależności deweloperskie są przypięte tam, gdzie wersja wpływa na przegląd
 
 ### Testy Sowiej Ucieczki (`tests/unit/ucieczka.test.mjs`, E4)
 
-Fizyka, kamera i czas reakcji ≥ 1,1 s, przeszkody, 37 wzorów (każdy do przejścia przy 4,25 / 7 / 10,5 j./s — przeszukiwanie wszerz ruchów), generator, Chmura Pracu, combo, dotyk. Szczegóły: `SowiaUcieczka/docs/Documentation.md`, rozdział „Testy”. Plik biegnie ok. 30 s (przeszukiwanie wzorów).
+Fizyka, kamera i czas reakcji ≥ 1,1 s, przeszkody, 37 wzorów (każdy do przejścia przy 4,25 / 7 / 11,55 j./s — przeszukiwanie wszerz ruchów), generator, Chmura Pracu, combo, dotyk; od E4c kózki (rozstaw i 5 efektów), Gorączka Monster, Plusk-o-metr i „Rejs na humbaku”, 6 biomów z przenikaniem i szybszymi okrążeniami. Szczegóły: `SowiaUcieczka/docs/Documentation.md`, rozdział „Testy”. Plik biegnie ok. 30 s (przeszukiwanie wzorów).
 
 ### Testy menu (`tests/unit/menu.test.mjs`, E3)
 
@@ -918,24 +918,24 @@ Jedyny moduł SowieGry, który rozmawia z Firestore i używa pamięci przegląda
 
 ### Stałe
 
-| Stała | Wartość | Znaczenie |
-|---|---|---|
-| `SDK_VERSION` | `"12.19.0"` | przypięta wersja Firebase JS SDK (zmiana = świadoma zmiana jednej stałej) |
-| `SDK_URL` | `https://www.gstatic.com/firebasejs/12.19.0` | CDN, z którego dynamicznie importowane są `firebase-app.js` i `firebase-firestore.js` |
-| `APP_NAME` | `"sowiegry"` | nazwana aplikacja Firebase — nie koliduje z domyślną aplikacją innego projektu na tej samej domenie |
-| `HASLO_GRACZA` | `"huhu"` | hasło jawne w kodzie (bramka, a nie zabezpieczenie) |
-| `SCHEMA_VERSION` | `1` | pole `schemaVersion` w `meta` i `profil` (wymagane przez reguły jako liczba całkowita) |
-| `DEVICE_KEY` | `"sowiegry:urzadzenie"` | jedyny klucz `localStorage` SowieGry: `{ unlocked, deviceId, cleaned }` |
-| `MODE_KEY` | `"sowiegry:tryb-chmury"` | klucz `sessionStorage` z wybranym trybem (`{ mode, project }`) |
-| `GAME_IDS` | `runner`, `jumper`, `sowa3`, `ogrody`, `szklarnia` | stałe identyfikatory gier (są w regułach Firestore) |
-| `EMULATOR` | `127.0.0.1:8080`, projekt `demo-sowiegry` | adres emulatora |
-| `PATHS` | `sowiegry/meta`, `sowiegry/profil`, `sowiegry/profil/sowiegry_gry/{id}`, `…/{id}/sowiegry_historia` | ścieżki dokumentów |
-| `DELAYS` | profil 30 s, ustawienia 1 s, dokument gry 1 s, gra idle 30 s, ważna akcja w grze idle 2 s | opóźnienia zapisów |
-| `TOP_LIMIT` / `HISTORY_LIMIT` / `HISTORY_TRIM_AT` | 10 / 50 / 60 | top 10; historia przycinana do 50, gdy licznik przekroczy 60 |
-| `DAILY_DAYS` / `AWARD_DAYS` | 30 / 30 | ile dni trzymamy rekordy dnia i nagrody dzienne Akademii |
-| `STARE_KLUCZE`, `STARE_PREFIKSY` | lista z Analizy 1, rozdz. 12 | stare klucze SowieGry kasowane jednorazowo |
-| `PROFILE_COUNTERS` | `stats.leaves`, `stats.nearMisses`, `stats.extraLives`, `stats.finishes`, `records.{id}.runs` | liczniki zapisywane wyłącznie przez `increment()` |
-| `GAME_COUNTERS` | `historyCount` | licznik wpisów historii w dokumencie gry |
+| Stała                                             | Wartość                                                                                             | Znaczenie                                                                                           |
+| ------------------------------------------------- | --------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| `SDK_VERSION`                                     | `"12.19.0"`                                                                                         | przypięta wersja Firebase JS SDK (zmiana = świadoma zmiana jednej stałej)                           |
+| `SDK_URL`                                         | `https://www.gstatic.com/firebasejs/12.19.0`                                                        | CDN, z którego dynamicznie importowane są `firebase-app.js` i `firebase-firestore.js`               |
+| `APP_NAME`                                        | `"sowiegry"`                                                                                        | nazwana aplikacja Firebase — nie koliduje z domyślną aplikacją innego projektu na tej samej domenie |
+| `HASLO_GRACZA`                                    | `"huhu"`                                                                                            | hasło jawne w kodzie (bramka, a nie zabezpieczenie)                                                 |
+| `SCHEMA_VERSION`                                  | `1`                                                                                                 | pole `schemaVersion` w `meta` i `profil` (wymagane przez reguły jako liczba całkowita)              |
+| `DEVICE_KEY`                                      | `"sowiegry:urzadzenie"`                                                                             | jedyny klucz `localStorage` SowieGry: `{ unlocked, deviceId, cleaned }`                             |
+| `MODE_KEY`                                        | `"sowiegry:tryb-chmury"`                                                                            | klucz `sessionStorage` z wybranym trybem (`{ mode, project }`)                                      |
+| `GAME_IDS`                                        | `runner`, `jumper`, `sowa3`, `ogrody`, `szklarnia`                                                  | stałe identyfikatory gier (są w regułach Firestore)                                                 |
+| `EMULATOR`                                        | `127.0.0.1:8080`, projekt `demo-sowiegry`                                                           | adres emulatora                                                                                     |
+| `PATHS`                                           | `sowiegry/meta`, `sowiegry/profil`, `sowiegry/profil/sowiegry_gry/{id}`, `…/{id}/sowiegry_historia` | ścieżki dokumentów                                                                                  |
+| `DELAYS`                                          | profil 30 s, ustawienia 1 s, dokument gry 1 s, gra idle 30 s, ważna akcja w grze idle 2 s           | opóźnienia zapisów                                                                                  |
+| `TOP_LIMIT` / `HISTORY_LIMIT` / `HISTORY_TRIM_AT` | 10 / 50 / 60                                                                                        | top 10; historia przycinana do 50, gdy licznik przekroczy 60                                        |
+| `DAILY_DAYS` / `AWARD_DAYS`                       | 30 / 30                                                                                             | ile dni trzymamy rekordy dnia i nagrody dzienne Akademii                                            |
+| `STARE_KLUCZE`, `STARE_PREFIKSY`                  | lista z Analizy 1, rozdz. 12                                                                        | stare klucze SowieGry kasowane jednorazowo                                                          |
+| `PROFILE_COUNTERS`                                | `stats.leaves`, `stats.nearMisses`, `stats.extraLives`, `stats.finishes`, `records.{id}.runs`       | liczniki zapisywane wyłącznie przez `increment()`                                                   |
+| `GAME_COUNTERS`                                   | `historyCount`                                                                                      | licznik wpisów historii w dokumencie gry                                                            |
 
 ### Znaczniki operacji
 
@@ -968,12 +968,12 @@ Stan w pamięci to zwykły JSON. Operacje specjalne są zapisywane jako obiekty 
 
 Wspólny interfejs:
 
-| Metoda | Działanie |
-|---|---|
-| `getDoc(path, source)` | `source`: `"cache"` (tylko pamięć podręczna IndexedDB), `"server"` (tylko serwer), `"default"`; zwraca obiekt albo `null` (brak dokumentu); błąd = brak danych (np. offline bez cache) |
-| `commit(ops)` | jeden zapis zbiorczy (`writeBatch`); `ops`: `{ type: "set", path, data }` (zawsze `merge: true`), `{ type: "add", collection, data }` (dokument z automatycznym id), `{ type: "delete", path }` |
-| `query(collection, { orderBy, direction, limit })` | lista `{ id, path, data }` |
-| `subscribe(path, listener)` | nasłuch dokumentu; `listener(data, { fromCache, pendingWrites })`; zwraca funkcję odpinającą |
+| Metoda                                             | Działanie                                                                                                                                                                                       |
+| -------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `getDoc(path, source)`                             | `source`: `"cache"` (tylko pamięć podręczna IndexedDB), `"server"` (tylko serwer), `"default"`; zwraca obiekt albo `null` (brak dokumentu); błąd = brak danych (np. offline bez cache)          |
+| `commit(ops)`                                      | jeden zapis zbiorczy (`writeBatch`); `ops`: `{ type: "set", path, data }` (zawsze `merge: true`), `{ type: "add", collection, data }` (dokument z automatycznym id), `{ type: "delete", path }` |
+| `query(collection, { orderBy, direction, limit })` | lista `{ id, path, data }`                                                                                                                                                                      |
+| `subscribe(path, listener)`                        | nasłuch dokumentu; `listener(data, { fromCache, pendingWrites })`; zwraca funkcję odpinającą                                                                                                    |
 
 **`MemoryBackend`** (klasa): dokumenty w `Map` ścieżka → obiekt, `commits` (lista wszystkich zapisów — do testów), `writesTo(path)` (liczba zapisów zbiorczych dotykających dokumentu). `add` nadaje id `m-000001`, `m-000002`… Po `commit` powiadamia nasłuchujących dotkniętych dokumentów (`fromCache: false`, `pendingWrites: false`). Używany w testach (`?cloud=memory`), przy awarii CDN i w testach jednostkowych. Dane giną po przeładowaniu strony.
 
@@ -1006,31 +1006,31 @@ Po zbudowaniu stan bazowy = kopia stanu w pamięci. Podczas zapisu status `"zapi
 
 ### Publiczne API `window.SowieCloud`
 
-| Funkcja | Opis |
-|---|---|
-| `ready` | Promise: hasło podane, profil (i dokument bieżącej gry) wczytany |
-| `isReady()` | czy `ready` już się rozwiązał (gry sprawdzają to przed startem rozgrywki) |
-| `status()`, `onStatus(fn)` | stan połączenia (jw.) |
-| `isUnlocked()` | czy urządzenie ma zapamiętane odblokowanie |
-| `unlock(haslo)` | `true`/`false`; przy `true` zapisuje `unlocked: true` i łączy z bazą |
-| `lock()` | „Wyloguj to urządzenie”: `flush()` (max 1,5 s), `unlocked: false`, przeładowanie strony |
-| `profile()` | profil w pamięci (tylko do odczytu — zmiany przez `updateProfile`) |
-| `updateProfile(mutator, { delayMs = 30 000 })` | `mutator(profil)` zmienia pola; zapis odroczony (ustawienia i kosmetyki: 1000 ms) |
-| `increment(ścieżka, n)` | licznik profilu (np. `"stats.leaves"`) — pamięć + `increment(n)` w Firestore |
-| `records(gameId, poziom)` | rekordy z pamięci, np. `{ bestScore, bestDistance }`; bez poziomu — cały `profil.records[gameId]` |
-| `submitRun(gameId, wynik)` | koniec rozgrywki (niżej); zwraca `{ newRecord, place, best }` albo `null` przed startem |
-| `topRuns(gameId, poziom)` | Promise: top 10 z dokumentu gry |
-| `history(gameId, limit = 10)` | Promise: ostatnie rozgrywki (`orderBy("at", "desc")`) |
-| `game(gameId)` | dokument gry w pamięci (np. `difficulty`, `finishSeen`, `dailyBest`, `daily`, `traitAlbum`) |
-| `loadGame(gameId)` | Promise: dokument gry (wczytuje, jeśli to nie gra bieżącej strony) |
-| `updateGame(gameId, mutator \| obiekt, { delayMs = 1000 })` | zmiana pól dokumentu gry (poziom trudności, `finishSeen`, kontrakty dnia) |
-| `loadGameState(gameId)` | Promise: stan gry idle (`JSON.parse(state)`) albo `null` |
-| `saveGameState(gameId, stan, { immediate, summary, saveVersion })` | zapis stanu gry idle: `state` = JSON, `saveVersion`, `clientSavedAt`, `deviceId`, `rev + 1`; `summary` trafia do dokumentu gry i do `profil.records[gameId]`; opóźnienie 30 s, `immediate: true` — 2 s |
-| `flush()` | natychmiastowe wysłanie kolejki; Promise rozwiązany po potwierdzeniu wszystkich zapisów w drodze |
-| `onConflict(fn)`, `onProfileReload(fn)` | pytanie o nowszy stan gry idle; ponowne wczytanie profilu z serwera |
-| `offlineReason()` | `null`, `"sdk"` albo `"profil"` |
-| `backendKind()`, `mode()`, `gameId()`, `deviceId()`, `removedKeys()` | informacje diagnostyczne (tryb: `memory` / `emulator` / `firestore`) |
-| `helpers` | `{ trimAwards, trimDaily, dayKey }` — przycinanie nagród i rekordów dnia (używa Sowia Akademia) |
+| Funkcja                                                              | Opis                                                                                                                                                                                                   |
+| -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `ready`                                                              | Promise: hasło podane, profil (i dokument bieżącej gry) wczytany                                                                                                                                       |
+| `isReady()`                                                          | czy `ready` już się rozwiązał (gry sprawdzają to przed startem rozgrywki)                                                                                                                              |
+| `status()`, `onStatus(fn)`                                           | stan połączenia (jw.)                                                                                                                                                                                  |
+| `isUnlocked()`                                                       | czy urządzenie ma zapamiętane odblokowanie                                                                                                                                                             |
+| `unlock(haslo)`                                                      | `true`/`false`; przy `true` zapisuje `unlocked: true` i łączy z bazą                                                                                                                                   |
+| `lock()`                                                             | „Wyloguj to urządzenie”: `flush()` (max 1,5 s), `unlocked: false`, przeładowanie strony                                                                                                                |
+| `profile()`                                                          | profil w pamięci (tylko do odczytu — zmiany przez `updateProfile`)                                                                                                                                     |
+| `updateProfile(mutator, { delayMs = 30 000 })`                       | `mutator(profil)` zmienia pola; zapis odroczony (ustawienia i kosmetyki: 1000 ms)                                                                                                                      |
+| `increment(ścieżka, n)`                                              | licznik profilu (np. `"stats.leaves"`) — pamięć + `increment(n)` w Firestore                                                                                                                           |
+| `records(gameId, poziom)`                                            | rekordy z pamięci, np. `{ bestScore, bestDistance }`; bez poziomu — cały `profil.records[gameId]`                                                                                                      |
+| `submitRun(gameId, wynik)`                                           | koniec rozgrywki (niżej); zwraca `{ newRecord, place, best }` albo `null` przed startem                                                                                                                |
+| `topRuns(gameId, poziom)`                                            | Promise: top 10 z dokumentu gry                                                                                                                                                                        |
+| `history(gameId, limit = 10)`                                        | Promise: ostatnie rozgrywki (`orderBy("at", "desc")`)                                                                                                                                                  |
+| `game(gameId)`                                                       | dokument gry w pamięci (np. `difficulty`, `finishSeen`, `dailyBest`, `daily`, `traitAlbum`)                                                                                                            |
+| `loadGame(gameId)`                                                   | Promise: dokument gry (wczytuje, jeśli to nie gra bieżącej strony)                                                                                                                                     |
+| `updateGame(gameId, mutator \| obiekt, { delayMs = 1000 })`          | zmiana pól dokumentu gry (poziom trudności, `finishSeen`, kontrakty dnia)                                                                                                                              |
+| `loadGameState(gameId)`                                              | Promise: stan gry idle (`JSON.parse(state)`) albo `null`                                                                                                                                               |
+| `saveGameState(gameId, stan, { immediate, summary, saveVersion })`   | zapis stanu gry idle: `state` = JSON, `saveVersion`, `clientSavedAt`, `deviceId`, `rev + 1`; `summary` trafia do dokumentu gry i do `profil.records[gameId]`; opóźnienie 30 s, `immediate: true` — 2 s |
+| `flush()`                                                            | natychmiastowe wysłanie kolejki; Promise rozwiązany po potwierdzeniu wszystkich zapisów w drodze                                                                                                       |
+| `onConflict(fn)`, `onProfileReload(fn)`                              | pytanie o nowszy stan gry idle; ponowne wczytanie profilu z serwera                                                                                                                                    |
+| `offlineReason()`                                                    | `null`, `"sdk"` albo `"profil"`                                                                                                                                                                        |
+| `backendKind()`, `mode()`, `gameId()`, `deviceId()`, `removedKeys()` | informacje diagnostyczne (tryb: `memory` / `emulator` / `firestore`)                                                                                                                                   |
+| `helpers`                                                            | `{ trimAwards, trimDaily, dayKey }` — przycinanie nagród i rekordów dnia (używa Sowia Akademia)                                                                                                        |
 
 **`submitRun(gameId, { score, distance?, height?, leaves?, durationMs?, difficulty = "arcade", daily?, seed? })`** — jeden zapis zbiorczy na rozgrywkę:
 
@@ -1071,8 +1071,17 @@ Każda nakładka zatrzymuje propagację zdarzeń klawiatury, wskaźnika, dotyku,
 <form class="sowie-gate-form" novalidate>
   <label class="sowie-gate-label" for="sowieGatePassword">Hasło</label>
   <div class="sowie-gate-field">
-    <input id="sowieGatePassword" name="haslo" type="password" autocomplete="off" autocapitalize="none"
-      autocorrect="off" spellcheck="false" enterkeyhint="go" inputmode="text" />
+    <input
+      id="sowieGatePassword"
+      name="haslo"
+      type="password"
+      autocomplete="off"
+      autocapitalize="none"
+      autocorrect="off"
+      spellcheck="false"
+      enterkeyhint="go"
+      inputmode="text"
+    />
     <button type="button" class="sowie-gate-eye" aria-label="Pokaż hasło" aria-pressed="false">👁</button>
   </div>
   <p class="sowie-gate-error" role="alert" hidden>Hu-hu? To nie to hasło 🦉</p>

@@ -466,3 +466,165 @@ test("dotyk: skok po 60 ms albo po puszczeniu; przesunięcie w dół zamiast sko
   tap.update(DT);
   assert.equal(tap.state.owl.grounded, false, "krótkie stuknięcie od razu skacze");
 });
+
+// ---------- E4c: kózki, Gorączka, Plusk-o-metr, „Rejs na humbaku”, biomy ----------
+
+const { biomeAt, goatLift, loopFactor } = await import("../../SowiaUcieczka/game.js");
+const { BIOMES, biomeBlend, mixColor } = await import("../../SowiaUcieczka/backgrounds.js");
+const { FEVER, GOATS, SPLASH, WHALE, BIOME_LENGTH } = await import("../../SowiaUcieczka/config.js");
+
+const runFor = (game, seconds, each = () => {}) => {
+  for (let t = 0; t < seconds && !game.state.ended; t += DT) {
+    each(game);
+    game.update(DT);
+  }
+};
+
+test("kózki pojawiają się co 180–320 m w odstępach między wzorami, skaczą łukami i każda ma grafikę", () => {
+  const game = createRun({ difficulty: "arcade", seed: "kozki" });
+  const start = game.state.owl.x;
+  const spawned = new Map();
+  runFor(game, 120, (current) => {
+    current.state.invulnerable = 1e9;
+    current.state.splash = 0; // bez rejsu na humbaku (w rejsie nie ma kózek)
+    for (const goat of current.state.goats) spawned.set(goat.x, goat.kind);
+  });
+  assert.ok(game.state.distance > 700);
+  const positions = [...spawned.keys()].sort((a, b) => a - b);
+  assert.ok(positions.length >= 3, `co najmniej 3 kózki na ${Math.round(game.state.distance)} m`);
+  assert.ok(positions[0] - start >= GOATS.every[0] * 0.5, "pierwsza kózka po 90 m");
+  const longest = Math.max(...PATTERNS.map((item) => item.length));
+  for (let index = 1; index < positions.length; index += 1) {
+    const gap = positions[index] - positions[index - 1];
+    assert.ok(gap >= GOATS.every[0] && gap <= GOATS.every[1] + longest + 10, `odstęp kózek ${gap}`);
+  }
+  // Dwie kolejne kózki nigdy nie są tego samego rodzaju.
+  const kinds = positions.map((x) => spawned.get(x));
+  assert.ok(kinds.every((kind, index) => index === 0 || kind !== kinds[index - 1]));
+  for (const kind of Object.keys(GOATS.weights)) {
+    assert.ok(SPRITES[`kozka-${kind}`] && SPRITES[`kozka-${kind}-skok`], kind);
+  }
+  assert.equal(goatLift(0), 0);
+  assert.ok(goatLift(GOATS.hopPeriod * 0.35) > GOATS.hopHeight * 0.99);
+});
+
+test("kózki: Sprężynka — super-skok, Tarcza — chroni raz, Turbo — sprint bez obrażeń, Magnes i Podwajaczka", () => {
+  const spring = createRun({ difficulty: "arcade", seed: "sprezynka" });
+  spring.giveGoat("sprezynka");
+  let top = 0;
+  runFor(spring, 1, (game) => (top = Math.min(top, game.state.owl.y)));
+  assert.ok(top < -5, `super-skok ${top}`);
+  assert.ok(spring.state.goatPoints === GOATS.bonus);
+
+  const shield = createRun({ difficulty: "arcade", seed: "tarcza" });
+  shield.giveGoat("tarcza");
+  assert.equal(shield.hit("pracu"), false);
+  assert.equal(shield.state.cloud, CLOUD.steps, "tarcza pochłonęła trafienie");
+  assert.equal(shield.state.powerups.tarcza, 0);
+  assert.ok(shield.takeEvents().some((event) => event.type === "shieldBreak"));
+
+  const turbo = createRun({ difficulty: "arcade", seed: "turbo" });
+  const normal = turbo.state.speed;
+  turbo.giveGoat("turbo");
+  turbo.update(DT);
+  assert.ok(Math.abs(turbo.state.speed / normal - GOATS.turboSpeed) < 0.01);
+  assert.equal(turbo.hit("amic"), false, "turbo: nietykalność");
+  runFor(turbo, GOATS.duration.turbo + 0.1);
+  assert.ok(turbo.state.powerups.turbo === 0 && turbo.state.invulnerable > 0, "po turbo chwila nietykalności");
+
+  const magnet = createRun({ difficulty: "arcade", seed: "magnes" });
+  magnet.giveGoat("magnes");
+  const owl = magnet.state.owl;
+  magnet.state.leaves.push({ kind: "zielony", x: owl.x + 2.5, y: -2.5, taken: false, phase: 0 });
+  magnet.state.leaves.sort((a, b) => a.x - b.x);
+  const before = magnet.state.leafCount;
+  runFor(magnet, 0.4);
+  assert.ok(magnet.state.leafCount > before, "magnes przyciągnął liść poza zasięgiem skoku");
+
+  const double = createRun({ difficulty: "arcade", seed: "podwajaczka" });
+  double.giveGoat("podwajaczka");
+  const o = double.state.owl;
+  double.state.leaves.push({ kind: "zielony", x: o.x + 0.2, y: -0.5, taken: false, phase: 0 });
+  double.state.leaves.sort((a, b) => a.x - b.x);
+  double.update(DT);
+  assert.equal(double.state.leafCount, 2, "podwójne liście");
+});
+
+test("tęczowy liść: Gorączka Monster 8 s — liście ×2 i dodatkowy rząd liści nad kolejnymi wzorami", () => {
+  const game = createRun({ difficulty: "arcade", seed: "goraczka" });
+  const owl = game.state.owl;
+  game.state.leaves.push({ kind: "teczowy", x: owl.x + 0.2, y: -0.5, taken: false, phase: 0 });
+  game.state.leaves.sort((a, b) => a.x - b.x);
+  game.update(DT);
+  assert.ok(game.takeEvents().some((event) => event.type === "fever"));
+  assert.ok(game.state.fever > FEVER.duration - 0.1);
+  const high = () => game.state.leaves.filter((item) => Math.abs(item.y + FEVER.extraHeight) < 1e-9).length;
+  const extraBefore = high();
+  game.state.invulnerable = 1e9;
+  runFor(game, 3, (current) => (current.state.invulnerable = 1e9));
+  assert.ok(high() > extraBefore, "gęstsze liście w czasie gorączki");
+  const count = game.state.leafCount;
+  game.state.leaves.push({ kind: "zielony", x: owl.x + 0.2, y: -0.5, taken: false, phase: 0 });
+  game.state.leaves.sort((a, b) => a.x - b.x);
+  game.update(DT);
+  assert.equal(game.state.leafCount - count, FEVER.multiplier);
+});
+
+test("Plusk-o-metr: 60 liści albo 3 bąbelki; pełny — „Rejs na humbaku” 20 s bez przeszkód, potem premia", () => {
+  assert.equal(SPLASH.leaves, 60);
+  const game = createRun({ difficulty: "arcade", seed: "humbak" });
+  const owl = game.state.owl;
+  for (let index = 0; index < SPLASH.bubbles; index += 1) {
+    game.state.bubbles.push({ x: owl.x + 0.1, y: -0.5, taken: false, phase: 0 });
+    game.update(DT);
+  }
+  assert.ok(game.state.bonus, "3 bąbelki uruchamiają rejs");
+  assert.equal(game.state.splash, 0);
+  assert.equal(game.state.obstacles.filter((item) => item.x > owl.x).length, 0, "bez przeszkód w rejsie");
+  assert.equal(game.hit("pracu"), false, "w rejsie bez obrażeń");
+  // Stuknięcie: humbak wyskakuje z wody.
+  game.press("keyboard");
+  game.release();
+  game.update(DT);
+  game.update(0.2);
+  assert.ok(game.state.bonus.y < -1, "humbak w powietrzu");
+  let before = game.state.patternCount;
+  for (let time = 0; game.state.bonus && time < WHALE.duration + 1; time += DT) {
+    before = game.state.patternCount;
+    game.update(DT);
+  }
+  assert.equal(game.state.bonus, null);
+  const events = game.takeEvents();
+  const end = events.find((event) => event.type === "bonusEnd");
+  assert.ok(end && end.premium >= WHALE.bonus);
+  assert.ok(game.state.bonusPoints >= WHALE.bonus);
+  assert.ok(events.some((event) => event.type === "whaleJump"));
+  // Po rejsie trasa wraca od oddechu.
+  assert.ok(game.state.patternCount > before);
+  const next = PATTERNS.find((item) => item.id === game.state.patterns.at(before - game.state.patternCount));
+  assert.ok(next.tags.includes("breather"), `po rejsie oddech, a jest ${next.id}`);
+});
+
+test("biomy co 1000 m (6), przenikanie 60 m, kolejne okrążenie szybciej (najwyżej +10%)", () => {
+  assert.equal(BIOMES.length, 6);
+  assert.deepEqual(
+    BIOMES.map((item) => item.name),
+    ["Łąka", "Miasto", "Osiedle PRL", "Stacja Amic", "Plaża", "Noc nad morzem"],
+  );
+  assert.deepEqual(biomeAt(999), { index: 0, loop: 0 });
+  assert.deepEqual(biomeAt(1000), { index: 1, loop: 0 });
+  assert.deepEqual(biomeAt(6 * BIOME_LENGTH + 10), { index: 0, loop: 1 });
+  assert.equal(loopFactor(100), 1);
+  assert.ok(Math.abs(loopFactor(6500) - 1.05) < 1e-9);
+  assert.ok(Math.abs(loopFactor(30000) - 1.1) < 1e-9);
+  const blend = biomeBlend(1030);
+  assert.equal(blend.current.id, "miasto");
+  assert.equal(blend.previous.id, "laka");
+  assert.ok(Math.abs(blend.t - 0.5) < 1e-9);
+  assert.equal(biomeBlend(500).t, 1);
+  assert.equal(mixColor("#000000", "#ffffff", 0.5), "rgb(128, 128, 128)");
+  const game = createRun({ difficulty: "arcade", seed: "biom" });
+  game.warp(1000);
+  game.update(DT);
+  assert.ok(game.takeEvents().some((event) => event.type === "biome" && event.index === 1));
+});

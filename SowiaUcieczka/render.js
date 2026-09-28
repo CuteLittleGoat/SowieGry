@@ -1,25 +1,15 @@
-// Sowia Ucieczka — rysowanie (Canvas 2D, jednostki świata): niebo i paralaksa biomu, ziemia z dziurami,
-// platformy, liście, przeszkody Pracu / Amic, sowa, Chmura Pracu, cząsteczki, napisy punktów i ostrzeżenia „!”.
+// Sowia Ucieczka — rysowanie (Canvas 2D, jednostki świata): niebo i paralaksa biomu (backgrounds.js), ziemia
+// z dziurami, platformy, liście, kózki, bąbelki, przeszkody Pracu / Amic, sowa z efektami power-upów, humbak,
+// Chmura Pracu, cząsteczki, napisy punktów i ostrzeżenia „!”.
 import { drawShadow } from "../shared/engine/sprites.js";
 import { drawOwl } from "../shared/world/owl.js";
 import { COLORS, font } from "../shared/world/tokens.js";
 import { OBSTACLES, obstacleBox } from "./obstacles.js";
+import { BIOMES, OCEAN, biomeBlend, drawBiomeBackground, drawOcean, groundStyle, skyColors } from "./backgrounds.js";
 import { PLATFORM_THICKNESS } from "./config.js";
+import { goatLift } from "./game.js";
 
-// Biomy (E4c doda kolejne: Miasto, Osiedle PRL, Stacja Amic, Plaża, Noc nad morzem).
-export const BIOMES = Object.freeze([
-  {
-    id: "laka",
-    name: "Łąka",
-    sky: [COLORS.nieboGora, COLORS.nieboDol],
-    far: "#a8dcc0",
-    mid: "#7fcf9c",
-    grass: COLORS.monstera,
-    grassDark: COLORS.monsteraCiemna,
-    soil: "#c98f5e",
-    soilDark: "#a8714a",
-  },
-]);
+export { BIOMES };
 
 const LEAF_SPRITE = { zielony: "lisc-zielony", zloty: "lisc-zloty", teczowy: "lisc-teczowy" };
 const NOTE_COLORS = ["#fff39a", "#ffc8d5", "#c8f0ff", "#d7f7c2"];
@@ -34,12 +24,12 @@ export function createRenderer({ canvas, view, camera, atlas }) {
   const popups = [];
   let skyCache = null;
 
-  function sky(layout, biome) {
-    const key = `${layout.canvasHeight}|${biome.id}`;
+  function sky(layout, colors) {
+    const key = `${layout.cssHeight}|${colors[0]}|${colors[1]}`;
     if (!skyCache || skyCache.key !== key) {
       const gradient = context.createLinearGradient(0, 0, 0, layout.cssHeight);
-      gradient.addColorStop(0, biome.sky[0]);
-      gradient.addColorStop(0.75, biome.sky[1]);
+      gradient.addColorStop(0, colors[0]);
+      gradient.addColorStop(0.75, colors[1]);
       skyCache = { key, gradient };
     }
     view.applyScreen(context);
@@ -47,45 +37,7 @@ export function createRenderer({ canvas, view, camera, atlas }) {
     context.fillRect(0, 0, layout.cssWidth, layout.cssHeight);
   }
 
-  // Paralaksa: wzgórza (daleko) i krzaki (bliżej) przesuwają się wolniej niż świat.
-  function hills(bounds, biome, factor, color, height, spacing, seed) {
-    const shift = camera.x * factor;
-    const start = Math.floor((bounds.left - shift) / spacing) - 1;
-    const end = Math.ceil((bounds.right - shift) / spacing) + 1;
-    context.fillStyle = color;
-    context.beginPath();
-    context.moveTo(bounds.left - spacing, 1);
-    for (let index = start; index <= end; index += 1) {
-      const x = index * spacing + shift;
-      const h = height * (0.6 + hash(index * 7.3 + seed) * 0.6);
-      context.lineTo(x - spacing / 2, 0.2);
-      context.quadraticCurveTo(x, -h * 2, x + spacing / 2, 0.2);
-    }
-    context.lineTo(bounds.right + spacing, 1);
-    context.closePath();
-    context.fill();
-  }
-
-  function clouds(bounds) {
-    const shift = camera.x * 0.8;
-    const spacing = 9;
-    const start = Math.floor((bounds.left - shift) / spacing) - 1;
-    const end = Math.ceil((bounds.right - shift) / spacing) + 1;
-    context.fillStyle = "rgba(255, 255, 255, 0.85)";
-    for (let index = start; index <= end; index += 1) {
-      if (hash(index * 3.1) < 0.35) continue;
-      const x = index * spacing + shift + hash(index) * 4;
-      const y = -6 - hash(index * 1.7) * 6;
-      const w = 1.6 + hash(index * 2.3) * 1.6;
-      context.beginPath();
-      context.ellipse(x, y, w, w * 0.32, 0, 0, Math.PI * 2);
-      context.ellipse(x - w * 0.4, y - w * 0.18, w * 0.45, w * 0.36, 0, 0, Math.PI * 2);
-      context.ellipse(x + w * 0.35, y - w * 0.22, w * 0.5, w * 0.4, 0, 0, Math.PI * 2);
-      context.fill();
-    }
-  }
-
-  function ground(bounds, world, biome) {
+  function ground(bounds, world, style) {
     const holes = world.holes;
     let x = bounds.left - 1;
     const segments = [];
@@ -98,15 +50,15 @@ export function createRenderer({ canvas, view, camera, atlas }) {
     if (x < bounds.right + 1) segments.push([x, bounds.right + 1]);
     const depth = bounds.bottom + 1;
     for (const [left, right] of segments) {
-      context.fillStyle = biome.soil;
+      context.fillStyle = style.fill;
       context.fillRect(left, 0, right - left, depth);
-      context.fillStyle = biome.soilDark;
+      context.fillStyle = style.fillDark;
       for (let stripe = Math.floor(left); stripe < right; stripe += 1) {
         if (hash(stripe * 5.1) > 0.55) context.fillRect(stripe + 0.2, 0.6 + hash(stripe) * 0.8, 0.35, 0.12);
       }
-      context.fillStyle = biome.grass;
+      context.fillStyle = style.top;
       context.fillRect(left, 0, right - left, 0.28);
-      context.fillStyle = biome.grassDark;
+      context.fillStyle = style.topDark;
       context.fillRect(left, 0.24, right - left, 0.08);
     }
     // Dziury: ciemny dół z jaśniejszymi ściankami (bez tła nieba w środku).
@@ -114,7 +66,7 @@ export function createRenderer({ canvas, view, camera, atlas }) {
       if (item.x + item.width < bounds.left || item.x > bounds.right) continue;
       context.fillStyle = COLORS.kontur;
       context.fillRect(item.x, 0, item.width, depth);
-      context.fillStyle = biome.soilDark;
+      context.fillStyle = style.fillDark;
       context.fillRect(item.x, 0, 0.18, depth);
       context.fillRect(item.x + item.width - 0.18, 0, 0.18, depth);
       context.fillStyle = "rgba(255, 255, 255, 0.08)";
@@ -128,18 +80,18 @@ export function createRenderer({ canvas, view, camera, atlas }) {
     else context.rect(x, y, width, height);
   }
 
-  function platforms(bounds, world, biome) {
+  function platforms(bounds, world, style) {
     for (const item of world.platforms) {
       if (item.x + item.width < bounds.left || item.x > bounds.right) continue;
       const radius = 0.16;
-      context.fillStyle = biome.soil;
+      context.fillStyle = style.fill;
       context.beginPath();
       roundRect(item.x, item.y, item.width, PLATFORM_THICKNESS, radius);
       context.fill();
       context.strokeStyle = COLORS.kontur;
       context.lineWidth = 0.05;
       context.stroke();
-      context.fillStyle = biome.grass;
+      context.fillStyle = style.top;
       context.beginPath();
       roundRect(item.x - 0.05, item.y - 0.05, item.width + 0.1, 0.16, 0.08);
       context.fill();
@@ -219,7 +171,8 @@ export function createRenderer({ canvas, view, camera, atlas }) {
       if (owl.x <= item.x + item.width && item.y >= owl.y - 0.01 && item.y < floor) floor = item.y;
     }
     if (!state.world.groundAt(owl.x, 0.3) && floor === 0) floor = null;
-    if (floor !== null) drawShadow(context, owl.x, floor, 0.9, { lift: Math.min(1, (floor - owl.y) / 4) });
+    if (floor !== null && !state.bonus)
+      drawShadow(context, owl.x, floor, 0.9, { lift: Math.min(1, (floor - owl.y) / 4) });
     context.save();
     if (owl.sliding > 0) {
       context.translate(owl.x, owl.y);
@@ -349,6 +302,105 @@ export function createRenderer({ canvas, view, camera, atlas }) {
     }
   }
 
+  // Kózki podskakują łukami (grafika skoku w powietrzu), zwrócone do sowy.
+  function goats(bounds, state) {
+    for (const goat of state.goats) {
+      if (goat.taken || goat.x < bounds.left - 2 || goat.x > bounds.right + 2) continue;
+      const lift = goatLift(state.time, goat.phase);
+      drawShadow(context, goat.x, 0, 0.9, { lift: lift / 1.3 });
+      atlas.draw(context, `kozka-${goat.kind}${lift > 0.05 ? "-skok" : ""}`, goat.x, -lift, {
+        width: 1.15,
+        flipX: true,
+      });
+    }
+  }
+
+  function bubbles(bounds, state) {
+    for (const bubble of state.bubbles) {
+      if (bubble.taken || bubble.x < bounds.left - 1 || bubble.x > bounds.right + 1) continue;
+      const bob = Math.sin(state.time * 2.5 + bubble.phase) * 0.15;
+      atlas.draw(context, "babelek", bubble.x, bubble.y + bob, { width: 0.8 });
+      context.strokeStyle = "rgba(255, 255, 255, 0.8)";
+      context.lineWidth = 0.05;
+      context.beginPath();
+      context.arc(bubble.x, bubble.y + bob, 0.48 + Math.sin(state.time * 4) * 0.04, 0, Math.PI * 2);
+      context.stroke();
+    }
+  }
+
+  // Efekty power-upów wokół sowy: Tarcza (bańka), Magnes (fioletowe łuki), Turbo (smugi), jadąca kózka.
+  function owlEffects(state, front) {
+    const owl = state.owl;
+    const cx = owl.x;
+    const cy = owl.y - 0.55;
+    if (!front) {
+      if (state.powerups.turbo > 0) {
+        context.strokeStyle = "rgba(255, 157, 77, 0.8)";
+        context.lineWidth = 0.08;
+        context.lineCap = "round";
+        for (let index = 0; index < 3; index += 1) {
+          const y = cy - 0.3 + index * 0.3;
+          const length = 1 + ((state.time * 7 + index) % 1) * 1.2;
+          context.beginPath();
+          context.moveTo(cx - 0.6, y);
+          context.lineTo(cx - 0.6 - length, y);
+          context.stroke();
+        }
+      }
+      return;
+    }
+    if (state.riding) {
+      atlas.draw(context, `kozka-${state.riding.kind}`, cx - 0.15, owl.y - 1.05, { width: 0.75, flipX: true });
+    }
+    if (state.powerups.tarcza > 0) {
+      const pulse = 0.05 * Math.sin(state.time * 5);
+      context.fillStyle = "rgba(77, 157, 224, 0.16)";
+      context.strokeStyle =
+        state.powerups.tarcza < 2 && Math.floor(state.time * 8) % 2 ? "rgba(77, 157, 224, 0.3)" : COLORS.niebieski;
+      context.lineWidth = 0.06;
+      context.beginPath();
+      context.arc(cx, cy, 0.9 + pulse, 0, Math.PI * 2);
+      context.fill();
+      context.stroke();
+    }
+    if (state.powerups.magnes > 0) {
+      context.strokeStyle = "rgba(155, 109, 219, 0.7)";
+      context.lineWidth = 0.06;
+      for (let index = 0; index < 2; index += 1) {
+        const radius = 1.2 + ((state.time * 1.5 + index * 0.5) % 1) * 1.6;
+        context.globalAlpha = 1 - ((state.time * 1.5 + index * 0.5) % 1);
+        context.beginPath();
+        context.arc(cx, cy, radius, -0.8, 0.8);
+        context.stroke();
+      }
+      context.globalAlpha = 1;
+    }
+  }
+
+  // „Rejs na humbaku”: humbak pod sową (lekko kołysze się na fali).
+  function whale(state) {
+    const bonus = state.bonus;
+    const owl = state.owl;
+    const tilt = bonus.vy * -0.02 + Math.sin(state.time * 2) * 0.03;
+    atlas.draw(context, "humbak", owl.x + 0.25, bonus.y + 0.25, { width: 3.2, rotation: tilt });
+  }
+
+  // Gorączka Monster: tęczowa, pulsująca ramka ekranu.
+  function feverFrame(layout, state) {
+    view.applyScreen(context);
+    const alpha = 0.18 + 0.08 * Math.sin(state.time * 6);
+    const gradient = context.createLinearGradient(0, 0, layout.cssWidth, 0);
+    ["#ff6f91", "#f4c542", "#3fae6a", "#4d9de0", "#9b6ddb"].forEach((color, index) =>
+      gradient.addColorStop(index / 4, color),
+    );
+    context.save();
+    context.globalAlpha = alpha;
+    context.strokeStyle = gradient;
+    context.lineWidth = 14;
+    context.strokeRect(7, 7, layout.cssWidth - 14, layout.cssHeight - 14);
+    context.restore();
+  }
+
   return {
     context,
     popup(text, x, y, color = COLORS.bialy, size = 34) {
@@ -358,9 +410,11 @@ export function createRenderer({ canvas, view, camera, atlas }) {
     clearPopups() {
       popups.length = 0;
     },
-    draw({ state, animator, cosmetic = "none", particles, biome = BIOMES[0], dt = 0, showCloud = true }) {
+    draw({ state, animator, cosmetic = "none", particles, dt = 0, showCloud = true, reducedMotion = false }) {
       const layout = view.layout();
-      sky(layout, biome);
+      const blend = biomeBlend(state.distance);
+      const night = blend.current.night && blend.t > 0.5;
+      sky(layout, state.bonus ? (night ? blend.current.sky : OCEAN.sky) : skyColors(blend));
       view.apply(context, camera);
       const width = layout.worldWidth / camera.zoom;
       const height = layout.worldHeight / camera.zoom;
@@ -370,22 +424,30 @@ export function createRenderer({ canvas, view, camera, atlas }) {
         top: camera.y - height / 2,
         bottom: camera.y + height / 2,
       };
-      clouds(bounds);
-      hills(bounds, biome, 0.75, biome.far, 2.2, 7, 1);
-      hills(bounds, biome, 0.45, biome.mid, 1.1, 4, 2);
-      ground(bounds, state.world, biome);
+      const style = groundStyle(blend);
+      if (state.bonus) drawOcean(context, camera, bounds, state.time, night);
+      else {
+        drawBiomeBackground(context, camera, bounds, blend, state.time);
+        ground(bounds, state.world, style);
+      }
       if (atlas.ready()) {
-        platforms(bounds, state.world, biome);
+        platforms(bounds, state.world, style);
         leaves(bounds, state);
+        bubbles(bounds, state);
+        goats(bounds, state);
         obstacles(bounds, state);
-        if (showCloud) workCloud(state, bounds);
+        if (showCloud && !state.bonus) workCloud(state, bounds);
+        if (state.bonus) whale(state);
+        owlEffects(state, false);
         owlSprite(state, animator, cosmetic);
+        owlEffects(state, true);
       } else {
-        platforms(bounds, state.world, biome);
+        platforms(bounds, state.world, style);
       }
       particles?.render(context);
       popupsDraw(dt);
       warnings(state, bounds, layout);
+      if (state.fever > 0 && !reducedMotion) feverFrame(layout, state);
     },
   };
 }
