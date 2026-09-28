@@ -17,7 +17,7 @@
 
   canvas.addEventListener("pointerdown", () => {
     if (state.mode !== "finish" || finishUiPaused()) return;
-    const seen = localStorage.getItem("sowa3FinishSeen") === "1";
+    const seen = window.SowieCloud?.game("sowa3").finishSeen === true;
     if (!seen || (state.finishElapsed || 0) < 2200) return;
     state.finishTimer = Math.min(state.finishTimer, 30);
   }, { capture: true });
@@ -27,8 +27,9 @@
     if (finishUiPaused()) return;
     const wasFinish = state.mode === "finish";
     previousUpdateFinish(dt);
-    if (wasFinish && (state.finishElapsed || 0) > 2500) {
-      localStorage.setItem("sowa3FinishSeen", "1");
+    // Po pierwszym pełnym obejrzeniu finał można skracać (sowiegry_gry/sowa3.finishSeen w SowieCloud).
+    if (wasFinish && (state.finishElapsed || 0) > 2500 && window.SowieCloud?.game("sowa3").finishSeen !== true) {
+      window.SowieCloud?.updateGame("sowa3", { finishSeen: true });
     }
   };
 

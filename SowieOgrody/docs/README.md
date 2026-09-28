@@ -99,7 +99,7 @@ Eventy nie są obowiązkowe, ale aktywny gracz może dzięki nim przyspieszyć r
 
 ## Offline progress
 
-Gra zapisuje czas ostatniej sesji. Po powrocie nalicza produkcję offline i pokazuje modal z podsumowaniem.
+Gra zapisuje czas ostatniej sesji. Po powrocie — także gdy wrócisz do gry po przełączeniu się na inną aplikację na telefonie — nalicza produkcję offline i pokazuje okno z podsumowaniem.
 
 Offline progress ma limit i skuteczność. Zwykłe oraz prestiżowe ulepszenia mogą zwiększać oba parametry.
 
@@ -135,13 +135,12 @@ Te ulepszenia są permanentne i przyspieszają każdy nowy cykl po prestiżu.
 
 ## Zapis
 
-Gra zapisuje postęp lokalnie pod kluczem:
+Gra zapisuje postęp automatycznie w chmurze (Firestore) — ten sam ogród na telefonie i komputerze. Przy pierwszym wejściu na nowym urządzeniu trzeba raz wpisać hasło `huhu`.
 
-```txt
-sowieOgrodySave
-```
-
-Nie używa Firebase ani backendu.
+- zwykła gra zapisuje się co pół minuty, a ważne akcje (ulepszenia, prestiż) po 2 sekundach;
+- przejście do innej aplikacji lub zablokowanie telefonu zapisuje postęp od razu;
+- bez internetu gra działa dalej, a zapis wyśle się, gdy wróci zasięg;
+- jeśli w tym samym czasie grasz na drugim urządzeniu, gra zapyta: „Na innym urządzeniu zapisano nowszy postęp — wczytać?”.
 
 ## Debug
 

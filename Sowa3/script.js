@@ -15,7 +15,7 @@ const state = {
   w: 0, h: 0, dpr: 1,
   lane: 0, targetLane: 0,
   stage: 0, distance: 0, score: 0, lives: 3,
-  best: Number(localStorage.getItem("sowa3Best") || 0),
+  best: 0, // rekord wybranego poziomu trudności — wczytuje difficulty.js z SowieCloud
   speed: 0.34, spawn: 0, time: 0, inv: 0, shake: 0,
   message: "", messageUntil: 0, finishTimer: 0,
 };
@@ -46,7 +46,8 @@ function nextStage(){
   objects.length=0; state.spawn=450; state.inv=1300; say(`Plansza: ${STAGES[state.stage].name}`, 1700); updateHud();
 }
 function gameOver(){
-  state.mode="over"; state.best = Math.max(state.best, Math.floor(state.score)); localStorage.setItem("sowa3Best", state.best);
+  state.mode="over"; state.best = Math.max(state.best, Math.floor(state.score));
+  window.SowieCloud?.submitRun("sowa3", { score: Math.floor(state.score), distance: Math.floor(state.distance), difficulty: state.difficultyKey || "arcade" });
 }
 function say(text, ms){ state.message=text; state.messageUntil=now()+ms; }
 
@@ -185,8 +186,10 @@ function wing(x,y,a){ctx.save();ctx.translate(x,y);ctx.rotate(a);ellipse(0,0,22,
 function unit(){return clamp(Math.min(state.w/390,state.h/760),.78,1.25)}
 function loop(t){const dt=Math.min(40,t-last||16);last=t;update(dt);updateFinish(dt);draw();requestAnimationFrame(loop)}
 function moveLane(dir){state.targetLane=clamp(state.targetLane+dir,-1,1)}
-window.addEventListener("keydown",e=>{if(e.key===" "||e.key==="Enter"){if(state.mode==="title"||state.mode==="over")startGame();e.preventDefault()}if(e.key==="ArrowLeft"||e.key.toLowerCase()==="a")moveLane(-1);if(e.key==="ArrowRight"||e.key.toLowerCase()==="d")moveLane(1);});
-canvas.addEventListener("pointerdown",e=>{pointerStart={x:e.clientX,y:e.clientY};if(state.mode==="title"||state.mode==="over"){startGame();return}if(e.clientX<state.w*.35)moveLane(-1);else if(e.clientX>state.w*.65)moveLane(1);});
+// Rozgrywka startuje dopiero po wczytaniu postępu z SowieCloud.
+const sowa3CloudReady = () => Boolean(window.SowieCloud?.isReady());
+window.addEventListener("keydown",e=>{if(e.key===" "||e.key==="Enter"){if((state.mode==="title"||state.mode==="over")&&sowa3CloudReady())startGame();e.preventDefault()}if(e.key==="ArrowLeft"||e.key.toLowerCase()==="a")moveLane(-1);if(e.key==="ArrowRight"||e.key.toLowerCase()==="d")moveLane(1);});
+canvas.addEventListener("pointerdown",e=>{pointerStart={x:e.clientX,y:e.clientY};if(state.mode==="title"||state.mode==="over"){if(sowa3CloudReady())startGame();return}if(e.clientX<state.w*.35)moveLane(-1);else if(e.clientX>state.w*.65)moveLane(1);});
 canvas.addEventListener("pointerup",e=>{if(!pointerStart)return;let dx=e.clientX-pointerStart.x;if(Math.abs(dx)>34)moveLane(dx>0?1:-1);pointerStart=null;});
 window.addEventListener("resize",()=>{resize();});
 resize(); updateHud(); requestAnimationFrame(loop);

@@ -69,7 +69,8 @@ test("dokumentacja podaje licencję i źródło każdego zdjęcia", () => {
 test("katalog galerii ma trzydzieści trwałych nagród i warunki z pięciu gier", () => {
   const source = read("shared/owl-gallery.js");
   assert.equal((source.match(/id: "owl-\d\d"/g) || []).length, 30);
-  assert.match(source, /const KEY = "sowieOwlGallery"/);
+  assert.match(source, /profile\?\.\(\)\.gallery/);
+  assert.match(source, /profile\.gallery = stored/);
   assert.match(source, /const VERSION = 2/);
   for (const metric of ["runnerDistance", "jumperHeight", "sowa3Combo", "ogrodyBuys", "szklarniaRooms"]) {
     assert.match(source, new RegExp(metric));

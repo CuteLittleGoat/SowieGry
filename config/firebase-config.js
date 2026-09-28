@@ -1,10 +1,10 @@
-// Plik logiki modułu: konfiguracja, funkcje i obsługa zdarzeń / Module logic file: configuration, functions, and event handling
 // config/firebase-config.js
-// GLOBALNA konfiguracja Firebase dla GM.html i DataSlate.html
-// (nie używamy "export", żeby działało też z firebase-*-compat)
-
-// WAŻNE WDROŻENIE: Każda grupa (każdy serwer) powinna mieć własny projekt Firebase i własny komplet kluczy poniżej.
-// IMPORTANT DEPLOYMENT: Each group (each server) should use its own Firebase project and its own full key set below.
+// Konfiguracja Firebase dla SowieGry: ustawia window.firebaseConfig (zwykły skrypt, bez "export").
+// Czyta ją wyłącznie shared/sowie-cloud.js (Firebase JS SDK 12.19.0, nazwana aplikacja "sowiegry").
+// Projekt rpg-dataslate-relay i jego baza Firestore są współdzielone z innym projektem właściciela
+// (kolekcje audio, character_builder, dataslate). SowieGry używają tylko kolekcji "sowiegry"
+// i jej podkolekcji "sowiegry_gry" oraz "sowiegry_historia".
+// apiKey nie jest tajny — o dostępie decydują reguły Firestore (kopia w firestore.rules).
 window.firebaseConfig = {
 apiKey: "AIzaSyDA0TbxOwO2rUbSIx7hm-lsbYVTmyepTZc",
 authDomain: "rpg-dataslate-relay.firebaseapp.com",

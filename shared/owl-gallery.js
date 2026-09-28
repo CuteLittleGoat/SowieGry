@@ -1,8 +1,9 @@
+// Galeria Sów: 30 fotografii odblokowywanych celami Akademii. Stan w profilu (profil.gallery) przez SowieCloud.
 (() => {
   "use strict";
 
   const scriptUrl = document.currentScript?.src;
-  const KEY = "sowieOwlGallery";
+  const cloud = window.SowieCloud;
   const VERSION = 2;
 
   const PHOTOS = Object.freeze([
@@ -314,7 +315,8 @@
     },
   ]);
 
-  let state = load();
+  let state = defaultState();
+  let loaded = false;
   let modal = null;
   let previousFocus = null;
   let selectedId = null;
@@ -329,11 +331,12 @@
     };
   }
 
+  // Stan z profilu w chmurze (kopia robocza; zapis przez save()).
   function load() {
-    try {
-      const raw = JSON.parse(localStorage.getItem(KEY) || "null");
-      if (!raw || typeof raw !== "object") return defaultState();
-      return {
+    const raw = cloud?.profile?.().gallery;
+    if (!raw || typeof raw !== "object") return defaultState();
+    return JSON.parse(
+      JSON.stringify({
         ...defaultState(),
         ...raw,
         version: VERSION,
@@ -341,16 +344,18 @@
           ? raw.unlocked.filter((id) => PHOTOS.some((photo) => photo.id === id))
           : ["owl-01"],
         viewed: Array.isArray(raw.viewed) ? raw.viewed.filter((id) => PHOTOS.some((photo) => photo.id === id)) : [],
-      };
-    } catch (_error) {
-      return defaultState();
-    }
+      }),
+    );
   }
 
   function save() {
+    if (!loaded) return;
     state.version = VERSION;
     state.updatedAt = Date.now();
-    localStorage.setItem(KEY, JSON.stringify(state));
+    const stored = JSON.parse(JSON.stringify(state));
+    cloud.updateProfile((profile) => {
+      profile.gallery = stored;
+    });
     window.dispatchEvent(new CustomEvent("sowie:gallery-changed", { detail: snapshot() }));
   }
 
@@ -364,6 +369,7 @@
   }
 
   function refreshUnlocks({ notify = false } = {}) {
+    if (!loaded) return [];
     const academy = academySnapshot();
     const newlyUnlocked = [];
     for (const photo of PHOTOS) {
@@ -570,7 +576,15 @@
     button.addEventListener("click", () => open(button));
   }
 
-  refreshUnlocks({ notify: Boolean(localStorage.getItem(KEY)) });
+  function loadFromCloud() {
+    state = load();
+    loaded = true;
+    refreshUnlocks({ notify: true });
+    if (modal && !modal.hidden) render();
+  }
+
+  cloud?.ready.then(loadFromCloud);
+  cloud?.onProfileReload(loadFromCloud);
   window.addEventListener("sowie:academy-changed", () => refreshUnlocks({ notify: true }));
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", attachButton, { once: true });
   else attachButton();

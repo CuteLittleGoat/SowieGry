@@ -6,26 +6,30 @@
 
 ## Kolejność ładowania
 
-1. `../shared/sowie-smoke-hook.js`
-2. `style.css`
-3. `../shared/cute-ui.css`
-4. `script.js`
-5. `difficulty.js`
-6. `extra-lives.js`
-7. `visual-polish.js`
-8. `stage-ambience.js`
-9. `stage-obstacles.js`
-10. `lane-balance.js`
-11. `visibility-corridor.js`
-12. `finish-pool.js`
-13. `../shared/sowie-core.js`
-14. `notification-manager.js`
-15. `../shared/sowie-runtime.js`
-16. `cute-rework.js`
-17. `moving-obstacle-safety.js`
-18. `finish-controls.js`
-19. `animation-polish.js`
-20. `amic-stage.js`
+1. `../config/firebase-config.js`
+2. `../shared/sowie-platform.js`
+3. `../shared/sowie-cloud.js`
+4. `../shared/password-gate.js`
+5. `../shared/sowie-smoke-hook.js`
+6. `style.css`
+7. `../shared/cute-ui.css`
+8. `script.js`
+9. `difficulty.js`
+10. `extra-lives.js`
+11. `visual-polish.js`
+12. `stage-ambience.js`
+13. `stage-obstacles.js`
+14. `lane-balance.js`
+15. `visibility-corridor.js`
+16. `finish-pool.js`
+17. `../shared/sowie-core.js`
+18. `notification-manager.js`
+19. `../shared/sowie-runtime.js`
+20. `cute-rework.js`
+21. `moving-obstacle-safety.js`
+22. `finish-controls.js`
+23. `animation-polish.js`
+24. `amic-stage.js`
 
 `finish-controls.js` dynamicznie ładuje `finish-details.js`, a po pełnym załadowaniu strony także `pause-guard.js`, aby ten ostatni pozostał końcową warstwą `update()`.
 
@@ -33,11 +37,11 @@
 
 ### `script.js`
 
-Stany `title`, `run`, `finish`, `over`, trzy tory, bazowy spawn, kolizje, renderowanie, wynik i rekord.
+Stany `title`, `run`, `finish`, `over`, trzy tory, bazowy spawn, kolizje, renderowanie, wynik i rekord. `state.best` startuje od 0 (rekord wybranego poziomu wczytuje `difficulty.js`). `gameOver()` ustawia lokalne maksimum i wywołuje `SowieCloud.submitRun("sowa3", { score, distance, difficulty: state.difficultyKey })`. `sowa3CloudReady()` (`SowieCloud.isReady()`) blokuje start gry (Spacja/Enter, dotknięcie planszy) do czasu wczytania postępu.
 
 ### `difficulty.js`
 
-Definiuje `chill`, `arcade` i `chaos`. Zmienia życia startowe, prędkość, wzrost prędkości, częstotliwość przeszkód, szansę zamiany przeszkody na liść oraz mnożnik punktów.
+Definiuje `chill`, `arcade` i `chaos`. Zmienia życia startowe, prędkość, wzrost prędkości, częstotliwość przeszkód, szansę zamiany przeszkody na liść oraz mnożnik punktów. Wybór jest zapisywany w Firestore (`sowiegry_gry/sowa3.difficulty`, `SowieCloud.updateGame`); po `SowieCloud.ready` zapisany poziom jest przywracany, a `syncSowa3Best()` ustawia `state.best` z `SowieCloud.records("sowa3", state.difficultyKey).bestScore` (rekordy osobno dla każdego poziomu; także przy każdej zmianie poziomu).
 
 ### `extra-lives.js`
 
@@ -81,7 +85,7 @@ Anuluje zmianę toru, gdy tor docelowy jest zajęty, powstałaby ściana na trze
 
 ### `finish-controls.js`
 
-Zmienia muzykę między planszami, zapisuje obejrzenie finału, pozwala skrócić kolejne finały, zatrzymuje sekwencję podczas pauzy oraz ładuje detale finału i końcowy guard pauzy.
+Zmienia muzykę między planszami, zapisuje obejrzenie finału (`sowiegry_gry/sowa3.finishSeen = true` przez `SowieCloud.updateGame`, raz — gdy finał trwa ponad 2,5 s), pozwala skrócić kolejne finały (tapnięcie po 2,2 s, gdy `SowieCloud.game("sowa3").finishSeen === true`), zatrzymuje sekwencję podczas pauzy oraz ładuje detale finału i końcowy guard pauzy.
 
 ### `animation-polish.js`
 
@@ -106,7 +110,7 @@ Końcowa warstwa `update()`. Zatrzymuje bąbelki, ruchome przeszkody i wszystkie
 
 ## Wspólna warstwa
 
-`SowieCore` odpowiada za profil `sowieGryProfile`, garderobę, misje, ustawienia, pauzę, Web Audio, komunikaty i debug. `SowieRuntime` ogranicza częstotliwość zapisów i wznawia grę po zamknięciu modalu.
+`SowieCore` odpowiada za profil (dokument Firestore `sowiegry/profil` przez `SowieCloud`), garderobę, misje, ustawienia, pauzę, Web Audio, komunikaty i debug. `SowieRuntime` ustawia wspólny układ paska narzędzi i klasę ograniczonych efektów. W `<head>` kolejno: `../config/firebase-config.js`, `../shared/sowie-platform.js`, `../shared/sowie-cloud.js`, `../shared/password-gate.js`, `../shared/sowie-smoke-hook.js`.
 
 ## Combo, near miss i gorączka
 
@@ -122,10 +126,11 @@ Sekwencja trwa około 4,3 sekundy. Podsumowanie pokazuje wynik, liście, near mi
 
 ## Rekordy i profil
 
-- `sowa3Best`,
-- `sowa3Difficulty`,
-- `sowa3FinishSeen`,
-- `sowieGryProfile`.
+Wszystko w Firestore przez `SowieCloud`:
+
+- `profil.records.sowa3.{chill|arcade|chaos}.bestScore`, `profil.records.sowa3.runs`, `lastPlayedAt`;
+- `sowiegry_gry/sowa3` — `difficulty`, `finishSeen`, `top10` na poziom, `dailyBest` (rekord wyzwania dnia = wynik), historia `sowiegry_historia`;
+- wspólny profil `sowiegry/profil`.
 
 ## Diagnostyka i testy
 

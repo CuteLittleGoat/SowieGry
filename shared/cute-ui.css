@@ -20,8 +20,7 @@
 }
 
 .sowie-toolbar button,
-.sowie-modal button,
-.sowie-import-label {
+.sowie-modal button {
   border: 0;
   color: var(--sowie-ink);
   background: var(--sowie-card);
@@ -39,14 +38,12 @@
 }
 
 .sowie-toolbar button:active,
-.sowie-modal button:active,
-.sowie-import-label:active {
+.sowie-modal button:active {
   transform: translateY(1px) scale(0.98);
 }
 
 .sowie-toolbar button:focus-visible,
-.sowie-modal button:focus-visible,
-.sowie-import-label:focus-within {
+.sowie-modal button:focus-visible {
   outline: 3px solid #4d8fd6;
   outline-offset: 3px;
 }
@@ -151,29 +148,21 @@
   border-radius: 13px;
 }
 
-.sowie-save-tools {
+.sowie-cloud-tools {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
   margin-top: 16px;
 }
 
-.sowie-save-tools button,
-.sowie-import-label {
-  display: grid;
-  place-items: center;
-  min-height: 44px;
+.sowie-cloud-state {
+  margin: 0;
+}
+
+.sowie-cloud-tools button {
+  min-height: 48px;
   padding: 10px 12px;
   border-radius: 15px;
   text-align: center;
-}
-
-.sowie-import-label input {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip-path: inset(50%);
 }
 
 .sowie-modal-actions {
@@ -244,7 +233,6 @@
   .sowie-toolbar button { width: 38px; height: 38px; border-radius: 13px; }
   .sowie-toast-stack { top: max(112px, calc(env(safe-area-inset-top) + 104px)); }
   .sowie-modal { padding: 16px; border-radius: 22px; }
-  .sowie-save-tools { grid-template-columns: 1fr; }
 }
 
 @media (prefers-reduced-motion: reduce) {

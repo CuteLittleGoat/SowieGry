@@ -24,8 +24,8 @@
       runner: (frame) => frame.document.querySelector("canvas") && frame.SowieCore,
       jumper: (frame) => frame.document.querySelector("#game") && frame.SowieCore,
       sowa3: (frame) => frame.document.querySelector("#game") && frame.SowieCore,
-      ogrody: (frame) => frame.document.querySelector("#gardenCanvas") && frame.SowieIdleSave,
-      szklarnia: (frame) => frame.document.querySelector("#greenhouseCanvas") && frame.SowieIdleSave,
+      ogrody: (frame) => frame.document.querySelector("#gardenCanvas") && frame.SowieIdleGame,
+      szklarnia: (frame) => frame.document.querySelector("#greenhouseCanvas") && frame.SowieIdleGame,
     };
 
     const results = document.getElementById("results");
@@ -48,7 +48,8 @@
     for (const game of window.SowiePlatform.GAME_REGISTRY) {
       const iframe = document.createElement("iframe");
       iframe.title = `Test ${game.name}`;
-      iframe.src = `../${game.path}?seed=manual-smoke&testNow=1783656000000`;
+      // cloud=memory: test nigdy nie zapisuje do prawdziwej bazy.
+      iframe.src = `../${game.path}?seed=manual-smoke&testNow=1783656000000&cloud=memory`;
       iframe.addEventListener("load", () => {
         window.setTimeout(() => {
           try {

@@ -2,8 +2,9 @@
   "use strict";
 
   const platform = window.SowiePlatform;
-  if (!platform) {
-    console.error("Brak SowiePlatform. Załaduj shared/sowie-platform.js przed sowie-core.js.");
+  const cloud = window.SowieCloud;
+  if (!platform || !cloud) {
+    console.error("Brak SowiePlatform lub SowieCloud. Załaduj shared/sowie-platform.js i shared/sowie-cloud.js przed sowie-core.js.");
     return;
   }
 
@@ -25,7 +26,17 @@
     "Basen już blisko!",
   ];
 
-  let profile = platform.readProfile();
+  // Profil jest w SowieCloud (Firestore). Zawsze czytamy bieżący obiekt — po starcie chmury jest podmieniany.
+  const profile = () => cloud.profile();
+  const SETTINGS_DELAY_MS = 1000;
+  const CLOUD_STATUS_LABELS = {
+    haslo: "czeka na hasło",
+    laczenie: "łączenie…",
+    online: "zapisano w chmurze ☁️",
+    offline: "tryb offline — postęp nie jest zapisywany",
+    zapisywanie: "zapisywanie…",
+    blad: "błąd zapisu — spróbujemy ponownie",
+  };
   let gameAdapter = null;
   let audioContext = null;
   let musicTimer = 0;
@@ -35,33 +46,31 @@
   let modalReturnFocus = null;
   let pausedBeforeModal = false;
   const lastSoundAt = new Map();
-  const pendingStats = new Map();
 
-  function persistProfile() {
-    profile = platform.writeProfile(profile);
-  }
-
-  function reloadProfile() {
-    profile = platform.readProfile();
-    return profile;
+  function profileChanged() {
+    platform.emit("profile:changed", { profile: profile() });
   }
 
   function getProfile() {
-    return profile;
+    return profile();
   }
 
   function settings() {
-    return profile.settings;
+    return profile().settings;
   }
 
   function selectedCosmetic() {
-    return profile.selectedCosmetic;
+    return profile().cosmetics.selected;
   }
 
   function unlockCosmetic(key, announce = true) {
-    if (!COSMETICS[key] || profile.unlockedCosmetics.includes(key)) return false;
-    profile.unlockedCosmetics.push(key);
-    persistProfile();
+    if (!cloud.isReady()) {
+      cloud.ready.then(() => unlockCosmetic(key, announce));
+      return false;
+    }
+    if (!COSMETICS[key] || profile().cosmetics.unlocked.includes(key)) return false;
+    cloud.updateProfile((data) => data.cosmetics.unlocked.push(key), { delayMs: SETTINGS_DELAY_MS });
+    profileChanged();
     platform.emit("cosmetic:unlocked", { key });
     if (announce) toast(`Odblokowano: ${COSMETICS[key].label}!`);
     play("unlock");
@@ -69,9 +78,9 @@
   }
 
   function selectCosmetic(key) {
-    if (!profile.unlockedCosmetics.includes(key) || !COSMETICS[key]) return false;
-    profile.selectedCosmetic = key;
-    persistProfile();
+    if (!cloud.isReady() || !profile().cosmetics.unlocked.includes(key) || !COSMETICS[key]) return false;
+    cloud.updateProfile((data) => (data.cosmetics.selected = key), { delayMs: SETTINGS_DELAY_MS });
+    profileChanged();
     renderWardrobe();
     toast(`Wybrano: ${COSMETICS[key].label}`);
     platform.emit("cosmetic:selected", { key });
@@ -79,13 +88,19 @@
   }
 
   function progressMission(key, amount = 1) {
-    const mission = profile.missions[key];
+    if (!cloud.isReady()) {
+      cloud.ready.then(() => progressMission(key, amount));
+      return false;
+    }
+    const mission = profile().missions[key];
     if (!mission || mission.done) return false;
     const throttleMs = key === "runner1000" || key === "jumper250" ? 500 : 0;
     if (throttleMs && !platform.shouldRun(`mission:${key}`, throttleMs)) return false;
-    mission.progress = Math.min(mission.target, Number(mission.progress || 0) + Number(amount || 0));
-    if (mission.progress >= mission.target) {
-      mission.done = true;
+    cloud.updateProfile(() => {
+      mission.progress = Math.min(mission.target, Number(mission.progress || 0) + Number(amount || 0));
+      if (mission.progress >= mission.target) mission.done = true;
+    });
+    if (mission.done) {
       unlockCosmetic(mission.reward, false);
       toast({
         title: "Misja ukończona",
@@ -96,39 +111,27 @@
       });
       play("mission");
     }
-    persistProfile();
     renderMissions();
     platform.emit("mission:progress", { key, mission: { ...mission } });
     return mission.done;
   }
 
-  function statThrottle(key) {
-    if (key === "runnerDistance" || key === "jumperHeight") return 750;
-    if (String(key).startsWith("ogrody") || String(key).startsWith("szklarnia")) return 3000;
-    return 0;
-  }
-
+  // Statystyki ogólne profilu. Dawne statystyki dublujące rekordy gier (np. runnerDistance) są pomijane —
+  // rekordy zapisuje SowieCloud.submitRun() / saveGameState().
   function recordStat(key, value, mode = "add") {
     const number = Number(value);
-    if (!Number.isFinite(number)) return false;
-    if (!(key in profile.stats)) profile.stats[key] = 0;
-    if (mode === "max") profile.stats[key] = Math.max(Number(profile.stats[key] || 0), number);
-    else profile.stats[key] = Number(profile.stats[key] || 0) + number;
-
-    pendingStats.set(key, profile.stats[key]);
-    const interval = statThrottle(key);
-    if (!interval || platform.shouldRun(`stat:${key}`, interval)) {
-      persistProfile();
-      pendingStats.delete(key);
+    if (!Number.isFinite(number) || !(key in platform.DEFAULT_STATS)) return false;
+    if (mode === "max") {
+      if (!cloud.isReady()) {
+        cloud.ready.then(() => recordStat(key, number, mode));
+        return true;
+      }
+      if (number > Number(profile().stats[key] || 0)) cloud.updateProfile((data) => (data.stats[key] = number));
+    } else {
+      cloud.increment(`stats.${key}`, number);
     }
-    platform.emit("stat:recorded", { key, value: profile.stats[key], mode });
+    platform.emit("stat:recorded", { key, value: profile().stats[key], mode });
     return true;
-  }
-
-  function flushPendingStats() {
-    if (!pendingStats.size) return;
-    persistProfile();
-    pendingStats.clear();
   }
 
   function ensureAudio() {
@@ -145,7 +148,7 @@
   }
 
   function tone(frequency, duration = 0.12, volume = 0.045, type = "sine", delay = 0) {
-    if (!profile.settings.sfx) return;
+    if (!profile().settings.sfx) return;
     const context = ensureAudio();
     if (!context) return;
     const start = context.currentTime + delay;
@@ -162,7 +165,7 @@
   }
 
   function play(name) {
-    if (!profile.settings.sfx) return false;
+    if (!profile().settings.sfx) return false;
     const now = performance.now();
     const previous = lastSoundAt.get(name) ?? -Infinity;
     if (now - previous < 90) return false;
@@ -194,7 +197,7 @@
 
   function startMusic(theme = "default") {
     stopMusic();
-    if (!profile.settings.music) return;
+    if (!profile().settings.music) return;
     resumeAudio();
     const melodies = {
       default: [392, 494, 587, 494, 440, 523, 659, 523],
@@ -207,7 +210,7 @@
     const melody = melodies[theme] || melodies.default;
     musicStep = 0;
     musicTimer = window.setInterval(() => {
-      if (!profile.settings.music || document.hidden) return;
+      if (!profile().settings.music || document.hidden) return;
       const context = ensureAudio();
       if (!context || context.state !== "running") return;
       const frequency = melody[musicStep % melody.length];
@@ -231,7 +234,7 @@
   }
 
   function maybeQuip(text = null) {
-    if (!profile.settings.quips) return;
+    if (!profile().settings.quips) return;
     const now = performance.now();
     if (now - lastQuipAt < 6500) return;
     lastQuipAt = now;
@@ -239,12 +242,13 @@
   }
 
   function toggleSetting(key) {
-    if (!(key in profile.settings)) return;
-    profile.settings[key] = !profile.settings[key];
-    if (key === "reducedEffects") document.documentElement.classList.toggle("sowie-reduced-effects", profile.settings[key]);
-    persistProfile();
+    if (!cloud.isReady() || !(key in profile().settings)) return;
+    cloud.updateProfile((data) => (data.settings[key] = !data.settings[key]), { delayMs: SETTINGS_DELAY_MS });
+    const value = profile().settings[key];
+    if (key === "reducedEffects") document.documentElement.classList.toggle("sowie-reduced-effects", value);
+    profileChanged();
     if (key === "music") {
-      if (profile.settings.music) startMusic(gameAdapter?.musicTheme?.() || "default");
+      if (value) startMusic(gameAdapter?.musicTheme?.() || "default");
       else stopMusic();
     }
     renderSettings();
@@ -253,7 +257,7 @@
   function registerGame(adapter) {
     gameAdapter = adapter || null;
     ensureUi();
-    if (profile.settings.music) startMusic(adapter?.musicTheme?.() || "default");
+    if (profile().settings.music) startMusic(adapter?.musicTheme?.() || "default");
     platform.emit("game:registered", { adapter: gameAdapter });
   }
 
@@ -324,15 +328,16 @@
     if (!modal || backdrop?.dataset.tab !== "wardrobe") return;
     modal.innerHTML = modalShell("Garderoba sowy", `<p>Wybrany element jest używany we wszystkich ${platform.GAME_REGISTRY.length} grach.</p><div class="sowie-modal-grid" data-cosmetics></div>`);
     const grid = modal.querySelector("[data-cosmetics]");
+    const { unlocked: unlockedList, selected } = profile().cosmetics;
     for (const [key, item] of Object.entries(COSMETICS)) {
-      const unlocked = profile.unlockedCosmetics.includes(key);
+      const unlocked = unlockedList.includes(key);
       const card = document.createElement("div");
-      card.className = `sowie-cosmetic-card${profile.selectedCosmetic === key ? " is-selected" : ""}`;
+      card.className = `sowie-cosmetic-card${selected === key ? " is-selected" : ""}`;
       card.innerHTML = `<strong>${item.icon} ${item.label}</strong><div>${unlocked ? "Odblokowane" : "🔒 Zablokowane"}</div>`;
       const button = document.createElement("button");
       button.type = "button";
-      button.textContent = profile.selectedCosmetic === key ? "Wybrane" : "Wybierz";
-      button.disabled = !unlocked || profile.selectedCosmetic === key;
+      button.textContent = selected === key ? "Wybrane" : "Wybierz";
+      button.disabled = !unlocked || selected === key;
       button.addEventListener("click", () => selectCosmetic(key));
       card.appendChild(button);
       grid.appendChild(card);
@@ -344,7 +349,7 @@
     const backdrop = document.querySelector(".sowie-modal-backdrop");
     const modal = document.querySelector(".sowie-modal");
     if (!modal || backdrop?.dataset.tab !== "settings") return;
-    modal.innerHTML = modalShell("Ustawienia i zapis", `<div data-settings></div><div class="sowie-save-tools"><button type="button" data-export>Eksportuj zapis</button><label class="sowie-import-label">Importuj zapis<input type="file" accept="application/json,.json" data-import></label></div>`);
+    modal.innerHTML = modalShell("Ustawienia", `<div data-settings></div><div class="sowie-cloud-tools"><p class="sowie-cloud-state">Zapis postępu: <strong data-cloud-status></strong></p><button type="button" data-lock-device>Wyloguj to urządzenie</button></div>`);
     const holder = modal.querySelector("[data-settings]");
     for (const [key, label] of [["music", "Muzyka"], ["sfx", "Efekty dźwiękowe"], ["quips", "Komentarze sowy"], ["reducedEffects", "Ograniczone efekty"]]) {
       const row = document.createElement("div");
@@ -352,24 +357,26 @@
       row.innerHTML = `<strong>${label}</strong>`;
       const button = document.createElement("button");
       button.type = "button";
-      button.textContent = profile.settings[key] ? "Włączone" : "Wyłączone";
-      button.setAttribute("aria-pressed", String(Boolean(profile.settings[key])));
+      button.textContent = profile().settings[key] ? "Włączone" : "Wyłączone";
+      button.setAttribute("aria-pressed", String(Boolean(profile().settings[key])));
       button.addEventListener("click", () => toggleSetting(key));
       row.appendChild(button);
       holder.appendChild(row);
     }
-    modal.querySelector("[data-export]")?.addEventListener("click", () => platform.downloadExport());
-    modal.querySelector("[data-import]")?.addEventListener("change", async (event) => {
-      try {
-        await platform.importFile(event.target.files?.[0]);
-        reloadProfile();
-        toast("Zapis zaimportowany. Odświeżam grę.");
-        window.setTimeout(() => location.reload(), 450);
-      } catch (error) {
-        toast(error.message || "Nie udało się zaimportować zapisu.");
-      }
+    renderCloudStatus();
+    modal.querySelector("[data-lock-device]")?.addEventListener("click", () => {
+      toast("Wylogowuję to urządzenie…");
+      cloud.lock();
     });
     modal.querySelector("[data-close]")?.addEventListener("click", closeModal);
+  }
+
+  function renderCloudStatus() {
+    const node = document.querySelector(".sowie-modal [data-cloud-status]");
+    if (!node) return;
+    const status = cloud.status();
+    node.textContent =
+      cloud.mode?.() === "memory" && !cloud.offlineReason() ? "tryb testowy (pamięć)" : CLOUD_STATUS_LABELS[status] || status;
   }
 
   function renderMissions() {
@@ -378,7 +385,7 @@
     if (!modal || backdrop?.dataset.tab !== "missions") return;
     modal.innerHTML = modalShell("Misje", `<div data-missions></div>`);
     const holder = modal.querySelector("[data-missions]");
-    for (const [key, mission] of Object.entries(profile.missions)) {
+    for (const [key, mission] of Object.entries(profile().missions)) {
       const card = document.createElement("div");
       card.className = "sowie-mission-card";
       const percentage = Math.round((mission.progress / mission.target) * 100);
@@ -393,7 +400,7 @@
     const toolbar = document.createElement("div");
     toolbar.className = "sowie-toolbar";
     toolbar.setAttribute("aria-label", "Narzędzia SowieGry");
-    toolbar.innerHTML = `<button type="button" data-pause aria-label="Pauza">⏸</button><button type="button" data-wardrobe aria-label="Garderoba">🎀</button><button type="button" data-missions aria-label="Misje">⭐</button><button type="button" data-settings aria-label="Ustawienia i zapis">⚙</button>`;
+    toolbar.innerHTML = `<button type="button" data-pause aria-label="Pauza">⏸</button><button type="button" data-wardrobe aria-label="Garderoba">🎀</button><button type="button" data-missions aria-label="Misje">⭐</button><button type="button" data-settings aria-label="Ustawienia">⚙</button>`;
     document.body.appendChild(toolbar);
 
     const stack = document.createElement("div");
@@ -435,7 +442,7 @@
       : Object.entries(data || {}).map(([key, value]) => `${key}: ${value}`).join("\n");
   }
 
-  function drawCanvasCosmetic(context, x, y, scale = 1, rotation = 0, key = profile.selectedCosmetic) {
+  function drawCanvasCosmetic(context, x, y, scale = 1, rotation = 0, key = profile().cosmetics.selected) {
     if (!context || key === "none") return;
     context.save();
     context.translate(x, y);
@@ -496,16 +503,24 @@
     context.restore();
   }
 
-  document.documentElement.classList.toggle("sowie-reduced-effects", Boolean(profile.settings.reducedEffects));
+  function applyProfile() {
+    document.documentElement.classList.toggle("sowie-reduced-effects", Boolean(profile().settings.reducedEffects));
+    profileChanged();
+  }
+
+  applyProfile();
+  cloud.ready.then(() => {
+    applyProfile();
+    if (gameAdapter && profile().settings.music) startMusic(gameAdapter.musicTheme?.() || "default");
+    else if (!profile().settings.music) stopMusic();
+  });
+  cloud.onProfileReload(applyProfile);
+  cloud.onStatus(renderCloudStatus);
   window.addEventListener("pointerdown", resumeAudio, { once: true, passive: true });
   window.addEventListener("keydown", resumeAudio, { once: true });
-  window.addEventListener("pagehide", flushPendingStats);
+  // Zapis przy przejściu w tło obsługuje SowieCloud (visibilitychange → flush).
   document.addEventListener("visibilitychange", () => {
-    if (document.hidden) {
-      flushPendingStats();
-      return;
-    }
-    if (profile.settings.music && gameAdapter) startMusic(gameAdapter.musicTheme?.() || "default");
+    if (!document.hidden && profile().settings.music && gameAdapter) startMusic(gameAdapter.musicTheme?.() || "default");
   });
   window.addEventListener("keydown", (event) => {
     const backdrop = document.querySelector(".sowie-modal-backdrop");
@@ -550,7 +565,5 @@
     closeModal,
     emit: platform.emit,
     on: platform.on,
-    exportData: platform.exportData,
-    importData: platform.importData,
   };
 })();

@@ -8,6 +8,7 @@
 
 ### Statyczna
 
+0. w `<head>`: `../config/firebase-config.js`, `../shared/sowie-platform.js`, `../shared/sowie-cloud.js`, `../shared/password-gate.js`, `../shared/sowie-smoke-hook.js`
 1. `script.js`
 2. `../shared/sowie-core.js`
 3. `../shared/sowie-runtime.js`
@@ -28,11 +29,15 @@
 4. `platform-expansion.js`
 5. `pause-final.js`
 
-W `<head>` ładowane są również `styles.css`, `../shared/cute-ui.css` i `../shared/sowie-smoke-hook.js`.
+W `<head>` ładowane są kolejno `../config/firebase-config.js`, `../shared/sowie-platform.js`, `../shared/sowie-cloud.js`, `../shared/password-gate.js`, `../shared/sowie-smoke-hook.js`, a także `styles.css` i `../shared/cute-ui.css`.
 
 ## Poziomy trudności
 
-`JUMPER_DIFFICULTIES` zmienia grawitację, zwykłe wybicie, wybicie kozy, wybicie Amic, życia startowe oraz mnożnik odstępów. Wybór jest zapisywany w `sowaJumperDifficulty`.
+`JUMPER_DIFFICULTIES` zmienia grawitację, zwykłe wybicie, wybicie kozy, wybicie Amic, życia startowe oraz mnożnik odstępów. Wybór jest zapisywany w Firestore w dokumencie gry `sowiegry/profil/sowiegry_gry/jumper`, pole `difficulty` (`SowieCloud.updateGame("jumper", { difficulty })`).
+
+- przy ładowaniu poziom to `arcade`; po `SowieCloud.ready` odczytywany jest zapisany `difficulty` (jeśli jest na liście), wywoływane są `applyJumperDifficulty()`, `syncJumperBest()` i `renderJumperDifficultyButtons()`;
+- `syncJumperBest()` ustawia `state.bestScore` i `state.bestHeight` z `SowieCloud.records("jumper", state.difficultyKey)` (`bestScore`, `bestHeight`) — rekordy są osobne dla każdego poziomu;
+- `setJumperDifficulty(key)` zapisuje wybór i od razu przełącza pokazywany rekord.
 
 ## Bezpieczeństwo platform
 
@@ -118,6 +123,9 @@ Adapter przekazany do `SowieCore.registerGame()` zatrzymuje sceny `title`, `play
 
 ## Rekordy
 
-- `sowaJumperBestScore`,
-- `sowaJumperBestHeight`,
-- wspólny `sowieGryProfile`.
+Rekordy są w Firestore (`SowieCloud`):
+
+- `profil.records.jumper.{chill|arcade|chaos}` — `bestScore`, `bestHeight` (zapis tylko przy poprawie), `profil.records.jumper.runs`, `lastPlayedAt`;
+- `sowiegry_gry/jumper` — `top10` na poziom, `dailyBest` (rekord wyzwania dnia = wysokość), historia `sowiegry_historia`.
+
+`endGame()` w `script.js` po ustawieniu `lastScore`, `lastHeight` i lokalnych maksimów wywołuje `SowieCloud.submitRun("jumper", { score, height, difficulty: state.difficultyKey })`. Start gry (Spacja/Enter, dotknięcie planszy na ekranie tytułowym i końcowym) jest możliwy dopiero, gdy `jumperCloudReady()` (`SowieCloud.isReady()`) zwraca `true`.

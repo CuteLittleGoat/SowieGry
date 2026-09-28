@@ -32,8 +32,16 @@ const JUMPER_DIFFICULTIES = {
   }
 };
 
-state.difficultyKey = localStorage.getItem("sowaJumperDifficulty") || "arcade";
-let activeJumperDifficulty = JUMPER_DIFFICULTIES[state.difficultyKey] || JUMPER_DIFFICULTIES.arcade;
+// Wybrany poziom trudności jest w dokumencie gry (sowiegry_gry/jumper.difficulty) w SowieCloud.
+state.difficultyKey = "arcade";
+let activeJumperDifficulty = JUMPER_DIFFICULTIES.arcade;
+
+// Rekordy wybranego poziomu trudności (profil.records.jumper.{poziom}).
+function syncJumperBest() {
+  const best = window.SowieCloud?.records("jumper", state.difficultyKey) || {};
+  state.bestScore = Number(best.bestScore || 0);
+  state.bestHeight = Number(best.bestHeight || 0);
+}
 
 const originalJumperStartGame = startGame;
 const originalJumperGap = platformGapForHeight;
@@ -42,7 +50,8 @@ function setJumperDifficulty(key) {
   if (!JUMPER_DIFFICULTIES[key]) return;
   state.difficultyKey = key;
   activeJumperDifficulty = JUMPER_DIFFICULTIES[key];
-  localStorage.setItem("sowaJumperDifficulty", key);
+  window.SowieCloud?.updateGame("jumper", { difficulty: key });
+  syncJumperBest();
   applyJumperDifficulty();
   renderJumperDifficultyButtons();
 }
@@ -160,6 +169,18 @@ function loadJumperModule(src) {
 applyJumperDifficulty();
 renderJumperDifficultyButtons();
 syncJumperDifficultyPanel();
+
+window.SowieCloud?.ready.then(() => {
+  const saved = window.SowieCloud.game("jumper").difficulty;
+  if (JUMPER_DIFFICULTIES[saved]) {
+    state.difficultyKey = saved;
+    activeJumperDifficulty = JUMPER_DIFFICULTIES[saved];
+    applyJumperDifficulty();
+  }
+  syncJumperBest();
+  renderJumperDifficultyButtons();
+});
+
 loadJumperModule("extra-lives.js");
 loadJumperModule("bonus-fix.js");
 loadJumperModule("safety-balance.js");

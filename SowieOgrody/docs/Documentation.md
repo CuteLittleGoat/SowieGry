@@ -4,24 +4,29 @@
 
 `Sowie Ogrody` jest samodzielną grą Canvas 2D w katalogu `SowieOgrody/`. Wykorzystuje wspólne elementy repozytorium:
 
+- `../config/firebase-config.js` i `../shared/sowie-cloud.js` (zapis w Firestore),
+- `../shared/password-gate.js` (ekran „Hasło sowy”),
 - `../shared/cute-ui.css`,
 - `../shared/sowie-core.js`,
 - `../shared/sowie-runtime.js`,
-- `../shared/progress-reset.js`,
 - `../shared/sowie-smoke-hook.js`.
 
 Główna logika znajduje się w `script.js`. Gra jest napisana jako jeden moduł IIFE, żeby łatwo działała bez bundlera.
 
 ## Kolejność ładowania
 
-1. `../shared/progress-reset.js`
-2. `../shared/sowie-smoke-hook.js`
-3. `../shared/cute-ui.css`
-4. `style.css`
-5. `../shared/sowie-core.js`
-6. `../shared/sowie-runtime.js`
-7. `ogrody-runtime.js`
-8. `script.js`
+1. `../config/firebase-config.js`
+2. `../shared/sowie-platform.js`
+3. `../shared/sowie-cloud.js`
+4. `../shared/password-gate.js`
+5. `../shared/sowie-smoke-hook.js`
+6. `../shared/cute-ui.css`, `../shared/game-enhancements.css`, `../shared/owl-gallery.css`, `style.css`
+7. `../shared/stable-panel.js`
+8. `../shared/sowie-core.js`
+9. `../shared/notification-manager.js`
+10. `../shared/sowie-runtime.js`
+11. `script.js`
+12. `../shared/modal-accessibility.js`, `../shared/game-guides.js`, `../shared/sowie-academy.js`, `../shared/owl-gallery.js`, `../shared/gameplay-expansion.js`
 
 ## Pliki
 
@@ -29,7 +34,6 @@ Główna logika znajduje się w `script.js`. Gra jest napisana jako jeden moduł
 SowieOgrody/
   index.html
   style.css
-  ogrody-runtime.js
   script.js
   docs/
     README.md
@@ -38,11 +42,19 @@ SowieOgrody/
 
 ## Stan gry
 
-Stan jest zapisywany jako JSON w `localStorage` pod kluczem:
+Stan jest zapisywany w Firestore przez `SowieCloud` jako tekst JSON w polu `state` dokumentu:
 
 ```txt
-sowieOgrodySave
+sowiegry/profil/sowiegry_gry/ogrody
 ```
+
+Stałe w `script.js`: `GAME_ID = "ogrody"`, `VERSION = 2` (`saveVersion`), `IMPORTANT_SAVES = ["manual", "prestige", "upgrade", "unlock", "offline"]`.
+
+- **start:** `let state = defaultSave()`; na końcu pliku `cloud.loadGameState(GAME_ID)` (czeka na `SowieCloud.ready`), potem `state = load(saved)` (`mergeSave` z wartościami domyślnymi) i `init()`. Gra nie startuje przed wczytaniem stanu z chmury;
+- **`save(reason)`:** `state.lastSavedAt = Date.now()`, potem `cloud.saveGameState(GAME_ID, state, { immediate, saveVersion: 2, summary })`, gdzie `immediate` = powód z `IMPORTANT_SAVES` (zapis po 2 s), inne powody — zapis zbiorczy najpóźniej po 30 s (≤ 120 zapisów na godzinę). `summary = { lifetimeLeaves, prestiges: stats.prestiges, zone }` trafia do dokumentu gry i do `profil.records.ogrody`. Dla powodów `manual`, `hidden`, `pagehide` dodatkowo `cloud.flush()` (natychmiastowe wysłanie). Napis w HUD „Zapisano” / „Zapisano ręcznie”;
+- **`queueSave(reason)`:** jak dotąd — napis „Zapisywanie…” i `save(reason)` po 250 ms;
+- **cykliczny zapis:** `setInterval(..., 5000)` wywołuje `queueSave("interval")` tylko przy widocznej karcie (w tle produkcja nie działa, więc `lastSavedAt` zostaje czasem zejścia do tła);
+- **`window.SowieIdleGame = { id: "ogrody", ready, snapshot }`** — `ready` rozwiązuje się po wczytaniu stanu, `snapshot()` zwraca bieżący `state` (tylko do odczytu). Korzysta z niego `shared/gameplay-expansion.js` (kontrakty dnia).
 
 Najważniejsze pola:
 
@@ -119,7 +131,7 @@ clickPower = max(1, clickMultiplier + leavesPerSecond * clickLpsPercent)
 
 ## Offline progress
 
-Po wejściu do gry porównywany jest obecny czas z `lastSavedAt`.
+Po wejściu do gry **oraz po powrocie z tła** (`visibilitychange → visible`, np. powrót do przeglądarki na telefonie) porównywany jest obecny czas z `lastSavedAt`. Zejście do tła (`visibilitychange → hidden`) wywołuje `save("hidden")`, a `pagehide` — `save("pagehide")`.
 
 ```txt
 elapsed = now - lastSavedAt
@@ -284,7 +296,7 @@ Główne `index.html` zawiera kartę:
 2. Kliknięcie dodaje liście.
 3. Rośliny można kupić po uzbieraniu kosztu.
 4. LPS rośnie po zakupie roślin.
-5. Save przetrwa reload.
+5. Save przetrwa reload i jest widoczny na drugim urządzeniu (po wpisaniu hasła `huhu`).
 6. Zakładka `Rozwój` pokazuje zwykłe drzewka skilli.
 7. Zależności zwykłych skilli działają.
 8. Konewka odblokowuje podlewanie.
@@ -301,5 +313,5 @@ Główne `index.html` zawiera kartę:
 
 - Dane ekonomii są na początku `script.js`.
 - Zmiany balansu najlepiej robić przez wartości w `PLANTS`, `UPGRADES` i `PRESTIGE_TREE`.
-- Nie dodawać Firebase bez wyraźnej potrzeby.
-- Nie kasować `sowieOgrodySave` przez globalne resety bez świadomej decyzji.
+- Zapis wyłącznie przez `SowieCloud` (`loadGameState` / `saveGameState`); gra nie używa pamięci przeglądarki.
+- Zmiana formatu stanu wymaga podniesienia `VERSION` i obsługi starszego stanu w `mergeSave`.

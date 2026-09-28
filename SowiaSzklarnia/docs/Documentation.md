@@ -18,7 +18,8 @@ SowiaSzklarnia/
 
 Wykorzystywane wspólne elementy repozytorium:
 
-- `../shared/progress-reset.js`,
+- `../config/firebase-config.js` i `../shared/sowie-cloud.js` (zapis w Firestore),
+- `../shared/password-gate.js` (ekran „Hasło sowy”),
 - `../shared/sowie-smoke-hook.js`,
 - `../shared/cute-ui.css`,
 - `../shared/sowie-core.js`,
@@ -26,21 +27,36 @@ Wykorzystywane wspólne elementy repozytorium:
 
 ## Kolejność ładowania
 
-1. `../shared/progress-reset.js`
-2. `../shared/sowie-smoke-hook.js`
-3. `../shared/cute-ui.css`
-4. `style.css`
-5. `../shared/sowie-core.js`
-6. `../shared/sowie-runtime.js`
-7. `script.js`
+1. `../config/firebase-config.js`
+2. `../shared/sowie-platform.js`
+3. `../shared/sowie-cloud.js`
+4. `../shared/password-gate.js`
+5. `../shared/sowie-smoke-hook.js`
+6. `../shared/cute-ui.css`, `../shared/game-enhancements.css`, `../shared/owl-gallery.css`, `style.css`
+7. `../shared/stable-panel.js`
+8. `../shared/sowie-core.js`
+9. `../shared/notification-manager.js`
+10. `../shared/sowie-runtime.js`
+11. `script.js`
+12. `../shared/modal-accessibility.js`, `../shared/game-guides.js`, `../shared/sowie-academy.js`, `../shared/owl-gallery.js`, `../shared/gameplay-expansion.js`
 
 ## Stan gry
 
-Stan jest zapisywany jako JSON w `localStorage` pod kluczem:
+Stan jest zapisywany w Firestore przez `SowieCloud` jako tekst JSON w polu `state` dokumentu:
 
 ```txt
-sowiaSzklarniaSave
+sowiegry/profil/sowiegry_gry/szklarnia
 ```
+
+Stałe w `script.js`: `GAME_ID = "szklarnia"`, `VERSION = 1` (`saveVersion`), `IMPORTANT_SAVES = ["manual", "build", "upgrade", "research", "expand", "cross", "offline", "reset"]`.
+
+- **start:** `let state = defaultSave()`; na końcu pliku `cloud.loadGameState(GAME_ID)` (czeka na `SowieCloud.ready`), potem `state = load(saved)` (`mergeSave` z wartościami domyślnymi) i `init()`;
+- **`save(reason)`:** `state.lastSavedAt = Date.now()`, `cloud.saveGameState(GAME_ID, state, { immediate, saveVersion: 1, summary })` — ważne akcje z `IMPORTANT_SAVES` po 2 s, pozostałe najpóźniej po 30 s (≤ 120 zapisów na godzinę). `summary = { lifetimeLeaves, rooms: rooms.length, hybrids: stats.hybrids }` trafia do dokumentu gry i do `profil.records.szklarnia`. Dla `manual`, `reset`, `hidden`, `pagehide` dodatkowo `cloud.flush()`;
+- **cykliczny zapis:** `setInterval(..., 5000)` z `queueSave("auto")` tylko przy widocznej karcie (zastępuje dawny, przypadkowy warunek w pętli `now % 7000 < 20`);
+- **tło:** `visibilitychange → hidden` = `save("hidden")`, `visible` = `offline()` (postęp offline po powrocie z tła), `pagehide` = `save("pagehide")`;
+- **reset** (`#resetConfirm`): `state = defaultSave()` i `save("reset")` — nadpisuje zapis w chmurze (na wszystkich urządzeniach);
+- panel **Staty** pokazuje „Zapis w chmurze (Firestore) — ten sam postęp na każdym urządzeniu.”;
+- **`window.SowieIdleGame = { id: "szklarnia", ready, snapshot }`** — dla `shared/gameplay-expansion.js` (cele laboratorium, album cech).
 
 Najważniejsze pola:
 
@@ -91,7 +107,7 @@ Efekt `scareGoat`:
 
 ### Offline progress
 
-`offline()` porównuje aktualny czas z `lastSavedAt`, ogranicza wynik przez `cap`, nalicza zasoby i wzrost roślin oraz pokazuje modal powrotu.
+`offline()` porównuje aktualny czas z `lastSavedAt`, ogranicza wynik przez `cap`, nalicza zasoby i wzrost roślin oraz pokazuje modal powrotu. Wywoływane przy starcie i po powrocie z tła (`visibilitychange → visible`).
 
 ### UI
 
@@ -109,7 +125,7 @@ Interfejs jest zgodny ze stylem `cute`:
 
 1. Gra otwiera się z menu głównego.
 2. Kliknięcie dodaje liście.
-3. Stan przetrwa odświeżenie strony.
+3. Stan przetrwa odświeżenie strony i jest widoczny na drugim urządzeniu.
 4. Można zbudować pokój.
 5. Nie można zbudować pokoju bez zasobów.
 6. Można ulepszyć pokój.

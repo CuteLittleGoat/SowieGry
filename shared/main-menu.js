@@ -19,7 +19,7 @@
   }
 
   async function initialize() {
-    const platform = await (window.SowiePlatformReady || loadSibling("sowie-platform.js", "SowiePlatform"));
+    const platform = await loadSibling("sowie-platform.js", "SowiePlatform");
     const core = await loadSibling("sowie-core.js", "SowieCore");
     await loadSibling("notification-manager.js", "SowieNotifications");
     const guides = window.SowieGameGuides || await loadSibling("game-guides.js", "SowieGameGuides");
@@ -66,7 +66,7 @@
 
     function refreshButton() {
       const profile = core.getProfile();
-      const selected = platform.COSMETICS[profile.selectedCosmetic] || platform.COSMETICS.none;
+      const selected = platform.COSMETICS[profile.cosmetics?.selected] || platform.COSMETICS.none;
       const icon = button.querySelector("[data-cosmetic-icon]");
       const label = button.querySelector("[data-cosmetic-label]");
       if (icon) icon.textContent = selected.icon;

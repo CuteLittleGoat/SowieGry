@@ -32,8 +32,14 @@ const SOWA3_DIFFICULTIES = {
   }
 };
 
-state.difficultyKey = localStorage.getItem("sowa3Difficulty") || "arcade";
-let activeSowa3Difficulty = SOWA3_DIFFICULTIES[state.difficultyKey] || SOWA3_DIFFICULTIES.arcade;
+// Wybrany poziom trudności jest w dokumencie gry (sowiegry_gry/sowa3.difficulty) w SowieCloud.
+state.difficultyKey = "arcade";
+let activeSowa3Difficulty = SOWA3_DIFFICULTIES.arcade;
+
+// Rekord wybranego poziomu trudności (profil.records.sowa3.{poziom}.bestScore).
+function syncSowa3Best() {
+  state.best = Number(window.SowieCloud?.records("sowa3", state.difficultyKey)?.bestScore || 0);
+}
 
 const originalSowa3Start = startGame;
 const originalSowa3NextStage = nextStage;
@@ -44,7 +50,8 @@ function setSowa3Difficulty(key) {
   if (!SOWA3_DIFFICULTIES[key]) return;
   state.difficultyKey = key;
   activeSowa3Difficulty = SOWA3_DIFFICULTIES[key];
-  localStorage.setItem("sowa3Difficulty", key);
+  window.SowieCloud?.updateGame("sowa3", { difficulty: key });
+  syncSowa3Best();
   applySowa3Difficulty(false);
   renderSowa3DifficultyButtons();
 }
@@ -179,3 +186,13 @@ function syncSowa3DifficultyPanel() {
 
 renderSowa3DifficultyButtons();
 syncSowa3DifficultyPanel();
+
+window.SowieCloud?.ready.then(() => {
+  const saved = window.SowieCloud.game("sowa3").difficulty;
+  if (SOWA3_DIFFICULTIES[saved]) {
+    state.difficultyKey = saved;
+    activeSowa3Difficulty = SOWA3_DIFFICULTIES[saved];
+  }
+  syncSowa3Best();
+  renderSowa3DifficultyButtons();
+});

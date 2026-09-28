@@ -1,7 +1,8 @@
+// Sowia Akademia: XP, piórka, misje dzienne i tygodniowe. Stan w profilu (profil.academy) przez SowieCloud.
 (() => {
   "use strict";
 
-  const KEY = "sowieGryAcademy";
+  const cloud = window.SowieCloud;
   const VERSION = 2;
   const MISSION_POOL = Object.freeze([
     { id: "runner-distance", game: "runner", metric: "runnerDistance", type: "max", target: 500, label: "Przebiegnij 500 m w SowaRunner" },
@@ -55,28 +56,34 @@
     };
   }
 
+  // Stan z profilu w chmurze (kopia robocza; zapis przez save()).
   function load() {
-    try {
-      const raw = JSON.parse(localStorage.getItem(KEY) || "null");
-      if (!raw || typeof raw !== "object") return defaultState();
-      return {
+    const raw = cloud?.profile?.().academy;
+    if (!raw || typeof raw !== "object") return defaultState();
+    return JSON.parse(
+      JSON.stringify({
         ...defaultState(),
         ...raw,
         version: VERSION,
         metrics: { ...(raw.metrics || {}) },
         awards: { ...(raw.awards || {}) },
-      };
-    } catch (_error) {
-      return defaultState();
-    }
+      }),
+    );
   }
 
-  let academy = load();
+  let academy = defaultState();
+  let loaded = false;
 
   function save() {
+    if (!loaded) return;
     academy.version = VERSION;
     academy.updatedAt = Date.now();
-    localStorage.setItem(KEY, JSON.stringify(academy));
+    // Nagrody dzienne starsze niż 30 dni są przycinane; nagrody trwałe (weekly:, trait:, gallery:) zostają.
+    academy.awards = cloud.helpers.trimAwards(academy.awards, dayKey());
+    const stored = JSON.parse(JSON.stringify(academy));
+    cloud.updateProfile((profile) => {
+      profile.academy = stored;
+    });
     const data = snapshot();
     for (const listener of listeners) listener(data);
     window.dispatchEvent(new CustomEvent("sowie:academy-changed", { detail: data }));
@@ -190,6 +197,10 @@
   }
 
   function record(gameId, metric, value = 1, mode = "max") {
+    if (!loaded) {
+      cloud?.ready.then(() => record(gameId, metric, value, mode));
+      return snapshot();
+    }
     let changed = ensurePeriods();
     const numeric = Number(value) || 0;
     const previous = Number(academy.metrics[metric] || 0);
@@ -223,6 +234,10 @@
   }
 
   function award(id, xp = 25, feathers = 3, message = "Nagroda dodatkowa") {
+    if (!loaded) {
+      cloud?.ready.then(() => award(id, xp, feathers, message));
+      return false;
+    }
     const changed = ensurePeriods() || grant(id, xp, feathers, message);
     if (changed) save();
     return Boolean(academy.awards[id]);
@@ -260,7 +275,7 @@
 
   function render() {
     if (!modal) return;
-    const changed = evaluate();
+    const changed = loaded && evaluate();
     if (changed) save();
     const data = snapshot();
     const info = levelInfo();
@@ -335,8 +350,17 @@
     button.addEventListener("click", () => open(button));
   }
 
-  const initialized = ensurePeriods() || evaluate();
-  if (initialized || !localStorage.getItem(KEY)) save();
+  function loadFromCloud() {
+    academy = load();
+    loaded = true;
+    const changed = ensurePeriods();
+    if (evaluate() || changed) save();
+    else window.dispatchEvent(new CustomEvent("sowie:academy-changed", { detail: snapshot() }));
+    if (modal && !modal.hidden) render();
+  }
+
+  cloud?.ready.then(loadFromCloud);
+  cloud?.onProfileReload(loadFromCloud);
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", attachButton, { once: true });
   else attachButton();
 

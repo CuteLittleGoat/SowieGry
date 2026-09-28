@@ -471,6 +471,7 @@
     const gameIncrements = new Map();
     const unknownGames = new Set();
     const pendingOps = [];
+    const pendingCommits = new Set();
 
     let status = "laczenie";
     let backend = null;
@@ -729,23 +730,29 @@
     }
 
     // --- zapisy -----------------------------------------------------------------
+    // Wysyła zapis zbiorczy. Zwrócona obietnica czeka także na zapisy wysłane wcześniej
+    // (flush() = „wszystko, co zmieniono, dotarło do bazy”; offline — do czasu powrotu sieci).
     function commitNow(ops) {
-      if (!ops.length) return Promise.resolve();
-      inFlight += 1;
-      refreshStatus();
-      return Promise.resolve()
-        .then(() => backend.commit(ops))
-        .then(
-          () => {
-            inFlight -= 1;
-            refreshStatus();
-          },
-          (error) => {
-            inFlight -= 1;
-            setStatus("blad");
-            logError("SowieCloud: zapis w Firestore nie powiódł się", error);
-          },
-        );
+      if (ops.length) {
+        inFlight += 1;
+        refreshStatus();
+        const task = Promise.resolve()
+          .then(() => backend.commit(ops))
+          .then(
+            () => {
+              inFlight -= 1;
+              refreshStatus();
+            },
+            (error) => {
+              inFlight -= 1;
+              setStatus("blad");
+              logError("SowieCloud: zapis w Firestore nie powiódł się", error);
+            },
+          );
+        pendingCommits.add(task);
+        task.then(() => pendingCommits.delete(task));
+      }
+      return Promise.all([...pendingCommits]).then(() => undefined);
     }
 
     function buildOps() {
@@ -1092,7 +1099,7 @@
       choice = { mode: local ? "memory" : "firestore", project: null };
     }
     const project =
-      typeof choice.project === "string" && /^demo-[a-z0-9-]{1,40}$/.test(choice.project)
+      typeof choice.project === "string" && /^demo-[a-z0-9-]{1,50}$/.test(choice.project)
         ? choice.project
         : EMULATOR.projectId;
     return { mode: choice.mode, project };
@@ -1128,7 +1135,16 @@
     isOnline: () => navigator.onLine !== false,
   });
 
-  window.SowieCloud = Object.freeze({ ...cloud, mode: () => mode, gameId: () => currentGame?.id || null });
+  // Wyzwanie dnia (?daily=1) i ziarno (?seed=) trafiają do historii i rekordów dnia bez zmian w grach.
+  const urlParams = new URLSearchParams(location.search);
+  window.SowieCloud = Object.freeze({
+    ...cloud,
+    submitRun: (gameId, result = {}) =>
+      cloud.submitRun(gameId, { daily: urlParams.get("daily") === "1", seed: urlParams.get("seed"), ...result }),
+    mode: () => mode,
+    gameId: () => currentGame?.id || null,
+    helpers: Object.freeze({ trimAwards, trimDaily, dayKey }),
+  });
 
   // Telefon: przejście do innej aplikacji / blokada ekranu — wysyłamy kolejkę od razu.
   document.addEventListener("visibilitychange", () => {

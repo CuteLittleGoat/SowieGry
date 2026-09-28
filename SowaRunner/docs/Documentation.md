@@ -19,7 +19,7 @@
 11. `runner-events-extra.js`
 12. `pause-final.js`
 
-W `<head>` ładowane są również `../shared/sowie-smoke-hook.js`, `style.css` i `../shared/cute-ui.css`.
+W `<head>` przed `p5.js` ładowane są kolejno `../config/firebase-config.js`, `../shared/sowie-platform.js`, `../shared/sowie-cloud.js`, `../shared/password-gate.js` i `../shared/sowie-smoke-hook.js`, a także `style.css` i `../shared/cute-ui.css`.
 
 ## Odpowiedzialność plików
 
@@ -57,7 +57,7 @@ Ostatnia warstwa `updateRun()` i `updateWhale()`. Zatrzymuje wszystkie wcześnie
 
 ## Wspólna warstwa
 
-`SowieCore` udostępnia profil, misje, statystyki, audio, muzykę, kosmetyki, komunikaty i debug. `SowieRuntime` ogranicza częstotliwość zapisów i obsługuje wznowienie po zamknięciu modalu.
+`SowieCore` udostępnia profil, misje, statystyki, audio, muzykę, kosmetyki, komunikaty i debug. `SowieRuntime` ustawia wspólny układ paska narzędzi i klasę ograniczonych efektów. Postęp zapisuje `SowieCloud` (`shared/sowie-cloud.js`) w Firestore; w `<head>` strony kolejno: `../config/firebase-config.js`, `../shared/sowie-platform.js`, `../shared/sowie-cloud.js`, `../shared/password-gate.js`, `../shared/sowie-smoke-hook.js`, `p5.js`, `p5.sound.min.js`.
 
 ## Combo
 
@@ -75,9 +75,16 @@ Kontrolowane są ściany, dziury, `Pracu Pracu` oraz Amic. Jeden obiekt może pr
 
 Wydarzenia nie omijają `obstacle-balance.js` i nie zagęszczają bazowych przeszkód blokujących.
 
-## Audio i profil
+## Audio, profil i zapis w chmurze
 
-Audio jest generowane przez Web Audio API. Rekordy gry pozostają pod `sowaRunnerBestScore` i `sowaRunnerBestDistance`, a profil wspólny pod `sowieGryProfile`.
+Audio jest generowane przez Web Audio API. Profil wspólny (misje, statystyki, kosmetyki, ustawienia) jest w dokumencie Firestore `sowiegry/profil`, a rekordy Runnera — osobno dla każdego poziomu trudności — w `profil.records.runner.{chill|arcade|chaos}` (`bestScore`, `bestDistance`), `profil.records.runner.runs` i dokumencie gry `sowiegry/profil/sowiegry_gry/runner` (`top10`, `dailyBest`, historia `sowiegry_historia`).
+
+Zmiany w `sketch.js` (etap E1):
+
+- `RUNNER_LEVEL_IDS = ["chill", "arcade", "chaos"]` — identyfikator poziomu dla indeksu `level` (0/1/2);
+- `bestScore` i `bestDist` startują od 0; `syncRunnerBest()` przepisuje je z `SowieCloud.records("runner", RUNNER_LEVEL_IDS[level])` (`bestScore`, `bestDistance`) w każdej klatce ekranu tytułowego (`draw()` przy `mode === SCREEN.TITLE`), więc zmiana poziomu klawiszami 1–3 lub przyciskiem od razu pokazuje właściwy rekord;
+- `runnerCloudReady()` — `SowieCloud.isReady()`; `trigger()` na ekranie tytułowym i końcowym startuje bieg dopiero, gdy postęp jest wczytany (ekran hasła i sówka ładowania i tak zasłaniają planszę);
+- `hit()` po utracie ostatniego życia wywołuje `SowieCloud.submitRun("runner", { score, distance, difficulty, durationMs })` zamiast zapisu w pamięci przeglądarki; wyzwanie dnia (`?daily=1`) i ziarno (`?seed=`) dopisuje `SowieCloud` (rekord dnia Runnera = dystans).
 
 ## Diagnostyka i testy
 

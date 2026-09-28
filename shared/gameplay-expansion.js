@@ -1,3 +1,6 @@
+// Rozszerzenia gier: serie, precyzja, combo, wyzwanie dnia, kontrakty i album cech.
+// Stan dnia (gry/{id}.daily) i album cech (gry/szklarnia.traitAlbum) zapisuje SowieCloud.
+// Gry idle udostępniają swój stan przez window.SowieIdleGame.snapshot().
 (() => {
   "use strict";
 
@@ -5,6 +8,7 @@
   if (!gameId) return;
 
   const academy = window.SowieAcademy;
+  const cloud = window.SowieCloud;
   const day = new Date().toISOString().slice(0, 10);
   const isDaily = new URLSearchParams(location.search).get("daily") === "1";
   let featureModal = null;
@@ -22,16 +26,21 @@
     return null;
   }
 
-  function safeJson(key, fallback) {
-    try {
-      return JSON.parse(localStorage.getItem(key) || "null") || fallback;
-    } catch (_error) {
-      return fallback;
-    }
+  // Stan gry idle (tylko odczyt) — od gry, a nie z pamięci przeglądarki.
+  function idleSnapshot() {
+    return window.SowieIdleGame?.snapshot?.() || {};
   }
 
-  function saveJson(key, value) {
-    localStorage.setItem(key, JSON.stringify(value));
+  // Kontrakty dnia: { date, baseline, claimed } w dokumencie gry; z poprzedniego dnia są zastępowane.
+  function dailyState() {
+    const daily = cloud?.game(gameId)?.daily;
+    return daily && daily.date === day ? daily : { date: day, baseline: null, claimed: {} };
+  }
+
+  function saveDailyState(daily) {
+    cloud?.updateGame(gameId, (doc) => {
+      doc.daily = JSON.parse(JSON.stringify(daily));
+    });
   }
 
   function getDock() {
@@ -66,12 +75,7 @@
     location.href = url.href;
   }
 
-  function updateDailyBest(metric, value) {
-    if (!isDaily) return;
-    const key = `sowieDailyBest:${day}:${gameId}:${metric}`;
-    const previous = Number(localStorage.getItem(key) || 0);
-    if (value > previous) localStorage.setItem(key, String(Math.floor(value)));
-  }
+  // Rekord wyzwania dnia zapisuje gra przez SowieCloud.submitRun() (gry/{id}.dailyBest).
 
   function ensureFeatureModal() {
     if (featureModal) return featureModal;
@@ -139,8 +143,7 @@
   }
 
   function claimFeature(id) {
-    const stateKey = `sowieExpansion:${gameId}:${day}`;
-    const data = safeJson(stateKey, { claimed: {} });
+    const data = dailyState();
     data.claimed ||= {};
     if (data.claimed[id]) return;
     const objective = currentObjectives().find((entry) => entry.id === id);
@@ -148,7 +151,7 @@
     const awardId = `feature:${gameId}:${day}:${id}`;
     if (academy?.award?.(awardId, objective.xp || 30, objective.feathers || 4, objective.rewardLabel || "Cel dodatkowy")) {
       data.claimed[id] = true;
-      saveJson(stateKey, data);
+      saveDailyState(data);
       renderFeature();
     }
   }
@@ -159,7 +162,7 @@
   }
 
   function objectiveCards(objectives) {
-    const state = safeJson(`sowieExpansion:${gameId}:${day}`, { claimed: {} });
+    const state = dailyState();
     return objectives.map((objective) => {
       const progress = Math.min(objective.target, Math.max(0, objective.progress));
       const complete = progress >= objective.target;
@@ -207,7 +210,6 @@
         if (over && previousMode !== mode) {
           academy?.record?.("runner", "runnerDistance", Number(distM || 0), "max");
           academy?.record?.("runner", "runnerScore", Number(score || 0), "max");
-          updateDailyBest("distance", Number(distM || 0));
         }
         previousLives = lives;
         previousMode = mode;
@@ -258,7 +260,6 @@
         if (state.scene === "gameover" && previousScene !== state.scene) {
           academy?.record?.("jumper", "jumperHeight", Number(state.lastHeight || state.heightMeters || 0), "max");
           academy?.record?.("jumper", "jumperScore", Number(state.lastScore || state.score || 0), "max");
-          updateDailyBest("height", Number(state.lastHeight || state.heightMeters || 0));
         }
         previousVy = owl.vy;
         previousLives = state.lives;
@@ -299,7 +300,6 @@
         if (state.mode === "finish" && previousMode !== "finish") academy?.record?.("sowa3", "sowa3Finishes", 1, "add");
         if (state.mode === "over" && previousMode !== "over") {
           academy?.record?.("sowa3", "sowa3Score", Number(state.score || 0), "max");
-          updateDailyBest("score", Number(state.score || 0));
         }
         previousLives = state.lives;
         previousMode = state.mode;
@@ -311,23 +311,28 @@
 
   function initializeGardens() {
     attachFeatureButton("Kontrakty ogrodnicze");
-    const stateKey = `sowieExpansion:ogrody:${day}`;
-    let expansion = safeJson(stateKey, null);
-    let save = safeJson("sowieOgrodySave", {});
-    if (!expansion) {
-      expansion = {
-        claimed: {},
-        baseline: {
+    let expansion = { claimed: {}, baseline: { clicks: 0, buys: 0, watering: 0 } };
+    let save = {};
+    let started = false;
+
+    // Stan bazowy dnia liczony od pierwszego uruchomienia danego dnia (po wczytaniu stanu gry z chmury).
+    window.SowieIdleGame?.ready?.then(() => {
+      save = idleSnapshot();
+      const daily = dailyState();
+      if (!daily.baseline) {
+        daily.baseline = {
           clicks: Number(save.stats?.clicks || 0),
           buys: Number(save.stats?.buys || 0),
           watering: Number(save.stats?.watering || 0),
-        },
-      };
-      saveJson(stateKey, expansion);
-    }
+        };
+        saveDailyState(daily);
+      }
+      expansion = daily;
+      started = true;
+    });
 
     objectivesProvider = () => {
-      save = safeJson("sowieOgrodySave", save || {});
+      save = idleSnapshot();
       return [
         { id: "clicks", label: "Zbierz liście ręcznie 25 razy", progress: Number(save.stats?.clicks || 0) - expansion.baseline.clicks, target: 25, xp: 30, feathers: 4, rewardLabel: "Kontrakt ogrodniczy" },
         { id: "buys", label: "Kup 6 roślin lub ulepszeń", progress: Number(save.stats?.buys || 0) - expansion.baseline.buys, target: 6, xp: 35, feathers: 4, rewardLabel: "Kontrakt ogrodniczy" },
@@ -338,7 +343,8 @@
     featureRenderer = () => `<p>Codzienne kontrakty dają XP i piórka do Sowiej Akademii. Postęp jest liczony od pierwszego uruchomienia danego dnia.</p><div class="sowie-feature-list">${objectiveCards(currentObjectives())}</div>`;
 
     window.setInterval(() => {
-      save = safeJson("sowieOgrodySave", save || {});
+      if (!started) return;
+      save = idleSnapshot();
       const plantCount = Object.values(save.plants || {}).reduce((sum, value) => sum + Number(value || 0), 0);
       academy?.record?.("ogrody", "ogrodyLeaves", Number(save.lifetimeLeaves || 0), "max");
       academy?.record?.("ogrody", "ogrodyClicks", Number(save.stats?.clicks || 0), "set");
@@ -353,22 +359,27 @@
 
   function initializeGreenhouse() {
     attachFeatureButton("Album cech i cele laboratorium");
-    const stateKey = `sowieExpansion:szklarnia:${day}`;
-    const albumKey = "sowieSzklarniaTraitAlbum";
-    let save = safeJson("sowiaSzklarniaSave", {});
-    let expansion = safeJson(stateKey, null);
-    let album = safeJson(albumKey, { traits: [] });
-    if (!expansion) {
-      expansion = {
-        claimed: {},
-        baseline: {
+    let save = {};
+    let expansion = { claimed: {}, baseline: { rooms: 0, plants: 0, goats: 0 } };
+    let album = { traits: [] };
+    let started = false;
+
+    window.SowieIdleGame?.ready?.then(() => {
+      save = idleSnapshot();
+      const daily = dailyState();
+      if (!daily.baseline) {
+        daily.baseline = {
           rooms: Number(save.rooms?.length || 0),
           plants: Number(save.plants?.length || 0),
           goats: Number(save.stats?.goatsScared || 0),
-        },
-      };
-      saveJson(stateKey, expansion);
-    }
+        };
+        saveDailyState(daily);
+      }
+      expansion = daily;
+      const stored = cloud?.game("szklarnia")?.traitAlbum;
+      album = { traits: Array.isArray(stored) ? [...stored] : [] };
+      started = true;
+    });
 
     function traitName(key) {
       const [growth, smell] = key.split("|");
@@ -378,7 +389,8 @@
     }
 
     function refreshTraits() {
-      save = safeJson("sowiaSzklarniaSave", save || {});
+      if (!started) return;
+      save = idleSnapshot();
       const present = new Set((save.plants || []).map((plant) => `${plant.traits?.growth || "normal"}|${plant.traits?.smell || "normal"}`));
       let changed = false;
       for (const trait of present) {
@@ -388,11 +400,16 @@
           changed = true;
         }
       }
-      if (changed) saveJson(albumKey, album);
+      if (changed) {
+        const traits = [...album.traits];
+        cloud?.updateGame("szklarnia", (doc) => {
+          doc.traitAlbum = traits;
+        });
+      }
     }
 
     objectivesProvider = () => {
-      save = safeJson("sowiaSzklarniaSave", save || {});
+      save = idleSnapshot();
       return [
         { id: "rooms", label: "Zbuduj lub rozwiń kolekcję o 1 pomieszczenie", progress: Number(save.rooms?.length || 0) - expansion.baseline.rooms, target: 1, xp: 35, feathers: 4, rewardLabel: "Cel laboratorium" },
         { id: "plants", label: "Zasadź 2 nowe rośliny", progress: Number(save.plants?.length || 0) - expansion.baseline.plants, target: 2, xp: 30, feathers: 4, rewardLabel: "Cel laboratorium" },
@@ -411,8 +428,9 @@
     };
 
     window.setInterval(() => {
+      if (!started) return;
       refreshTraits();
-      save = safeJson("sowiaSzklarniaSave", save || {});
+      save = idleSnapshot();
       academy?.record?.("szklarnia", "szklarniaRooms", Number(save.rooms?.length || 0), "max");
       academy?.record?.("szklarnia", "szklarniaPlants", Number(save.plants?.length || 0), "max");
       academy?.record?.("szklarnia", "szklarniaGoats", Number(save.stats?.goatsScared || 0), "set");

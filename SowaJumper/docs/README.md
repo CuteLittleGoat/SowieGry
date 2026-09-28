@@ -68,7 +68,7 @@ Serduszka zwiększają liczbę żyć do pięciu. Przy pełnym limicie dają punk
 
 ## Profil, kosmetyki i misje
 
-Wspólny profil działa także w pozostałych grach. Misje odblokowują kosmetyki wybierane w garderobie. Kosmetyk **Ślad bąbelków** rzeczywiście zostawia za sową delikatne bąbelki; ustawienie ograniczonych efektów zmniejsza ich liczbę.
+Wspólny profil działa także w pozostałych grach i zapisuje się w chmurze — ten sam postęp na telefonie i komputerze (przy pierwszym wejściu na nowym urządzeniu wpisz hasło `huhu`). Rekordy wysokości i wyniku są osobne dla każdego poziomu trudności, a wybrany poziom trudności jest zapamiętywany. Misje odblokowują kosmetyki wybierane w garderobie. Kosmetyk **Ślad bąbelków** rzeczywiście zostawia za sową delikatne bąbelki; ustawienie ograniczonych efektów zmniejsza ich liczbę.
 
 ## Audio i pauza
 

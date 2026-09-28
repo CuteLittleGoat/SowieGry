@@ -16,8 +16,9 @@ const state = {
   amicPower: 34,
   wind: 0,
   score: 0,
-  bestScore: Number(localStorage.getItem("sowaJumperBestScore") || 0),
-  bestHeight: Number(localStorage.getItem("sowaJumperBestHeight") || 0),
+  // Rekordy per poziom trudności wczytuje difficulty.js z SowieCloud (Firestore).
+  bestScore: 0,
+  bestHeight: 0,
   lastScore: 0,
   lastHeight: 0,
   heightMeters: 0,
@@ -295,8 +296,11 @@ function endGame() {
   state.lastHeight = state.heightMeters;
   state.bestScore = Math.max(state.bestScore, state.lastScore);
   state.bestHeight = Math.max(state.bestHeight, state.lastHeight);
-  localStorage.setItem("sowaJumperBestScore", String(state.bestScore));
-  localStorage.setItem("sowaJumperBestHeight", String(state.bestHeight));
+  window.SowieCloud?.submitRun("jumper", {
+    score: state.lastScore,
+    height: state.lastHeight,
+    difficulty: state.difficultyKey || "arcade",
+  });
 }
 
 function updateTitle(delta) {
@@ -1076,6 +1080,11 @@ function loop(t) {
   requestAnimationFrame(loop);
 }
 
+// Rozgrywka startuje dopiero po wczytaniu postępu z SowieCloud.
+function jumperCloudReady() {
+  return Boolean(window.SowieCloud?.isReady());
+}
+
 function setPointerDirection(event) {
   const midpoint = state.width / 2;
   input.left = event.clientX < midpoint;
@@ -1084,7 +1093,7 @@ function setPointerDirection(event) {
 
 window.addEventListener("keydown", (event) => {
   if (event.key === " " || event.key === "Enter") {
-    if (state.scene === "title" || state.scene === "gameover") startGame();
+    if ((state.scene === "title" || state.scene === "gameover") && jumperCloudReady()) startGame();
     event.preventDefault();
   }
   if (event.key === "ArrowLeft" || event.key.toLowerCase() === "a") input.left = true;
@@ -1100,7 +1109,7 @@ canvas.addEventListener("pointerdown", (event) => {
   canvas.setPointerCapture?.(event.pointerId);
   input.pointerId = event.pointerId;
   if (state.scene === "title" || state.scene === "gameover") {
-    startGame();
+    if (jumperCloudReady()) startGame();
     return;
   }
   setPointerDirection(event);

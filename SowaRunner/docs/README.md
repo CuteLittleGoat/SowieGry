@@ -56,7 +56,7 @@ Serduszko dodaje jedno życie do limitu pięciu. Przy pełnym limicie zostaje za
 
 Wspólny profil działa we wszystkich trzech grach. Z poziomu garderoby można wybierać odblokowane dodatki, m.in. kokardkę, okulary, wianek, kapelusz, czapkę, szalik i plecak.
 
-Misje odblokowują kolejne kosmetyki. Postęp jest zapisywany automatycznie.
+Misje odblokowują kolejne kosmetyki. Postęp jest zapisywany automatycznie w chmurze — ten sam na telefonie i komputerze. Przy pierwszym wejściu na nowym urządzeniu trzeba raz wpisać hasło `huhu`.
 
 ## Audio i pauza
 
@@ -66,11 +66,15 @@ Misje odblokowują kolejne kosmetyki. Postęp jest zapisywany automatycznie.
 
 ## Rekordy
 
-Zapisywane są:
+Zapisywane są (w chmurze, osobno dla poziomów Chill, Arcade i Chaos):
 
 - najlepszy dystans,
 - najlepszy wynik,
+- 10 najlepszych biegów i ostatnie gry,
+- rekord wyzwania dnia,
 - statystyki wspólnego profilu.
+
+Rekord zrobiony na telefonie widać też na komputerze (i odwrotnie). Bez internetu gra działa dalej, a wynik wyśle się, gdy wróci zasięg.
 
 ## Diagnostyka
 

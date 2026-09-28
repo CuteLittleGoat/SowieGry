@@ -5,8 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no" />
   <meta name="theme-color" content="#e8fff3" />
   <title>Sowia Szklarnia</title>
+  <script src="../config/firebase-config.js"></script>
   <script src="../shared/sowie-platform.js"></script>
-  <script src="../shared/progress-reset.js"></script>
+  <script src="../shared/sowie-cloud.js"></script>
+  <script src="../shared/password-gate.js"></script>
   <script src="../shared/sowie-smoke-hook.js"></script>
   <link rel="stylesheet" href="../shared/cute-ui.css" />
   <link rel="stylesheet" href="../shared/game-enhancements.css" />
@@ -56,7 +58,7 @@
   <section id="resetModal" class="greenhouse-modal-backdrop" hidden>
     <article class="greenhouse-modal danger-modal">
       <h2>Reset szklarni?</h2>
-      <p>To usunie lokalny zapis Sowiej Szklarni w tej przeglądarce. Tej akcji nie da się cofnąć.</p>
+      <p>To usunie zapis Sowiej Szklarni na wszystkich urządzeniach. Tej akcji nie da się cofnąć.</p>
       <div class="modal-actions">
         <button id="resetCancel" type="button">Nie teraz</button>
         <button id="resetConfirm" type="button" class="danger-action">Resetuj</button>
@@ -68,7 +70,6 @@
   <script src="../shared/notification-manager.js"></script>
   <script src="../shared/sowie-runtime.js"></script>
   <script src="script.js"></script>
-  <script src="../shared/idle-save-bridge.js"></script>
   <script src="../shared/modal-accessibility.js"></script>
   <script src="../shared/game-guides.js"></script>
   <script src="../shared/sowie-academy.js"></script>

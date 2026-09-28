@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
-import { readFile } from "node:fs/promises";
+import { readdir, readFile } from "node:fs/promises";
+import { join } from "node:path";
 import { test } from "node:test";
 
 const read = (path) => readFile(path, "utf8");
@@ -20,14 +21,12 @@ test("centralny rejestr zawiera dokładnie pięć gier", async () => {
 
 test("menu główne jest generowane wyłącznie z centralnego rejestru", async () => {
   const html = await read("index.html");
-  const compatibility = await read("shared/progress-reset.js");
   const menu = await read("shared/main-menu.js");
 
   assert.match(html, /data-game-cards/);
   assert.match(html, /shared\/sowie-platform\.js/);
   assert.doesNotMatch(html, /<a[^>]+class="game-card"/);
   assert.match(menu, /platform\.GAME_REGISTRY\.map/);
-  assert.doesNotMatch(compatibility, /document\.write/);
   assert.doesNotMatch(menu, /document\.write/);
 });
 
@@ -46,22 +45,111 @@ test("runtime nie podmienia metod SowieCore", async () => {
   await assert.rejects(read("SowieOgrody/ogrody-runtime.js"));
 });
 
-test("migracje nie resetują danych użytkownika", async () => {
-  const compatibility = await read("shared/progress-reset.js");
-  const platform = await read("shared/sowie-platform.js");
-  assert.doesNotMatch(compatibility, /removeItem/);
-  assert.match(platform, /backupValue/);
-  assert.match(platform, /migrateProfile/);
-  assert.match(platform, /exportData/);
-  assert.match(platform, /importData/);
+// Wszystkie pliki JavaScript gier i modułów wspólnych (bez bibliotek zewnętrznych).
+async function projectScripts() {
+  const folders = ["shared", "config", "SowaRunner", "SowaJumper", "Sowa3", "SowieOgrody", "SowiaSzklarnia"];
+  const files = [];
+  for (const folder of folders) {
+    for (const name of await readdir(folder)) {
+      if (name.endsWith(".js") && !/^p5(\.sound\.min)?\.js$/.test(name)) files.push(join(folder, name));
+    }
+  }
+  return files;
+}
+
+test("localStorage i sessionStorage są używane tylko w shared/sowie-cloud.js", async () => {
+  const offenders = [];
+  for (const file of await projectScripts()) {
+    if (file === join("shared", "sowie-cloud.js")) continue;
+    if (/\b(localStorage|sessionStorage)\b/.test(await read(file))) offenders.push(file);
+  }
+  assert.deepEqual(offenders, []);
 });
 
-test("gry idle korzystają ze stabilnego panelu, autosave i obsługi modali", async () => {
-  for (const path of ["SowieOgrody/index.html", "SowiaSzklarnia/index.html"]) {
+test("stare moduły zapisu lokalnego zostały usunięte", async () => {
+  await assert.rejects(read("shared/progress-reset.js"));
+  await assert.rejects(read("shared/idle-save-bridge.js"));
+  for (const path of ["index.html", ...gamePages]) {
+    const html = await read(path);
+    assert.doesNotMatch(html, /progress-reset\.js|idle-save-bridge\.js/, path);
+  }
+  const platform = await read("shared/sowie-platform.js");
+  for (const removed of ["migrateProfile", "backupValue", "exportData", "importData", "readProfile", "writeProfile"]) {
+    assert.doesNotMatch(platform, new RegExp(removed), `sowie-platform.js nadal zawiera ${removed}`);
+  }
+  const core = await read("shared/sowie-core.js");
+  assert.doesNotMatch(core, /Eksportuj zapis|Importuj zapis/);
+  assert.match(core, /Wyloguj to urządzenie/);
+});
+
+test("każda strona ładuje config, platformę, SowieCloud i ekran hasła w tej kolejności", async () => {
+  for (const path of ["index.html", ...gamePages]) {
+    const html = await read(path);
+    const order = [
+      "config/firebase-config.js",
+      "shared/sowie-platform.js",
+      "shared/sowie-cloud.js",
+      "shared/password-gate.js",
+    ];
+    const positions = order.map((file) => html.indexOf(file));
+    assert.ok(
+      positions.every((position) => position > 0),
+      `${path}: brak skryptu z ${order.join(", ")}`,
+    );
+    assert.deepEqual(
+      [...positions].sort((a, b) => a - b),
+      positions,
+      `${path}: zła kolejność skryptów`,
+    );
+    assert.ok(positions[3] < html.indexOf("shared/sowie-core.js"), `${path}: SowieCloud musi być przed SowieCore`);
+  }
+});
+
+test("SowieCloud kasuje tylko klucze SowieGry z listy i nigdy nie czyści całej pamięci", async () => {
+  const cloud = await read("shared/sowie-cloud.js");
+  assert.doesNotMatch(cloud, /(localStorage|sessionStorage|storage)\.clear\(/);
+  assert.match(cloud, /storage\.removeItem\(key\)/);
+  assert.match(cloud, /const HASLO_GRACZA = "huhu"/);
+  assert.match(cloud, /const DEVICE_KEY = "sowiegry:urzadzenie"/);
+  assert.match(cloud, /firebasejs\/\$\{SDK_VERSION\}/);
+  assert.match(cloud, /initializeApp\(config, APP_NAME\)/);
+  assert.match(cloud, /persistentLocalCache/);
+  for (const collection of ["sowiegry/meta", "sowiegry/profil", "sowiegry_gry", "sowiegry_historia"]) {
+    assert.match(cloud, new RegExp(collection));
+  }
+});
+
+test("kod SowieGry pisze tylko w kolekcji sowiegry i jej podkolekcjach", async () => {
+  const cloud = await read("shared/sowie-cloud.js");
+  const paths = [...cloud.matchAll(/`(sowiegry[^`]*)`|"(sowiegry\/[^"]*)"/g)].map((match) => match[1] || match[2]);
+  assert.ok(paths.length >= 4);
+  for (const path of paths) {
+    const collections = path.split("/").filter((_, index) => index % 2 === 0);
+    assert.ok(
+      collections.every((name) => ["sowiegry", "sowiegry_gry", "sowiegry_historia"].includes(name)),
+      `nieoczekiwana ścieżka ${path}`,
+    );
+  }
+  for (const file of await projectScripts()) {
+    if (file === join("shared", "sowie-cloud.js")) continue;
+    assert.doesNotMatch(await read(file), /firebase-firestore|getFirestore|initializeFirestore/, file);
+  }
+});
+
+test("gry idle korzystają ze stabilnego panelu, obsługi modali i zapisu SowieCloud", async () => {
+  for (const [path, script, gameId] of [
+    ["SowieOgrody/index.html", "SowieOgrody/script.js", "ogrody"],
+    ["SowiaSzklarnia/index.html", "SowiaSzklarnia/script.js", "szklarnia"],
+  ]) {
     const html = await read(path);
     assert.match(html, /shared\/stable-panel\.js/);
-    assert.match(html, /shared\/idle-save-bridge\.js/);
     assert.match(html, /shared\/modal-accessibility\.js/);
+    const source = await read(script);
+    assert.match(source, new RegExp(`const GAME_ID = "${gameId}"`));
+    assert.match(source, /cloud\.loadGameState\(GAME_ID\)/);
+    assert.match(source, /cloud\.saveGameState\(GAME_ID/);
+    assert.match(source, /window\.SowieIdleGame = /);
+    assert.doesNotMatch(source, /now % 7000/);
   }
 });
 

@@ -1,16 +1,38 @@
-const { test, expect } = require("@playwright/test");
+const { test, expect, waitForCloud } = require("./fixtures");
 
 const games = [
-  { id: "runner", name: "SowaRunner", path: "/SowaRunner/", marker: "canvas", action: "keyboard" },
-  { id: "jumper", name: "SowaJumper", path: "/SowaJumper/", marker: "#game", action: "keyboard" },
-  { id: "sowa3", name: "Sowa3", path: "/Sowa3/", marker: "#game", action: "keyboard" },
-  { id: "ogrody", name: "Sowie Ogrody", path: "/SowieOgrody/", marker: "#gardenCanvas", action: "#clickButton" },
+  {
+    id: "runner",
+    name: "SowaRunner",
+    path: "/SowaRunner/",
+    marker: "canvas",
+    action: "keyboard",
+    started: "mode === SCREEN.RUN",
+  },
+  {
+    id: "jumper",
+    name: "SowaJumper",
+    path: "/SowaJumper/",
+    marker: "#game",
+    action: "keyboard",
+    started: "state.scene === 'playing'",
+  },
+  { id: "sowa3", name: "Sowa3", path: "/Sowa3/", marker: "#game", action: "keyboard", started: "state.mode === 'run'" },
+  {
+    id: "ogrody",
+    name: "Sowie Ogrody",
+    path: "/SowieOgrody/",
+    marker: "#gardenCanvas",
+    action: "#clickButton",
+    started: "window.SowieIdleGame.snapshot().stats.clicks === 1",
+  },
   {
     id: "szklarnia",
     name: "Sowia Szklarnia",
     path: "/SowiaSzklarnia/",
     marker: "#greenhouseCanvas",
     action: "#clickButton",
+    started: "window.SowieIdleGame.snapshot().stats.clicks === 1",
   },
 ];
 
@@ -34,6 +56,7 @@ async function openGame(page, game) {
   await page.goto(`${game.path}?seed=${game.id}-audit&testNow=1783656000000`, { waitUntil: "load" });
   await expect(page.locator(game.marker).first()).toBeVisible({ timeout: 15_000 });
   await expect.poll(() => page.evaluate(() => Boolean(window.SowiePlatform && window.SowieCore))).toBe(true);
+  await waitForCloud(page);
   return errors;
 }
 
@@ -60,8 +83,11 @@ for (const game of games) {
     }
 
     await page.waitForTimeout(700);
-    const profile = await page.evaluate(() => JSON.parse(localStorage.getItem("sowieGryProfile") || "null"));
-    expect(profile?.schemaVersion).toBe(2);
+    // Rozgrywka ruszyła po wczytaniu postępu z SowieCloud (tu: tryb pamięci).
+    await expect.poll(() => page.evaluate(game.started)).toBe(true);
+    const profile = await page.evaluate(() => window.SowieCloud.profile());
+    expect(profile.schemaVersion).toBe(1);
+    expect(profile.cosmetics.selected).toBe("none");
     expect(errors).toEqual([]);
   });
 }

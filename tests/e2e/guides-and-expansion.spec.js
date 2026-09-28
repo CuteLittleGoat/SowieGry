@@ -1,4 +1,4 @@
-const { test, expect } = require("@playwright/test");
+const { test, expect, waitForCloud } = require("./fixtures");
 
 const games = [
   { id: "runner", path: "/SowaRunner/", title: "SowaRunner", feature: "Serie i wyzwanie dnia SowaRunner" },
@@ -63,6 +63,7 @@ for (const game of games) {
 test("Sowia Akademia nalicza misję tylko raz i zachowuje nagrody", async ({ page }) => {
   const errors = watchErrors(page);
   await page.goto("/?seed=academy-test&testNow=1783656000000", { waitUntil: "load" });
+  await waitForCloud(page);
 
   const result = await page.evaluate(() => {
     const before = window.SowieAcademy.snapshot();

@@ -24,14 +24,15 @@ Koza ucieka, a gracz dostaje małą nagrodę: odzyskane liście, kompost albo na
 
 ## Zapis
 
-Gra zapisuje się automatycznie w `localStorage` pod kluczem:
+Gra zapisuje się automatycznie w chmurze (Firestore) — ta sama szklarnia na telefonie i komputerze. Przy pierwszym wejściu na nowym urządzeniu trzeba raz wpisać hasło `huhu`.
 
-```txt
-sowiaSzklarniaSave
-```
+- zwykła gra zapisuje się co pół minuty, a ważne akcje (budowa, ulepszenia, badania, krzyżowanie) po 2 sekundach;
+- przejście do innej aplikacji lub zablokowanie telefonu zapisuje postęp od razu;
+- bez internetu gra działa dalej, a zapis wyśle się, gdy wróci zasięg;
+- jeśli grasz jednocześnie na drugim urządzeniu, gra zapyta, czy wczytać nowszy postęp.
 
-Zapis przetrwa odświeżenie strony i zamknięcie przeglądarki. W zakładce **Staty** jest też przycisk ręcznego zapisu oraz resetu lokalnego zapisu.
+W zakładce **Staty** jest przycisk ręcznego zapisu oraz reset szklarni. **Reset usuwa zapis na wszystkich urządzeniach.**
 
 ## Offline progress
 
-Po powrocie do gry sowa podsumuje, ile zebrała podczas nieobecności. Offline progress nalicza liście, wodę, nasiona, pyłek, kompost i postęp wzrostu roślin.
+Po powrocie do gry (także po przełączeniu się na inną aplikację na telefonie) sowa podsumuje, ile zebrała podczas nieobecności. Offline progress nalicza liście, wodę, nasiona, pyłek, kompost i postęp wzrostu roślin.

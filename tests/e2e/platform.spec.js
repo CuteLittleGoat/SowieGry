@@ -1,66 +1,79 @@
-const { test, expect } = require("@playwright/test");
+const { test, expect, waitForCloud, setVisibility, watchErrors, DEVICE_KEY } = require("./fixtures");
+const { cloudUrl, readDoc, uniqueProject } = require("./emulator");
 
-function watchRuntimeErrors(page) {
-  const errors = [];
-  page.on("pageerror", (error) => errors.push(error.message));
-  page.on("console", (message) => {
-    if (message.type() === "error" && !message.text().includes("favicon.ico")) errors.push(message.text());
+test.describe("pierwsze uruchomienie nowej wersji", () => {
+  test.use({ odblokowane: false });
+
+  test("kasuje wyłącznie stare klucze SowieGry, a dane innych stron zostają", async ({ page }) => {
+    await page.addInitScript(() => {
+      if (sessionStorage.getItem("przygotowane")) return;
+      sessionStorage.setItem("przygotowane", "1");
+      const old = {
+        sowieGryProfile: "{}",
+        sowieGryMigrationsVersion: "2",
+        sowieGryAcademy: "{}",
+        sowieOwlGallery: "{}",
+        sowaRunnerBestScore: "10",
+        sowaJumperDifficulty: "chaos",
+        sowa3FinishSeen: "1",
+        sowieOgrodySave: "{}",
+        sowiaSzklarniaSave: "{}",
+        sowieSzklarniaTraitAlbum: "{}",
+        "sowieGryBackup:sowieGryProfile:v1": "{}",
+        "sowieExpansion:ogrody:2026-09-27": "{}",
+        "sowieDailyBest:2026-09-27:runner:distance": "5",
+        dataslate: "dane drugiego projektu",
+        "character_builder:karta": "dane drugiego projektu",
+      };
+      for (const [key, value] of Object.entries(old)) localStorage.setItem(key, value);
+    });
+
+    await page.goto("/?seed=cleanup", { waitUntil: "load" });
+    await expect(page.getByRole("dialog", { name: "Hasło sowy" })).toBeVisible();
+    const keys = await page.evaluate(() => Object.keys(localStorage).sort());
+    expect(keys).toEqual(["character_builder:karta", "dataslate", "sowiegry:urzadzenie"]);
+    const device = await page.evaluate((key) => JSON.parse(localStorage.getItem(key)), DEVICE_KEY);
+    expect(device.unlocked).toBe(false);
+    expect(device.cleaned).toBe(true);
+    expect(device.deviceId).toMatch(/^d-[0-9a-z]{6}$/);
   });
-  return errors;
-}
-
-test("migracja profilu zachowuje postęp i tworzy kopię", async ({ page }) => {
-  await page.addInitScript(() => {
-    localStorage.setItem(
-      "sowieGryProfile",
-      JSON.stringify({
-        version: 1,
-        unlockedCosmetics: ["none", "bow", "glasses"],
-        selectedCosmetic: "glasses",
-        settings: { music: false },
-        stats: { leaves: 123 },
-      }),
-    );
-  });
-
-  await page.goto("/SowaJumper/?seed=migration", { waitUntil: "load" });
-  const result = await page.evaluate(() => ({
-    profile: JSON.parse(localStorage.getItem("sowieGryProfile")),
-    backups: Object.keys(localStorage).filter((key) => key.startsWith("sowieGryBackup:sowieGryProfile")),
-  }));
-
-  expect(result.profile.schemaVersion).toBe(2);
-  expect(result.profile.stats.leaves).toBe(123);
-  expect(result.profile.selectedCosmetic).toBe("glasses");
-  expect(result.profile.settings.music).toBe(false);
-  expect(result.backups.length).toBeGreaterThan(0);
 });
 
 for (const idleGame of [
-  { path: "/SowieOgrody/", button: "#clickButton", key: "sowieOgrodySave" },
-  { path: "/SowiaSzklarnia/", button: "#clickButton", key: "sowiaSzklarniaSave" },
+  { id: "ogrody", path: "/SowieOgrody/" },
+  { id: "szklarnia", path: "/SowiaSzklarnia/" },
 ]) {
-  test(`${idleGame.key} zapisuje i odtwarza stan`, async ({ page }) => {
-    const errors = watchRuntimeErrors(page);
-    await page.goto(`${idleGame.path}?seed=persistence`, { waitUntil: "load" });
-    await page.locator(idleGame.button).click({ clickCount: 3 });
-    await page.evaluate(() => window.SowieIdleSave.requestSave("test"));
+  test(`${idleGame.id}: stan gry zapisuje się w Firestore i wraca po przeładowaniu`, async ({ page }, testInfo) => {
+    const project = uniqueProject(testInfo);
+    const errors = watchErrors(page);
+    await page.goto(cloudUrl(`${idleGame.path}?seed=persistence`, project), { waitUntil: "load" });
+    await waitForCloud(page);
+    await page.locator("#clickButton").click({ clickCount: 3 });
+    await expect.poll(() => page.evaluate(() => window.SowieIdleGame.snapshot().stats.clicks)).toBe(3);
 
-    const beforeReload = await page.evaluate((key) => localStorage.getItem(key), idleGame.key);
-    expect(beforeReload).toBeTruthy();
-    const savedAt = JSON.parse(beforeReload).lastSavedAt;
+    // Przejście do innej aplikacji: gra zapisuje stan, a SowieCloud wysyła go od razu.
+    await setVisibility(page, "hidden");
+    await expect
+      .poll(async () =>
+        JSON.parse((await readDoc(project, `sowiegry/profil/sowiegry_gry/${idleGame.id}`))?.state || "{}"),
+      )
+      .toMatchObject({ stats: { clicks: 3 } });
 
     await page.reload({ waitUntil: "load" });
-    const afterReload = await page.evaluate((key) => localStorage.getItem(key), idleGame.key);
-    expect(afterReload).toBeTruthy();
-    expect(JSON.parse(afterReload).lastSavedAt).toBeGreaterThanOrEqual(savedAt);
+    await waitForCloud(page);
+    await expect.poll(() => page.evaluate(() => window.SowieIdleGame.snapshot().stats.clicks)).toBe(3);
+    const doc = await readDoc(project, `sowiegry/profil/sowiegry_gry/${idleGame.id}`);
+    expect(doc.rev).toBeGreaterThanOrEqual(1);
+    expect(doc.deviceId).toMatch(/^d-/);
+    expect(typeof doc.savedAt).toBe("number");
     expect(errors).toEqual([]);
   });
 }
 
 test("panel szklarni zachowuje fokus podczas cyklicznego odświeżania", async ({ page }) => {
-  const errors = watchRuntimeErrors(page);
+  const errors = watchErrors(page);
   await page.goto("/SowiaSzklarnia/?seed=focus", { waitUntil: "load" });
+  await waitForCloud(page);
   await expect(page.locator("#panelContent")).toHaveAttribute("data-stable-panel", "true");
 
   const saveButton = page.locator("#panelContent [data-save]");
@@ -73,9 +86,10 @@ test("panel szklarni zachowuje fokus podczas cyklicznego odświeżania", async (
 });
 
 test("modal wspólny przechwytuje fokus, zamyka się Escape i przywraca fokus", async ({ page }) => {
-  const errors = watchRuntimeErrors(page);
+  const errors = watchErrors(page);
   await page.goto("/SowaJumper/?seed=modal", { waitUntil: "load" });
-  const opener = page.getByRole("button", { name: "Ustawienia i zapis" });
+  await waitForCloud(page);
+  const opener = page.getByRole("button", { name: "Ustawienia", exact: true });
   await opener.click();
 
   const dialog = page.getByRole("dialog");
@@ -90,18 +104,28 @@ test("modal wspólny przechwytuje fokus, zamyka się Escape i przywraca fokus", 
   expect(errors).toEqual([]);
 });
 
-test("eksport i import zapisu odtwarza profil", async ({ page }) => {
-  await page.goto("/Sowa3/?seed=export", { waitUntil: "load" });
-  const restored = await page.evaluate(() => {
-    const profile = window.SowiePlatform.readProfile();
-    profile.stats.leaves = 987;
-    window.SowiePlatform.writeProfile(profile);
-    const backup = window.SowiePlatform.exportData();
-    localStorage.removeItem("sowieGryProfile");
-    window.SowiePlatform.importData(backup);
-    return window.SowiePlatform.readProfile().stats.leaves;
-  });
-  expect(restored).toBe(987);
+test("ustawienia zapisują się w profilu, pokazują stan zapisu i pozwalają wylogować urządzenie", async ({
+  page,
+}, testInfo) => {
+  const project = uniqueProject(testInfo);
+  const errors = watchErrors(page);
+  await page.goto(cloudUrl("/Sowa3/?seed=settings", project), { waitUntil: "load" });
+  await waitForCloud(page);
+  await page.getByRole("button", { name: "Ustawienia", exact: true }).click();
+  const dialog = page.getByRole("dialog", { name: "Ustawienia" });
+  await expect(dialog).toContainText("Zapis postępu");
+  await expect(dialog.locator("[data-cloud-status]")).toHaveText(/zapisano w chmurze|zapisywanie/);
+  await expect(dialog).not.toContainText("Eksportuj");
+  await expect(dialog).not.toContainText("Importuj");
+
+  await dialog.locator(".sowie-setting-row", { hasText: "Muzyka" }).getByRole("button").click();
+  await expect.poll(async () => (await readDoc(project, "sowiegry/profil"))?.settings?.music).toBe(false);
+
+  await dialog.getByRole("button", { name: "Wyloguj to urządzenie" }).click();
+  await expect(page.getByRole("dialog", { name: "Hasło sowy" })).toBeVisible();
+  const device = await page.evaluate((key) => JSON.parse(localStorage.getItem(key)), DEVICE_KEY);
+  expect(device.unlocked).toBe(false);
+  expect(errors).toEqual([]);
 });
 
 test("preferencja ograniczenia ruchu wyłącza animacje", async ({ page }) => {

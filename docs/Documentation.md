@@ -2,194 +2,179 @@
 
 ## Zakres
 
-Repozytorium zawiera ekran startowy i trzy samodzielne gry:
+Repozytorium zawiera menu główne i pięć samodzielnych gier przeglądarkowych (bez etapu budowania, serwowanych przez GitHub Pages):
 
-- `SowaRunner`,
-- `SowaJumper`,
-- `Sowa3`.
+| Gra | Folder | Identyfikator w bazie | Rodzaj |
+|---|---|---|---|
+| SowaRunner | `SowaRunner/` | `runner` | arcade (p5.js) |
+| SowaJumper | `SowaJumper/` | `jumper` | arcade (Canvas 2D) |
+| Sowa3 | `Sowa3/` | `sowa3` | arcade (Canvas 2D, pseudo-3D) |
+| Sowie Ogrody | `SowieOgrody/` | `ogrody` | idle |
+| Sowia Szklarnia | `SowiaSzklarnia/` | `szklarnia` | idle |
 
-Wspólna warstwa „Cute Polish” zapewnia profil, kosmetyki, misje, ustawienia, audio, pauzę, debug i testy uruchomieniowe.
+Identyfikatory w bazie są stałe (są wpisane w opublikowane reguły Firestore) i nie zmieniają się przy zmianie nazw gier ani folderów. Wspólna warstwa w `shared/` zapewnia rejestr gier, **zapis postępu w Firestore (`SowieCloud`)**, ekran hasła, profil, kosmetyki, misje, Sowią Akademię, Galerię Sów, instrukcje, ustawienia, audio, pauzę i powiadomienia. Plan dalszych zmian: `Analizy/`.
 
 ## Struktura główna
 
 ```text
-index.html
+index.html                (menu główne)
+config/
+  firebase-config.js      (window.firebaseConfig — projekt rpg-dataslate-relay)
 shared/
-  cute-ui.css
-  sowie-core.js
-  sowie-runtime.js
-  sowie-smoke-hook.js
+  sowie-platform.js       (rejestr gier, stałe, zdarzenia, ?seed= i ?testNow=)
+  sowie-cloud.js          (SowieCloud — jedyny moduł z Firestore i pamięcią przeglądarki)
+  password-gate.js        (ekran „Hasło sowy”, sówka ładowania, pasek offline, pytanie o nowszy postęp)
+  sowie-core.js           (SowieCore — profil, kosmetyki, misje, ustawienia, audio, pauza, modale)
+  notification-manager.js (kolejka powiadomień)
+  sowie-runtime.js        (wspólny układ i ograniczone efekty)
+  sowie-smoke-hook.js     (raportowanie błędów do tests/smoke.html)
+  sowie-academy.js        (Sowia Akademia)
+  owl-gallery.js/.css     (Galeria Sów)
+  game-guides.js          (instrukcje gier)
+  gameplay-expansion.js   (serie, precyzja, combo, wyzwanie dnia, kontrakty, album cech)
+  stable-panel.js         (stabilny panel gier idle)
+  modal-accessibility.js  (dostępność modali gier idle)
+  main-menu.js/.css       (karty gier w menu)
+  cute-ui.css, game-enhancements.css
 tests/
   smoke.html
   e2e/            (testy Playwright; telefon/ — testy na profilach telefonów)
   unit/           (testy node --test)
-config/
-  firebase-config.js
+  rules/          (testy reguł Firestore na emulatorze)
 firebase.json     (tylko emulator Firestore)
 firestore.rules   (kopia reguł opublikowanych 2026-09-27)
 playwright.config.js
-SowaRunner/
-SowaJumper/
-Sowa3/
+SowaRunner/ SowaJumper/ Sowa3/ SowieOgrody/ SowiaSzklarnia/   (gry, każda z docs/)
+Obrazki/          (30 zdjęć Galerii Sów)
+Analizy/          (analizy i plan prac)
 docs/
 .github/workflows/js-check.yml
 ```
 
-## Ekran startowy
+## Kolejność skryptów na każdej stronie
 
-Główny `index.html` pozostaje prostym ekranem wyboru gry. Karty prowadzą względnymi linkami do:
+Na początku (w `<head>` stron gier, na końcu `<body>` menu), ścieżki względne:
 
-- `SowaRunner/`,
-- `SowaJumper/`,
-- `Sowa3/`.
+1. `config/firebase-config.js`
+2. `shared/sowie-platform.js`
+3. `shared/sowie-cloud.js`
+4. `shared/password-gate.js`
 
-Animowane ozdoby ekranu startowego mają `pointer-events: none`, dzięki czemu nie blokują kart.
+Dopiero potem `sowie-core.js`, gra i pozostałe moduły. Test `tests/unit/architecture.test.mjs` pilnuje tej kolejności.
+
+## Ekran startowy (menu)
+
+`index.html` (`body.sowie-main-menu`) ma pasmo ozdób (sowa, koza, humbak, szklarnia — `pointer-events: none`), nagłówek „SowieGry”, przycisk garderoby `#cosmeticsButton` i sekcję `[data-game-cards]`. `shared/main-menu.js` generuje karty z `SowiePlatform.GAME_REGISTRY` (link `.game-card` + przycisk „❓ Jak grać w …”). Przycisk garderoby pokazuje ikonę i nazwę wybranego kosmetyku (`profil.cosmetics.selected`) i odświeża się na zdarzenie `profile:changed`. Ekran hasła pojawia się nad menu przy pierwszym wejściu na urządzeniu.
 
 ## Wspólna warstwa
 
+### `shared/sowie-platform.js` — `window.SowiePlatform`
+
+IIFE bez zapisu danych. Udostępnia (obiekt zamrożony):
+
+- `GAME_REGISTRY` — 5 gier: `{ id, name, path, icon, kind, dailyMetric | saveVersion }`:
+  - `runner` — „SowaRunner”, `SowaRunner/`, 🏃, `kind: "arcade"`, `dailyMetric: "distance"`;
+  - `jumper` — „SowaJumper”, `SowaJumper/`, 🪶, `arcade`, `dailyMetric: "height"`;
+  - `sowa3` — „Sowa3”, `Sowa3/`, 🛣️, `arcade`, `dailyMetric: "score"`;
+  - `ogrody` — „Sowie Ogrody”, `SowieOgrody/`, 🌿, `kind: "idle"`, `saveVersion: 2`;
+  - `szklarnia` — „Sowia Szklarnia”, `SowiaSzklarnia/`, 🏡, `idle`, `saveVersion: 1`;
+- `COSMETICS` — 9 dodatków (`none`, `bow`, `glasses`, `flowerCrown`, `gardenerHat`, `cap`, `scarf`, `backpack`, `bubbleTrail`) z `label` i `icon`;
+- `DEFAULT_SETTINGS` — `{ music: true, sfx: true, quips: true, reducedEffects: false }`;
+- `DEFAULT_MISSIONS` — 7 misji `{ progress, target, done, reward }`: `leaves20` (20 → `glasses`), `extraLife` (1 → `flowerCrown`), `nearMiss3` (3 → `scarf`), `chaosFinish` (1 → `gardenerHat`), `combo4` (1 → `bubbleTrail`), `runner1000` (1000 → `cap`), `jumper250` (250 → `backpack`);
+- `DEFAULT_STATS` — liczniki ogólne `{ leaves: 0, nearMisses: 0, extraLives: 0, finishes: 0, maxCombo: 1 }` (dawne statystyki dublujące rekordy gier przeszły do `profil.records`);
+- `emit(type, detail)`, `on(type, listener)` — zdarzenia przez wspólny `EventTarget` (`profile:changed`, `cloud:status`, `cloud:ready`, `cloud:profile-reloaded`, `stat:recorded`, `mission:progress`, `cosmetic:*`, `game:*`, `modal:*`);
+- `shouldRun(key, ms)` — ogranicznik częstotliwości; `createRng(seed)` — xorshift z ziarnem (FNV-1a); `random()`, `now()`;
+- `?seed=…` podmienia `Math.random` na generator z ziarnem, `?testNow=ms` przesuwa `Date.now()` (testy i wyzwanie dnia).
+
+Etap E1 usunął z platformy migracje, kopie `sowieGryBackup:*`, eksport i import JSON oraz odczyt/zapis profilu w pamięci przeglądarki.
+
+### `shared/sowie-cloud.js` i `shared/password-gate.js`
+
+Opis szczegółowy: rozdziały „SowieCloud — zapis postępu w Firestore” i „Ekran „Hasło sowy” i nakładki” poniżej.
+
 ### `shared/cute-ui.css`
 
-Definiuje:
+Definiuje zmienne `--sowie-ink` (`#2b2733`), `--sowie-cream`, `--sowie-sky`, `--sowie-mint`, `--sowie-yellow` (`#ffd65a`), `--sowie-pink`, `--sowie-green`, `--sowie-card`, a także: pasek narzędzi (przyciski 44 × 44 px, na ekranach ≤ 520 px 38 × 38 px), modal garderoby, misji i ustawień, toasty, wskaźnik pauzy, panel debug, sekcję `.sowie-cloud-tools` w ustawieniach (odstęp 10 px, przycisk min. 48 px) oraz style ekranu hasła i nakładek SowieCloud. Pasek narzędzi jest pod HUD-em po lewej stronie, aby nie zasłaniać wyników. `prefers-reduced-motion` i klasa `sowie-reduced-effects` wyłączają animacje.
 
-- pasek narzędzi,
-- modal garderoby,
-- modal misji,
-- ustawienia,
-- toasty,
-- wskaźnik pauzy,
-- panel debug.
+### `shared/sowie-core.js` — `window.SowieCore`
 
-Pasek narzędzi znajduje się pod HUD-em po lewej stronie, aby nie zasłaniać wyników ani centralnego obszaru gry.
+Wymaga `SowiePlatform` i `SowieCloud`. **Profil jest w `SowieCloud`** — moduł zawsze czyta bieżący obiekt przez `profile = () => SowieCloud.profile()` (po starcie chmury profil jest podmieniany).
 
-### `shared/sowie-core.js`
+- `getProfile()`, `settings()`, `selectedCosmetic()` (`profil.cosmetics.selected`);
+- `unlockCosmetic(key, announce)` — dopisuje do `profil.cosmetics.unlocked` (`updateProfile`, zapis po 1 s), toast „Odblokowano: …”, dźwięk `unlock`; przed `SowieCloud.ready` odkładane;
+- `selectCosmetic(key)` — `profil.cosmetics.selected` (zapis po 1 s), zdarzenie `profile:changed`;
+- `progressMission(key, amount)` — postęp misji w `profil.missions` (zapis odroczony do 30 s); misje `runner1000` i `jumper250` co najwyżej co 500 ms; ukończenie odblokowuje nagrodę i pokazuje toast „Misja ukończona”;
+- `recordStat(key, value, mode)` — tylko klucze z `DEFAULT_STATS`: `"add"` → `SowieCloud.increment("stats.<klucz>", n)` (sumuje się z wielu urządzeń), `"max"` → zapis tylko przy poprawie; inne klucze (np. dawne `runnerDistance`) są pomijane;
+- dźwięk: `play(name)` (piski oscylatora, odstęp min. 90 ms na dźwięk), `startMusic(theme)` / `stopMusic()` (8 nut co 430 ms), `tone(...)`;
+- `toast`, `maybeQuip` (co najmniej 6,5 s odstępu), `setDebugData` (`?debug=1`), `drawCanvasCosmetic(context, x, y, scale, rotation, key)`;
+- `registerGame(adapter)` — adapter pauzy i motyw muzyczny gry; pasek narzędzi ⏸ 🎀 ⭐ ⚙ (`aria-label`: „Pauza”, „Garderoba”, „Misje”, „Ustawienia”);
+- `openModal(tab)`, `closeModal()` — modal z pułapką fokusu, Escape, `inert` na tle;
+- okno **Ustawienia**: przełączniki Muzyka / Efekty dźwiękowe / Komentarze sowy / Ograniczone efekty (`updateProfile`, zapis po 1 s), sekcja „Zapis postępu: <stan>” (`[data-cloud-status]`, aktualizowana przez `SowieCloud.onStatus`; etykiety: czeka na hasło, łączenie…, zapisano w chmurze ☁️, tryb offline — postęp nie jest zapisywany, zapisywanie…, błąd zapisu — spróbujemy ponownie; w trybie `?cloud=memory` — „tryb testowy (pamięć)”) i przycisk **„Wyloguj to urządzenie”** (`SowieCloud.lock()`). Eksport i import zapisu zostały usunięte;
+- po `SowieCloud.ready` i przy ponownym wczytaniu profilu: klasa `sowie-reduced-effects`, zdarzenie `profile:changed`, start/stop muzyki zgodnie z ustawieniem. Zapis przy zejściu do tła wykonuje `SowieCloud` (`visibilitychange → flush`).
 
-Udostępnia globalny obiekt `SowieCore`.
+### `shared/sowie-academy.js` — `window.SowieAcademy`
 
-Najważniejsze systemy:
+Stan (XP, piórka, metryki, misje dzienne i tygodniowe, nagrody) jest w `profil.academy`. Moduł trzyma kopię roboczą: po `SowieCloud.ready` (i `onProfileReload`) wczytuje ją z profilu, uzupełnia okresy (`ensurePeriods`) i ocenia misje. `save()` przycina nagrody dzienne `daily:*` i `feature:*` starsze niż 30 dni (`SowieCloud.helpers.trimAwards`; `weekly:*`, `trait:*`, `gallery:*` zostają) i zapisuje kopię przez `updateProfile` (zapis odroczony, tylko zmienione pola). `record()` i `award()` wywołane przed startem chmury są odkładane. Misje dzienne: 3 z puli 12, wybierane deterministycznie z daty (UTC); tygodniowa: zagraj w 3 różne gry. Nagrody: 50 XP + 5 piórek (dzienna), 140 XP + 15 piórek (tygodniowa). Poziom: 100 XP na 1. poziom, każdy kolejny +35 XP.
 
-- wspólny profil `sowieGryProfile`,
-- kosmetyki,
-- misje,
-- statystyki,
-- ustawienia,
-- proceduralne efekty dźwiękowe,
-- proceduralna muzyka,
-- garderoba,
-- toasty,
-- komentarze sowy,
-- rysowanie kosmetyków na Canvasie,
-- rejestracja adaptera pauzy każdej gry.
+### `shared/owl-gallery.js` — `window.SowieOwlGallery`
+
+30 fotografii z `Obrazki/` (tytuł, opis, autor, link Pexels, warunek odblokowania z metryk Akademii). Stan (`unlocked`, `viewed`, `favorite`) jest w `profil.gallery`; wczytywany po `SowieCloud.ready`, zapisywany przez `updateProfile`. Przed wczytaniem `refreshUnlocks()` nic nie robi (nie nadpisze stanu z chmury). Nowe odblokowania pokazują toast „Nowa fotografia w Galerii Sów!”, obejrzenie wszystkich 30 daje nagrodę Akademii `gallery:complete`.
+
+### `shared/gameplay-expansion.js`
+
+Mechaniki dodatkowe per gra (seria liści w Runnerze, precyzyjne lądowania w Jumperze, combo w Sowa3, kontrakty w Ogrodach, cele laboratorium i album cech w Szklarni) oraz wyzwanie dnia (`?daily=1&seed=daily-RRRR-MM-DD-gra`). Zmiany E1:
+
+- stan gier idle czyta przez `window.SowieIdleGame.snapshot()` (po `SowieIdleGame.ready`), a nie z pamięci przeglądarki;
+- stan dnia kontraktów `{ date, baseline, claimed }` jest w dokumencie gry `sowiegry_gry/{gra}.daily` (`SowieCloud.game` / `updateGame`); dane z poprzedniego dnia są zastępowane;
+- album cech Szklarni: `sowiegry_gry/szklarnia.traitAlbum` (tablica kluczy `wzrost|zapach`);
+- rekord wyzwania dnia zapisuje gra przez `SowieCloud.submitRun()` (`dailyBest` w dokumencie gry); moduł nie zapisuje go sam.
 
 ### `shared/sowie-runtime.js`
 
-- ogranicza częstotliwość zapisu statystyk dystansu i wysokości,
-- obsługuje wznowienie po zamknięciu modalu,
-- obsługuje klawisz Escape.
+Ustawia pionowy układ paska narzędzi i kolumny HUD (4 kolumny na ekranach ≤ 700 px) oraz synchronizuje klasę `sowie-reduced-effects` z preferencją systemu i ustawieniem profilu.
 
 ### `shared/sowie-smoke-hook.js`
 
-Przesyła do `tests/smoke.html`:
+Gdy gra działa w ramce `tests/smoke.html`, przesyła do rodzica (`postMessage`): błędy JavaScript, nieobsłużone odrzucenia Promise i informację o załadowaniu gry.
 
-- błędy JavaScript,
-- nieobsłużone odrzucenia Promise,
-- informację o załadowaniu gry.
+## Profil (Firestore: `sowiegry/profil`)
 
-## Profil
-
-Klucz:
+Jedyny profil gracza (Analiza 1, rozdział 4.1), wczytywany i zapisywany przez `SowieCloud`:
 
 ```text
-sowieGryProfile
+schemaVersion: 1, name: "Sowa", createdAt, updatedAt, lastSeenAt (znaczniki czasu serwera)
+settings:  { music, sfx, quips, reducedEffects }
+cosmetics: { unlocked: ["none", "bow", …], selected: "none" }
+missions:  { leaves20: { progress, target, done, reward }, … }
+stats:     { leaves, nearMisses, extraLives, finishes, maxCombo }
+academy:   { xp, feathers, metrics, daily, weekly, awards, version, updatedAt }
+gallery:   { unlocked, viewed, favorite, version, updatedAt }
+records:   { runner: { runs, lastPlayedAt, chill|arcade|chaos: { bestScore, bestDistance } },
+             jumper: { …, bestScore, bestHeight }, sowa3: { …, bestScore },
+             ogrody: { lifetimeLeaves, prestiges, zone }, szklarnia: { lifetimeLeaves, rooms, hybrids } }
 ```
 
-Profil zawiera:
-
-- `unlockedCosmetics`,
-- `selectedCosmetic`,
-- `settings`,
-- `missions`,
-- `stats`.
-
-Dotychczasowe klucze rekordów gier pozostają zachowane.
+Dokumenty gier: `sowiegry/profil/sowiegry_gry/{runner|jumper|sowa3|ogrody|szklarnia}` (`difficulty`, `finishSeen`, `top10`, `dailyBest`, `daily`, `traitAlbum`, `historyCount`; gry idle: `state`, `saveVersion`, `summary`, `savedAt`, `clientSavedAt`, `rev`, `deviceId`) i historia `…/sowiegry_historia/{autoId}`. Profil ma 12–15 pól najwyższego poziomu (reguły dopuszczają 30).
 
 ## Kosmetyki
 
-Dostępne warianty:
-
-- brak,
-- kokardka,
-- okulary,
-- wianek,
-- kapelusz ogrodnika,
-- czapka z daszkiem,
-- szalik,
-- plecak,
-- ślad bąbelków jako odblokowanie profilowe.
-
-Kosmetyki nie wpływają na hitboxy ani parametry mechaniczne.
+Dostępne warianty: brak, kokardka, okulary, wianek, kapelusz ogrodnika, czapka z daszkiem, szalik, plecak, ślad bąbelków. Na start odblokowane: brak i kokardka. Kosmetyki nie wpływają na hitboxy ani parametry mechaniczne.
 
 ## Misje
 
-Wspólne misje obejmują:
-
-- 20 liści,
-- dodatkowe życie,
-- 3 near missy,
-- ukończenie etapu `Chaos`,
-- combo `×4`,
-- 1000 m w `SowaRunner`,
-- 250 m w `SowaJumper`.
-
-Nagrodami są kosmetyki.
+20 liści, dodatkowe życie, 3 uniki „O włos!”, ukończenie etapu `Chaos`, combo `×4`, 1000 m w `SowaRunner`, 250 m w `SowaJumper`. Nagrodami są kosmetyki.
 
 ## Audio
 
-Audio jest generowane przez Web Audio API bez zewnętrznych plików.
-
-Ustawienia:
-
-- muzyka,
-- efekty,
-- komentarze sowy,
-- ograniczone efekty wizualne.
-
-Każda gra rejestruje własny motyw muzyczny przez `SowieCore.registerGame()`.
+Audio jest generowane przez Web Audio API bez zewnętrznych plików (efekty i prosta pętla muzyczna). Ustawienia: muzyka, efekty, komentarze sowy, ograniczone efekty wizualne. Każda gra rejestruje własny motyw muzyczny przez `SowieCore.registerGame()`.
 
 ## Systemy rozgrywki
 
-Wszystkie gry mają:
-
-- `Chill`, `Arcade`, `Chaos`,
-- zdobywanie dodatkowych żyć,
-- zabezpieczenie przed niemożliwymi układami,
-- combo,
-- near miss,
-- zwykłe, złote i tęczowe liście,
-- gorączkę monster,
-- animacje sowy,
-- piórka i gwiazdki,
-- wspólny profil,
-- pauzę,
-- audio,
-- debug.
-
-Szczegóły implementacji znajdują się w dokumentacji poszczególnych gier.
+Gry zręcznościowe mają poziomy `Chill`, `Arcade`, `Chaos` (rekordy osobno dla każdego), dodatkowe życia, zabezpieczenia przed niemożliwymi układami, combo, near miss, zwykłe, złote i tęczowe liście, gorączkę monster, animacje sowy, piórka i gwiazdki, wspólny profil, pauzę, audio i debug. Każda gra startuje rozgrywkę dopiero po `SowieCloud.ready` (postęp wczytany). Szczegóły w dokumentacji poszczególnych gier.
 
 ## Sowa3 — zasada czytelności
 
-Dekoracje są dopuszczalne tylko:
-
-- po bokach ekranu,
-- wysoko nad horyzontem,
-- poza perspektywicznym korytarzem torów.
-
-`visibility-corridor.js` ponownie rysuje czystą trasę po wszystkich warstwach scenografii.
-
-Ruch ludzi i dzików jest dodatkowo kontrolowany przez `moving-obstacle-safety.js`, który anuluje zmianę toru, gdy:
-
-- tor docelowy jest zajęty,
-- ruch zamknąłby wszystkie trzy pasy,
-- ostrzeżenie pojawiłoby się zbyt późno.
+Dekoracje są dopuszczalne tylko po bokach ekranu, wysoko nad horyzontem i poza perspektywicznym korytarzem torów. `visibility-corridor.js` ponownie rysuje czystą trasę po wszystkich warstwach scenografii. Ruch ludzi i dzików kontroluje `moving-obstacle-safety.js` (anuluje zmianę toru, gdy tor docelowy jest zajęty, ruch zamknąłby trzy pasy albo ostrzeżenie pojawiłoby się zbyt późno).
 
 ## Testy
 
@@ -229,13 +214,41 @@ Zależności deweloperskie są przypięte tam, gdzie wersja wpływa na przegląd
 
 - `test` — rozszerzony `test` Playwright z automatyczną fiksturą `productionRequests`: w każdym kontekście przeglądarki przerywa żądania do `firestore.googleapis.com`, `firebaseinstallations.googleapis.com`, `identitytoolkit.googleapis.com` i `securetoken.googleapis.com`, a po teście sprawdza, że żadne takie żądanie nie wystąpiło. To bezpiecznik: testy nigdy nie łączą się z produkcyjną bazą (współdzieloną z innym projektem);
 - ta sama fikstura podaje pliki SDK `https://www.gstatic.com/firebasejs/12.19.0/*.js` z `node_modules/firebase/` (`route.fulfill`, typ `text/javascript`, nagłówek `Access-Control-Allow-Origin: *` — dynamiczny import modułu z innej domeny wymaga CORS). Pliki z pakietu npm są identyczne z gstatic, więc testy są niezależne od sieci i CDN, a produkcja nadal ładuje SDK z gstatic;
-- `blockProduction(context, lista)` — ta sama blokada (i podawanie SDK) dla dodatkowych kontekstów tworzonych w teście (np. „drugie urządzenie”);
+- opcja `odblokowane` (domyślnie `true`): skrypt startowy kontekstu zapisuje `sowiegry:urzadzenie = { unlocked: true, deviceId: "d-…", cleaned: true }` (tylko gdy klucza jeszcze nie ma), więc testy nie muszą wpisywać hasła; testy ekranu hasła ustawiają `test.use({ odblokowane: false })`;
+- `blockProduction(context, lista)` — ta sama blokada (i podawanie SDK) dla dodatkowych kontekstów tworzonych w teście;
+- `unlockDevice(context)` — zapamiętane odblokowanie z unikalnym `deviceId`;
+- `newDevice(browser, opcje)` — nowy kontekst przeglądarki = „drugie urządzenie” (własny `localStorage` i IndexedDB), z blokadą produkcji i odblokowaniem;
+- `waitForCloud(page)` — czeka, aż `SowieCloud.isReady()` zwróci `true` (do 20 s);
+- `setVisibility(page, "hidden" | "visible")` — symuluje przejście telefonu do innej aplikacji i powrót (podmienia `document.visibilityState` / `document.hidden` i wysyła `visibilitychange`);
 - `watchErrors(page)` — zbiera `pageerror`, błędy konsoli i odpowiedzi HTTP ≥ 400 (bez `favicon.ico`).
 
-### Testy na telefonach (`tests/e2e/telefon/start.spec.js`)
+### Pomocnicy emulatora (`tests/e2e/emulator.js`)
+
+- `uniqueProject(testInfo)` — identyfikator projektu `demo-sowiegry-<proces>-<numer>-<czas><losowe>` dla izolacji testów;
+- `cloudUrl(ścieżka, projekt)` — dopisuje `cloud=emulator&projekt=…`;
+- `readDoc`, `listDocs`, `seedDoc` — odczyt, lista i zapis dokumentów przez REST emulatora (`http://127.0.0.1:8080/v1/projects/…/documents/…`, nagłówek `Authorization: Bearer owner` omija reguły), z konwersją typów Firestore ↔ JSON (znaczniki czasu → milisekundy).
+
+### Testy obecnych gier (desktop, `tests/e2e/*.spec.js`)
+
+- `smoke.spec.js` — menu z 5 kartami, każda gra startuje po wczytaniu postępu (Runner `mode === SCREEN.RUN`, Jumper `state.scene === "playing"`, Sowa3 `state.mode === "run"`, gry idle — licznik kliknięć), profil z `SowieCloud` (`schemaVersion: 1`), wspólne powiadomienia;
+- `guides-and-expansion.spec.js` — instrukcje, Akademia i panele rozszerzeń w każdej grze, idempotentne nagrody Akademii;
+- `owl-gallery.spec.js` — Galeria: nagrody, źródło, ulubiona fotografia w `profil.gallery`; profil z osiągnięciami zapisany wcześniej w emulatorze odblokowuje 30 zdjęć i zapisuje je w bazie; galeria dostępna z każdej gry;
+- `platform.spec.js` — kasowanie wyłącznie starych kluczy SowieGry (dane innych stron zostają, zostaje `sowiegry:urzadzenie`), zapis stanu Ogrodów i Szklarni w emulatorze przy zejściu do tła i odtworzenie po przeładowaniu, stabilny panel Szklarni, modal z fokusem, ustawienia (stan zapisu, zapis ustawienia w bazie, „Wyloguj to urządzenie”), ograniczenie ruchu.
+
+### Testy na telefonach (`tests/e2e/telefon/`)
+
+`start.spec.js`:
 
 - menu główne i każda z pięciu gier otwiera się bez błędów (znacznik strony widoczny, brak błędów po 0,5 s);
 - menu główne mieści się w szerokości ekranu (`scrollWidth ≤ innerWidth`).
+
+`chmura.spec.js` (Analiza 3, zadanie 1.9):
+
+- ekran „Hasło sowy”: atrybuty pola (`autocapitalize`, `autocorrect`, `spellcheck`, `enterkeyhint`), czcionka ≥ 16 px, przycisk „Wejdź” ≥ 48 px, w całości na ekranie i w dolnej połowie, brak przewijania w bok i powiększenia po dotknięciu pola, błąd dla „hu hu”, oczko, wejście przez „ Huhu ” + Enter, w `localStorage` tylko `sowiegry:urzadzenie`, po przeładowaniu brak ekranu hasła;
+- pisanie hasła na stronie SowaRunner nie uruchamia gry; po wejściu stuknięcie startuje bieg;
+- emulator: pierwsze połączenie tworzy `sowiegry/meta` (schemaVersion 1, 5 gier, `createdAt`) i `sowiegry/profil`; status `online`;
+- emulator: koniec gry w SowaJumper zapisuje rekord (`records.jumper.arcade`, `runs`, `top10`, historia), a **drugi kontekst przeglądarki (drugie urządzenie)** widzi ten rekord w `SowieCloud.records` i na ekranie gry;
+- emulator: zejście do tła zapisuje stan Ogrodów od razu, a powrót po 10 minutach pokazuje okno postępu offline.
 
 ### Emulator Firestore
 
@@ -244,6 +257,15 @@ Zależności deweloperskie są przypięte tam, gdzie wersja wpływa na przegląd
 - emulator stosuje reguły z `firestore.rules` do każdego identyfikatora projektu, co pozwala izolować testy osobnymi projektami `demo-sowiegry-…`;
 - emulator wymaga Javy 11+ (w CI: `actions/setup-java`, Temurin 21) i przy pierwszym uruchomieniu pobiera plik JAR do `~/.cache/firebase/emulators` (w CI ten katalog jest w `actions/cache`);
 - logi emulatora trafiają do `firestore-debug.log` (ignorowany przez git, dołączany do artefaktów CI przy błędzie).
+
+### Test architektury (`tests/unit/architecture.test.mjs`)
+
+- rejestr ma dokładnie 5 gier; menu generowane z rejestru; każda gra ładuje platformę i wspólne powiadomienia;
+- **`localStorage` i `sessionStorage` występują tylko w `shared/sowie-cloud.js`** (przeszukiwane są wszystkie pliki `.js` w `shared/`, `config/` i folderach gier, bez `p5.js`);
+- `shared/progress-reset.js` i `shared/idle-save-bridge.js` nie istnieją i nie są ładowane; platforma nie ma migracji, kopii, eksportu ani importu; ustawienia mają „Wyloguj to urządzenie”;
+- każda strona ładuje `config/firebase-config.js`, `sowie-platform.js`, `sowie-cloud.js`, `password-gate.js` w tej kolejności i przed `sowie-core.js`;
+- `sowie-cloud.js` nie czyści całej pamięci (`clear`), ma hasło `huhu`, klucz `sowiegry:urzadzenie`, przypiętą wersję SDK, nazwaną aplikację i cache IndexedDB; wszystkie ścieżki w kodzie leżą w kolekcjach `sowiegry`, `sowiegry_gry`, `sowiegry_historia`, a żaden inny plik nie używa Firestore;
+- gry idle ładują stan przez `loadGameState`, zapisują przez `saveGameState`, udostępniają `SowieIdleGame` i nie mają warunku `now % 7000`.
 
 ### Testy jednostkowe konfiguracji (`tests/unit/firestore-rules.test.mjs`)
 
@@ -275,7 +297,7 @@ wyświetla dane diagnostyczne konkretnej gry.
 
 Ustawia globalny obiekt `window.firebaseConfig` (bez `export`, żeby działał także z bibliotekami `firebase-*-compat`) dla projektu Firebase `rpg-dataslate-relay`. Projekt i baza Firestore są **współdzielone z innym projektem właściciela** (kolekcje `audio`, `character_builder`, `dataslate`; projekt ma też Realtime Database z osobnymi regułami, których SowieGry nie dotykają).
 
-Stan na 2026-09-27: **żadna strona SowieGry nie ładuje jeszcze tego pliku** (moduł `shared/sowie-cloud.js` jest gotowy i przetestowany, ale nie jest jeszcze podpięty do stron). Gry nadal zapisują postęp w `localStorage` (opis w sekcjach „Profil” i „Kosmetyki” oraz w dokumentacji gier). Przeniesienie zapisu do Firestore opisuje `Analizy/ANALIZA_1_Firestore_zapis_postepu.md` i etap E1 w `Analizy/ANALIZA_3_Plan_prac.md`.
+Od etapu E1 plik jest ładowany na każdej stronie jako pierwszy skrypt; czyta go wyłącznie `shared/sowie-cloud.js` (Firebase JS SDK 12.19.0, nazwana aplikacja `sowiegry`). Komentarz w pliku opisuje współdzielenie projektu i to, że SowieGry używają tylko kolekcji `sowiegry` (z podkolekcjami `sowiegry_gry` i `sowiegry_historia`). Wartości konfiguracji nie są zmieniane. Kolekcja `sowiegry` powstaje przy pierwszym uruchomieniu wersji E1 na docelowej domenie po wpisaniu hasła (zapis `sowiegry/meta` i `sowiegry/profil`).
 
 ### Reguły Firestore
 
@@ -427,7 +449,7 @@ Opcje: `platform` (stałe z `SowiePlatform`), `storage` (`localStorage`), `conne
 - każdy dokument gry: `diff` + `increment` + `updatedAt`; gdy zmieniło się `state` — także `savedAt` = `serverTimestamp`;
 - odłożone operacje historii (`add`, `delete`).
 
-Po zbudowaniu stan bazowy = kopia stanu w pamięci. Podczas zapisu status `"zapisywanie"`, po błędzie `"blad"` i `console.error`. `flush()` przed startem czeka na `ready`.
+Po zbudowaniu stan bazowy = kopia stanu w pamięci. Podczas zapisu status `"zapisywanie"`, po błędzie `"blad"` i `console.error`. `flush()` przed startem czeka na `ready`; zwracana obietnica rozwiązuje się, gdy dotrą do bazy **wszystkie** zapisy — także wysłane wcześniej (np. przez `submitRun`), a offline dopiero po powrocie sieci (dlatego zdarzenia `visibilitychange` jej nie czekają, a `lock()` czeka najwyżej 1,5 s).
 
 **Status** (`status()`, `onStatus(listener)` — słuchacz wywoływany od razu z bieżącą wartością): `"haslo"`, `"laczenie"`, `"online"` (Firestore, profil znany, `navigator.onLine`), `"offline"` (pamięć, profil nieznany albo brak sieci), `"zapisywanie"`, `"blad"`.
 
@@ -453,10 +475,11 @@ Po zbudowaniu stan bazowy = kopia stanu w pamięci. Podczas zapisu status `"zapi
 | `updateGame(gameId, mutator \| obiekt, { delayMs = 1000 })` | zmiana pól dokumentu gry (poziom trudności, `finishSeen`, kontrakty dnia) |
 | `loadGameState(gameId)` | Promise: stan gry idle (`JSON.parse(state)`) albo `null` |
 | `saveGameState(gameId, stan, { immediate, summary, saveVersion })` | zapis stanu gry idle: `state` = JSON, `saveVersion`, `clientSavedAt`, `deviceId`, `rev + 1`; `summary` trafia do dokumentu gry i do `profil.records[gameId]`; opóźnienie 30 s, `immediate: true` — 2 s |
-| `flush()` | natychmiastowe wysłanie kolejki (Promise) |
+| `flush()` | natychmiastowe wysłanie kolejki; Promise rozwiązany po potwierdzeniu wszystkich zapisów w drodze |
 | `onConflict(fn)`, `onProfileReload(fn)` | pytanie o nowszy stan gry idle; ponowne wczytanie profilu z serwera |
 | `offlineReason()` | `null`, `"sdk"` albo `"profil"` |
 | `backendKind()`, `mode()`, `gameId()`, `deviceId()`, `removedKeys()` | informacje diagnostyczne (tryb: `memory` / `emulator` / `firestore`) |
+| `helpers` | `{ trimAwards, trimDaily, dayKey }` — przycinanie nagród i rekordów dnia (używa Sowia Akademia) |
 
 **`submitRun(gameId, { score, distance?, height?, leaves?, durationMs?, difficulty = "arcade", daily?, seed? })`** — jeden zapis zbiorczy na rozgrywkę:
 
@@ -468,10 +491,11 @@ Po zbudowaniu stan bazowy = kopia stanu w pamięci. Podczas zapisu status `"zapi
 ### Start w przeglądarce
 
 - wymaga `window.SowiePlatform` (rejestr gier) — w każdej stronie kolejność skryptów: `config/firebase-config.js`, `shared/sowie-platform.js`, `shared/sowie-cloud.js`, `shared/password-gate.js`;
-- **tryb** (`resolveMode()`): `?cloud=memory | emulator | firestore` (zapamiętany w `sessionStorage` tej karty, więc przejście linkiem do gry zachowuje tryb), opcjonalnie `?projekt=demo-…` dla emulatora (izolacja testów). Bez parametru: na `localhost` / `127.0.0.1` / `::1` — **pamięć** (lokalne uruchomienie nigdy nie zapisuje do produkcyjnej bazy; produkcję lokalnie włącza `?cloud=firestore`), na każdej innej domenie (GitHub Pages) — Firestore z `window.firebaseConfig`;
+- **tryb** (`resolveMode()`): `?cloud=memory | emulator | firestore` (zapamiętany w `sessionStorage` tej karty, więc przejście linkiem do gry zachowuje tryb), opcjonalnie `?projekt=demo-…` dla emulatora (izolacja testów; dozwolone `demo-` + 1–50 znaków `[a-z0-9-]`). Bez parametru: na `localhost` / `127.0.0.1` / `::1` — **pamięć** (lokalne uruchomienie nigdy nie zapisuje do produkcyjnej bazy; produkcję lokalnie włącza `?cloud=firestore`), na każdej innej domenie (GitHub Pages) — Firestore z `window.firebaseConfig`;
 - emulator: konfiguracja `{ apiKey: "demo-api-key", projectId: "demo-sowiegry" (albo z ?projekt=), appId: "demo-sowiegry" }` + `connectFirestoreEmulator("127.0.0.1", 8080)`;
 - gra bieżącej strony: pierwszy wpis `GAME_REGISTRY`, którego `/${path}` występuje w `location.pathname`;
 - import SDK startuje od razu przy ładowaniu strony (równolegle z ekranem gry i ekranem hasła);
+- `window.SowieCloud.submitRun` dopisuje domyślnie `daily` (`?daily=1`) i `seed` (`?seed=`) z adresu strony, więc gry nie muszą ich przekazywać;
 - `visibilitychange → hidden`, `pagehide` i `online` wywołują `flush()` (na iPhonie `beforeunload` często się nie wywołuje).
 
 ## Ekran „Hasło sowy” i nakładki (`shared/password-gate.js`)
@@ -536,8 +560,7 @@ Każda nakładka zatrzymuje propagację zdarzeń klawiatury, wskaźnika, dotyku,
 - `Analizy/ANALIZA_1_Firestore_zapis_postepu.md` — przeniesienie zapisu postępu do Firestore (model danych, hasło, reguły).
 - `Analizy/ANALIZA_2_Przebudowa_gier.md` — przebudowa gier, menu główne, telefon jako główne urządzenie.
 - `Analizy/ANALIZA_3_Plan_prac.md` — kolejność prac (etapy E0–E9).
-- `docs/PLAN_ROZWOJU_CUTE_POLISH.md` — poprzedni plan reworku (do usunięcia w etapie E0).
-- `docs/WDROZENIE_CUTE_POLISH.md` — poprzedni stan implementacji i lista testów ręcznych (do usunięcia w etapie E0).
+- `docs/AUDYT_MERGE_CUTE_POLISH.md`, `docs/PLAN_ROZWOJU_CUTE_POLISH.md`, `docs/WDROZENIE_CUTE_POLISH.md` — nieaktualne dokumenty starego układu (opisują m.in. zapis w pamięci przeglądarki); zgodnie z planem (E0.4) do usunięcia — czekają na decyzję właściciela.
 
 ## Dług techniczny
 
