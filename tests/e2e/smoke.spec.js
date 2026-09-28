@@ -67,7 +67,8 @@ test("menu główne jest generowane z rejestru pięciu gier", async ({ page }) =
   await expect(cards).toHaveCount(5);
   const menuText = (await cards.allTextContents()).join(" ");
   for (const game of games) expect(menuText).toContain(game.name);
-  await expect(page.locator("#cosmeticsButton")).toBeVisible();
+  await expect(page.getByRole("tab", { name: "Gry" })).toHaveAttribute("aria-selected", "true");
+  await expect(page.getByRole("tab")).toHaveCount(4);
   expect(errors).toEqual([]);
 });
 

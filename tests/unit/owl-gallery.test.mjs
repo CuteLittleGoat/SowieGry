@@ -79,12 +79,12 @@ test("katalog galerii ma trzydzieści trwałych nagród i warunki z pięciu gier
   assert.match(source, /data-gallery-favorite/);
 });
 
-test("menu i wszystkie gry ładują skrypt oraz style galerii", () => {
-  for (const file of ["index.html", ...gameIndexes]) {
-    const html = read(file);
-    assert.match(html, /owl-gallery\.css/);
-    assert.match(html, /owl-gallery\.js/);
-  }
+test("menu i wszystkie gry ładują skrypt galerii; gry także jej okno (style)", () => {
+  for (const file of ["index.html", ...gameIndexes]) assert.match(read(file), /owl-gallery\.js/, file);
+  for (const file of gameIndexes) assert.match(read(file), /owl-gallery\.css/, file);
+  // Menu ma własną zakładkę „Galeria” (shared/menu/gallery.js) zamiast okna z owl-gallery.css.
+  assert.doesNotMatch(read("index.html"), /owl-gallery\.css/);
+  assert.match(read("shared/menu/gallery.js"), /thumbUrl\(photo, 400\)/);
 });
 
 test("jednorazowy workflow pobierania obrazów nie pozostaje w repozytorium", () => {

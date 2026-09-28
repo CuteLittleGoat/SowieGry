@@ -2,13 +2,7 @@ const globals = require("globals");
 
 module.exports = [
   {
-    ignores: [
-      "node_modules/**",
-      "playwright-report/**",
-      "test-results/**",
-      "SowaRunner/p5.js",
-      "SowaRunner/p5.sound.min.js",
-    ],
+    ignores: ["node_modules/**", "playwright-report/**", "test-results/**", "SowaRunner/p5.js"],
   },
   {
     files: ["**/*.js"],
@@ -31,7 +25,14 @@ module.exports = [
   },
   {
     // Moduły ES Sowiego Silnika i stron na nim opartych (katalogi z package.json "type": "module").
-    files: ["shared/engine/**/*.js", "shared/world/**/*.js", "shared/ui/**/*.js", "shared/meta/**/*.js", "lab/**/*.js"],
+    files: [
+      "shared/engine/**/*.js",
+      "shared/world/**/*.js",
+      "shared/ui/**/*.js",
+      "shared/meta/**/*.js",
+      "shared/menu/**/*.js",
+      "lab/**/*.js",
+    ],
     languageOptions: {
       sourceType: "module",
     },

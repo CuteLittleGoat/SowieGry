@@ -23,11 +23,11 @@ test("katalog instrukcji (shared/meta/guides-data.js) obejmuje pięć gier i „
   assert.match(read("shared/game-guides.js"), /meta\/guides-data\.js/);
 });
 
-test("menu główne tworzy przycisk instrukcji przy każdej karcie", () => {
-  const menu = read("shared/main-menu.js");
-  assert.match(menu, /dataset\.gameGuide = game\.id/);
-  assert.match(menu, /Jak grać w/);
-  assert.match(read("index.html"), /shared\/game-guides\.js/);
+test("menu główne ma przycisk instrukcji przy każdej karcie i zakładkę „Jak grać”", () => {
+  const games = read("shared/menu/games.js");
+  assert.match(games, /data-guide="\$\{game\.id\}"/);
+  assert.match(games, /Jak grać w \$\{game\.name\}\?/);
+  assert.match(read("shared/menu/guides.js"), /GUIDE_ORDER/);
   assert.match(read("index.html"), /shared\/sowie-academy\.js/);
 });
 

@@ -1,0 +1,1111 @@
+/* Menu główne SowieGry (Analiza 2, rozdz. 4.1). Telefon w pionie najpierw; od 768 px siatka kart.
+   Wymaga shared/world/tokens.css (kolory, Fredoka) i shared/ui/ui.css (przyciski, okna, karty instrukcji). */
+
+.menu,
+.menu *,
+.menu *::before,
+.menu *::after {
+  box-sizing: border-box;
+}
+
+/* Przewijanie do elementu (fokus z klawiatury, odnośniki) omija dolny pasek zakładek. */
+html {
+  scroll-padding-bottom: calc(96px + env(safe-area-inset-bottom));
+}
+
+body.menu {
+  margin: 0;
+  min-height: 100vh;
+  min-height: 100dvh;
+  color: var(--kontur);
+  background: linear-gradient(180deg, var(--niebo-gora) 0%, var(--niebo-dol) 70%) fixed;
+  font:
+    var(--czcionka-tekst) 16px/1.45 var(--czcionka-sowia),
+    sans-serif;
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior-y: none;
+}
+
+/* Zdjęcie z galerii jako tło menu (Galeria → „Ustaw jako tło menu”). */
+body.menu.has-photo {
+  background:
+    linear-gradient(180deg, rgba(255, 246, 227, 0.55), rgba(255, 246, 227, 0.88) 60%),
+    var(--menu-photo) center / cover fixed,
+    var(--niebo-dol);
+}
+
+.menu-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* ---------- Niebo z chmurami (paralaksa) ---------- */
+
+.menu-sky {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.menu-cloud {
+  position: absolute;
+  width: 160px;
+  height: 48px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.75);
+  box-shadow:
+    40px -18px 0 6px rgba(255, 255, 255, 0.75),
+    88px -8px 0 0 rgba(255, 255, 255, 0.75);
+  animation: menuCloud 60s linear infinite;
+}
+
+.menu-cloud.is-1 {
+  top: 14%;
+  left: -40%;
+}
+
+.menu-cloud.is-2 {
+  top: 42%;
+  left: -60%;
+  transform: scale(0.7);
+  animation-duration: 85s;
+  animation-delay: -30s;
+}
+
+.menu-cloud.is-3 {
+  top: 70%;
+  left: -50%;
+  transform: scale(0.85);
+  animation-duration: 70s;
+  animation-delay: -50s;
+}
+
+@keyframes menuCloud {
+  to {
+    translate: 180vw 0;
+  }
+}
+
+/* ---------- Nagłówek ---------- */
+
+.menu-header,
+.menu-main {
+  position: relative;
+  z-index: 1;
+}
+
+.menu-header {
+  width: min(100%, 560px);
+  margin: 0 auto;
+  padding: max(10px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) 4px
+    max(16px, env(safe-area-inset-left));
+}
+
+.menu-topbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.menu-logo {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  font-size: 30px;
+  font-weight: var(--czcionka-pogrubiona);
+  letter-spacing: 0.01em;
+  color: var(--bialy);
+  -webkit-text-stroke: 6px var(--kontur);
+  paint-order: stroke fill;
+}
+
+.menu-cloud-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 36px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.8);
+  font-size: 14px;
+  font-weight: var(--czcionka-pogrubiona);
+  white-space: nowrap;
+}
+
+.menu-cloud-status[data-state="offline"],
+.menu-cloud-status[data-state="blad"] {
+  color: var(--amic-czerwony);
+}
+
+.menu-icon-button[hidden] {
+  display: none;
+}
+
+.menu-icon-button {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  flex: none;
+  border: 0;
+  border-radius: 50%;
+  color: var(--kontur);
+  background: rgba(255, 255, 255, 0.85);
+  box-shadow: 0 4px 12px rgba(59, 47, 74, 0.15);
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.menu-hero {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.menu-hero-owl {
+  flex: none;
+  width: 112px;
+  height: 112px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.menu-hero-owl canvas {
+  display: block;
+  width: 112px;
+  height: 112px;
+}
+
+.menu-bubble {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  padding: 10px 14px;
+  border-radius: 20px;
+  background: var(--bialy);
+  box-shadow: 0 6px 18px rgba(59, 47, 74, 0.12);
+}
+
+.menu-bubble::before {
+  content: "";
+  position: absolute;
+  left: -10px;
+  top: 50%;
+  border: 10px solid transparent;
+  border-right-color: var(--bialy);
+  border-left: 0;
+  transform: translateY(-50%);
+}
+
+.menu-bubble-text {
+  margin: 0;
+  font-size: 18px;
+  font-weight: var(--czcionka-pogrubiona);
+}
+
+.menu-hero-tasks {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin: 4px 0 0;
+  font-size: 15px;
+}
+
+.menu-hero-count {
+  white-space: nowrap;
+}
+
+.menu-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--szary);
+  box-shadow: inset 0 0 0 2px rgba(59, 47, 74, 0.2);
+}
+
+.menu-dot.is-done {
+  background: var(--monstera);
+}
+
+/* ---------- Treść i zakładki ---------- */
+
+.menu-main {
+  width: min(100%, 560px);
+  margin: 0 auto;
+  padding: 8px max(16px, env(safe-area-inset-right)) calc(96px + env(safe-area-inset-bottom))
+    max(16px, env(safe-area-inset-left));
+}
+
+.menu-panel:focus {
+  outline: none;
+}
+
+.menu-panel[hidden] {
+  display: none;
+}
+
+.menu-section-title {
+  margin: 8px 0 10px;
+  font-size: 24px;
+  font-weight: var(--czcionka-pogrubiona);
+}
+
+.menu-tabs {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 50;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 4px;
+  padding: 6px max(8px, env(safe-area-inset-right)) max(8px, env(safe-area-inset-bottom))
+    max(8px, env(safe-area-inset-left));
+  border-radius: 22px 22px 0 0;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 -6px 24px rgba(59, 47, 74, 0.14);
+}
+
+.menu-tabs button {
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  min-height: 60px;
+  padding: 6px 2px;
+  border: 0;
+  border-radius: 16px;
+  color: var(--kontur);
+  background: transparent;
+  font:
+    var(--czcionka-pogrubiona) 15px/1.1 var(--czcionka-sowia),
+    sans-serif;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.menu-tabs button[aria-selected="true"] {
+  color: var(--monstera-ciemna);
+  background: rgba(244, 197, 66, 0.35);
+}
+
+.menu-tabs .sowie-icon {
+  width: 26px;
+  height: 26px;
+}
+
+.menu-tabs button:focus-visible,
+.menu-icon-button:focus-visible,
+.menu-hero-owl:focus-visible,
+.menu-button:focus-visible,
+.menu-chips button:focus-visible,
+.menu-tile:focus-visible,
+.menu-guide-open:focus-visible {
+  outline: 3px solid var(--niebieski);
+  outline-offset: 3px;
+}
+
+/* ---------- Przyciski ---------- */
+
+.menu-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 52px;
+  padding: 8px 14px;
+  border: 0;
+  border-radius: 16px;
+  color: var(--kontur);
+  background: var(--bialy);
+  box-shadow: inset 0 0 0 2px rgba(59, 47, 74, 0.14);
+  font:
+    var(--czcionka-pogrubiona) 17px/1.15 var(--czcionka-sowia),
+    sans-serif;
+  text-decoration: none;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.menu-button.is-primary {
+  color: var(--bialy);
+  background: var(--monstera);
+  box-shadow: inset 0 -4px 0 var(--monstera-ciemna);
+  font-size: 19px;
+}
+
+.menu-button.is-danger {
+  color: var(--amic-czerwony);
+}
+
+.menu-button:active {
+  transform: translateY(1px) scale(0.98);
+}
+
+/* ---------- Ścieżka kart gier ---------- */
+
+.menu-path {
+  position: relative;
+  display: grid;
+  gap: 28px;
+  padding: 8px 0 12px;
+}
+
+.menu-path-line {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.menu-path-line path {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.9);
+  stroke-width: 14;
+  stroke-linecap: round;
+  stroke-dasharray: 2 26;
+}
+
+.game-card {
+  position: relative;
+  z-index: 1;
+  overflow: hidden;
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 10px 28px rgba(59, 47, 74, 0.16);
+}
+
+@media (min-width: 360px) and (max-width: 767px) {
+  .game-card:nth-child(odd) {
+    margin-right: 7%;
+  }
+
+  .game-card:nth-child(even) {
+    margin-left: 7%;
+  }
+}
+
+.game-card-art {
+  position: relative;
+  height: 128px;
+  background: linear-gradient(180deg, var(--biom-gora, var(--niebo-gora)), var(--biom-dol, var(--niebo-dol)));
+}
+
+.game-card-art canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.game-card-station {
+  position: absolute;
+  top: 10px;
+  left: 12px;
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.85);
+  font-size: 14px;
+  font-weight: var(--czcionka-pogrubiona);
+}
+
+.game-card-new {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: var(--zloto);
+  font-weight: var(--czcionka-pogrubiona);
+}
+
+.game-card-body {
+  display: grid;
+  gap: 6px;
+  padding: 12px 14px 14px;
+}
+
+.game-card-body h3 {
+  margin: 0;
+  font-size: 23px;
+  font-weight: var(--czcionka-pogrubiona);
+  line-height: 1.15;
+}
+
+.game-card-desc {
+  margin: 0;
+}
+
+.game-card-record {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  font-weight: var(--czcionka-pogrubiona);
+  font-variant-numeric: tabular-nums;
+}
+
+.game-card-record .sowie-icon {
+  width: 20px;
+  height: 20px;
+  color: var(--zloto-ciemne);
+}
+
+.game-card-record.is-loading {
+  color: transparent;
+  border-radius: 8px;
+  background: linear-gradient(90deg, rgba(59, 47, 74, 0.08), rgba(59, 47, 74, 0.16), rgba(59, 47, 74, 0.08));
+  background-size: 200% 100%;
+  animation: menuSkeleton 1.2s linear infinite;
+}
+
+@keyframes menuSkeleton {
+  to {
+    background-position: -200% 0;
+  }
+}
+
+.game-card-actions {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+  gap: 8px;
+  margin-top: 4px;
+}
+
+/* ---------- Karta instalacji ---------- */
+
+.menu-install {
+  display: grid;
+  gap: 8px;
+  margin: 12px 0;
+  padding: 14px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: inset 0 0 0 2px var(--woda);
+}
+
+.menu-install h3 {
+  margin: 0;
+  font-size: 19px;
+}
+
+.menu-install p,
+.menu-install ol {
+  margin: 0;
+}
+
+/* ---------- Jak grać ---------- */
+
+.menu-guide {
+  margin: 0 0 18px;
+  padding: 14px;
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.menu-guide h3 {
+  margin: 0 0 6px;
+  font-size: 21px;
+}
+
+.menu-guide .sowie-guide-cards {
+  margin-right: -14px;
+  padding-right: 14px;
+}
+
+/* ---------- Galeria ---------- */
+
+.menu-gallery-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.menu-gallery-count {
+  margin: 0;
+  font-size: 18px;
+  font-weight: var(--czcionka-pogrubiona);
+  font-variant-numeric: tabular-nums;
+}
+
+.menu-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 12px;
+}
+
+.menu-chips button {
+  min-height: 48px;
+  padding: 6px 14px;
+  border: 0;
+  border-radius: 999px;
+  color: var(--kontur);
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: inset 0 0 0 2px rgba(59, 47, 74, 0.14);
+  font:
+    var(--czcionka-tekst) 16px/1.1 var(--czcionka-sowia),
+    sans-serif;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.menu-chips button[aria-pressed="true"] {
+  background: var(--zloto);
+  font-weight: var(--czcionka-pogrubiona);
+}
+
+.menu-chips button:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.menu-gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.menu-tile {
+  position: relative;
+  display: grid;
+  align-content: start;
+  gap: 6px;
+  width: 100%;
+  margin: 0;
+  padding: 0 0 10px;
+  border: 0;
+  border-radius: 18px;
+  overflow: hidden;
+  color: var(--kontur);
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 6px 16px rgba(59, 47, 74, 0.12);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.menu-tile-photo {
+  position: relative;
+  display: block;
+  aspect-ratio: 4 / 3;
+  background: var(--sowa-brzuszek);
+  overflow: hidden;
+}
+
+.menu-tile-photo img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.menu-tile-title {
+  padding: 0 10px;
+  font-size: 16px;
+  font-weight: var(--czcionka-pogrubiona);
+  line-height: 1.2;
+}
+
+.menu-tile-badge {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--zloto);
+  font-size: 14px;
+  font-weight: var(--czcionka-pogrubiona);
+}
+
+.menu-tile-heart {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  color: var(--serce);
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.menu-tile-heart .sowie-icon {
+  width: 20px;
+  height: 20px;
+  fill: currentColor;
+}
+
+.menu-tile.is-locked {
+  cursor: default;
+}
+
+.menu-tile.is-locked .menu-tile-photo img {
+  filter: blur(9px) saturate(0.6);
+  transform: scale(1.12);
+}
+
+.menu-tile-lock {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: var(--kontur);
+}
+
+.menu-tile-lock span {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.menu-tile-need {
+  padding: 0 10px;
+  font-size: 15px;
+  line-height: 1.3;
+}
+
+.menu-progress {
+  height: 8px;
+  margin: 0 10px;
+  border-radius: 4px;
+  background: rgba(59, 47, 74, 0.1);
+  overflow: hidden;
+}
+
+.menu-progress span {
+  display: block;
+  height: 100%;
+  background: var(--monstera);
+  transform-origin: left;
+}
+
+.menu-tile.is-new {
+  animation: menuFlip 900ms ease-out both;
+}
+
+@keyframes menuFlip {
+  0% {
+    transform: perspective(600px) rotateY(180deg);
+    filter: brightness(0.6);
+  }
+  60% {
+    transform: perspective(600px) rotateY(-12deg);
+  }
+  100% {
+    transform: none;
+    filter: none;
+  }
+}
+
+/* Przeglądarka zdjęć (pełny ekran). */
+.menu-viewer {
+  position: fixed;
+  inset: 0;
+  z-index: 9500;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  color: var(--bialy);
+  background: #18121f;
+  touch-action: none;
+}
+
+.menu-viewer-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: max(8px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) 4px
+    max(12px, env(safe-area-inset-left));
+  font-weight: var(--czcionka-pogrubiona);
+  font-variant-numeric: tabular-nums;
+}
+
+.menu-viewer-top .menu-icon-button,
+.menu-viewer-nav .menu-icon-button {
+  color: var(--bialy);
+  background: rgba(255, 255, 255, 0.16);
+  box-shadow: none;
+}
+
+.menu-viewer-stage {
+  position: relative;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+
+.menu-viewer-stage img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  transform-origin: center;
+  user-select: none;
+  -webkit-user-drag: none;
+  -webkit-touch-callout: none;
+  will-change: transform;
+}
+
+.menu-viewer-nav {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 8px;
+  pointer-events: none;
+}
+
+.menu-viewer-nav button {
+  pointer-events: auto;
+}
+
+.menu-viewer-nav .is-prev .sowie-icon {
+  transform: scaleX(-1);
+}
+
+.menu-viewer-info {
+  display: grid;
+  gap: 8px;
+  padding: 10px max(16px, env(safe-area-inset-right)) max(14px, env(safe-area-inset-bottom))
+    max(16px, env(safe-area-inset-left));
+}
+
+.menu-viewer-info h2 {
+  margin: 0;
+  font-size: 21px;
+}
+
+.menu-viewer-info p {
+  margin: 0;
+  font-size: 15px;
+  opacity: 0.9;
+}
+
+.menu-viewer-info a {
+  color: var(--niebo-gora);
+}
+
+.menu-viewer-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.menu-viewer-actions .menu-button[aria-pressed="true"] {
+  background: var(--zloto);
+}
+
+.menu-viewer-actions .menu-button[data-viewer="favorite"][aria-pressed="true"] .sowie-icon {
+  fill: var(--serce);
+  color: var(--serce);
+}
+
+/* ---------- Zakładka „Sowa” ---------- */
+
+.menu-card {
+  display: grid;
+  gap: 10px;
+  margin: 0 0 14px;
+  padding: 14px;
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.92);
+}
+
+.menu-card h3 {
+  margin: 0;
+  font-size: 20px;
+}
+
+.menu-profile {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.menu-profile canvas {
+  flex: none;
+  width: 96px;
+  height: 96px;
+}
+
+.menu-level {
+  flex: 1;
+  display: grid;
+  gap: 4px;
+}
+
+.menu-level strong {
+  font-size: 20px;
+}
+
+.menu-list {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.menu-list li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 4px 8px;
+  align-items: center;
+  padding: 8px 10px;
+  border-radius: 14px;
+  background: var(--niebo-dol);
+}
+
+.menu-list li .menu-progress {
+  grid-column: 1 / -1;
+  margin: 0;
+}
+
+.menu-list li.is-done strong:last-child {
+  color: var(--monstera-ciemna);
+}
+
+.menu-records-row .menu-button {
+  min-height: 48px;
+  font-size: 15px;
+}
+
+.menu-settings {
+  display: grid;
+  gap: 8px;
+}
+
+.menu-settings .sowie-ui-toggle small {
+  display: block;
+  font-size: 13px;
+  font-weight: var(--czcionka-tekst);
+  opacity: 0.8;
+}
+
+.menu-save-state {
+  margin: 0;
+  font-size: 15px;
+}
+
+/* Garderoba: przyciski-chipy z podpowiedzią misji pod zablokowanymi dodatkami. */
+.menu-wardrobe {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.menu-wardrobe li {
+  display: grid;
+  gap: 2px;
+  align-content: start;
+}
+
+.menu-wardrobe small {
+  font-size: 13px;
+  line-height: 1.25;
+}
+
+.menu-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-height: 48px;
+  padding: 6px 12px;
+  border: 0;
+  border-radius: 999px;
+  color: var(--kontur);
+  background: var(--niebo-dol);
+  box-shadow: inset 0 0 0 2px rgba(59, 47, 74, 0.14);
+  font:
+    var(--czcionka-tekst) 16px/1.1 var(--czcionka-sowia),
+    sans-serif;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.menu-chip[aria-pressed="true"] {
+  background: var(--zloto);
+  font-weight: var(--czcionka-pogrubiona);
+}
+
+.menu-chip:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.menu-chip .sowie-icon {
+  width: 18px;
+  height: 18px;
+}
+
+.menu-chip:focus-visible {
+  outline: 3px solid var(--niebieski);
+  outline-offset: 3px;
+}
+
+/* Okno rekordów: statystyki i Top 10. */
+.menu-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 8px;
+  margin: 0 0 12px;
+}
+
+.menu-stats div {
+  padding: 8px 10px;
+  border-radius: 14px;
+  background: var(--bialy);
+}
+
+.menu-stats dt {
+  font-size: 14px;
+}
+
+.menu-stats dd {
+  margin: 0;
+  font-size: 20px;
+  font-weight: var(--czcionka-pogrubiona);
+  font-variant-numeric: tabular-nums;
+}
+
+.menu-records h3 {
+  margin: 4px 0 8px;
+  font-size: 18px;
+}
+
+.menu-top {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding-left: 28px;
+}
+
+.menu-top li span {
+  margin-left: 8px;
+  opacity: 0.75;
+}
+
+.menu-inline-icon .sowie-icon {
+  width: 18px;
+  height: 18px;
+  vertical-align: -3px;
+}
+
+/* Komunikaty w menu: nad dolnym paskiem zakładek. */
+.menu > .sowie-toasts {
+  position: fixed;
+  z-index: 60;
+  bottom: calc(92px + env(safe-area-inset-bottom));
+}
+
+/* ---------- Małe telefony (320–374 px) ---------- */
+
+@media (max-width: 374px) {
+  .menu-logo {
+    font-size: 26px;
+  }
+
+  /* Stan zapisu: sama ikona (pełny opis w aria-label i w ustawieniach). */
+  .menu-cloud-status {
+    min-width: 36px;
+    justify-content: center;
+    padding: 4px 8px;
+  }
+
+  .menu-cloud-status span {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  .menu-hero-owl,
+  .menu-hero-owl canvas {
+    width: 88px;
+    height: 88px;
+  }
+
+  .menu-bubble-text {
+    font-size: 16px;
+  }
+}
+
+/* ---------- Tablet i komputer: siatka kart ---------- */
+
+@media (min-width: 768px) {
+  .menu-header,
+  .menu-main {
+    width: min(100%, 1100px);
+  }
+
+  .menu-path {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .menu-path-line {
+    display: none;
+  }
+
+  .menu-gallery-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .menu-tabs {
+    left: 50%;
+    right: auto;
+    width: min(100%, 560px);
+    transform: translateX(-50%);
+  }
+}
+
+@media (min-width: 1100px) {
+  .menu-path {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .menu-gallery-grid {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+}
+
+/* Ograniczenie ruchu: bez dryfujących chmur, odwracania kart i szkieletów. */
+@media (prefers-reduced-motion: reduce) {
+  .menu-cloud,
+  .menu-tile.is-new,
+  .game-card-record.is-loading {
+    animation: none;
+  }
+}
+
+.sowie-reduced-effects .menu-cloud,
+.sowie-reduced-effects .menu-tile.is-new {
+  animation: none;
+}

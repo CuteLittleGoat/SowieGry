@@ -92,8 +92,9 @@ export function volumesFromSettings(settings = {}) {
 }
 
 /**
- * createAudio({ manifest, baseUrl, createContext, fetchImpl, random, doc, nav })
- * manifest — zawartość assets/audio/audio.json; baseUrl — adres katalogu assets/audio/.
+ * createAudio({ manifest, baseUrl, createContext, fetchImpl, random, doc, nav, preloadOnUnlock })
+ * manifest — zawartość assets/audio/audio.json; baseUrl — adres katalogu assets/audio/;
+ * preloadOnUnlock — lista efektów wczytywanych po odblokowaniu (domyślnie wszystkie; menu potrzebuje kilku).
  */
 export function createAudio({
   manifest,
@@ -106,6 +107,7 @@ export function createAudio({
   random = Math.random,
   doc = globalThis.document,
   nav = globalThis.navigator,
+  preloadOnUnlock = null,
 } = {}) {
   let context = null;
   let buses = null;
@@ -277,7 +279,7 @@ export function createAudio({
         .catch(() => {})
         .then(() => {
           emit();
-          api.preload();
+          api.preload(preloadOnUnlock || undefined);
           return context.state === "running";
         });
     },

@@ -1,6 +1,7 @@
 // PWA: manifest, ikony i service worker (Analiza 2, rozdz. 2.5 pkt 9; Analiza 3, E2a).
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import path from "node:path";
 import { test } from "node:test";
 
 const read = (file) => fs.readFileSync(file, "utf8");
@@ -63,4 +64,35 @@ test("service worker: wersjonowana pamięć, pliki startowe istnieją, Firestore
   assert.match(sw, /firebasejs\/12\.19\.0\/firebase-app\.js/);
   assert.doesNotMatch(sw, /firestore\.googleapis\.com"/);
   assert.match(sw, /key\.startsWith\("sowiegry-"\) && key !== VERSION/);
+});
+
+// Wszystkie moduły ES menu (import … from "./…") — rekurencyjnie od shared/menu/menu.js.
+function moduleGraph(entry) {
+  const seen = new Set();
+  const walk = (file) => {
+    if (seen.has(file)) return;
+    seen.add(file);
+    for (const [, spec] of read(file).matchAll(/^\s*(?:import|export)\s[^;]*?from\s+"(\.[^"]+)"/gms)) {
+      walk(path.posix.normalize(path.posix.join(path.posix.dirname(file), spec)));
+    }
+  };
+  walk(entry);
+  return [...seen];
+}
+
+test("service worker: menu działa bez zasięgu — moduły, czcionki, grafiki postaci i dźwięki menu w SHELL", async () => {
+  const sw = read("sw.js");
+  const shell = JSON.parse(`[${sw.match(/const SHELL = \[([\s\S]*?)\];/)[1].replace(/,\s*$/, "")}]`);
+  const modules = moduleGraph("shared/menu/menu.js");
+  assert.ok(modules.length > 10);
+  for (const file of modules) assert.ok(shell.includes(file), `moduł menu ${file} nie jest w SHELL`);
+  for (const [, font] of read("shared/world/tokens.css").matchAll(/url\("?\.\.\/\.\.\/([^")]+)"?\)/g)) {
+    assert.ok(shell.includes(font), `czcionka ${font} nie jest w SHELL`);
+  }
+  const { SPRITES } = await import("../../shared/world/catalog.js");
+  const { svgFiles } = await import("../../shared/engine/sprites.js");
+  for (const file of svgFiles(SPRITES)) assert.ok(shell.includes(`assets/svg/${file}`), `grafika ${file}`);
+  const sounds = JSON.parse(read("shared/menu/menu.js").match(/const MENU_SOUNDS = (\[[^\]]*\]);/)[1]);
+  for (const name of sounds) assert.ok(shell.includes(`assets/audio/sfx/${name}.mp3`), `dźwięk ${name}`);
+  assert.ok(shell.includes("assets/audio/audio.json"));
 });

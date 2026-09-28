@@ -8,7 +8,24 @@
    - przycisk z okiem 👁 pokazuje wpisane hasło,
    - przy błędzie pojawi się komunikat „Hu-hu? To nie to hasło 🦉” — można próbować dowolnie wiele razy.
 3. Urządzenie zapamięta hasło. Kolejne wejścia prowadzą od razu do menu.
-4. W menu stuknij kartę gry. Na ekranie gry wybierz poziom trudności.
+4. W menu stuknij **Graj** na karcie gry. Na ekranie gry wybierz poziom trudności.
+
+## Menu główne
+
+Na dole ekranu jest pasek z czterema zakładkami: **Gry**, **Jak grać**, **Galeria** i **Sowa**. Na górze: napis SowieGry, stan zapisu (np. „Zapisano”, „Zapisuję…”, „Offline”; na małym telefonie sama ikona chmurki) i przycisk ustawień (koło zębate). Pod nim Sówka w dymku — stuknij ją, a podskoczy i przywita się „hu-hu!”. W dymku widać też kropki zadań dnia (zielona = zrobione).
+
+- **Gry** — pięć kart na krętej ścieżce przez Sowi Świat: Łąka (SowaRunner), Chmury (SowaJumper), Miasto (Sowa3), Ogród (Sowie Ogrody), Szklarnia (Sowia Szklarnia). Na karcie jest ruchomy obrazek z postaciami, opis, Twój rekord (np. „Rekord: 1250 m”) oraz przyciski **Graj** i **Jak grać?** (krótka instrukcja tej gry w oknie; z okna też można od razu zagrać). Rekordy wczytują się z chmury po chwili — do tego czasu w ich miejscu miga szary pasek. Na tablecie i komputerze karty układają się w siatkę. Pod kartami jest karta **Zainstaluj SowieGry na telefonie** (znika, gdy gra działa jako aplikacja).
+- **Jak grać** — instrukcje wszystkich gier: najpierw „Poznaj Sowi Świat” (kim są Sówka, Pracu Pracu, Amic, kózki, humbak), potem każda gra. Karty przesuwa się palcem w bok; na karcie „Sterowanie” animowana kropka pokazuje gest (stuknięcie, przytrzymanie, przesunięcie).
+- **Galeria** — 30 zdjęć sów. Licznik (np. „3 / 30”) i filtry: **Wszystkie**, **Odblokowane**, **Do zdobycia**. Zablokowane zdjęcie jest rozmyte, ma kłódkę, opis celu (np. „Przebiegnij 1000 m w SowaRunner”) i pasek postępu. Nowo zdobyte zdjęcie ma znaczek **Nowe!**, obraca się przy pierwszym pokazaniu i słychać „hu-hu”. Stuknięcie w zdjęcie otwiera je na cały ekran:
+  - przesuń palcem w lewo / w prawo — następne / poprzednie zdjęcie (albo strzałki po bokach),
+  - dwa palce albo podwójne stuknięcie — powiększenie (podwójne stuknięcie jeszcze raz — powrót),
+  - przesuń w dół albo ✕ — zamknięcie,
+  - **Ulubione** — serduszko przy zdjęciu w galerii,
+  - **Tło menu** — zdjęcie staje się tłem menu (stuknij jeszcze raz, żeby wrócić do nieba),
+  - pod zdjęciem autor i link do źródła (Pexels).
+- **Sowa** — Twój profil: poziom, punkty doświadczenia (XP) i piórka Sowiej Akademii; **Zadania** (trzy zadania dnia i jedno tygodnia — nagrody przychodzą same); **Garderoba** (dodatek, który sowa nosi we wszystkich grach; przy zablokowanym widać, co trzeba zrobić, np. „Zbierz 20 liści monster (12 / 20)”); **Rekordy** każdej gry (przycisk „Rekordy” — najlepszy wynik i 10 najlepszych gier na każdym poziomie trudności); **Ustawienia** (patrz niżej).
+
+Menu działa też z klawiatury: strzałki w lewo / w prawo przełączają zakładki, Tab przechodzi po przyciskach. Adres strony pamięta zakładkę (np. `…/#galeria`), a `…/#jak-grac-runner` otwiera od razu instrukcję SowaRunner. Po pierwszym dotknięciu w menu gra cicha muzyka (można ją wyłączyć suwakiem „Muzyka”).
 
 Najpewniejszym sposobem uruchomienia jest GitHub Pages albo lokalny serwer HTTP. Przy bezpośrednim otwieraniu plików przez `file://` część funkcji przeglądarki może nie działać.
 
@@ -16,8 +33,8 @@ Najpewniejszym sposobem uruchomienia jest GitHub Pages albo lokalny serwer HTTP.
 
 SowieGry można dodać do ekranu głównego telefonu — wtedy działają jak aplikacja: bez paska przeglądarki, na pełnym ekranie, a menu i gry otwierane wcześniej uruchamiają się także bez zasięgu.
 
-- **Android (Chrome):** menu ⋮ → **Zainstaluj aplikację** (albo „Dodaj do ekranu głównego”).
-- **iPhone (Safari):** przycisk **Udostępnij** → **Do ekranu początkowego**.
+- **Android (Chrome):** przycisk **Zainstaluj** na karcie „Zainstaluj SowieGry na telefonie” w menu (albo menu ⋮ → **Zainstaluj aplikację** / „Dodaj do ekranu głównego”).
+- **iPhone (Safari):** przycisk **Udostępnij** → **Do ekranu początkowego** → **Dodaj** (tę instrukcję pokazuje też karta w menu).
 
 Po instalacji Safari nie zapomina hasła po 7 dniach bez wizyty.
 
@@ -25,7 +42,7 @@ Po instalacji Safari nie zapomina hasła po 7 dniach bez wizyty.
 
 Strona testowa `lab/` (adres strony + `/lab/`) służy do sprawdzania na telefonie nowego silnika gier:
 
-- **Postacie** (otwiera się od razu) — wszyscy bohaterowie nowych gier w ruchu: Sówka (stoi i mruga, biegnie, skacze, szybuje, jest oszołomiona, cieszy się), 9 dodatków z garderoby, 5 skaczących kózek, humbak z pluskiem, rodzina Pracu Pracu (dymek, telefon, telefon od Magdy, stos papierów, maile, tablica „Przyjmiesz zmianę?”, budzik), rodzina Amic (dystrybutor, cysterna, znak z cenami, wózek z kanistrami, barierka, kanister, sterowiec), liście monstery (zielony, złoty, tęczowy) i serduszka-życia. Przyciski u góry zakładają wybrany dodatek animowanym sowom. **Tu akceptujesz wygląd postaci przed budową nowego menu** — napisz, co zmienić (kolor, kształt, mina);
+- **Postacie** (otwiera się od razu) — wszyscy bohaterowie nowych gier w ruchu: Sówka (stoi i mruga, biegnie, skacze, szybuje, jest oszołomiona, cieszy się), 9 dodatków z garderoby, 5 skaczących kózek, humbak z pluskiem, rodzina Pracu Pracu (dymek, telefon, telefon od Magdy, stos papierów, maile, tablica „Przyjmiesz zmianę?”, budzik), rodzina Amic (dystrybutor, cysterna, znak z cenami, wózek z kanistrami, barierka, kanister, sterowiec), liście monstery (zielony, złoty, tęczowy) i serduszka-życia. Przyciski u góry zakładają wybrany dodatek animowanym sowom (wygląd postaci zaakceptowany przez właściciela);
 - **Dźwięk** — pierwsze dotknięcie włącza dźwięk. Suwaki: głośność ogólna, muzyka i efekty (0–100, zapisują się w profilu i działają na każdym urządzeniu); wibracje (tylko Android); muzyka: „Motyw menu” i „Pieśń humbaka” (grają w kółko bez przerwy), „Ścisz muzykę (jak w bonusie)”, „Zatrzymaj muzykę”; przyciski wszystkich 27 efektów (skok, liść, trafienie przez Pracu i Amic, kózka, plusk humbaka, rekord, koniec gry „hu-hu”…) i „Seria liści (combo)” — każdy kolejny liść brzmi wyżej. Na iPhonie (iOS 17 i nowsze) dźwięk gry respektuje przełącznik wyciszenia i nie wyłącza muzyki z innych aplikacji;
 - **Interfejs** — wspólne elementy nowych gier na małej planszy z biegnącą sową: licznik punktów i liści, serduszka-życia, licznik power-upu, komunikaty (w trakcie gry zawsze jeden, u góry — nie zasłania sowy), menu pauzy (Wznów, Zacznij od nowa, Jak grać, Ustawienia z suwakami dźwięku, wibracjami i Trybem Przytulnym, Garderoba, Wyjdź do menu), odliczanie 3-2-1 po wznowieniu i ekran wyników („Nowy rekord!”, miejsce w top 10, zadania, „Jeszcze raz”). Przyciski pod planszą symulują grę: liście, kózka, trafienie, pięć komunikatów naraz, pauza, koniec gry, okno „Poznaj Sowi Świat”;
 - **Gesty** — stuknij, przytrzymaj, przesuń w cztery strony; różowe pasy przy krawędziach to „martwe strefy” (gest „cofnij” przeglądarki i pasek domowy iPhone’a nie uruchamiają gry);
@@ -82,6 +99,15 @@ W grach zręcznościowych zapisywane są najlepszy wynik (i dystans lub wysokoś
 Przycisk **🏆** w prawym górnym rogu gry otwiera okno **Rekordy**: przełącz poziom (Chill / Arcade / Chaos), zobacz najlepszy wynik, top 10, ostatnie 10 gier i rekordy wyzwania dnia. W grach idle okno pokazuje podsumowanie postępu (np. liście zebrane w całej grze).
 
 ## Ustawienia i wylogowanie
+
+W menu głównym ustawienia są w zakładce **Sowa** (przycisk z kołem zębatym u góry prowadzi prosto do nich):
+
+- suwaki **Głośność ogólna**, **Muzyka** i **Efekty dźwiękowe** (muzyka albo efekty na 0 wyłączają je też w grach),
+- **Efekty (wstrząsy, cząsteczki)**, **Wibracje** (tylko Android), **Tryb Przytulny** (wolniej, bez końca gry — zadziała w nowych wersjach gier), **Komentarze sowy**,
+- stan zapisu (np. „Postęp jest zapisany w chmurze.”),
+- **Wyloguj to urządzenie** — po potwierdzeniu urządzenie zapomina hasło i pokazuje ekran „Hasło sowy”. Postęp zostaje w chmurze.
+
+Ustawienia zapisują się w profilu, więc obowiązują na każdym urządzeniu.
 
 Przycisk ⚙ w grze otwiera okno **Ustawienia**:
 

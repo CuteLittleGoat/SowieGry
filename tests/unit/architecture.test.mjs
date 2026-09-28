@@ -21,13 +21,18 @@ test("centralny rejestr zawiera dokładnie pięć gier", async () => {
 
 test("menu główne jest generowane wyłącznie z centralnego rejestru", async () => {
   const html = await read("index.html");
-  const menu = await read("shared/main-menu.js");
+  const games = await read("shared/menu/games.js");
 
-  assert.match(html, /data-game-cards/);
+  assert.match(html, /data-game-path/);
   assert.match(html, /shared\/sowie-platform\.js/);
-  assert.doesNotMatch(html, /<a[^>]+class="game-card"/);
-  assert.match(menu, /platform\.GAME_REGISTRY\.map/);
-  assert.doesNotMatch(menu, /document\.write/);
+  assert.match(html, /<script type="module" src="shared\/menu\/menu\.js"><\/script>/);
+  assert.doesNotMatch(html, /class="game-card"/);
+  assert.match(games, /platform\.GAME_REGISTRY\.map/);
+  assert.doesNotMatch(games, /document\.write/);
+  // Stare menu (Analiza 2, rozdz. 4.1: „zastępuje main-menu.js / main-menu.css”) zostało usunięte.
+  await assert.rejects(read("shared/main-menu.js"));
+  await assert.rejects(read("shared/main-menu.css"));
+  assert.doesNotMatch(html, /sowie-core\.js|main-menu|game-guides\.js/);
 });
 
 test("wszystkie gry ładują platformę i wspólny menedżer powiadomień", async () => {
@@ -104,7 +109,10 @@ test("każda strona ładuje config, platformę, SowieCloud i ekran hasła w tej 
       positions,
       `${path}: zła kolejność skryptów`,
     );
-    assert.ok(positions[3] < html.indexOf("shared/sowie-core.js"), `${path}: SowieCloud musi być przed SowieCore`);
+    // Gry: SowieCloud przed SowieCore. Menu: przed Akademią, Galerią i modułem menu (bez SowieCore).
+    const later = path === "index.html" ? "shared/sowie-academy.js" : "shared/sowie-core.js";
+    assert.ok(positions[3] < html.indexOf(later), `${path}: SowieCloud musi być przed ${later}`);
+    if (path === "index.html") assert.ok(html.indexOf("shared/owl-gallery.js") < html.indexOf("shared/menu/menu.js"));
   }
 });
 

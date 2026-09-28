@@ -132,8 +132,11 @@ test("preferencja ograniczenia ruchu wyłącza animacje", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/", { waitUntil: "load" });
   const duration = await page
-    .locator(".creature")
+    .locator(".menu-cloud")
     .first()
     .evaluate((element) => getComputedStyle(element).animationDuration);
   expect(Number.parseFloat(duration)).toBeLessThanOrEqual(0.01);
+  // Ilustracje kart: jedna nieruchoma klatka zamiast pętli animacji.
+  await page.waitForFunction(() => window.SowieMenu?.atlas?.ready?.() === true);
+  expect(await page.evaluate(() => window.SowieMenu.animating())).toBe(false);
 });

@@ -414,7 +414,9 @@
           title: "Nowa fotografia w Galerii Sów!",
           detail:
             newlyUnlocked.length === 1 ? newlyUnlocked[0].title : `Odblokowano ${newlyUnlocked.length} fotografie`,
-          reward: "Otwórz Galerię przyciskiem 🖼️",
+          reward: document.querySelector("[data-sowie-menu]")
+            ? "Zobacz w zakładce Galeria"
+            : "Otwórz Galerię przyciskiem 🖼️",
           kind: "important",
         });
       }
@@ -604,6 +606,8 @@
 
   function attachButton() {
     if (document.getElementById("galleryButton") || document.querySelector("[data-gallery-fab]")) return;
+    // Nowe menu główne (E3) ma własną zakładkę — nie doklejamy przycisku.
+    if (document.querySelector("[data-sowie-menu]")) return;
     const onMenu = Boolean(document.querySelector("[data-game-cards]"));
     const button = document.createElement("button");
     button.type = "button";

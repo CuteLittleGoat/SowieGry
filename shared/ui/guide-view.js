@@ -34,7 +34,8 @@ function spriteNode(name, { atlas, sprites }) {
   return image;
 }
 
-export function renderGuide(guide, { atlas = null, sprites = null } = {}) {
+// headingLevel: poziom nagłówków kart (3 w oknie, 4 w zakładce „Jak grać”, gdzie tytuł gry to h3).
+export function renderGuide(guide, { atlas = null, sprites = null, headingLevel = 3 } = {}) {
   const wrapper = document.createElement("div");
   wrapper.className = "sowie-guide";
   const summary = document.createElement("p");
@@ -53,16 +54,22 @@ export function renderGuide(guide, { atlas = null, sprites = null } = {}) {
       picture.classList.add("sowie-guide-picture");
       item.appendChild(picture);
     }
-    const title = document.createElement("h3");
+    const title = document.createElement(`h${headingLevel}`);
     title.textContent = card.title;
     const text = document.createElement("p");
     text.textContent = card.text;
     item.append(title, text);
     if (card.gesture) {
+      // Animowana „dłoń”: kropka palca stuka, przytrzymuje albo przesuwa się (wyłączana przy ograniczeniu ruchu).
+      const demo = document.createElement("span");
+      demo.className = "sowie-gesture-demo";
+      demo.dataset.gesture = card.gesture;
+      demo.setAttribute("aria-hidden", "true");
+      demo.innerHTML = '<span class="sowie-gesture-finger"></span>';
       const gesture = document.createElement("span");
       gesture.className = "sowie-guide-gesture";
       gesture.textContent = GESTURES[card.gesture];
-      item.appendChild(gesture);
+      item.append(demo, gesture);
     }
     if (card.tip) {
       const tip = document.createElement("p");

@@ -17,7 +17,7 @@ Identyfikatory w bazie są stałe (są wpisane w opublikowane reguły Firestore)
 ## Struktura główna
 
 ```text
-index.html                (menu główne)
+index.html                (menu główne — szkielet zakładek; treść rysuje shared/menu/)
 config/
   firebase-config.js      (window.firebaseConfig — projekt rpg-dataslate-relay)
 shared/
@@ -35,13 +35,13 @@ shared/
   stable-panel.js         (stabilny panel gier idle)
   modal-accessibility.js  (dostępność modali gier idle)
   records.js              (okno „🏆 Rekordy” w grach)
-  main-menu.js/.css       (karty gier w menu)
   cute-ui.css, game-enhancements.css
   pwa.js                  (rejestracja service workera)
   engine/                 (Sowi Silnik — moduły ES: pętla, widok, kamera, gesty, sceny, powłoka telefonu, atlas grafik…)
   world/                  (Sowi Świat — tokeny kolorów, czcionka, Sówka, katalog grafik postaci)
   ui/                     (wspólny interfejs gier: HUD, komunikaty, okna, menu pauzy, ekran wyników, ui.css)
   meta/                   (SowieProgress — zdarzenia i most do Akademii; guides-data.js — instrukcje)
+  menu/                   (menu główne — moduły ES: zakładki Gry, Jak grać, Galeria, Sowa; menu.css)
 lab/                      (Sowie Laboratorium — strona testowa silnika na telefonie: postacie, gesty, informacje)
 assets/icons/             (ikona aplikacji SVG i PNG)
 assets/svg/               (źródła SVG postaci: sowa/, garderoba/, kozki/, humbak/, pracu/, amic/, liscie/, interfejs/)
@@ -71,7 +71,7 @@ docs/
 
 ## Kolejność skryptów na każdej stronie
 
-Na początku (w `<head>` stron gier, na końcu `<body>` menu), ścieżki względne:
+Na początku `<head>` każdej strony (menu, gry, Laboratorium), ścieżki względne:
 
 1. `config/firebase-config.js`
 2. `shared/sowie-platform.js`
@@ -79,11 +79,100 @@ Na początku (w `<head>` stron gier, na końcu `<body>` menu), ścieżki względ
 4. `shared/password-gate.js`
 5. `shared/pwa.js` (od E2a)
 
-Dopiero potem `sowie-core.js`, gra i pozostałe moduły. Test `tests/unit/architecture.test.mjs` pilnuje tej kolejności.
+Dopiero potem `sowie-core.js`, gra i pozostałe moduły; w menu (bez `sowie-core.js`) — `sowie-academy.js` i `owl-gallery.js` z `defer` oraz moduł `shared/menu/menu.js`. Test `tests/unit/architecture.test.mjs` pilnuje tej kolejności.
 
-## Ekran startowy (menu)
+## Menu główne (`index.html`, `shared/menu/`) — etap E3
 
-`index.html` (`body.sowie-main-menu`) ma pasmo ozdób (sowa, koza, humbak, szklarnia — `pointer-events: none`), nagłówek „SowieGry”, przycisk garderoby `#cosmeticsButton` i sekcję `[data-game-cards]`. `shared/main-menu.js` generuje karty z `SowiePlatform.GAME_REGISTRY` (link `.game-card` + przycisk „❓ Jak grać w …”). Przycisk garderoby pokazuje ikonę i nazwę wybranego kosmetyku (`profil.cosmetics.selected`) i odświeża się na zdarzenie `profile:changed`. Ekran hasła pojawia się nad menu przy pierwszym wejściu na urządzeniu.
+Nowe menu (Analiza 2, rozdz. 4.1) zastąpiło `shared/main-menu.js`, `shared/main-menu.css` i przyciski Akademii, Galerii i instrukcji doklejane do nagłówka. Telefon w pionie najpierw, od 768 px siatka kart. Wszystkie klikalne elementy to prawdziwe `<button>` / `<a>` z widocznym fokusem (`outline: 3px solid var(--niebieski)`, odstęp 3 px); cele dotyku ≥ 48 px; układ działa od 320 × 568 bez przewijania w bok.
+
+### `index.html`
+
+- `<head>`: `viewport` z `viewport-fit=cover`, `theme-color` `#bfe9ff`, opis strony, manifest i ikony PWA (jak każda strona), `preload` czcionki `assets/fonts/fredoka-700.woff2` (`crossorigin`); style w tej kolejności: `shared/cute-ui.css` (ekran hasła i okna chmury), `shared/world/tokens.css`, `shared/ui/ui.css`, `shared/menu/menu.css`; skrypty: `config/firebase-config.js`, `shared/sowie-platform.js`, `shared/sowie-cloud.js`, `shared/password-gate.js`, `shared/pwa.js`, `shared/sowie-academy.js` (`defer`), `shared/owl-gallery.js` (`defer`) i moduł `shared/menu/menu.js` (`type="module"` — wykonuje się po skryptach `defer`, więc `window.SowieAcademy` i `window.SowieOwlGallery` już istnieją). Menu **nie** ładuje `sowie-core.js`, `notification-manager.js`, `game-guides.js` ani `owl-gallery.css`.
+- `<body class="menu" data-sowie-menu>` (atrybut `data-sowie-menu` wyłącza doklejanie starych przycisków w `sowie-academy.js` i `owl-gallery.js`):
+  - `.menu-sky` (`aria-hidden`) z trzema chmurami `.menu-cloud.is-1/2/3`;
+  - `header.menu-header`: `.menu-topbar` z `h1.menu-logo` „SowieGry”, stanem zapisu `[data-cloud-status]` (`role="status"`, `aria-live="polite"`) i przyciskiem `[data-open-settings]` (`aria-label="Ustawienia"`); `.menu-hero`: przycisk `[data-hero-owl]` z płótnem 120 × 120 (`aria-label="Sówka — dotknij, żeby się przywitała"`) i dymek `.menu-bubble` z tekstem `[data-hero-text]` („Hu-hu! W co dziś gramy?”) oraz zadaniami dnia `[data-hero-tasks]`;
+  - `main.menu-main` z czterema panelami `section.menu-panel[role=tabpanel]` (`tabindex="-1"`, `aria-labelledby` = przycisk zakładki): `#gry` (`[data-game-path]`, `[data-install-slot]`), `#jak-grac` (`[data-guides]`), `#galeria` (licznik `[data-gallery-count]`, filtry `[data-gallery-filters]` — trzy przyciski `data-filter="all|unlocked|locked"` z `aria-pressed`: „Wszystkie”, „Odblokowane”, „Do zdobycia”, siatka `[data-gallery-grid]`), `#sowa` (`[data-owl-tab]`); ukryte panele mają `hidden`;
+  - `nav.menu-tabs[role=tablist]` (`aria-label="Menu SowieGry"`) z czterema `button[role=tab]` (`id="tab-<zakładka>"`, `aria-controls`, `aria-selected`, `tabindex="-1"` poza wybraną, `data-tab`): Gry, Jak grać, Galeria, Sowa — każda z ikoną `<span data-icon="games|guide|gallery|owl">` (SVG wstawia `menu.js`) i podpisem.
+
+### `shared/menu/menu.css`
+
+- `box-sizing: border-box` dla wszystkiego w `.menu`; `html { scroll-padding-bottom: calc(96px + safe-area) }` (przewijanie do elementu omija dolny pasek); `body.menu`: kolor `--kontur`, tło `linear-gradient(180deg, --niebo-gora 0%, --niebo-dol 70%) fixed`, Fredoka 16 px / 1,45 (`--czcionka-tekst`), bez podświetlenia dotyku, `overscroll-behavior-y: none`;
+- **tło ze zdjęcia** (`body.has-photo`): `linear-gradient(rgba(255,246,227,.55) → .88 przy 60%)` na `var(--menu-photo)` `center / cover fixed` i `--niebo-dol`;
+- **chmury**: 160 × 48 px, `rgba(255,255,255,.75)`, dwa „kłęby” z `box-shadow` (40 px / −18 px, 88 px / −8 px), animacja `menuCloud` (`translate: 180vw 0`, 60 s liniowo w nieskończoność; chmura 2: skala 0,7, 85 s, opóźnienie −30 s; chmura 3: skala 0,85, 70 s, −50 s), start 14% / 42% / 70% wysokości;
+- **nagłówek** i **treść**: szerokość `min(100%, 560px)`, wyśrodkowane, marginesy boczne `max(16px, safe-area)`; logo 30 px pogrubione, białe z konturem 6 px `--kontur` (`-webkit-text-stroke`, `paint-order: stroke fill`), `min-width: 0`; stan zapisu — „pigułka” min. 36 px, biel 80%, 14 px pogrubione, `data-state="offline|blad"` na czerwono (`--amic-czerwony`); przycisk ikony `.menu-icon-button` — koło 48 × 48, biel 85%, cień `0 4px 12px`; `.menu-icon-button[hidden]` — ukryty;
+- **sówka i dymek**: przycisk 112 × 112 (przezroczysty), dymek biały, zaokrąglenie 20 px, cień, „ogonek” z trójkąta obramowania 10 px po lewej; tekst 18 px pogrubiony; zadania: kropki `.menu-dot` 12 px (szare, zrobione — `--monstera`) i napis `.menu-hero-count` bez łamania, zawijanie całości;
+- **treść**: dół `calc(96px + safe-area)` (miejsce na pasek), tytuły sekcji `.menu-section-title` 24 px; **pasek zakładek** `fixed` na dole (z-index 50), siatka 4 kolumn, zaokrąglenie 22 px u góry, biel 96%, cień w górę; przyciski min. 60 px, ikona 26 px nad podpisem 15 px pogrubionym; wybrana zakładka — kolor `--monstera-ciemna`, tło złote 35%;
+- **przyciski** `.menu-button`: min. 52 px, zaokrąglenie 16 px, biel z obwódką 2 px, 17 px pogrubione; `.is-primary` — biel na `--monstera` z dolnym „cieniem” 4 px `--monstera-ciemna`, 19 px; `.is-danger` — tekst `--amic-czerwony`; wciśnięcie: `translateY(1px) scale(.98)`;
+- **ścieżka kart** `.menu-path`: siatka, odstęp 28 px; `svg.menu-path-line` (absolutnie pod kartami) z krzywą: kreska biała 90%, 14 px, zaokrąglone końce, `stroke-dasharray: 2 26` (rząd „kamyków”); **karta** `.game-card`: zaokrąglenie 24 px, biel 95%, cień `0 10px 28px`; na telefonie 360–767 px karty nieparzyste mają `margin-right: 7%`, parzyste `margin-left: 7%` (zygzak); ilustracja `.game-card-art` 128 px z gradientem `--biom-gora` → `--biom-dol` i płótnem na całą powierzchnię; plakietka przystanku (lewy górny róg, „1. Łąka”) i opcjonalnie „Nowe!” (złota, prawy róg — gdy gra w rejestrze ma `rebuilt: true`); treść: nazwa 23 px, opis, rekord (pogrubiony, cyfry stałej szerokości, gwiazdka 20 px `--zloto-ciemne`) — w trakcie wczytywania **szkielet** `.is-loading` (przezroczysty tekst, przesuwający się gradient `menuSkeleton` 1,2 s); akcje: siatka `1.3fr / 1fr` („Graj”, „Jak grać?”);
+- **karta instalacji** `.menu-install`: biel 92%, zaokrąglenie 20 px, obwódka 2 px `--woda`; **Jak grać** `.menu-guide`: biel 90%, zaokrąglenie 22 px, tytuł 21 px, tor kart instrukcji dosunięty do prawej krawędzi;
+- **galeria**: nagłówek z licznikiem (18 px, cyfry stałej szerokości); chipy `.menu-chips button` min. 48 px, „pigułki”, wybrany — złoty i pogrubiony; siatka 2 kolumny (odstęp 12 px; ≥ 768 px — 3, ≥ 1100 px — 5); kafelek `.menu-tile` (zaokrąglenie 18 px, biel 95%, cień): zdjęcie 4 : 3 (`object-fit: cover`, tło zastępcze `--sowa-brzuszek`), tytuł 16 px, znaczek „Nowe!” (złoty, lewy górny róg), serduszko ulubionego (koło 32 px, prawy górny róg, `--serce`); zablokowany: zdjęcie `blur(9px) saturate(.6)` i `scale(1.12)`, kłódka w białym kole 44 px na środku, wymaganie 15 px, pasek postępu `.menu-progress` (8 px, zielone wypełnienie `scaleX`); nowe zdjęcie: animacja odwrócenia `menuFlip` 900 ms (od `rotateY(180deg)` i przyciemnienia, przez −12°);
+- **przeglądarka zdjęć** `.menu-viewer`: `fixed` na cały ekran (z-index 9500), tło `#18121f`, siatka 3 rzędów (pasek: licznik „2 / 12” i zamknięcie; scena; informacje), `touch-action: none`; zdjęcie `object-fit: contain`, `transform-origin: center`, bez zaznaczania i przeciągania; przyciski poprzednie / następne po bokach sceny (ikona „następne” odbita dla poprzedniego); pod zdjęciem tytuł 21 px, autor i link „źródło: Pexels”, przyciski „Ulubione” i „Tło menu” (wciśnięte — złote tło, serduszko wypełnione);
+- **zakładka „Sowa”**: karty `.menu-card` (biel 92%, zaokrąglenie 22 px), profil (płótno 96 px + poziom 20 px), listy `.menu-list` (wiersze na tle `--niebo-dol`, zaokrąglenie 14 px, pasek postępu na całą szerokość, zrobione — `--monstera-ciemna`), garderoba `.menu-wardrobe` (siatka `auto-fill, minmax(140px, 1fr)`, chipy `.menu-chip` min. 48 px, zablokowane z kłódką 18 px i przezroczystością 0,6, podpowiedź misji 13 px pod spodem), statystyki rekordów `.menu-stats` (kafelki `auto-fit, minmax(120px, 1fr)`, wartość 20 px), lista Top 10 `.menu-top`, opisy przełączników `small` 13 px;
+- **komunikaty** w menu: `.menu > .sowie-toasts` — `fixed`, nad paskiem zakładek (`bottom: calc(92px + safe-area)`, z-index 60);
+- **małe telefony (≤ 374 px)**: logo 26 px, stan zapisu tylko ikoną (napis ukryty wizualnie, zostaje dla czytników), sówka 88 px, tekst dymka 16 px;
+- **≥ 768 px**: nagłówek i treść do 1100 px, ścieżka jako siatka 2 kolumn (linia ścieżki ukryta), pasek zakładek wyśrodkowany (560 px); **≥ 1100 px**: 3 kolumny kart;
+- **ograniczenie ruchu** (`prefers-reduced-motion` albo `html.sowie-reduced-effects`): bez chmur, odwracania kart i animacji szkieletu.
+
+### `shared/menu/menu.js` — wejście
+
+- **Ikony**: każdy `[data-icon]` dostaje `ICONS[nazwa]`, przycisk ustawień — `ICONS.settings`.
+- **Komunikaty**: `createToasts({ root: document.body })`; jeśli strona nie ma `window.SowieNotifications`, menu ustawia adapter `toast({ title, detail, reward, kind })` → jeden napis „tytuł · szczegół · nagroda” (3,2 s; `important` i `mission` jako „nagroda”) — z niego korzystają Akademia i Galeria.
+- **Atlas postaci**: `createAtlas({ catalog: SPRITES, baseUrl: SVG_BASE })`, budowany dla `80 × min(2, devicePixelRatio)` pikseli na jednostkę; po zbudowaniu karty są rysowane od nowa, zakładka „Jak grać” dostaje obrazki (jeśli była wyrenderowana bez nich i nie jest akurat widoczna — inaczej przy następnym pokazaniu), sowa w profilu się rysuje, rusza animacja.
+- **Dźwięk**: `fetch(assets/audio/audio.json)` → `createAudio({ manifest, baseUrl, preloadOnUnlock: MENU_SOUNDS })` z `MENU_SOUNDS = ["klik", "hu-hu", "zakup", "rekord"]` (po pierwszym dotknięciu wczytują się tylko te 4 efekty), `connectAudioSettings(audio, SowieCloud)` (głośności z profilu), `bindUnlock(window)`; `audio.onChange`: odświeża suwaki w zakładce „Sowa” i — gdy dźwięk jest odblokowany, muzyka nie gra, a głośność muzyki i ogólna są > 0 — włącza pętlę `menu` (cicha muzyka menu). `sound(nazwa)` gra efekt tylko po odblokowaniu (przy pierwszym użyciu czeka na wczytanie pliku). Każde kliknięcie przycisku lub odnośnika gra „klik”. Brak manifestu → `console.warn`, menu działa bez dźwięku.
+- **Zakładki**: `selectTab(id, { focus, scroll })` — nieznane id → `gry`; ustawia `aria-selected` i `tabindex` przycisków, `hidden` paneli, adres (`history.replaceState`: `gry` bez `#`, pozostałe `#jak-grac`, `#galeria`, `#sowa`; zapytanie `?…` zostaje; odnośnik do instrukcji jednej gry `#jak-grac-<gra>` zostaje bez zmian), przy zmianie przewija na górę, woła `onShow`. Klawiatura na pasku: ←/→ (w kółko), Home, End — wybór i fokus. `onShow`: „Jak grać” renderuje instrukcje przy pierwszym pokazaniu (albo gdy brakowało obrazków), „Galeria” — `render()`, „Sowa” — `renderOwlTab()`, „Gry” — układ ścieżki w następnej klatce. Start: zakładka z adresu (`#galeria`, `#sowa`, `#jak-grac`, `#jak-grac-sowa3` → zakładka „Jak grać” i przewinięcie do sekcji gry).
+- **Stan zapisu**: `SowieCloud.onStatus` → `[data-cloud-status]` (`data-state` = status albo `test`, ikona + krótki napis z `cloud-status.js`, `aria-label` „Zapis: <opis>”) i opis w ustawieniach.
+- **Sówka w nagłówku**: animator `createOwlAnimator()`; stuknięcie: skok 0,55 s (wysokość 0,28 j., parabola), potem „radość” 1,1 s i lądowanie (`land(0.8)`), kolejne powitanie z listy (`GREETINGS`: „Hu-hu! W co dziś gramy?”, „Hu-hu! Miło Cię widzieć!”, „Pracu Pracu znowu coś kombinuje…”, „Kózki uciekły do szklarni!”, „Liście monstery same się nie zbiorą!”) i „hu-hu”; rysowanie: płótno = rozmiar CSS × DPR, jednostka = bok / 1,7, sowa w (0,85; 1,6) o rozmiarze 1,1 z dodatkiem z garderoby. Zadania dnia: kropki z `taskProgress(SowieAcademy.snapshot())` bez zadania tygodnia i „Zadania dnia: X / 3”.
+- **Karty gier**: `renderGameCards(...)` (niżej); `updateRecords()` — rekordy z `profil.records`, szkielet do `SowieCloud.isReady()`; `layout()` (tylko na zakładce „Gry”): krzywa ścieżki i rozmiar płócien = rozmiar CSS × DPR (zmiana → karta do przerysowania); `ResizeObserver` na ścieżce woła `layout()`; `IntersectionObserver` zaznacza widoczne płótna. „Jak grać?” na karcie otwiera okno `openModal` „Jak grać — <tytuł>” z `renderGuide` (obrazki z atlasu) i przyciskami „Rozumiem” oraz „Graj” (przejście do gry); po zamknięciu fokus wraca na przycisk.
+- **Pętla**: `createLoop({ step: 1/60 })` z rysowaniem 30 razy na sekundę (`setRenderRate(30)`): aktualizuje sówkę i animatory kart, rysuje sówkę i (tylko na zakładce „Gry”) widoczne albo oznaczone karty; `drawCard` czyści płótno, ustawia skalę DPR i woła `drawCardArt` z bieżącym dodatkiem sowy. Pętla rusza po zbudowaniu atlasu; przy ograniczeniu ruchu (`prefers-reduced-motion` albo `sowie-reduced-effects`) zatrzymana — rysowana jest jedna nieruchoma klatka (czas 0,3 s) po każdej zmianie.
+- **Dane z chmury**: `refreshAll()` po `SowieCloud.ready` i `onProfileReload` — klasa `sowie-reduced-effects` z `settings.reducedEffects`, rekordy, zadania, tło, przerysowanie kart, przebudowa widocznej zakładki „Sowa” / „Galeria”, start animacji; `sowie:academy-changed` → zadania w dymku i widoczna zakładka „Sowa” / „Galeria”; `sowie:gallery-changed` → tło i galeria (gdy przeglądarka zdjęć jest zamknięta); `pageshow` z `persisted` (powrót „wstecz” z gry do strony z pamięci przeglądarki) → `location.reload()` (świeże rekordy i zadania).
+- **Tło menu**: `applyBackground()` — gdy `SowieOwlGallery.snapshot().background` wskazuje zdjęcie: `body.has-photo` i `--menu-photo: url(miniatura 600 px)`.
+- **Ustawienia w nagłówku**: przełącza na „Sowa”, przewija do `#ustawienia` (płynnie, chyba że ograniczenie ruchu) i ustawia na nim fokus.
+- `window.SowieMenu` (testy e2e i Laboratorium): `selectTab`, `tab()`, `atlas`, `audio()`, `gallery` (API zakładki), `owl` (API zakładki „Sowa”), `frames()` (liczba narysowanych klatek), `animating()`.
+
+### `shared/menu/games.js` — zakładka „Gry”
+
+- `MENU_GAMES` — dane menu dla gier z rejestru: przystanek, opis, kolory biomu (`[góra, dół]` z tokenów): `runner` — „Łąka”, `[nieboGora, monsteraJasna]`; `jumper` — „Chmury”, `[niebieski, wodaJasna]`; `sowa3` — „Miasto”, `[policzki, sowaBrzuszek]`; `ogrody` — „Ogród”, `[nieboDol, monsteraJasna]`; `szklarnia` — „Szklarnia”, `[wodaJasna, monsteraJasna]` (opisy jednym zdaniem — jak na kartach);
+- `formatNumber(n)` (`pl-PL`, obcięcie w dół), `recordText(gameId, records)` — rekord osobisty z `profil.records` (bez dodatkowego odczytu z bazy): najlepszy ze wszystkich poziomów (`chill`, `arcade`, `chaos`) — SowaRunner `bestDistance` „Rekord: N m”, SowaJumper `bestHeight` „Rekord: N m”, Sowa3 `bestScore` „Rekord: N pkt”; Ogrody „Liście: N” (`lifetimeLeaves`), Szklarnia „Pomieszczenia: N” (`rooms`); brak — `null`;
+- **ilustracje** (`drawCardArt(ctx, atlas, gameId, czas, szerokośćCSS, wysokośćCSS, stan)`): jednostka świata = wysokość / 2,3, szerokość sceny = szerokość / jednostka; `hop(czas, okres, wysokość)` — podskok przez 60% okresu (parabola), potem przerwa; `cloud()` — trzy białe elipsy; `ground()` — pas ziemi 10 j. od `y`; sceny: **Łąka** — ziemia `monstera` na 2,05, biegnąca sowa (1,1; rozmiar 1,05), łuk 3 kołyszących się liści (od x = 2,3 co 0,55), dymek Pracu Pracu unoszący się przy prawej krawędzi; **Chmury** — sterowiec Amic (przezroczystość 0,75) przesuwający się u góry, dwie chmury, sowa podskakująca na chmurze (okres 1,4 s, 0,7 j.; w powietrzu „skok”, cień z `lift`), złoty liść; **Miasto** — trzy tory w perspektywie (trapez `kozaCien`, białe linie), nadlatujący telefon Magdy (rośnie od 0,3 do 1,0 j.), dystrybutor Amic, biegnąca sowa na środku; **Ogród** — ziemia `monsteraCiemna`, stojąca sowa, serduszko-doniczka, 3 kołyszące się liście, kózka-podwajaczka podskakująca (okres 1,6 s; odbita w poziomie); **Szklarnia** — trzy białe łuki szklarni, sowa na środku na przemian „stoi” i „radość” (co 2,2 s), tęczowy liść, podskakująca kózka-sprężynka;
+- `renderGameCards({ root, platform, onGuide })` — dla każdej gry z `GAME_REGISTRY` (kolejność rejestru) `article.game-card[data-game]` (`aria-labelledby` = nazwa, zmienne biomu) z ilustracją (płótno `aria-hidden`, przystanek „N. Nazwa”, „Nowe!” dla `rebuilt`), nazwą `h3`, opisem, rekordem `[data-record]` (szkielet „…”), odnośnikiem **Graj** `a.menu-button.is-primary[data-play=<id>]` (`href` = ścieżka gry, ikona ▶) i przyciskiem **Jak grać?** `[data-guide=<id>]` (`aria-label="Jak grać w <nazwa>?"`); na początku `root` — `svg.menu-path-line` z jedną ścieżką; zwraca `{ cards: [{ game, card, canvas, visible }], layoutPath(), updateRecords(records, gotowe) }`; `layoutPath()` prowadzi krzywą Béziera od środka góry przez środki kart na przemian na 28% i 72% szerokości do środka dołu; `updateRecords` zdejmuje szkielet i wpisuje „★ Rekord…” albo „Jeszcze bez rekordu — zagraj pierwszy raz!”;
+- `createArtState(random)` → `{ owl: createOwlAnimator(), cosmetic: "none" }` — osobna sowa na kartę (mrugają niezależnie).
+
+### `shared/menu/guides.js` — zakładka „Jak grać”
+
+`renderGuidesTab({ root, atlas })` — dla każdego `GUIDE_ORDER` (najpierw „Poznaj Sowi Świat”, potem 5 gier) sekcja `section.menu-guide#jak-grac-<id>` (`data-guide`, `aria-labelledby`) z tytułem `h3` i kartami `renderGuide(przewodnik, { atlas, sprites: SPRITES, headingLevel: 4 })` (tytuły kart jako `h4`); karta „Sterowanie” ma animowaną demonstrację gestu.
+
+### `shared/menu/gallery.js` — zakładka „Galeria”
+
+`createGalleryTab({ root, gallery: () => SowieOwlGallery, academy: () => SowieAcademy, onSound, onBackground })` → `{ render, openViewer(id, przycisk), viewer() }`:
+
+- `render()`: przed wczytaniem galerii — „Wczytuję galerię…”; potem `refreshUnlocks()`, licznik „X / 30”, kafelki według filtra; **odblokowane** — `button.menu-tile[data-open-photo]` (`aria-label="Otwórz zdjęcie: <tytuł>"`, „(nowe)” dla nieobejrzanych, klasa `is-new` i znaczek „Nowe!”, serduszko dla ulubionego); **zablokowane** — `article.menu-tile.is-locked` (`aria-label="Zdjęcie N — zablokowane"`, rozmyta miniatura bez opisu, kłódka, tekst wymagania, `role="progressbar"` z `aria-valuenow` = `progressOf(…).share` w %); obrazki: miniatura 400 px, `srcset` 400w / 600w, `sizes="(max-width: 767px) 46vw, (max-width: 1099px) 30vw, 200px"`, `loading="lazy"`, `decoding="async"`, 400 × 300; pusta lista — „Wszystkie zdjęcia są już odblokowane!” albo „Jeszcze nic tu nie ma.”; gdy są nowe zdjęcia — raz na wizytę „hu-hu” (`onSound`);
+- filtry: klik ustawia `aria-pressed` i renderuje;
+- **przeglądarka** (`openViewer`): `div.menu-viewer[role=dialog][aria-modal=true]` (`aria-label="Zdjęcie: <tytuł>"`) tylko z odblokowanymi zdjęciami; najpierw miniatura 600 px, po wczytaniu pełne zdjęcie 1200 × 900 (`photoUrl`); licznik, tytuł, „Fot. <autor> · źródło: Pexels” (link w nowej karcie, `rel="noopener noreferrer"`), „Ulubione” (`setFavorite`, `aria-pressed`, „klik”) i „Tło menu” (`setBackground(id | null)`, `onBackground`); każde pokazanie — `markViewed`; przyciski poprzednie / następne ukryte przy jednym zdjęciu; **gesty** (zdarzenia wskaźnika na scenie, `setPointerCapture` w `try`): przesunięcie w bok > 60 px — następne / poprzednie (w kółko), w dół > 90 px — zamknięcie, mniejsze — powrót na miejsce; dwa palce — powiększanie 1–4× (przy 1× wyśrodkowanie); przy powiększeniu jeden palec przesuwa zdjęcie; **podwójne stuknięcie** (< 320 ms, bez ruchu) — powiększenie 2,5× w miejscu stuknięcia albo powrót do 1× (także myszką; `dblclick` tylko blokuje zaznaczanie); klawiatura: Escape zamyka, ← / → przełączają, Tab krąży w oknie (`focusableIn`); zamknięcie przebudowuje siatkę i oddaje fokus kafelkowi ostatnio oglądanego zdjęcia; `viewer().state()` → `{ index, total, scale, x, y }`.
+
+### `shared/menu/owl-tab.js` — zakładka „Sowa”
+
+`createOwlTab({ root, cloud, platform, academy, audio, atlas, onCosmetic })` → `{ render, drawProfileOwl, updateAudio, updateStatus(status), openRecords(gameId, przycisk), recordsOpen() }`. `render()` składa karty (każda `section.menu-card[data-owl-card]`):
+
+1. **profil** — płótno 96 px z sową w wybranym dodatku (jednostka = bok / 1,7, sowa w (0,85; 1,55), rozmiar 1,15), „Poziom N”, „X / Y XP” z paskiem (`role="progressbar"`), „Piórka: N” (z `SowieAcademy.snapshot()`);
+2. **zadania** — `taskProgress(...)`: 3 zadania dnia i zadanie tygodnia (`li[data-task]`, „X / Y” albo „Zrobione!”, pasek);
+3. **garderoba** — chip dla każdego `SowiePlatform.COSMETICS` (`[data-cosmetic]`, `aria-pressed` = wybrany); zablokowane (`profil.cosmetics.unlocked` bez klucza; „Bez dodatku” zawsze odblokowany) — `disabled`, kłódka i podpowiedź `cosmeticHint` („Zbierz 20 liści monster (12 / 20)” — misja z `DEFAULT_MISSIONS` o tej nagrodzie, postęp z `profil.missions`, opisy `MISSION_LABELS` jak w `sowie-core.js`); wybór zapisuje `profil.cosmetics.selected` (po 1 s), przerysowuje sowę i woła `onCosmetic` (menu przerysowuje karty, sówka podskakuje);
+4. **rekordy** — dla każdej gry nazwa, `recordText` (przed wczytaniem „…”) i przycisk „Rekordy” `[data-records]` → okno „Rekordy — <nazwa>”: gry zręcznościowe — chipy Chill / Arcade / Chaos (domyślnie Arcade), „Najlepszy wynik”, „Dystans” (SowaRunner) / „Wysokość” (SowaJumper), „Rozgrywki”, „Top 10 — <poziom>” z `SowieCloud.topRuns(gra, poziom)` (odczyt `sowiegry_gry/<gra>`; „Wczytuję…”, błąd — „Nie udało się wczytać wyników…”, pusto — „Brak rozgrywek na tym poziomie…”; wiersz: wynik, dystans / wysokość, data `pl-PL`); gry idle — „Liście w całej grze”, „Wielkie Przesadzania” / „Pomieszczenia”, „Strefa” / „Odkryte hybrydy”;
+5. miejsce na **kartę instalacji** (`[data-install-slot="sowa"]`);
+6. **ustawienia** (`#ustawienia`, `tabindex="-1"`): suwaki „Głośność ogólna”, „Muzyka”, „Efekty dźwiękowe” (`.sowie-ui-slider`, `[data-volume]`, nieaktywne do wczytania dźwięku — `updateAudio()` włącza je bez przebudowy zakładki); przełączniki `.sowie-ui-toggle[data-setting]`: „Efekty (wstrząsy, cząsteczki)” (`reducedEffects` odwrotnie + klasa `sowie-reduced-effects`), „Wibracje” (`vibration`; dopisek „Ten telefon nie obsługuje wibracji.”, gdy brak `navigator.vibrate`), „Tryb Przytulny (wolniej, bez końca gry)” (`cozy`, dopisek „Zadziała w nowych wersjach gier.”), „Komentarze sowy” (`quips`); stan zapisu (`[data-save-state]`, długi opis); **„Wyloguj to urządzenie”** (`[data-logout]`) → okno „Wylogować to urządzenie?” („Postęp zostaje w chmurze…”) z „Anuluj” i „Wyloguj” → `SowieCloud.lock()` (wysyła kolejkę, zapomina hasło na tym urządzeniu, przeładowuje stronę — pojawia się ekran hasła).
+
+Zapis ustawień: `updateProfile(profil.settings ← zmiany, { delayMs: 1000 })`; suwak: `setVolume` w silniku + `volumeMaster/Music/Sfx`, a suwak muzyki / efektów ustawia też `settings.music` / `settings.sfx` na „> 0” (obecne gry czytają te przełączniki).
+
+### `shared/menu/install.js` — karta instalacji
+
+`renderInstallCard(miejsce, { pwa = SowiePwa, nav })` → funkcja odłączająca; `isIos(nav)` — iPhone / iPod / iPad, także iPadOS (`MacIntel` z ekranem dotykowym). Gdy strona działa jako aplikacja (`standalone()`) — nic. Android / Chrome (`canPrompt()`): „Zainstaluj SowieGry na telefonie”, „Gry otworzysz jedną ikoną, na pełnym ekranie — także bez zasięgu.”, przycisk **Zainstaluj** (`[data-install-button]`, ikona pobierania) → `SowiePwa.prompt()`; zgoda chowa kartę. iPhone: instrukcja w 3 krokach (Udostępnij z ikoną → Do ekranu początkowego → Dodaj). Inne: „W menu przeglądarki wybierz Zainstaluj aplikację albo Dodaj do ekranu głównego.”. `onInstallChange` przebudowuje kartę (np. gdy przeglądarka pozwoli instalować albo po instalacji). Karta jest pod ścieżką gier i w zakładce „Sowa”; `data-install` = `android` / `ios` / `inne`.
+
+### `shared/menu/cloud-status.js` — stan zapisu
+
+`CLOUD_STATUS` (`haslo` — „Hasło” / kłódka, `laczenie` — „Łączę…”, `online` — „Zapisano” / chmurka z ptaszkiem, `zapisywanie` — „Zapisuję…”, `offline` — „Offline” / przekreślona chmurka + opis „Brak połączenia — postęp zostaje na telefonie i wyśle się sam…”, `blad` — „Błąd zapisu”), `cloudStatusInfo(status, tryb)` — tryb `memory` zawsze „Tryb testowy” („postęp nie trafia do chmury”), `emulator` — dopisek „(emulator)”; `cloudStatusHtml(status, tryb)` → ikona + `<span>`.
+
+### Budżet menu (pomiar 28.09.2026, Pixel 7 w Chromium, `?cloud=memory`)
+
+Przy starcie menu pobiera 131 plików (w tym 48 SVG postaci): **ok. 160 KB po kompresji gzip** (tak serwuje GitHub Pages; budżet < 300 KB dotrzymany), 395 KB bez kompresji; czcionki 31 KB, grafiki SVG 44 KB (21 KB gzip), moduły menu 83 KB (27 KB gzip), `sowie-cloud.js` 42 KB (12 KB gzip), `audio.json` 24 KB. Atlas postaci gotowy po ok. 0,8 s (komputer z emulacją telefonu). Poza budżetem: miniatury galerii (tylko na zakładce „Galeria”, leniwie; 30 × ok. 18 KB), muzyka menu 206 KB (dopiero po pierwszym dotknięciu i gdy muzyka jest włączona) i SDK Firebase w trybie produkcyjnym (`firebase-app.js` + `firebase-firestore.js` — ok. 200 KB gzip, pobierane w tle i trzymane przez service worker).
 
 ## Wspólna warstwa
 
@@ -142,7 +231,7 @@ Stan (XP, piórka, metryki, misje dzienne i tygodniowe, nagrody) jest w `profil.
 
 ### `shared/owl-gallery.js` — `window.SowieOwlGallery`
 
-30 fotografii z `Obrazki/` (`id`, `file`, tytuł, opis `alt`, autor, link Pexels, tekst wymagania `requirement` i **cele `goals`**). Od E3 warunki odblokowania są danymi: `goals` to lista `[źródło, próg]`, gdzie źródło to `level` (poziom Akademii), `feathers` (piórka) albo nazwa metryki Akademii (np. `runnerDistance`, `ogrodyBuys`, `szklarniaRooms`, `runnerVisits`); zdjęcie odblokowuje się, gdy wszystkie cele są osiągnięte (`owl-01` ma pustą listę — prezent powitalny). Stan (`unlocked`, `viewed`, `favorite`, od E3 `background`) jest w `profil.gallery`; wczytywany po `SowieCloud.ready`, zapisywany przez `updateProfile`. Przed wczytaniem `refreshUnlocks()` nic nie robi (nie nadpisze stanu z chmury). Nowe odblokowania pokazują toast „Nowa fotografia w Galerii Sów!”, obejrzenie wszystkich 30 daje nagrodę Akademii `gallery:complete`.
+30 fotografii z `Obrazki/` (`id`, `file`, tytuł, opis `alt`, autor, link Pexels, tekst wymagania `requirement` i **cele `goals`**). Od E3 warunki odblokowania są danymi: `goals` to lista `[źródło, próg]`, gdzie źródło to `level` (poziom Akademii), `feathers` (piórka) albo nazwa metryki Akademii (np. `runnerDistance`, `ogrodyBuys`, `szklarniaRooms`, `runnerVisits`); zdjęcie odblokowuje się, gdy wszystkie cele są osiągnięte (`owl-01` ma pustą listę — prezent powitalny). Stan (`unlocked`, `viewed`, `favorite`, od E3 `background`) jest w `profil.gallery`; wczytywany po `SowieCloud.ready`, zapisywany przez `updateProfile`. Przed wczytaniem `refreshUnlocks()` nic nie robi (nie nadpisze stanu z chmury). Nowe odblokowania pokazują toast „Nowa fotografia w Galerii Sów!” (nagroda: w menu „Zobacz w zakładce Galeria”, w grach „Otwórz Galerię przyciskiem 🖼️”), obejrzenie wszystkich 30 daje nagrodę Akademii `gallery:complete`. W grach galeria otwiera się oknem (przycisk w doku, `owl-gallery.css`); w menu głównym ma własną zakładkę (`shared/menu/gallery.js`) — `attachButton()` nic nie dokleja, gdy strona ma `[data-sowie-menu]` (tak samo przycisk 🎓 w `sowie-academy.js`; zadania Akademii są w zakładce „Sowa”).
 
 API (`window.SowieOwlGallery`): `PHOTOS`, `open()`, `close()`, `refreshUnlocks()`, `snapshot()`, `progressOf(zdjęcie | id, migawkaAkademii)` → `{ share (0–1, średnia z celów), goals: [{ source, target, value (obcięta do progu), done }], done }` (do paska postępu zablokowanego zdjęcia), `markViewed(id)`, `setFavorite(id)` (jedno ulubione; ponowny wybór zdejmuje), `setBackground(id | null)` (tło menu — tylko odblokowane), `photoUrl(zdjęcie)` (pełne 1200 × 900), `thumbUrl(zdjęcie, 400 | 600)` (miniatura WebP), `isLoaded()`. Siatka w oknie galerii (gry) używa miniatur: `src` 400 px, `srcset` 400w/600w, `sizes="(max-width: 700px) 45vw, 220px"`, `loading="lazy"`, `decoding="async"`.
 
@@ -271,9 +360,9 @@ Web Audio z trzema szynami: efekty → `sfx` → `master`, muzyka → `music` �
 - `findOnset(dane, próg, limit)` — pierwsza próbka o |x| > progu; `loopPoints({ decodedOnset, onset, duration, bufferDuration })` → `{ offset, loopStart, loopEnd }` (przesunięcie = początek w buforze − początek w oryginale, obcięte do 0–0,2 s; koniec pętli nie dalej niż koniec bufora);
 - `decodeFingerprint(base64)` → `Int8Array`; `alignByFingerprint(dane, sampleRate, odcisk, 44100, maxLag = 0,1 s)` — znormalizowana korelacja odcisku (co druga próbka, indeksy przeskalowane przy innej częstotliwości kontekstu, np. 48 kHz) z początkiem zdekodowanego bufora; zwraca przesunięcie w sekundach. Dekodery MP3 różnie traktują opóźnienie kodera (lamejs: 1105 próbek mono, 1524 stereo), a odcisk pozwala znaleźć je dokładnie — pętle muzyki nie mają szwu;
 - `variedRate(pitch, random)` — `pitch × (1 ± 5%)`;
-- `createAudio({ manifest, baseUrl, createContext, fetchImpl, random, doc, nav })`:
+- `createAudio({ manifest, baseUrl, createContext, fetchImpl, random, doc, nav, preloadOnUnlock })`:
   - kontekst `AudioContext` (albo `webkitAudioContext`, `latencyHint: "interactive"`) powstaje dopiero przy odblokowaniu; wcześniej `navigator.audioSession.type = "ambient"` (Safari 17+: dźwięk gry nie przerywa muzyki z innych aplikacji i respektuje przełącznik wyciszenia);
-  - `unlock()` — w geście użytkownika: kontekst, cichy bufor 1 próbki (iOS), `resume()`, potem `preload()`; zwraca `true`, gdy kontekst działa; `bindUnlock(window)` — jednorazowo na `pointerdown`, `touchend`, `keydown` (faza przechwytywania);
+  - `unlock()` — w geście użytkownika: kontekst, cichy bufor 1 próbki (iOS), `resume()`, potem `preload(preloadOnUnlock)` (lista efektów; domyślnie — `null` — wszystkie; menu wczytuje tylko 4); zwraca `true`, gdy kontekst działa; `bindUnlock(window)` — jednorazowo na `pointerdown`, `touchend`, `keydown` (faza przechwytywania);
   - wczytywanie: `fetch` → `decodeAudioData` (także starsza wersja z wywołaniami zwrotnymi) → wyznaczenie przesunięcia (pętle — odcisk, efekty — pierwsza głośna próbka) → pamięć `sfx:nazwa` / `music:nazwa`; błąd = `console.warn` i licznik `failed` (bez przerywania gry); `preload(nazwy = wszystkie efekty)`, `loaded(nazwa)`;
   - `play(nazwa, { pitch = 1, volume = 1, pan = 0, variation = true })` — cisza (i licznik `skipped`), gdy dźwięk nie jest odblokowany, szyna ma głośność 0 albo efekt nie jest jeszcze wczytany (wtedy zaczyna się wczytywanie); odstęp `minGap` między tym samym efektem; ponad `maxVoices` tego efektu albo `MAX_VOICES` łącznie — wygaszenie najstarszego głosu (30 ms); źródło: `AudioBufferSourceNode` (`playbackRate` = wariacja, pętla dla efektów `loop`) → wzmocnienie `volume × głośność z manifestu` → opcjonalny `StereoPanner` → szyna; start od przesunięcia (bez ciszy dekodera); zwraca `{ stop(fade), rate }`; nieznana nazwa → błąd;
   - `playMusic(nazwa, { fade = 0.8 })` — muzyka wczytywana przy pierwszym użyciu, pętla `loopStart`/`loopEnd`, narastanie do głośności z manifestu i wygaszenie poprzedniego utworu (przenikanie); `stopMusic({ fade = 0.6 })`, `currentMusic()`;
@@ -383,7 +472,7 @@ Moduły ES (`shared/ui/package.json` z `"type": "module"`, `index.js` eksportuje
 
 ### `icons.js`
 
-`ICONS` — ikony SVG 24 × 24 w kolorze tekstu (`currentColor`, kontur 2,4, zaokrąglone): `pause`, `play`, `restart`, `help`, `settings`, `wardrobe` (kokardka), `home`, `close`, `back`, `star`. Bez emoji (wyglądają różnie na każdym telefonie).
+`ICONS` — ikony SVG 24 × 24 w kolorze tekstu (`currentColor`, kontur 2,4, zaokrąglone): `pause`, `play`, `restart`, `help`, `settings` (od E3 koło zębate: pierścień r = 6, oś r = 2,2 i 8 grubych zębów — kreski 3,8 px), `wardrobe` (kokardka), `home`, `close`, `back`, `star`, a od E3 dla menu: `games` (pad), `guide` (otwarta książka), `gallery` (obrazek z górami), `owl` (głowa sowy), `cloud`, `cloudOk` (chmurka z ptaszkiem), `cloudOff` (przekreślona), `heart`, `lock` (kłódka), `next` (strzałka w prawo; „poprzednie” = odbicie CSS), `image`, `download`, `share` (Udostępnij na iPhonie). Bez emoji (wyglądają różnie na każdym telefonie).
 
 ### `hud.js` — HUD
 
@@ -401,22 +490,25 @@ Moduły ES (`shared/ui/package.json` z `"type": "module"`, `index.js` eksportuje
 - **w trakcie gry (`isInGame()`) najwyżej 1 komunikat**, u góry planszy pod HUD (`top: safe-area + 84px`, szerokość `min(72vw, 300px)`); poza grą do 3 przy dolnej krawędzi;
 - `show(tekst, { kind: "info" | "success" | "warn" | "reward", duration, key, priority })` — ten sam `key` w ciągu 1,8 s zwiększa licznik („×2”) i przedłuża czas; nadmiar trafia do kolejki (max 3, sortowanie po priorytecie, najstarsze pierwsze);
 - `defer(tekst)` / `takeDeferred()` — komunikaty odłożone do ekranu wyników (np. postęp zadań w trakcie biegu); `refresh()` (po zmianie stanu gry — przy wejściu do gry nadmiar znika), `clear()`, `state()` → `{ visible, queued, inGame }`, `destroy()`;
+- w menu głównym kontener jest `fixed` nad dolnym paskiem zakładek (`shared/menu/menu.css`);
 - wygląd: biała „pigułka” 16 px Fredoka 700, zaokrąglenie 16 px, ramka wewnętrzna 2 px: sukces — monstera, ostrzeżenie — `--pracu`, nagroda — złota na tle `--niebo-dol`; wejście 180 ms, wyjście 200 ms.
 
 ### `modal.js` — okna
 
-`openModal({ title, content (Node albo tekst), actions: [{ label, primary, onClick(close) }], onClose, root = document.body, className })` → `{ element, body, close }`: tło `.sowie-ui-backdrop` (fixed, `rgba(59,47,74,.45)`, z-index 9000), arkusz `.sowie-ui-sheet` wysuwany od dołu (zaokrąglenie 24 px u góry, max. 88 dvh, przewijana treść, przyciski akcji na dole z marginesem na pasek domowy; na ekranach ≥ 700 px — okno na środku), `role="dialog"`, `aria-modal`, tytuł w `aria-labelledby`, przycisk zamknięcia 48 px; fokus na przycisku głównym (albo „Zamknij”), pułapka Tab, Escape i dotknięcie tła zamykają, po zamknięciu fokus wraca; dotknięcia nie trafiają do planszy (`pointerdown` → `stopPropagation`). `focusableIn(element)`.
+`openModal({ title, content (Node albo tekst), actions: [{ label, primary, onClick(close) }], onClose, root = document.body, className })` → `{ element, body, close }`: tło `.sowie-ui-backdrop` (fixed, `rgba(59,47,74,.45)`, z-index 9000), arkusz `.sowie-ui-sheet` wysuwany od dołu (zaokrąglenie 24 px u góry, max. 88 dvh, przewijana treść, przyciski akcji na dole obok siebie — kolumny równej szerokości, od E3 — z marginesem na pasek domowy; na ekranach ≥ 700 px — okno na środku), `role="dialog"`, `aria-modal`, tytuł w `aria-labelledby`, przycisk zamknięcia 48 px; fokus na przycisku głównym (albo „Zamknij”), pułapka Tab, Escape i dotknięcie tła zamykają, po zamknięciu fokus wraca; dotknięcia nie trafiają do planszy (`pointerdown` → `stopPropagation`). `focusableIn(element)`.
 
 ### `guide-view.js` — karty instrukcji
 
-`renderGuide(przewodnik, { atlas, sprites })` → opis + karty przewijane w bok (`scroll-snap`, szerokość `min(78%, 300px)`): obrazek postaci (z atlasu, gdy gra go ma — płótno 96 px w DPR; bez atlasu tylko grafiki z jednego pliku SVG jako `<img>`), tytuł, tekst, nazwa gestu (np. „Stuknij”), wskazówka i numer „1 / 7”.
+`renderGuide(przewodnik, { atlas, sprites, headingLevel = 3 })` → opis + karty przewijane w bok (`scroll-snap`, szerokość `min(78%, 300px)`): obrazek postaci (z atlasu, gdy gra go ma — płótno 96 px w DPR; bez atlasu tylko grafiki z jednego pliku SVG jako `<img>`), tytuł (`h3`, a w zakładce „Jak grać” menu `h4`), tekst, przy karcie z gestem **animowana demonstracja** i nazwa gestu (np. „Stuknij”), wskazówka i numer „1 / 7”.
+
+Demonstracja gestu (od E3): `span.sowie-gesture-demo[data-gesture]` (`aria-hidden`) — „ekran” 96 × 56 px (tło `--niebo-gora`, zaokrąglenie 14 px) z kropką palca `.sowie-gesture-finger` (22 px, `rgba(59,47,74,.55)`, biała obwódka 4 px): `tap` — wciśnięcie `scale(.7)` z falą (1,2 s), `hold` — powolne wciśnięcie z rosnącą falą (1,8 s), `swipe-left/right` — przesunięcie ±30 px z pojawianiem się i znikaniem (1,4 s; w lewo — animacja odwrócona), `swipe-up/down` — ±16 px w pionie, `drag` — ukośnie tam i z powrotem (2 s); przy `prefers-reduced-motion` i `sowie-reduced-effects` kropka stoi.
 
 ### `pause-menu.js` — menu pauzy
 
 `createPauseMenu({ root, shell, gameId, audio (obiekt albo funkcja), atlas, sprites, cloud = SowieCloud, platform = SowiePlatform, onResume, onRestart, onExit = → "../" })`:
 
 - nakładka `.sowie-pause-overlay.sowie-ui-pause` (`role="dialog"`, `aria-label="Pauza"`, karta przy dolnej krawędzi — zasięg kciuka) z tytułem „Pauza”, powodem (tło: „Witaj z powrotem 🦉”, fokus: „Gra czeka na Ciebie”, obrót: „Ekran się obrócił”, gracz: „Odpocznij chwilę”) i przyciskami: **Wznów** (główny, 60 px, ikona ▶), siatka 2 × 2: **Zacznij od nowa**, **Jak grać**, **Ustawienia**, **Garderoba**, oraz **Wyjdź do menu**;
-- **Ustawienia**: suwaki Głośność ogólna / Muzyka / Efekty dźwiękowe (silnik audio + `settings.volumeMaster/Music/Sfx`), przełączniki (przyciski `aria-pressed` z „suwakiem” 48 × 28 px): „Efekty (wstrząsy, cząsteczki)” (`settings.reducedEffects` odwrotnie + klasa `sowie-reduced-effects`), „Wibracje” (`settings.vibration`), „Tryb Przytulny (wolniej, bez końca gry)” (`settings.cozy` — gry E4+ czytają to ustawienie); „Gotowe” / strzałka wraca do menu; zapis w profilu po 1 s;
+- **Ustawienia**: suwaki Głośność ogólna / Muzyka / Efekty dźwiękowe (silnik audio + `settings.volumeMaster/Music/Sfx`; od E3 suwak muzyki / efektów ustawia też `settings.music` / `settings.sfx` = wartość > 0 — przełączniki obecnych gier; suwak min. 48 px wysokości), przełączniki (przyciski `aria-pressed` z „suwakiem” 48 × 28 px): „Efekty (wstrząsy, cząsteczki)” (`settings.reducedEffects` odwrotnie + klasa `sowie-reduced-effects`), „Wibracje” (`settings.vibration`), „Tryb Przytulny (wolniej, bez końca gry)” (`settings.cozy` — gry E4+ czytają to ustawienie); „Gotowe” / strzałka wraca do menu; zapis w profilu po 1 s;
 - **Garderoba**: przyciski dodatków z `SowiePlatform.COSMETICS` (zablokowane wyszarzone z dopiskiem „· zablokowane”), wybór zapisuje `profil.cosmetics.selected`;
 - **Jak grać**: okno z kartami `guideFor(gameId)` (albo „Poznaj Sowi Świat”);
 - z powłoką (`createShell({ overlay: false })`): auto-pauza (`paused`) otwiera menu z powodem, „Wznów” uruchamia `shell.resume()`, a w stanie `countdown` menu pokazuje cyfry `.sowie-countdown` na środku; `running` zamyka i woła `onResume`; bez powłoki „Wznów” zamyka menu i woła `onResume`;
@@ -462,10 +554,11 @@ Wszystkie dźwięki są syntezowane kodem (własna twórczość, CC0 — `assets
 - `manifest.webmanifest` (katalog główny): `name`/`short_name` „SowieGry”, `lang: "pl"`, `id`/`start_url`/`scope` `"./"`, `display: "standalone"`, `orientation: "portrait"`, `background_color: #fff6e3`, `theme_color: #bfe9ff`, ikony 192 i 512 (`any`), 512 `maskable`, SVG;
 - `assets/icons/icon.svg` — Sówka na niebie (gradient `#bfe9ff` → `#fff6e3`, treść w środkowym kole 80% — bezpieczna dla ikon „maskable”); PNG (`icon-192.png`, `icon-512.png`, `icon-maskable-512.png`, `apple-touch-icon.png` 180 px, `favicon-32.png`) generuje `node scripts/make-icons.cjs` (Chromium z Playwright robi zrzuty SVG);
 - każda strona (menu, gry, Laboratorium) ma w `<head>`: `<link rel="manifest">`, ikonę SVG, `apple-touch-icon`, `mobile-web-app-capable`, `apple-mobile-web-app-capable`, `apple-mobile-web-app-title` „SowieGry” oraz skrypt `shared/pwa.js` po `password-gate.js`;
-- `shared/pwa.js` — po `load` rejestruje `sw.js` z katalogu głównego (zakres = cała strona) na `https` i `localhost`; błąd rejestracji to tylko `console.warn`; `window.SowiePwa.standalone()` — czy gra działa jako zainstalowana aplikacja;
+- `shared/pwa.js` — po `load` rejestruje `sw.js` z katalogu głównego (zakres = cała strona) na `https` i `localhost`; błąd rejestracji to tylko `console.warn`; od E3 od razu przechwytuje `beforeinstallprompt` (`preventDefault`, zdarzenie zapamiętane — może przyjść, zanim wczyta się menu) i `appinstalled`; `window.SowiePwa` (zawsze, także bez service workera): `standalone()` — czy gra działa jako zainstalowana aplikacja (`display-mode: standalone` albo `navigator.standalone`), `canPrompt()` — czy przeglądarka pozwala zainstalować przyciskiem, `prompt()` → `"accepted"` / `"dismissed"` / `null` (systemowe okno instalacji; zdarzenie jednorazowe), `onInstallChange(słuchacz)` → odłączenie (słuchacz dostaje `true` po `beforeinstallprompt`, `false` po instalacji);
 - `sw.js` (katalog główny — service worker w `shared/` obejmowałby tylko ten katalog, a GitHub Pages nie pozwala ustawić nagłówka `Service-Worker-Allowed`):
-  - `VERSION = "sowiegry-v2"` (od E3: dodany `shared/meta/guides-data.js`) — jedna pamięć podręczna na wersję; przy aktywacji usuwane są stare `sowiegry-*`; **przy każdej zmianie listy lub strategii trzeba podnieść `VERSION`**;
-  - instalacja: `SHELL` (menu z wszystkimi skryptami i stylami, manifest, ikony) z `cache: "reload"`, w tle pliki SDK Firebase 12.19.0 z gstatic (błąd nie blokuje instalacji), `skipWaiting`, przy aktywacji `clients.claim`;
+  - `VERSION = "sowiegry-v3"` (v2 — E3a: `shared/meta/guides-data.js`; v3 — nowe menu E3) — jedna pamięć podręczna na wersję; przy aktywacji usuwane są stare `sowiegry-*`; **przy każdej zmianie listy lub strategii trzeba podnieść `VERSION`**;
+  - `SHELL` (100 plików): `./`, `index.html`, manifest, 6 ikon, obie czcionki Fredoka, `config/firebase-config.js`, style (`cute-ui.css`, `world/tokens.css`, `ui/ui.css`, `menu/menu.css`, a dla gier `game-enhancements.css`, `owl-gallery.css`), skrypty klasyczne (`sowie-platform`, `sowie-cloud`, `password-gate`, `pwa`, `sowie-core`, `notification-manager`, `game-guides`, `sowie-academy`, `owl-gallery`), **cały graf modułów ES menu** (7 plików `shared/menu/`, `engine/assets, audio, loop, sprites`, `meta/guides-data, progress`, `ui/guide-view, icons, modal, toasts`, `world/catalog, owl, tokens`), `assets/audio/audio.json` z czterema efektami menu (`klik`, `hu-hu`, `zakup`, `rekord`) i **48 plików SVG postaci** z katalogu (`svgFiles(SPRITES)`) — menu rysuje postacie także przy pierwszym starcie bez zasięgu; kompletność pilnuje test jednostkowy (graf `import … from "./…"` od `shared/menu/menu.js`);
+  - instalacja: `SHELL` z `cache: "reload"`, w tle pliki SDK Firebase 12.19.0 z gstatic (błąd nie blokuje instalacji), `skipWaiting`, przy aktywacji `clients.claim`;
   - pobieranie (tylko `GET`): strony i kod z tej domeny — **najpierw sieć** (aktualizacje z GitHub Pages od razu), przy braku sieci lub po 4 s — pamięć, a dla nawigacji bez kopii — menu `./`; obrazki, czcionki i dźwięki (`png, jpg, webp, gif, svg, ico, woff/woff2, mp3, ogg, wav`) oraz SDK z gstatic — **najpierw pamięć**; zapisywane są tylko odpowiedzi `ok` typu `basic`/`cors`; żądania do Firestore nie są obsługiwane (zapis offline robi SDK w IndexedDB);
   - gry trafiają do pamięci przy pierwszej wizycie (start bez zasięgu działa dla menu i gier już otwieranych);
   - grafiki SVG i czcionki są „najpierw z pamięci”, więc **po zmianie grafiki lub czcionki trzeba podnieść `VERSION`**, żeby telefony pobrały nową wersję.
@@ -585,12 +678,22 @@ Zależności deweloperskie są przypięte tam, gdzie wersja wpływa na przegląd
 
 ### Testy obecnych gier (desktop, `tests/e2e/*.spec.js`)
 
-- `smoke.spec.js` — menu z 5 kartami, każda gra startuje po wczytaniu postępu (Runner `mode === SCREEN.RUN`, Jumper `state.scene === "playing"`, Sowa3 `state.mode === "run"`, gry idle — licznik kliknięć), profil z `SowieCloud` (`schemaVersion: 1`), wspólne powiadomienia;
-- `guides-and-expansion.spec.js` — instrukcje, Akademia i panele rozszerzeń w każdej grze, idempotentne nagrody Akademii;
-- `owl-gallery.spec.js` — Galeria: nagrody, źródło, ulubiona fotografia w `profil.gallery`; profil z osiągnięciami zapisany wcześniej w emulatorze odblokowuje 30 zdjęć i zapisuje je w bazie; galeria dostępna z każdej gry;
-- `platform.spec.js` — kasowanie wyłącznie starych kluczy SowieGry (dane innych stron zostają, zostaje `sowiegry:urzadzenie`), zapis stanu Ogrodów i Szklarni w emulatorze przy zejściu do tła i odtworzenie po przeładowaniu, stabilny panel Szklarni, modal z fokusem, ustawienia (stan zapisu, zapis ustawienia w bazie, „Wyloguj to urządzenie”), ograniczenie ruchu.
+- `smoke.spec.js` — menu z 5 kartami i 4 zakładkami (wybrana „Gry”), każda gra startuje po wczytaniu postępu (Runner `mode === SCREEN.RUN`, Jumper `state.scene === "playing"`, Sowa3 `state.mode === "run"`, gry idle — licznik kliknięć), profil z `SowieCloud` (`schemaVersion: 1`), wspólne powiadomienia;
+- `guides-and-expansion.spec.js` — menu: 5 przycisków „Jak grać?”, brak starych przycisków `#academyButton` / `#galleryButton`, okno „Jak grać — SowaRunner” z kartą „Sterowanie”, Escape zamyka i oddaje fokus; instrukcje, Akademia i panele rozszerzeń w każdej grze; idempotentne nagrody Akademii i ich widok w zakładce „Sowa” (4 zadania, w tym tygodniowe, piórka w profilu);
+- `owl-gallery.spec.js` — zakładka „Galeria”: licznik „1 / 30”, 29 zablokowanych z paskiem postępu i wymaganiem, miniatura `-400.webp`, „Nowe!”, filtry (29 / 1 / 30), przeglądarka „1 / 1” z linkiem Pexels, „Ulubione” i „Tło menu” (`body.has-photo`, `profil.gallery.favorite/background/viewed`), Escape oddaje fokus kafelkowi bez „Nowe!” i z serduszkiem; profil z osiągnięciami zapisany wcześniej w emulatorze odblokowuje 30 zdjęć (licznik „30 / 30”, przeglądarka: → „2 / 30”, dwa razy „Poprzednie” → „30 / 30”) i zapisuje je w bazie; galeria dostępna z każdej gry (okno);
+- `platform.spec.js` — kasowanie wyłącznie starych kluczy SowieGry (dane innych stron zostają, zostaje `sowiegry:urzadzenie`), zapis stanu Ogrodów i Szklarni w emulatorze przy zejściu do tła i odtworzenie po przeładowaniu, stabilny panel Szklarni, modal z fokusem, ustawienia (stan zapisu, zapis ustawienia w bazie, „Wyloguj to urządzenie”), ograniczenie ruchu (chmury menu bez animacji, `SowieMenu.animating() === false` po zbudowaniu atlasu).
 
 ### Testy na telefonach (`tests/e2e/telefon/`)
+
+`menu.spec.js` (E3 — „Gotowe, gdy” z Analizy 3):
+
+- zakładka „Gry”: 5 kart z nazwami z rejestru, szkielet rekordu znika po wczytaniu chmury („Jeszcze bez rekordu…”), atlas gotowy i narysowane klatki; „Graj” przy SowaRunner otwiera `/SowaRunner/` z planszą;
+- emulator: rekordy zapisane w `sowiegry/profil` pokazują się na kartach („Rekord: 1250 m”, „Rekord: 15 300 pkt”, „Liście: 4200”, bez rekordu dla SowaJumper);
+- instrukcje: „Jak grać?” na karcie → okno „Jak grać — SowaJumper” (5 kart, 1 demonstracja gestu), „Rozumiem” oddaje fokus; zakładka „Jak grać”: 6 sekcji (pierwsza „Poznaj Sowi Świat”), 5 demonstracji gestów;
+- odnośnik `#jak-grac-sowa3` otwiera zakładkę i sekcję Sowa3 w widoku; klawiatura na pasku zakładek (→, End, Home) z adresem `#galeria` i bez `#` dla „Gry”;
+- galeria: dwa cele Akademii (1500 m, 300 m) odblokowują zdjęcia → „3 / 30”, 3 „Nowe!”, 27 zablokowanych z kłódką i paskiem; przeglądarka: przesunięcie w lewo → „2 / 3”, w prawo → „1 / 3”, podwójne stuknięcie → powiększenie 2,5×, kolejne → 1×, przesunięcie w dół zamyka; zostaje 1 „Nowe!” (gesty jako zdarzenia `PointerEvent` na scenie — tak samo w Chromium i WebKit);
+- zakładka „Sowa”: przycisk ustawień w nagłówku otwiera zakładkę z fokusem na `#ustawienia`; „Kokardka” wybrana, „Okulary” zablokowane z podpowiedzią „Zbierz 20 liści monster (0 / 20)”; Tryb Przytulny, Efekty (klasa `sowie-reduced-effects`), suwak muzyki 0 → profil `{ cosmetics.selected: "bow", cozy: true, reducedEffects: true, volumeMusic: 0, music: false }`; okno „Rekordy — SowaRunner” z chipem Chaos; „Wyloguj to urządzenie” → „Anuluj” zostawia, „Wyloguj” przeładowuje stronę z ekranem hasła (`unlocked: false`);
+- 320 × 568: w każdej zakładce brak przewijania w bok i żadnego przycisku, odnośnika, suwaka ani zakładki mniejszego niż 48 × 48 px.
 
 `start.spec.js`:
 
@@ -635,7 +738,7 @@ Zależności deweloperskie są przypięte tam, gdzie wersja wpływa na przegląd
 `pwa.spec.js` (E2a, `serviceWorkers: "allow"`):
 
 - po pierwszej wizycie service worker kontroluje stronę, a pamięć bieżącej wersji zawiera wszystkie pliki z listy `SHELL` (wersja i lista czytane wprost z `sw.js`);
-- w Chromium dodatkowo: bez sieci (`context.setOffline(true)`) menu ładuje się z pamięci podręcznej (5 kart gier, garderoba), bez błędów. Playwright w WebKit nie potrafi przeładować strony offline przez service worker (błąd „WebKit encountered an internal error”), dlatego na profilach WebKit test kończy się na sprawdzeniu zawartości pamięci podręcznej.
+- w Chromium dodatkowo: bez sieci (`context.setOffline(true)`) menu ładuje się z pamięci podręcznej (5 kart gier, 4 zakładki, atlas postaci z SVG w pamięci), bez błędów. Playwright w WebKit nie potrafi przeładować strony offline przez service worker (błąd „WebKit encountered an internal error”), dlatego na profilach WebKit test kończy się na sprawdzeniu zawartości pamięci podręcznej.
 
 `rekordy.spec.js`:
 
@@ -653,7 +756,16 @@ Zależności deweloperskie są przypięte tam, gdzie wersja wpływa na przegląd
 ### Testy silnika i PWA (`tests/unit/engine.test.mjs`, `tests/unit/pwa.test.mjs`)
 
 - RNG zgodny z algorytmem `SowiePlatform` i powtarzalny; pętla: 120 kroków na sekundę przy 60 kl./s, `alpha` w [0, 1), pauza, limit 0,25 s po przerwie, brak spirali śmierci, 30 kl./s w oszczędzaniu baterii; pula; kolizje; animacje i funkcje łagodzenia; cząsteczki (limit, gęstość); widok (skala 40 dla 360 × 800 i świata 9 × 16, DPR max 2, stała skala przy pasku adresu, nowa przy obrocie, odwrotność przekształceń); kamera; gesty (stuknięcie, przytrzymanie, 4 kierunki swipe, przeciąganie, przytrzymanie → przeciąganie, martwe strefy, drugi palec, klawisze); sceny; monitor płynności; auto-pauza z odliczaniem;
-- PWA: pola manifestu i rozmiary ikon PNG, manifest i rejestracja na każdej stronie, `VERSION`, istnienie plików z `SHELL`, wszystkie skrypty i style menu w `SHELL`, SDK w pamięci, brak obsługi Firestore, usuwanie starych wersji.
+- PWA: pola manifestu i rozmiary ikon PNG, manifest i rejestracja na każdej stronie, `VERSION`, istnienie plików z `SHELL`, wszystkie skrypty i style menu w `SHELL`, SDK w pamięci, brak obsługi Firestore, usuwanie starych wersji; od E3 — cały graf modułów ES od `shared/menu/menu.js`, czcionki z `tokens.css`, 48 plików SVG z katalogu, `audio.json` i efekty `MENU_SOUNDS` w `SHELL`.
+
+### Testy menu (`tests/unit/menu.test.mjs`, E3)
+
+- `MENU_GAMES` ma wpis dla każdej gry rejestru (przystanek, opis > 20 znaków, 2 kolory biomu);
+- `recordText`: najlepszy ze wszystkich poziomów („Rekord: 1250 m”, „Rekord: 15 300 pkt”), „Liście: 123 456”, „Pomieszczenia: 4”, brak danych → `null`;
+- `cosmeticHint`: „Zbierz 20 liści monster (12 / 20)”, pusty dla „Bez dodatku”; każda misja z `DEFAULT_MISSIONS` ma opis;
+- `CLOUD_STATUS` dla 6 statusów, „Tryb testowy” w pamięci, „(emulator)”, „Zapisano”;
+- `isIos`: iPhone, iPadOS jako „MacIntel” z dotykiem, Android nie;
+- `menu.css`: przyciski ikon, przyciski, chipy, chipy garderoby i zakładki mają wysokość ≥ 48 px.
 
 ### Testy SowieProgress i instrukcji (`tests/unit/meta.test.mjs`)
 
@@ -667,6 +779,7 @@ Zależności deweloperskie są przypięte tam, gdzie wersja wpływa na przegląd
 
 - `shared/owl-gallery.js` uruchamiany w piaskownicy `node:vm` (atrapa `window`/`document`): 30 zdjęć z listą `goals` (źródła `level`, `feathers` albo metryka; progi > 0), `owl-01` bez celów, `progressOf` (jeden cel — 0,5; dwa cele — średnia 0,75 i szczegóły; 5 celów wizyt; nieznane id → `null`);
 - miniatury: dla każdego zdjęcia pliki 400 i 600 px z nagłówkiem RIFF/WEBP pod adresem z `thumbUrl`, razem 60 plików, miniatury 400 px poniżej 1 MB.
+- menu i gry ładują `owl-gallery.js`; `owl-gallery.css` (okno galerii) tylko gry, menu ma zakładkę z miniaturami 400 px.
 
 ### Testy dźwięku (`tests/unit/audio.test.mjs`)
 
@@ -688,10 +801,10 @@ Zależności deweloperskie są przypięte tam, gdzie wersja wpływa na przegląd
 
 ### Test architektury (`tests/unit/architecture.test.mjs`)
 
-- rejestr ma dokładnie 5 gier; menu generowane z rejestru; każda gra ładuje platformę i wspólne powiadomienia;
+- rejestr ma dokładnie 5 gier; menu generowane z rejestru (`shared/menu/games.js`: `platform.GAME_REGISTRY.map`, `index.html` bez kart w HTML, z modułem `shared/menu/menu.js`); `shared/main-menu.js` i `.css` usunięte, menu nie ładuje `sowie-core.js` ani `game-guides.js`; każda gra ładuje platformę i wspólne powiadomienia;
 - **`localStorage` i `sessionStorage` występują tylko w `shared/sowie-cloud.js`** (przeszukiwane są rekursywnie wszystkie pliki `.js` w `shared/`, `config/`, `lab/`, folderach gier i `sw.js`, bez `p5.js`);
 - `shared/progress-reset.js` i `shared/idle-save-bridge.js` nie istnieją i nie są ładowane; platforma nie ma migracji, kopii, eksportu ani importu; ustawienia mają „Wyloguj to urządzenie”;
-- każda strona ładuje `config/firebase-config.js`, `sowie-platform.js`, `sowie-cloud.js`, `password-gate.js` w tej kolejności i przed `sowie-core.js`;
+- każda strona ładuje `config/firebase-config.js`, `sowie-platform.js`, `sowie-cloud.js`, `password-gate.js` w tej kolejności i przed `sowie-core.js` (menu: przed `sowie-academy.js`, a `owl-gallery.js` przed `shared/menu/menu.js`);
 - `sowie-cloud.js` nie czyści całej pamięci (`clear`), ma hasło `huhu`, klucz `sowiegry:urzadzenie`, przypiętą wersję SDK, nazwaną aplikację i cache IndexedDB; wszystkie ścieżki w kodzie leżą w kolekcjach `sowiegry`, `sowiegry_gry`, `sowiegry_historia`, a żaden inny plik nie używa Firestore;
 - gry idle ładują stan przez `loadGameState`, zapisują przez `saveGameState`, udostępniają `SowieIdleGame` i nie mają warunku `now % 7000`.
 

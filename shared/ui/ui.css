@@ -366,7 +366,7 @@
   grid-column: 1 / -1;
   grid-row: 2;
   width: 100%;
-  min-height: 44px;
+  min-height: 48px;
   margin: 0;
   accent-color: var(--monstera);
 }
@@ -510,6 +510,8 @@
 
 .sowie-ui-sheet-actions {
   display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
   gap: 8px;
   padding: 8px max(16px, env(safe-area-inset-right)) max(16px, env(safe-area-inset-bottom))
     max(16px, env(safe-area-inset-left));
@@ -567,7 +569,8 @@
   scroll-snap-align: center;
 }
 
-.sowie-guide-card h3 {
+.sowie-guide-card h3,
+.sowie-guide-card h4 {
   margin: 0;
   font-size: 19px;
   font-weight: var(--czcionka-pogrubiona);
@@ -588,6 +591,126 @@
   border-radius: 999px;
   background: var(--niebo-gora);
   font-weight: var(--czcionka-pogrubiona);
+}
+
+/* Demonstracja gestu: kropka palca w „ekranie” 96 × 56 px. */
+.sowie-gesture-demo {
+  position: relative;
+  display: block;
+  width: 96px;
+  height: 56px;
+  border-radius: 14px;
+  background: var(--niebo-gora);
+  overflow: hidden;
+}
+
+.sowie-gesture-finger {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 22px;
+  height: 22px;
+  margin: -11px 0 0 -11px;
+  border-radius: 50%;
+  background: rgba(59, 47, 74, 0.55);
+  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.7);
+}
+
+.sowie-gesture-demo[data-gesture="tap"] .sowie-gesture-finger {
+  animation: sowieGestureTap 1.2s ease-in-out infinite;
+}
+
+.sowie-gesture-demo[data-gesture="hold"] .sowie-gesture-finger {
+  animation: sowieGestureHold 1.8s ease-in-out infinite;
+}
+
+.sowie-gesture-demo[data-gesture="swipe-left"] .sowie-gesture-finger {
+  animation: sowieGestureSwipeX 1.4s ease-in-out infinite reverse;
+}
+
+.sowie-gesture-demo[data-gesture="swipe-right"] .sowie-gesture-finger {
+  animation: sowieGestureSwipeX 1.4s ease-in-out infinite;
+}
+
+.sowie-gesture-demo[data-gesture="swipe-up"] .sowie-gesture-finger {
+  animation: sowieGestureSwipeY 1.4s ease-in-out infinite reverse;
+}
+
+.sowie-gesture-demo[data-gesture="swipe-down"] .sowie-gesture-finger {
+  animation: sowieGestureSwipeY 1.4s ease-in-out infinite;
+}
+
+.sowie-gesture-demo[data-gesture="drag"] .sowie-gesture-finger {
+  animation: sowieGestureDrag 2s ease-in-out infinite;
+}
+
+@keyframes sowieGestureTap {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(0.7);
+    box-shadow: 0 0 0 10px rgba(255, 255, 255, 0.35);
+  }
+}
+
+@keyframes sowieGestureHold {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.7);
+  }
+  60%,
+  100% {
+    transform: scale(0.8);
+    box-shadow: 0 0 0 16px rgba(255, 255, 255, 0.15);
+  }
+}
+
+@keyframes sowieGestureSwipeX {
+  0% {
+    transform: translateX(-30px);
+    opacity: 0;
+  }
+  20% {
+    opacity: 1;
+  }
+  80% {
+    transform: translateX(30px);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(30px);
+    opacity: 0;
+  }
+}
+
+@keyframes sowieGestureSwipeY {
+  0% {
+    transform: translateY(-16px);
+    opacity: 0;
+  }
+  20% {
+    opacity: 1;
+  }
+  80% {
+    transform: translateY(16px);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(16px);
+    opacity: 0;
+  }
+}
+
+@keyframes sowieGestureDrag {
+  0%,
+  100% {
+    transform: translate(-26px, 10px);
+  }
+  50% {
+    transform: translate(26px, -10px);
+  }
 }
 
 .sowie-guide-tip {
@@ -781,14 +904,16 @@
   .sowie-hud-powerup.is-ending,
   .sowie-toast-chip,
   .sowie-ui-sheet,
-  .sowie-ui-record {
-    animation: none;
+  .sowie-ui-record,
+  .sowie-gesture-finger {
+    animation: none !important;
   }
 }
 
 .sowie-reduced-effects .is-bump,
 .sowie-reduced-effects .sowie-hud-lives img.is-lost,
 .sowie-reduced-effects .sowie-ui-record,
-.sowie-reduced-effects .sowie-ui-sheet {
-  animation: none;
+.sowie-reduced-effects .sowie-ui-sheet,
+.sowie-reduced-effects .sowie-gesture-finger {
+  animation: none !important;
 }

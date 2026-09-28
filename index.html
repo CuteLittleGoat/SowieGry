@@ -2,51 +2,90 @@
 <html lang="pl">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="theme-color" content="#f7f2ff" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#bfe9ff" />
+  <meta name="description" content="SowieGry — pięć gier z Sówką: bieg, wspinaczka, tory, ogród i szklarnia." />
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" href="assets/icons/icon.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-title" content="SowieGry" />
-  <title>SowieGry — Start</title>
+  <title>SowieGry</title>
+  <link rel="preload" href="assets/fonts/fredoka-700.woff2" as="font" type="font/woff2" crossorigin />
   <link rel="stylesheet" href="shared/cute-ui.css" />
-  <link rel="stylesheet" href="shared/main-menu.css" />
-  <link rel="stylesheet" href="shared/game-enhancements.css" />
-  <link rel="stylesheet" href="shared/owl-gallery.css" />
-</head>
-<body class="sowie-main-menu">
-  <main class="start-screen">
-    <div class="floating-band" aria-hidden="true">
-      <span class="creature owl">🦉</span>
-      <span class="creature goat">🐐</span>
-      <span class="creature whale">🐋</span>
-      <span class="creature greenhouse">🏡</span>
-    </div>
-    <header>
-      <div>
-        <h1>SowieGry</h1>
-        <p class="subtitle">Wybierz swoją przygodę — słodkie zwierzaki już czekają!</p>
-      </div>
-      <button id="cosmeticsButton" class="menu-button" type="button">
-        <span data-cosmetic-icon aria-hidden="true">🎀</span>
-        <span data-cosmetic-label>Garderoba sowy</span>
-      </button>
-    </header>
-    <section class="cards" data-game-cards aria-label="Lista gier"></section>
-    <p class="footer-note">Miłej zabawy! ✨</p>
-  </main>
+  <link rel="stylesheet" href="shared/world/tokens.css" />
+  <link rel="stylesheet" href="shared/ui/ui.css" />
+  <link rel="stylesheet" href="shared/menu/menu.css" />
   <script src="config/firebase-config.js"></script>
   <script src="shared/sowie-platform.js"></script>
   <script src="shared/sowie-cloud.js"></script>
   <script src="shared/password-gate.js"></script>
   <script src="shared/pwa.js"></script>
-  <script src="shared/sowie-core.js"></script>
-  <script src="shared/notification-manager.js"></script>
-  <script src="shared/game-guides.js"></script>
-  <script src="shared/sowie-academy.js"></script>
-  <script src="shared/owl-gallery.js"></script>
-  <script src="shared/main-menu.js"></script>
+  <script src="shared/sowie-academy.js" defer></script>
+  <script src="shared/owl-gallery.js" defer></script>
+  <script type="module" src="shared/menu/menu.js"></script>
+</head>
+<body class="menu" data-sowie-menu>
+  <div class="menu-sky" aria-hidden="true">
+    <span class="menu-cloud is-1"></span>
+    <span class="menu-cloud is-2"></span>
+    <span class="menu-cloud is-3"></span>
+  </div>
+
+  <header class="menu-header">
+    <div class="menu-topbar">
+      <h1 class="menu-logo">SowieGry</h1>
+      <span class="menu-cloud-status" data-cloud-status role="status" aria-live="polite"></span>
+      <button type="button" class="menu-icon-button" data-open-settings aria-label="Ustawienia"></button>
+    </div>
+    <div class="menu-hero">
+      <button type="button" class="menu-hero-owl" data-hero-owl aria-label="Sówka — dotknij, żeby się przywitała">
+        <canvas width="120" height="120" aria-hidden="true"></canvas>
+      </button>
+      <div class="menu-bubble">
+        <p class="menu-bubble-text" data-hero-text>Hu-hu! W co dziś gramy?</p>
+        <p class="menu-hero-tasks" data-hero-tasks></p>
+      </div>
+    </div>
+  </header>
+
+  <main class="menu-main">
+    <section class="menu-panel" id="gry" role="tabpanel" aria-labelledby="tab-gry" data-panel="gry" tabindex="-1">
+      <h2 class="menu-visually-hidden">Gry</h2>
+      <div class="menu-path" data-game-path></div>
+      <div data-install-slot></div>
+    </section>
+
+    <section class="menu-panel" id="jak-grac" role="tabpanel" aria-labelledby="tab-jak-grac" data-panel="jak-grac" tabindex="-1" hidden>
+      <h2 class="menu-section-title">Jak grać</h2>
+      <div data-guides></div>
+    </section>
+
+    <section class="menu-panel" id="galeria" role="tabpanel" aria-labelledby="tab-galeria" data-panel="galeria" tabindex="-1" hidden>
+      <div class="menu-gallery-head">
+        <h2 class="menu-section-title">Galeria Sów</h2>
+        <p class="menu-gallery-count" data-gallery-count></p>
+      </div>
+      <div class="menu-chips" role="group" aria-label="Pokaż zdjęcia" data-gallery-filters>
+        <button type="button" data-filter="all" aria-pressed="true">Wszystkie</button>
+        <button type="button" data-filter="unlocked" aria-pressed="false">Odblokowane</button>
+        <button type="button" data-filter="locked" aria-pressed="false">Do zdobycia</button>
+      </div>
+      <div class="menu-gallery-grid" data-gallery-grid></div>
+    </section>
+
+    <section class="menu-panel" id="sowa" role="tabpanel" aria-labelledby="tab-sowa" data-panel="sowa" tabindex="-1" hidden>
+      <h2 class="menu-section-title">Twoja sowa</h2>
+      <div data-owl-tab></div>
+    </section>
+  </main>
+
+  <nav class="menu-tabs" role="tablist" aria-label="Menu SowieGry">
+    <button type="button" role="tab" id="tab-gry" aria-controls="gry" aria-selected="true" data-tab="gry"><span data-icon="games"></span><span>Gry</span></button>
+    <button type="button" role="tab" id="tab-jak-grac" aria-controls="jak-grac" aria-selected="false" tabindex="-1" data-tab="jak-grac"><span data-icon="guide"></span><span>Jak grać</span></button>
+    <button type="button" role="tab" id="tab-galeria" aria-controls="galeria" aria-selected="false" tabindex="-1" data-tab="galeria"><span data-icon="gallery"></span><span>Galeria</span></button>
+    <button type="button" role="tab" id="tab-sowa" aria-controls="sowa" aria-selected="false" tabindex="-1" data-tab="sowa"><span data-icon="owl"></span><span>Sowa</span></button>
+  </nav>
 </body>
 </html>

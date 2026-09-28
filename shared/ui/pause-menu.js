@@ -159,8 +159,12 @@ export function createPauseMenu({
     const engine = sound();
     if (!input || !engine) return;
     engine.setVolume(input.dataset.volume, input.value);
-    input.nextElementSibling.textContent = String(engine.volume(input.dataset.volume));
-    save({ [VOLUME_KEYS[input.dataset.volume]]: engine.volume(input.dataset.volume) });
+    const bus = input.dataset.volume;
+    input.nextElementSibling.textContent = String(engine.volume(bus));
+    // Suwak na zero wyłącza też muzykę / efekty w obecnych grach (settings.music / settings.sfx).
+    const changes = { [VOLUME_KEYS[bus]]: engine.volume(bus) };
+    if (bus !== "master") changes[bus] = engine.volume(bus) > 0;
+    save(changes);
   });
   overlay.addEventListener("keydown", (event) => {
     if (event.key !== "Escape" || modal) return;

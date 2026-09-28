@@ -16,35 +16,53 @@ function watchRuntimeErrors(page) {
   return errors;
 }
 
-test("Galeria Sów pokazuje nagrody, źródło i zapisuje ulubioną fotografię", async ({ page }) => {
+test("Galeria Sów w menu: odblokowane i zablokowane zdjęcia, przeglądarka, ulubione i tło menu", async ({ page }) => {
   const errors = watchRuntimeErrors(page);
   await page.goto("/?seed=owl-gallery&testNow=1783656000000", { waitUntil: "load" });
   await waitForCloud(page);
 
-  const opener = page.getByRole("button", { name: "Otwórz Galerię Sów" });
-  await expect(opener).toBeVisible();
-  await opener.click();
+  await page.getByRole("tab", { name: "Galeria" }).click();
+  const panel = page.locator("#galeria");
+  await expect(panel.locator("[data-gallery-count]")).toHaveText("1 / 30");
+  await expect(panel.locator(".menu-tile")).toHaveCount(30);
+  await expect(panel.locator(".menu-tile.is-locked")).toHaveCount(29);
+  // Zablokowane: wymaganie i pasek postępu; siatka używa miniatur WebP zamiast pełnych zdjęć.
+  await expect(panel.locator(".menu-tile.is-locked [role=progressbar]")).toHaveCount(29);
+  await expect(panel.locator('[data-photo="owl-02"] .menu-tile-need')).not.toBeEmpty();
+  await expect(panel.locator('[data-photo="owl-01"] img')).toHaveAttribute("src", /gallery-thumbs\/.+-400\.webp$/);
+  await expect(panel.locator('[data-open-photo="owl-01"]')).toHaveClass(/is-new/);
 
-  const dialog = page.getByRole("dialog", { name: "🖼️ Galeria Sów" });
-  await expect(dialog).toBeVisible();
-  await expect(dialog.locator("[data-gallery-progress]")).toHaveText("1/30 odblokowanych");
-  await expect(dialog.locator("[data-gallery-photo]")).toHaveCount(30);
-  await expect(dialog.locator(".sowie-gallery-card.is-locked")).toHaveCount(29);
-  await expect(dialog.locator(".sowie-gallery-thumb img")).toHaveCount(1);
+  await panel.getByRole("button", { name: "Do zdobycia" }).click();
+  await expect(panel.locator(".menu-tile")).toHaveCount(29);
+  await panel.getByRole("button", { name: "Odblokowane" }).click();
+  await expect(panel.locator(".menu-tile")).toHaveCount(1);
+  await panel.getByRole("button", { name: "Wszystkie" }).click();
 
-  await dialog.locator("[data-gallery-open='owl-01']").click();
-  await expect(dialog.locator(".sowie-gallery-detail img")).toBeVisible();
-  await expect(dialog.getByRole("link", { name: "Pexels" })).toHaveAttribute("href", /pexels\.com\/photo\/13681325/);
-  await dialog.getByRole("button", { name: "☆ Ustaw jako ulubioną" }).click();
+  const tile = panel.locator('[data-open-photo="owl-01"]');
+  await tile.click();
+  const viewer = page.getByRole("dialog", { name: /^Zdjęcie: / });
+  await expect(viewer).toBeVisible();
+  await expect(viewer.locator("[data-viewer-count]")).toHaveText("1 / 1");
+  await expect(viewer.getByRole("link", { name: "źródło: Pexels" })).toHaveAttribute(
+    "href",
+    /pexels\.com\/photo\/13681325/,
+  );
+  await viewer.getByRole("button", { name: "Ulubione" }).click();
+  await expect(viewer.getByRole("button", { name: "Ulubione" })).toHaveAttribute("aria-pressed", "true");
+  await viewer.getByRole("button", { name: "Tło menu" }).click();
+  await expect(page.locator("body")).toHaveClass(/has-photo/);
 
   // Stan galerii jest w profilu SowieCloud (profil.gallery).
   const saved = await page.evaluate(() => window.SowieCloud.profile().gallery);
   expect(saved.favorite).toBe("owl-01");
+  expect(saved.background).toBe("owl-01");
   expect(saved.viewed).toContain("owl-01");
 
   await page.keyboard.press("Escape");
-  await expect(dialog).toBeHidden();
-  await expect(opener).toBeFocused();
+  await expect(viewer).toBeHidden();
+  await expect(tile).toBeFocused();
+  await expect(tile).not.toHaveClass(/is-new/);
+  await expect(tile.locator(".menu-tile-heart")).toBeVisible();
   expect(errors).toEqual([]);
 });
 
@@ -94,12 +112,24 @@ test("osiągnięcia Akademii z Firestore trwale odblokowują komplet trzydziestu
   const errors = watchRuntimeErrors(page);
   await page.goto(cloudUrl("/?seed=owl-unlocks&testNow=1783656000000", project), { waitUntil: "load" });
   await waitForCloud(page);
-  await page.getByRole("button", { name: "Otwórz Galerię Sów" }).click();
-  const dialog = page.getByRole("dialog", { name: "🖼️ Galeria Sów" });
+  await page.getByRole("tab", { name: "Galeria" }).click();
+  const panel = page.locator("#galeria");
 
-  await expect(dialog.locator("[data-gallery-progress]")).toHaveText("30/30 odblokowanych");
-  await expect(dialog.locator(".sowie-gallery-card.is-locked")).toHaveCount(0);
-  await expect(dialog.locator(".sowie-gallery-thumb img")).toHaveCount(30);
+  await expect(panel.locator("[data-gallery-count]")).toHaveText("30 / 30");
+  await expect(panel.locator(".menu-tile.is-locked")).toHaveCount(0);
+  await expect(panel.locator("[data-open-photo] img")).toHaveCount(30);
+
+  // Przeglądarka przechodzi między odblokowanymi zdjęciami (strzałki na klawiaturze, przyciski).
+  await panel.locator('[data-open-photo="owl-01"]').click();
+  const viewer = page.getByRole("dialog", { name: /^Zdjęcie: / });
+  await expect(viewer.locator("[data-viewer-count]")).toHaveText("1 / 30");
+  await page.keyboard.press("ArrowRight");
+  await expect(viewer.locator("[data-viewer-count]")).toHaveText("2 / 30");
+  await viewer.getByRole("button", { name: "Poprzednie zdjęcie" }).click();
+  await viewer.getByRole("button", { name: "Poprzednie zdjęcie" }).click();
+  await expect(viewer.locator("[data-viewer-count]")).toHaveText("30 / 30");
+  await viewer.getByRole("button", { name: "Zamknij zdjęcie" }).click();
+  await expect(viewer).toBeHidden();
 
   await page.evaluate(() => window.SowieCloud.flush());
   const profile = await readDoc(project, "sowiegry/profil");

@@ -23,19 +23,21 @@ function watchErrors(page) {
   return errors;
 }
 
-test("menu oferuje osobną instrukcję każdej gry i Sowią Akademię", async ({ page }) => {
+test("menu oferuje osobną instrukcję każdej gry i zadania Sowiej Akademii", async ({ page }) => {
   const errors = watchErrors(page);
   await page.goto("/?seed=guides-menu&testNow=1783656000000", { waitUntil: "load" });
 
   await expect(page.locator(".game-card")).toHaveCount(5);
-  await expect(page.locator("[data-game-guide]")).toHaveCount(5);
-  await expect(page.locator("#academyButton")).toBeVisible();
+  await expect(page.locator("[data-guide]")).toHaveCount(5);
+  // Nowe menu nie dokleja starych przycisków Akademii i Galerii do nagłówka.
+  await expect(page.locator("#academyButton, #galleryButton")).toHaveCount(0);
 
-  await page.locator('[data-game-guide="runner"]').click();
-  await expect(page.getByRole("dialog")).toContainText("Instrukcja — SowaRunner");
+  await page.locator('[data-guide="runner"]').click();
+  await expect(page.getByRole("dialog")).toContainText("Jak grać — SowaRunner");
   await expect(page.getByRole("dialog")).toContainText("Sterowanie");
   await page.keyboard.press("Escape");
   await expect(page.getByRole("dialog")).toBeHidden();
+  await expect(page.locator('[data-guide="runner"]')).toBeFocused();
   expect(errors).toEqual([]);
 });
 
@@ -84,8 +86,12 @@ test("Sowia Akademia nalicza misję tylko raz i zachowuje nagrody", async ({ pag
   expect(result.secondXp).toBe(result.firstXp);
   expect(result.secondFeathers).toBe(result.firstFeathers);
 
-  await page.locator("#academyButton").click();
-  await expect(page.getByRole("dialog")).toContainText("Sowia Akademia");
-  await expect(page.getByRole("dialog")).toContainText("Misje dzienne");
+  // Zadania Akademii w nowym wyglądzie: zakładka „Sowa”.
+  await page.getByRole("tab", { name: "Sowa" }).click();
+  const tasks = page.locator('[data-owl-card="zadania"]');
+  await expect(tasks).toContainText("Zadania");
+  await expect(tasks.locator("[data-task]")).toHaveCount(4);
+  await expect(tasks.locator('[data-task="weekly"]')).toContainText("Zagraj w 3 różne gry");
+  await expect(page.locator('[data-owl-card="profil"]')).toContainText(`Piórka: ${result.secondFeathers}`);
   expect(errors).toEqual([]);
 });
