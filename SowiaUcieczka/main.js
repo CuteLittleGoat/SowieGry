@@ -18,11 +18,15 @@ import { BIOMES } from "./backgrounds.js";
 import { CLOUD, DIFFICULTIES, DIFFICULTY_ORDER, FEVER, GAME_ID, GOATS, VIEW, WHALE } from "./config.js";
 import { createRun } from "./game.js";
 import { createRenderer } from "./render.js";
+import { LEVEL_MAX, TASKS_PER_LEVEL, createTaskTracker, describeTasks, normalizeTasks } from "./tasks.js";
 
 const cloud = window.SowieCloud;
 const params = new URLSearchParams(location.search);
 const AUDIO_BASE = new URL("../assets/audio/", import.meta.url).href;
 const GUIDE_ID = "ucieczka";
+// Wyzwanie dnia (?daily=1): ta sama trasa przez cały dzień (ziarno z daty), zawsze poziom Arcade.
+const DAILY = params.get("daily") === "1";
+const todayKey = () => cloud?.helpers?.dayKey?.(Date.now()) || new Date().toISOString().slice(0, 10);
 
 const stage = document.querySelector("[data-stage]");
 const canvas = document.querySelector("[data-canvas]");
@@ -30,6 +34,9 @@ const titleNode = document.querySelector("[data-title]");
 const recordNode = document.querySelector("[data-record]");
 const cozyNode = document.querySelector("[data-cozy]");
 const difficultyGroup = document.querySelector("[data-difficulty]");
+const dailyNote = document.querySelector("[data-daily-note]");
+const dailyLink = document.querySelector("[data-daily]");
+const tasksButton = document.querySelector("[data-tasks]");
 
 const view = createView({
   canvas,
@@ -54,6 +61,11 @@ let gameReady = false;
 let previousCombo = 1;
 let glideVoice = null;
 let lastFrame = 0;
+// Zadania biegu: stan z dokumentu gry (po wczytaniu) i śledzenie bieżącego biegu.
+let tasksData = normalizeTasks(null);
+let tracker = null;
+let lastQuip = -Infinity;
+let startQuip = false;
 
 const settings = () => cloud?.profile?.()?.settings || {};
 const cosmetic = () => cloud?.profile?.()?.cosmetics?.selected || "none";
@@ -144,16 +156,17 @@ function play(name, options) {
 // ---------- Ekran tytułowy ----------
 
 function selectDifficulty(level, { save = true } = {}) {
-  difficulty = DIFFICULTIES[level] ? level : "arcade";
+  difficulty = DIFFICULTIES[level] && !DAILY ? level : "arcade";
   for (const button of difficultyGroup.querySelectorAll("[data-level]")) {
     button.setAttribute("aria-pressed", String(button.dataset.level === difficulty));
   }
   cozyNode.hidden = !cozyEnabled();
   showRecord();
-  if (save) cloud?.updateGame?.(GAME_ID, { difficulty }, { delayMs: 2000 });
+  if (save && !DAILY) cloud?.updateGame?.(GAME_ID, { difficulty }, { delayMs: 2000 });
 }
 
 function showRecord() {
+  showDaily();
   if (!cloud?.isReady?.()) {
     recordNode.textContent = "Wczytuję rekordy…";
     return;
@@ -164,12 +177,67 @@ function showRecord() {
     : `Jeszcze bez rekordu na poziomie ${DIFFICULTIES[difficulty].label}.`;
 }
 
+// Wyzwanie dnia: odnośnik z zachowaniem pozostałych parametrów adresu (np. ?cloud=emulator w testach).
+function setupDaily() {
+  const url = new URL(location.href);
+  url.searchParams.delete("seed");
+  if (DAILY) url.searchParams.delete("daily");
+  else url.searchParams.set("daily", "1");
+  dailyLink.href = `${url.pathname}${url.search}`;
+  dailyLink.textContent = DAILY ? "Zwykły bieg" : "Wyzwanie dnia";
+  for (const button of difficultyGroup.querySelectorAll("[data-level]")) button.disabled = DAILY;
+}
+
+function showDaily() {
+  dailyNote.hidden = !DAILY;
+  if (!DAILY) return;
+  const best = cloud?.isReady?.() ? Number(cloud.game(GAME_ID)?.dailyBest?.[todayKey()]) || 0 : 0;
+  dailyNote.textContent = `Wyzwanie dnia (Arcade): dziś cały dzień ta sama trasa. ${
+    best ? `Dzisiaj najdalej: ${best.toLocaleString("pl-PL")} m.` : "Dziś jeszcze bez wyniku."
+  }`;
+}
+
+function showTasks() {
+  tasksButton.querySelector("[data-multiplier]").textContent = `×${tasksData.level}`;
+  tasksButton.setAttribute("aria-label", `Zadania biegu, Sowi mnożnik ×${tasksData.level}`);
+}
+
+// Okno zadań: 3 aktywne zadania z postępem i opis Sowiego mnożnika.
+function openTasks(trigger) {
+  const content = document.createElement("div");
+  const intro = document.createElement("p");
+  intro.className = "ucieczka-tasks-intro";
+  intro.textContent = `Sowi mnożnik ×${tasksData.level} mnoży punkty za dystans. Każde ${TASKS_PER_LEVEL} ukończone zadania podnoszą go o 1 (najwyżej ×${LEVEL_MAX}). Ukończone zadania: ${tasksData.completed}.`;
+  const list = document.createElement("ul");
+  list.className = "sowie-ui-tasks";
+  list.dataset.tasksList = "";
+  for (const task of describeTasks(tasksData)) {
+    const item = document.createElement("li");
+    const share = task.target > 0 ? Math.min(1, task.progress / task.target) : 0;
+    item.innerHTML = `<span class="sowie-ui-task-label"></span><span class="sowie-ui-task-bar" aria-hidden="true"><span style="transform:scaleX(${share})"></span></span><span class="sowie-ui-task-value"></span>`;
+    item.querySelector(".sowie-ui-task-label").textContent = task.label;
+    item.querySelector(".sowie-ui-task-value").textContent =
+      task.scope === "run" ? "w 1 biegu" : `${task.progress} / ${task.target}`;
+    list.appendChild(item);
+  }
+  content.append(intro, list);
+  openModal({
+    title: "Zadania biegu",
+    content,
+    root: stage,
+    actions: [{ label: "Do biegu!", primary: true, onClick: (close) => close() }],
+    onClose: () => trigger?.focus?.({ preventScroll: true }),
+  });
+}
+
 difficultyGroup.addEventListener("click", (event) => {
   const button = event.target.closest("[data-level]");
   if (button) selectDifficulty(button.dataset.level);
 });
 titleNode.querySelector("[data-start]").addEventListener("click", () => startRun());
 titleNode.querySelector("[data-guide]").addEventListener("click", (event) => openGuide(event.currentTarget));
+tasksButton.addEventListener("click", (event) => openTasks(event.currentTarget));
+setupDaily();
 
 function openGuide(trigger) {
   openModal({
@@ -184,9 +252,15 @@ function openGuide(trigger) {
 
 // ---------- Bieg ----------
 
+// Ziarno: ?seed= (testy), wyzwanie dnia (data) albo losowe.
+function baseSeed() {
+  if (params.get("seed")) return params.get("seed");
+  return DAILY ? `daily-${todayKey()}-${GAME_ID}` : null;
+}
+
 function seedFor() {
-  // Ziarno: ?seed= (testy, wyzwanie dnia) albo losowe.
-  return params.get("seed") ? `${params.get("seed")}:${difficulty}` : `${Date.now()}:${Math.random()}`;
+  const seed = baseSeed();
+  return seed ? `${seed}:${difficulty}` : `${Date.now()}:${Math.random()}`;
 }
 
 function startRun() {
@@ -196,7 +270,10 @@ function startRun() {
   toasts.clear();
   renderer.clearPopups();
   particles.clear();
-  game = createRun({ difficulty, seed: seedFor(), cozy: cozyEnabled() });
+  tracker = createTaskTracker({ saved: tasksData });
+  game = createRun({ difficulty, seed: seedFor(), cozy: cozyEnabled(), multiplier: tracker.multiplier });
+  lastQuip = -Infinity;
+  startQuip = false;
   screen = "playing";
   titleNode.hidden = true;
   hud.show();
@@ -210,10 +287,11 @@ function startRun() {
   view.lockScale(true);
   camera.track(game.state.owl, game.state.speed, view.layout(), 0, { snap: true });
   shell.setActive(true);
-  progress.beginRun(GAME_ID, { difficulty, daily: params.get("daily") === "1" });
-  cloud?.updateGame?.(GAME_ID, { difficulty }, { delayMs: 2000 });
+  progress.beginRun(GAME_ID, { difficulty, daily: DAILY });
+  if (!DAILY) cloud?.updateGame?.(GAME_ID, { difficulty }, { delayMs: 2000 });
   toasts.refresh();
   if (game.state.cozy) toasts.show("Tryb Przytulny — bez końca gry", { kind: "success" });
+  if (DAILY) toasts.show("Wyzwanie dnia — powodzenia!", { kind: "success" });
 }
 
 function finishRun() {
@@ -227,13 +305,24 @@ function finishRun() {
   splashNode.hidden = true;
   audio?.stopMusic?.();
   const summary = game.summary();
+  // Zadania: ukończone wymieniamy, Sowi mnożnik rośnie co 3 zadania; zapis razem z wynikiem (ten sam zapis zbiorczy).
+  const taskList = tracker.list();
+  const outcome = tracker.finish();
+  tasksData = outcome.data;
+  cloud?.updateGame?.(GAME_ID, (doc) => {
+    doc.tasks = structuredClone(outcome.data);
+  });
+  showTasks();
   const saved = cloud?.submitRun?.(GAME_ID, {
     score: summary.score,
     distance: summary.distance,
     leaves: summary.leaves,
     difficulty: summary.difficulty,
     durationMs: summary.durationMs,
+    daily: DAILY,
+    seed: baseSeed(),
   });
+  showDaily();
   const run = progress.endRun({
     score: summary.score,
     distance: summary.distance,
@@ -250,15 +339,23 @@ function finishRun() {
     isRecord,
     leaves: summary.leaves,
     rank: saved?.place || 0,
-    tasks: run.tasks,
+    tasks: [...taskList, ...(run.tasks || [])],
     extra: [
       { label: "Dystans", value: `${summary.distance.toLocaleString("pl-PL")} m` },
+      { label: "Sowi mnożnik", value: `×${summary.multiplier}` },
       { label: "Najlepsze combo", value: `×${summary.bestCombo}` },
       { label: "O włos!", value: String(summary.nearMisses) },
+      { label: "Idealnie!", value: String(summary.perfects) },
       { label: "Kózki", value: String(summary.goats) },
       { label: "Rejsy na humbaku", value: String(summary.bonuses) },
     ],
-    messages: toasts.takeDeferred(),
+    messages: [
+      ...(outcome.levelUp
+        ? [{ text: `Sowi mnożnik ×${outcome.level}! Następny bieg liczy dystans ×${outcome.level}.` }]
+        : []),
+      ...(DAILY ? [{ text: "Wyzwanie dnia zapisane — jutro nowa trasa." }] : []),
+      ...toasts.takeDeferred(),
+    ],
   });
 }
 
@@ -269,9 +366,44 @@ const HIT_TEXT = {
   dziura: "Dziura w trasie!",
 };
 
+// Komentarze sowy (ustawienie „Komentarze sowy”): najwyżej co 15 s i tylko gdy nie ma innego komunikatu.
+const QUIPS = {
+  start: "Skrzydła w gotowości!",
+  high: "Hu-hu! Ale lot!",
+  pracu: "Pracu Pracu? Nie dzisiaj!",
+  golden: "Monstera zauważona!",
+  beach: "Basen już blisko!",
+};
+
+function quip(text) {
+  if (settings().quips === false || !game) return;
+  if (game.state.time - lastQuip < 15) return;
+  const current = toasts.state();
+  if (current.visible.length || current.queued.length) return;
+  lastQuip = game.state.time;
+  play("hu-hu", { volume: 0.5 });
+  toasts.show(text, { kind: "info", key: "quip", duration: 1800 });
+}
+
+// Ukończone zadanie biegu: komunikat od razu (to postęp tej gry, nie Akademii).
+function tasksDone(list) {
+  for (const done of list) {
+    play("zakup");
+    toasts.show(`Zadanie wykonane: ${done.label}`, { kind: "reward", key: `task-${done.id}`, priority: 1 });
+  }
+}
+
+// „O włos!” w wariantach ze starej gry: nad Amic, obok Pracu.
+function nearMissText(event) {
+  if (event.family === "pracu") return "Pracu Pracu minięte!";
+  if (event.family === "amic" && event.over) return "O włos nad Amic!";
+  return "O włos!";
+}
+
 function handleEvents() {
   for (const event of game.takeEvents()) {
     const owl = game.state.owl;
+    if (tracker && screen === "playing") tasksDone(tracker.handle(event));
     switch (event.type) {
       case "jump":
         play("skok");
@@ -279,6 +411,7 @@ function handleEvents() {
       case "doubleJump":
         play("podwojny-skok");
         particles.emit(owl.x, owl.y, { count: 6, speed: 2, tint: COLORS.bialy, radius: 0.08 });
+        if (owl.y < -3) quip(QUIPS.high);
         break;
       case "glideStart":
         glideVoice?.stop?.(0.05);
@@ -318,6 +451,7 @@ function handleEvents() {
           );
         }
         progress.emit(EVENTS.LEAF, { kind: event.kind, count: event.count, points: event.points });
+        if (event.kind === "zloty") quip(QUIPS.golden);
         if (event.combo > previousCombo) {
           toasts.show(`Combo ×${event.combo}!`, { kind: "reward", key: "combo" });
           progress.emit(EVENTS.COMBO, { value: event.combo });
@@ -338,8 +472,20 @@ function handleEvents() {
         break;
       case "nearMiss":
         play("polaczenie", { volume: 0.7 });
-        renderer.popup(`O włos! +${event.bonus}`, owl.x + 0.4, owl.y - 1.6, COLORS.zloto, 30);
+        renderer.popup(`${nearMissText(event)} +${event.bonus}`, owl.x + 0.4, owl.y - 1.6, COLORS.zloto, 30);
         progress.emit(EVENTS.NEAR_MISS, { by: event.family });
+        if (event.family === "pracu") quip(QUIPS.pracu);
+        break;
+      case "perfect":
+        play("lisc-zloty", { pitch: 1.25, volume: 0.8 });
+        particles.emit(event.x, event.y, {
+          count: 8,
+          speed: 2,
+          tint: COLORS.monsteraJasna,
+          radius: 0.08,
+          angle: -Math.PI / 2,
+        });
+        renderer.popup(`Idealnie! +${event.bonus}`, event.x, event.y - 1.5, COLORS.monsteraJasna, 30);
         break;
       case "warning":
         if (event.family === "pracu") play("dzwonek", { volume: 0.7 });
@@ -356,6 +502,7 @@ function handleEvents() {
         renderer.popup(`+${event.bonus}`, event.x, owl.y - 1.5, COLORS.zloto);
         toasts.show(GOAT_TEXT[event.kind] || "Kózka!", { kind: "reward", key: `goat-${event.kind}` });
         progress.emit(EVENTS.GOAT, { kind: event.kind });
+        if (event.kind === "sprezynka") quip(QUIPS.high);
         break;
       case "powerupEnd":
         play("powerup-koniec");
@@ -407,6 +554,7 @@ function handleEvents() {
             },
           );
         }
+        if (BIOMES[event.index]?.id === "plaza") quip(QUIPS.beach);
         break;
       case "end":
         finishRun();
@@ -446,6 +594,11 @@ function update(step) {
     else if (shell.state() === "running") {
       game.update(step);
       handleEvents();
+      if (tracker && screen === "playing") tasksDone(tracker.tick(game.state, step));
+      if (!startQuip && game.state.time > 1.2) {
+        startQuip = true;
+        quip(QUIPS.start);
+      }
       bubbleTrail(step);
     }
     const owl = game.state.owl;
@@ -556,6 +709,15 @@ cloud?.ready
   ?.then(() => cloud.loadGame(GAME_ID))
   .then(() => {
     gameReady = true;
+    // Pierwsze wejście (albo naprawiony stan): wylosowane zadania zapisujemy, żeby nie zmieniały się po odświeżeniu.
+    const savedTasks = cloud.game(GAME_ID)?.tasks ?? null;
+    tasksData = normalizeTasks(savedTasks);
+    if (JSON.stringify(savedTasks) !== JSON.stringify(tasksData)) {
+      cloud.updateGame(GAME_ID, (doc) => {
+        doc.tasks = structuredClone(tasksData);
+      });
+    }
+    showTasks();
     const saved = cloud.game(GAME_ID)?.difficulty;
     selectDifficulty(DIFFICULTY_ORDER.includes(saved) ? saved : difficulty, { save: false });
     document.documentElement.classList.toggle("sowie-reduced-effects", Boolean(settings().reducedEffects));
@@ -580,6 +742,8 @@ window.SowiaUcieczka = Object.freeze({
   fillSplash: () => game?.fillSplash(),
   warp: (meters) => game?.warp(meters),
   bonus: () => (game?.state.bonus ? { ...game.state.bonus } : null),
+  tasks: () => ({ ...tasksData, list: tracker && screen === "playing" ? tracker.list() : describeTasks(tasksData) }),
+  seed: () => baseSeed(),
   powerups: () => (game ? { ...game.state.powerups, fever: game.state.fever } : null),
   camera: () => ({ x: camera.x, y: camera.y, zoom: camera.zoom }),
   atlasReady: () => atlas.ready(),

@@ -84,6 +84,32 @@
   opacity: 0.85;
 }
 
+/* Wyzwanie dnia: złota ramka z opisem i dzisiejszym wynikiem. */
+.ucieczka-title-daily {
+  padding: 8px 12px;
+  border: 2px solid var(--zloto);
+  border-radius: 14px;
+  background: rgba(244, 197, 66, 0.14);
+  font-size: 14px;
+}
+
+/* Sowi mnożnik na przycisku „Zadania”. */
+.ucieczka-multiplier {
+  display: inline-block;
+  margin-left: 4px;
+  padding: 0 8px;
+  border-radius: 999px;
+  background: var(--zloto);
+  color: var(--kontur);
+  font-weight: var(--czcionka-pogrubiona);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Okno zadań: opis Sowiego mnożnika nad listą. */
+.ucieczka-tasks-intro {
+  margin: 0 0 12px;
+}
+
 .ucieczka-title-actions {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));

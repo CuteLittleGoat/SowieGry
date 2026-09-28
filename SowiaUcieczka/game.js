@@ -110,6 +110,8 @@ export function createRun({
   random = null,
   patterns = PATTERNS,
   startDistance = 0,
+  // Sowi mnożnik (zadania biegu, poziom 1–20): mnoży punkty za dystans.
+  multiplier = 1,
 } = {}) {
   const rng = random || createRng(seed).next;
   const config = DIFFICULTIES[difficulty] ? difficulty : "arcade";
@@ -168,6 +170,11 @@ export function createRun({
     nextBubbleAt: 0,
     biome: 0,
     loop: 0,
+    // E4d: Sowi mnożnik i „Idealnie!”.
+    multiplier: Math.max(1, Math.floor(multiplier) || 1),
+    perfects: 0,
+    perfectPoints: 0,
+    lastPerfect: -Infinity,
   };
   state.nextGoatAt = GOATS.every[0] * 0.5 + rng() * (GOATS.every[1] - GOATS.every[0]) * 0.5;
   state.nextBubbleAt = SPLASH.bubbleEvery[0] + rng() * (SPLASH.bubbleEvery[1] - SPLASH.bubbleEvery[0]);
@@ -313,6 +320,24 @@ export function createRun({
     }
   }
 
+  // „Idealnie!”: lądowanie blisko środka platformy (środkowe 36%) — punkty × combo i +1 do serii combo.
+  function perfectLanding(surface) {
+    if (state.time - state.lastPerfect < SCORE.perfectCooldown) return;
+    const platform = world.platforms.find(
+      (item) => Math.abs(item.y - surface) < 1e-6 && owl.x >= item.x && owl.x <= item.x + item.width,
+    );
+    if (!platform) return;
+    if (Math.abs(owl.x - (platform.x + platform.width / 2)) > platform.width * SCORE.perfectZone) return;
+    state.lastPerfect = state.time;
+    state.streak += 1;
+    state.combo = comboLevel(state.streak);
+    state.bestCombo = Math.max(state.bestCombo, state.combo);
+    const bonus = SCORE.perfect * state.combo;
+    state.perfects += 1;
+    state.perfectPoints += bonus;
+    emit("perfect", { bonus, x: owl.x, y: owl.y });
+  }
+
   // Złapana kózka: +50 pkt i efekt (Sprężynka od razu, pozostałe na czas).
   function catchGoat(goat) {
     goat.taken = true;
@@ -433,16 +458,21 @@ export function createRun({
         } else if (hit(item.family, item.kind)) item.passed = true;
         continue;
       }
-      // „O włos!”: najmniejszy odstęp w pionie, gdy sowa jest nad / pod przeszkodą.
+      // „O włos!”: najmniejszy odstęp w pionie, gdy sowa jest nad / pod przeszkodą; zapamiętujemy też,
+      // czy sowa minęła ją górą (`over`), czy dołem (`under`, np. ślizg pod znakiem Amic).
       if (box.right > other.left && box.left < other.right) {
         const gap = Math.max(other.top - box.bottom, box.top - other.bottom);
         item.closest = Math.min(item.closest, gap);
+        if (box.bottom <= other.top + 1e-6) item.over = true;
+        else if (box.top >= other.bottom - 1e-6) item.under = true;
       }
       if (other.right < box.left) {
         item.passed = true;
+        const pass = { kind: item.kind, family: item.family, over: Boolean(item.over), under: Boolean(item.under) };
+        emit("pass", pass);
         if (item.closest < SCORE.nearMissGap && state.invulnerable <= 0) {
           state.nearMisses += 1;
-          emit("nearMiss", { kind: item.kind, family: item.family, bonus: SCORE.nearMiss });
+          emit("nearMiss", { ...pass, bonus: SCORE.nearMiss });
         }
       }
     }
@@ -561,8 +591,14 @@ export function createRun({
       }
       if (controls.hold) controls.holdTime += dt;
       const before = owl.x;
+      const mark = events.length;
       if (state.bonus) updateBonus(dt);
-      else stepOwl(owl, controls, dt, world, events, state.speed);
+      else {
+        stepOwl(owl, controls, dt, world, events, state.speed);
+        for (let index = mark; index < events.length; index += 1) {
+          if (events[index].type === "land" && events[index].surface < 0) perfectLanding(events[index].surface);
+        }
+      }
       const moved = owl.x - before;
       state.distance = owl.x - startDistance;
       state.sinceHit += moved;
@@ -600,11 +636,12 @@ export function createRun({
       // Pełny Plusk-o-metr: „Rejs na humbaku” (na ziemi, nie w trakcie szybowania przez dziurę).
       if (!state.bonus && state.splash >= 1 && owl.grounded && owl.surface === 0) startBonus();
       state.score =
-        Math.floor(state.distance * SCORE.perMeter) +
+        Math.floor(state.distance * SCORE.perMeter * state.multiplier) +
         state.leafPoints +
         state.nearMisses * SCORE.nearMiss +
         state.goatPoints +
-        state.bonusPoints;
+        state.bonusPoints +
+        state.perfectPoints;
       cleanup();
     },
     end,
@@ -653,6 +690,8 @@ export function createRun({
         goats: state.goatCount,
         bonuses: state.bonusCount,
         smashed: state.smashed,
+        perfects: state.perfects,
+        multiplier: state.multiplier,
       };
     },
   };

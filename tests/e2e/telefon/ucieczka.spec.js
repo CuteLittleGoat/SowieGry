@@ -179,3 +179,93 @@ test("zapis w chmurze: rekord w profilu, a wcześniejsze top 10 zostaje (emulato
   expect(profile.records.runner.runs).toBe(1);
   expect(errors).toEqual([]);
 });
+
+test("zadania biegu: ukończone w biegu, po biegu nowe zadania i wyższy Sowi mnożnik (emulator)", async ({
+  page,
+}, testInfo) => {
+  const project = uniqueProject(testInfo);
+  await seedDoc(project, "sowiegry/profil/sowiegry_gry/runner", {
+    tasks: {
+      level: 1,
+      completed: 2,
+      active: [
+        { id: "kozka-magnes", progress: 0 },
+        { id: "humbak", progress: 0 },
+        { id: "o-wlos", progress: 1 },
+      ],
+    },
+  });
+  const errors = watchErrors(page);
+  await openGame(page, cloudUrl("/SowiaUcieczka/?seed=ucieczka-zadania", project));
+  await expect(page.locator("[data-multiplier]")).toHaveText("×1");
+  await page.locator("[data-tasks]").click();
+  const dialog = page.getByRole("dialog", { name: "Zadania biegu" });
+  await expect(dialog).toContainText("Złap Kózkę Magnes");
+  await expect(dialog).toContainText("Popłyń na humbaku");
+  await expect(dialog).toContainText("1 / 5");
+  await dialog.getByRole("button", { name: "Do biegu!" }).click();
+  await expect(dialog).toBeHidden();
+
+  await page.locator("[data-start]").click();
+  await page.waitForTimeout(500);
+  await page.evaluate(() => window.SowiaUcieczka.goat("magnes"));
+  await expect(page.locator(".sowie-toast-chip", { hasText: "Zadanie wykonane: Złap Kózkę Magnes" })).toBeVisible();
+  await page.evaluate(() => window.SowiaUcieczka.fillSplash());
+  await expect
+    .poll(() => page.evaluate(() => window.SowiaUcieczka.tasks().list.filter((task) => task.done).length))
+    .toBe(2);
+  await page.evaluate(() => window.SowiaUcieczka.end());
+  const results = page.getByRole("dialog", { name: /Koniec biegu/ });
+  await expect(results).toContainText("Sowi mnożnik ×2!");
+  await expect(results.locator("[data-results-tasks] li.is-new", { hasText: "Kózkę Magnes" })).toHaveCount(1);
+  await expect(results.locator("[data-results-tasks] li.is-new", { hasText: "humbaku" })).toHaveCount(1);
+  await expect(page.locator("[data-multiplier]")).toHaveText("×2");
+
+  await page.evaluate(() => window.SowieCloud.flush());
+  const doc = await readDoc(project, "sowiegry/profil/sowiegry_gry/runner");
+  expect(doc.tasks.completed).toBe(4);
+  expect(doc.tasks.level).toBe(2);
+  expect(doc.tasks.active).toHaveLength(3);
+  const ids = doc.tasks.active.map((task) => task.id);
+  expect(ids).not.toContain("kozka-magnes");
+  expect(ids).not.toContain("humbak");
+  expect(doc.tasks.active.find((task) => task.id === "o-wlos").progress).toBeGreaterThanOrEqual(1);
+  expect(doc.top10.arcade).toHaveLength(1);
+
+  // Następny bieg liczy dystans z Sowim mnożnikiem ×2.
+  await results.getByRole("button", { name: "Jeszcze raz" }).click();
+  expect((await state(page)).multiplier).toBe(2);
+  expect(errors).toEqual([]);
+});
+
+test("wyzwanie dnia: ziarno z daty, poziom Arcade, rekord dnia w dokumencie gry (emulator)", async ({
+  page,
+}, testInfo) => {
+  const project = uniqueProject(testInfo);
+  const errors = watchErrors(page);
+  await openGame(page, cloudUrl("/SowiaUcieczka/?daily=1", project));
+  const today = await page.evaluate(() => window.SowieCloud.helpers.dayKey(Date.now()));
+  expect(await page.evaluate(() => window.SowiaUcieczka.seed())).toBe(`daily-${today}-runner`);
+  await expect(page.locator("[data-daily-note]")).toContainText("Dziś jeszcze bez wyniku");
+  await expect(page.locator('[data-level="arcade"]')).toHaveAttribute("aria-pressed", "true");
+  await expect(page.locator('[data-level="chaos"]')).toBeDisabled();
+  const back = page.locator("[data-daily]");
+  await expect(back).toHaveText("Zwykły bieg");
+  expect(await back.getAttribute("href")).not.toContain("daily=1");
+  expect(await back.getAttribute("href")).toContain("cloud=emulator");
+
+  await page.locator("[data-start]").click();
+  await page.waitForTimeout(2500);
+  await page.evaluate(() => window.SowiaUcieczka.end());
+  const results = page.getByRole("dialog", { name: /Koniec biegu/ });
+  await expect(results).toContainText("Wyzwanie dnia zapisane");
+  const { distance } = await state(page);
+  await page.evaluate(() => window.SowieCloud.flush());
+  const doc = await readDoc(project, "sowiegry/profil/sowiegry_gry/runner");
+  expect(doc.dailyBest[today]).toBe(distance);
+  expect(doc.top10.arcade[0]).toMatchObject({ daily: true, seed: `daily-${today}-runner` });
+  await expect(page.locator("[data-daily-note]")).toContainText(
+    `Dzisiaj najdalej: ${distance.toLocaleString("pl-PL")} m`,
+  );
+  expect(errors).toEqual([]);
+});

@@ -89,6 +89,10 @@ export const SCORE = Object.freeze({
   nearMissGap: 0.35,
   comboStep: 10, // +1 poziom combo co 10 liści bez trafienia
   comboMax: 5,
+  // „Idealnie!”: lądowanie na platformie w środkowych 36% jej szerokości → 20 pkt × combo i +1 do serii.
+  perfect: 20,
+  perfectZone: 0.18,
+  perfectCooldown: 0.5,
 });
 
 // Generator: odstęp między wzorami (j.) rośnie z prędkością; po trudnym wzorze — „oddech”.

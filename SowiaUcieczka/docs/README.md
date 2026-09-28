@@ -8,7 +8,7 @@ Na razie to **wersja podglądowa**: otwierasz ją w menu przyciskiem **„Wypró
 
 1. Wybierz poziom: **Chill** (wolniej), **Arcade** albo **Chaos** (szybciej, trudniejsze fragmenty wcześniej). Każdy poziom ma osobne rekordy — pod przyciskami widać rekord wybranego poziomu.
 2. Stuknij **Start**.
-3. **Jak grać?** pokazuje krótką instrukcję, **Menu** wraca do menu SowieGry.
+3. **Zadania ×N** pokazuje Twoje 3 zadania biegu i Sowi mnożnik, **Wyzwanie dnia** otwiera trasę dnia, **Jak grać?** pokazuje krótką instrukcję, **Menu** wraca do menu SowieGry.
 
 ## Sterowanie (jedną ręką, w dowolnym miejscu ekranu)
 
@@ -40,13 +40,24 @@ Trzy serduszka w prawym górnym rogu to odległość chmury za sową. Każde tra
 
 ## Punkty
 
-- 1 punkt za każdy metr,
+- 1 punkt za każdy metr × **Sowi mnożnik** (zob. „Zadania biegu”),
 - liście: zielony 10 pkt, złoty 50 pkt (liczy się jak 5 liści), tęczowy 100 pkt,
 - **combo** ×1–×5: co 10 liści bez trafienia punkty za liście rosną o jeden poziom; trafienie obniża combo o jeden poziom,
-- **„O włos!”** +25 pkt za minięcie przeszkody o włos,
+- **„O włos!”** +25 pkt za minięcie przeszkody o włos (przy Amic górą: „O włos nad Amic!”, przy Pracu: „Pracu Pracu minięte!”),
+- **„Idealnie!”** — lądowanie na samym środku platformy: 20 pkt × combo i jeden krok combo więcej,
 - złapana kózka +50 pkt, **Rejs na humbaku** — premia 200 pkt + 10 pkt za każdy liść z rejsu.
 
 Łuk liści nad przeszkodą podpowiada, jak ją przeskoczyć, a rząd liści nisko — że trzeba się prześlizgnąć.
+
+## Zadania biegu i Sowi mnożnik
+
+Zawsze masz **3 zadania**, np. „Prześlizgnij się pod 3 znakami Amic”, „Złap Kózkę Magnes”, „Zbierz 40 liści w jednym biegu”. Zadania z dopiskiem „w jednym biegu” trzeba zrobić w jednym biegu, pozostałe liczą się łącznie przez wiele biegów. Gdy zadanie się uda, gra od razu to ogłasza („Zadanie wykonane: …”).
+
+Po biegu ukończone zadania zamieniają się na nowe. **Każde 3 ukończone zadania podnoszą Sowi mnożnik o 1** (najwyżej ×20) — od następnego biegu punkty za dystans są mnożone przez mnożnik. Im wyższy mnożnik, tym trudniejsze zadania. Mnożnik widać na przycisku **Zadania** i na ekranie wyników.
+
+## Wyzwanie dnia
+
+Przycisk **Wyzwanie dnia** na ekranie tytułowym otwiera trasę dnia: przez cały dzień ta sama trasa, zawsze na poziomie Arcade. Na karcie widać Twój najdalszy dzisiejszy dystans. Wynik liczy się też do rekordów Arcade. **Zwykły bieg** wraca do zwykłej gry. Jutro — nowa trasa.
 
 ## Skaczące kózki (power-upy)
 
@@ -78,11 +89,15 @@ Co 1000 m zmienia się okolica: **Łąka → Miasto → Osiedle PRL → Stacja A
 
 ## Po biegu
 
-Ekran wyników pokazuje wynik, rekord („Nowy rekord!”), zebrane liście, miejsce w Twoim top 10, dystans, najlepsze combo, liczbę „O włos!”, złapane kózki, rejsy na humbaku i postęp zadań Sowiej Akademii. **Jeszcze raz** zaczyna nowy bieg na tym samym poziomie, **Menu** wraca do menu. Wynik zapisuje się w chmurze.
+Ekran wyników pokazuje wynik, rekord („Nowy rekord!”), zebrane liście, miejsce w Twoim top 10, dystans, najlepsze combo, Sowi mnożnik, liczbę „O włos!” i „Idealnie!”, złapane kózki, rejsy na humbaku, postęp zadań biegu (nowo ukończone są wyróżnione) i postęp zadań Sowiej Akademii. **Jeszcze raz** zaczyna nowy bieg na tym samym poziomie, **Menu** wraca do menu. Wynik zapisuje się w chmurze.
 
 ## Przerwy
 
 Gra sama się wstrzymuje, gdy przejdziesz do innej aplikacji, zablokujesz ekran, ściągniesz pasek powiadomień albo obrócisz telefon — bieg się nie resetuje. Po **Wznów** gra odlicza 3-2-1.
+
+## Komentarze sowy
+
+Czasem sowa coś powie („Hu-hu! Ale lot!”, „Pracu Pracu? Nie dzisiaj!”, „Monstera zauważona!”…) — najwyżej raz na 15 sekund i tylko, gdy nie ma innego komunikatu. Wyłączysz to w menu głównym SowieGry, w zakładce **Sowa** (przełącznik **Komentarze sowy**).
 
 ## Garderoba
 
@@ -90,4 +105,4 @@ Dodatek wybrany w garderobie (menu pauzy albo menu główne) sowa nosi w biegu. 
 
 ## W przygotowaniu
 
-W kolejnych krokach dojdą: zadania biegu i Sowi mnożnik, wyzwanie dnia, samouczek przy pierwszym uruchomieniu i własna muzyka gry.
+W kolejnych krokach dojdą: samouczek przy pierwszym uruchomieniu i własna muzyka gry.

@@ -605,7 +605,7 @@ records:   { runner: { runs, lastPlayedAt, chill|arcade|chaos: { bestScore, best
              ogrody: { lifetimeLeaves, prestiges, zone }, szklarnia: { lifetimeLeaves, rooms, hybrids } }
 ```
 
-Dokumenty gier: `sowiegry/profil/sowiegry_gry/{runner|jumper|sowa3|ogrody|szklarnia}` (`difficulty`, `finishSeen`, `top10`, `dailyBest`, `daily`, `traitAlbum`, `historyCount`; gry idle: `state`, `saveVersion`, `summary`, `savedAt`, `clientSavedAt`, `rev`, `deviceId`) i historia `…/sowiegry_historia/{autoId}`. Profil ma 12–15 pól najwyższego poziomu (reguły dopuszczają 30).
+Dokumenty gier: `sowiegry/profil/sowiegry_gry/{runner|jumper|sowa3|ogrody|szklarnia}` (`difficulty`, `finishSeen`, `top10`, `dailyBest`, `daily`, `traitAlbum`, `historyCount`; Sowia Ucieczka od E4d także `tasks` — zadania biegu i Sowi mnożnik; gry idle: `state`, `saveVersion`, `summary`, `savedAt`, `clientSavedAt`, `rev`, `deviceId`) i historia `…/sowiegry_historia/{autoId}`. Profil ma 12–15 pól najwyższego poziomu (reguły dopuszczają 30).
 
 ## Kosmetyki
 
@@ -767,6 +767,8 @@ Zależności deweloperskie są przypięte tam, gdzie wersja wpływa na przegląd
 ### Testy Sowiej Ucieczki (`tests/unit/ucieczka.test.mjs`, E4)
 
 Fizyka, kamera i czas reakcji ≥ 1,1 s, przeszkody, 37 wzorów (każdy do przejścia przy 4,25 / 7 / 11,55 j./s — przeszukiwanie wszerz ruchów), generator, Chmura Pracu, combo, dotyk; od E4c kózki (rozstaw i 5 efektów), Gorączka Monster, Plusk-o-metr i „Rejs na humbaku”, 6 biomów z przenikaniem i szybszymi okrążeniami. Szczegóły: `SowiaUcieczka/docs/Documentation.md`, rozdział „Testy”. Plik biegnie ok. 30 s (przeszukiwanie wzorów).
+
+`tests/unit/ucieczka-zadania.test.mjs` (E4d): zadania biegu i Sowi mnożnik (`SowiaUcieczka/tasks.js`) oraz punktacja z mnożnikiem, „Idealnie!” i zdarzenie mijania przeszkody dołem / górą.
 
 ### Testy menu (`tests/unit/menu.test.mjs`, E3)
 
