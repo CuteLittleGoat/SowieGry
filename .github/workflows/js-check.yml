@@ -60,6 +60,9 @@ jobs:
       # Testy reguł i testy przeglądarkowe biegną na emulatorze Firestore (projekt demo-sowiegry), nigdy na produkcji.
       - name: Run rules and browser tests on Firestore emulator
         run: npm run test:e2e
+        # Diagnostyka zawieszeń WebKit: wyjście procesów przeglądarek (np. ostrzeżenia GStreamer) trafia do logu.
+        env:
+          DEBUG: pw:browser
 
       - name: Upload Playwright report
         if: always()

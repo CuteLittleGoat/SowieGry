@@ -120,8 +120,9 @@ test("kózka daje power-up w HUD, pełny Plusk-o-metr uruchamia rejs na humbaku,
   await page.mouse.click(box.x + box.width / 2, box.y + box.height * 0.5);
   await expect.poll(() => page.evaluate(() => window.SowiaUcieczka.bonus()?.y ?? 0)).toBeLessThan(-0.5);
 
+  // W biegu widać 1 komunikat naraz: nazwa biomu może poczekać na „Humbacza premia” i zadania.
   await page.evaluate(() => window.SowiaUcieczka.warp(1000));
-  await expect(page.locator(".sowie-toast-chip", { hasText: "Miasto" })).toBeVisible();
+  await expect(page.locator(".sowie-toast-chip", { hasText: "Miasto" })).toBeVisible({ timeout: 10_000 });
   expect(errors).toEqual([]);
 });
 

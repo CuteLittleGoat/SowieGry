@@ -38,6 +38,52 @@ async function unlockDevice(context) {
   }, DEVICE_KEY);
 }
 
+// Diagnostyka WebKit: dekodowanie długich nagrań (muzyka), start i stop ich odtwarzania, wznowienie i uśpienie
+// kontekstu audio oraz sygnał „strona żyje” co sekundę trafiają do konsoli. Ślad nieudanego testu (trace) pokazuje
+// wtedy, co działo się tuż przed ewentualnym zawieszeniem strony. Tylko zapis w konsoli — zachowanie bez zmian.
+async function traceWebAudio(context) {
+  await context.addInitScript(() => {
+    const Source = window.AudioBufferSourceNode;
+    const Context = window.BaseAudioContext || window.AudioContext;
+    if (!Source || !Context) return;
+    const log = (text) => console.debug(`[webaudio ${performance.now().toFixed(0)} ms] ${text}`);
+    const isLong = (node) => (node.buffer?.duration ?? 0) > 3;
+    for (const name of ["start", "stop"]) {
+      const original = Source.prototype[name];
+      Source.prototype[name] = function (...args) {
+        const long = isLong(this);
+        if (long) log(`${name}(${args.join(", ")}) ${this.buffer.duration.toFixed(2)} s, pętla: ${this.loop} …`);
+        const result = original.apply(this, args);
+        if (long) log(`${name} gotowe`);
+        return result;
+      };
+    }
+    const decode = Context.prototype.decodeAudioData;
+    Context.prototype.decodeAudioData = function (data, ...rest) {
+      const bytes = data?.byteLength ?? 0;
+      const result = decode.call(this, data, ...rest);
+      if (bytes > 50_000) {
+        log(`dekodowanie ${bytes} B …`);
+        result?.then?.(
+          (buffer) => log(`zdekodowano ${bytes} B → ${buffer.duration.toFixed(2)} s, ${buffer.sampleRate} Hz`),
+          (error) => log(`błąd dekodowania ${bytes} B: ${error}`),
+        );
+      }
+      return result;
+    };
+    const AudioContextClass = window.AudioContext;
+    for (const name of ["resume", "suspend"]) {
+      const original = AudioContextClass?.prototype?.[name];
+      if (!original) continue;
+      AudioContextClass.prototype[name] = function (...args) {
+        log(`${name}() przy stanie ${this.state}`);
+        return original.apply(this, args);
+      };
+    }
+    setInterval(() => log("strona żyje"), 1000);
+  });
+}
+
 // Nowy kontekst przeglądarki = „drugie urządzenie” (własny localStorage i IndexedDB).
 async function newDevice(browser, contextOptions = {}, { unlocked = true } = {}) {
   const context = await browser.newContext(contextOptions);
@@ -85,6 +131,13 @@ const test = base.test.extend({
       if (odblokowane) await unlockDevice(context);
       await use(blocked);
       base.expect(blocked, "test próbował połączyć się z produkcyjnym Firestore").toEqual([]);
+    },
+    { auto: true },
+  ],
+  webAudioTrace: [
+    async ({ context, browserName }, use) => {
+      if (browserName === "webkit") await traceWebAudio(context);
+      await use();
     },
     { auto: true },
   ],

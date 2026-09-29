@@ -85,7 +85,7 @@ Tęczowy liść włącza **Gorączkę Monster** na 8 sekund: tęczowa ramka ekra
 
 Pasek z humbakiem pod przyciskiem pauzy to **Plusk-o-metr**. Napełnia się liśćmi (60 liści) albo **bąbelkami humbaka** (3 bąbelki) — bąbelki unoszą się wysoko nad trasą co kilkaset metrów, trzeba po nie skoczyć.
 
-Gdy Plusk-o-metr jest pełny, zaczyna się **Rejs na humbaku**: 20 sekund na grzbiecie humbaka, bez przeszkód i bez Chmury Pracu. **Stukaj**, żeby humbak wyskakiwał z wody i zbierał łuki liści w powietrzu. Pasek pokazuje wtedy (na złoto) pozostały czas. Na koniec: „Humbacza premia +N”, a trasa zaczyna się od spokojnego fragmentu.
+Gdy Plusk-o-metr jest pełny, zaczyna się **Rejs na humbaku**: 20 sekund na grzbiecie humbaka, bez przeszkód i bez Chmury Pracu. **Stukaj**, żeby humbak wyskakiwał z wody i zbierał łuki liści w powietrzu. Pasek pokazuje wtedy (na złoto) pozostały czas. Podpowiedź „Rejs na humbaku! Stukaj…” pojawia się przed innymi czekającymi komunikatami (w biegu widać jeden komunikat naraz). Na koniec: „Humbacza premia +N”, a trasa zaczyna się od spokojnego fragmentu.
 
 ## Okolice (biomy)
 

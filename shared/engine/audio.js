@@ -32,6 +32,23 @@ export function loopPoints({ decodedOnset, onset, duration, bufferDuration }) {
   return { offset, loopStart: offset, loopEnd };
 }
 
+/**
+ * Jedno okrążenie pętli jako osobny bufor: `frames` próbek od próbki `start` (bez opóźnienia dekodera na początku
+ * i ciszy na końcu). Taki bufor gra w całości z `loop = true` — bez loopStart / loopEnd i bez przesunięcia startu,
+ * czyli najprostszą, jednakową we wszystkich przeglądarkach ścieżką Web Audio.
+ * createBuffer(kanały, próbki, częstotliwość) — z kontekstu audio. Zwraca oryginał, gdy nie ma czego przycinać.
+ */
+export function trimToLoop(buffer, start, frames, createBuffer) {
+  const from = clamp(Math.round(start), 0, buffer.length);
+  const to = Math.min(buffer.length, from + Math.round(frames));
+  if (to - from < 2 || (from === 0 && to === buffer.length)) return buffer;
+  const trimmed = createBuffer(buffer.numberOfChannels, to - from, buffer.sampleRate);
+  for (let channel = 0; channel < buffer.numberOfChannels; channel += 1) {
+    trimmed.getChannelData(channel).set(buffer.getChannelData(channel).subarray(from, to));
+  }
+  return trimmed;
+}
+
 // Base64 → Int8Array (odcisk początku pętli z manifestu).
 export function decodeFingerprint(base64) {
   const text = globalThis.atob ? globalThis.atob(base64) : Buffer.from(base64, "base64").toString("binary");
@@ -202,7 +219,19 @@ export function createAudio({
           duration: item.duration,
           bufferDuration: audioBuffer.duration,
         });
-        const loaded = { buffer: audioBuffer, ...points, item };
+        // Pętle (muzyka, szybowanie): osobny bufor z jednym okrążeniem, długość z liczby próbek oryginału
+        // (przeliczonej na częstotliwość kontekstu); efekty: cały bufor, start od pierwszej głośnej próbki.
+        const rate = audioBuffer.sampleRate;
+        const frames = item.samples
+          ? (item.samples * rate) / (manifest.sampleRate || rate)
+          : (points.loopEnd - points.offset) * rate;
+        const loaded = item.loop
+          ? {
+              buffer: trimToLoop(audioBuffer, points.offset * rate, frames, (...args) => context.createBuffer(...args)),
+              offset: 0,
+              item,
+            }
+          : { buffer: audioBuffer, offset: points.offset, item };
         buffers.set(key, loaded);
         emit();
         return loaded;
@@ -239,11 +268,8 @@ export function createAudio({
     const source = context.createBufferSource();
     source.buffer = loaded.buffer;
     source.playbackRate.value = rate;
-    if (loop) {
-      source.loop = true;
-      source.loopStart = loaded.loopStart;
-      source.loopEnd = loaded.loopEnd;
-    }
+    // Bufor pętli to dokładnie jedno okrążenie (trimToLoop) — gra w całości, bez punktów pętli.
+    if (loop) source.loop = true;
     const gain = context.createGain();
     gain.gain.value = volume * (loaded.item.volume ?? 1);
     let last = gain;
@@ -255,7 +281,8 @@ export function createAudio({
     }
     source.connect(gain);
     last.connect(bus);
-    source.start(now(), loaded.offset);
+    if (loaded.offset > 0) source.start(now(), loaded.offset);
+    else source.start(now());
     return { source, gain };
   }
 

@@ -616,7 +616,8 @@ function handleEvents() {
         play("bonus-start");
         play("humbak-plusk");
         playMusic("humbak");
-        toasts.show("Rejs na humbaku! Stukaj, żeby humbak wyskakiwał", { kind: "reward", key: "bonus" });
+        // Wskazówka sterowania — przed komunikatami czekającymi w kolejce (np. „Zadanie wykonane”).
+        toasts.show("Rejs na humbaku! Stukaj, żeby humbak wyskakiwał", { kind: "reward", key: "bonus", priority: 2 });
         break;
       case "whaleJump":
         play("skok", { pitch: 0.7 });
@@ -628,7 +629,7 @@ function handleEvents() {
       case "bonusEnd":
         playMusic("ucieczka");
         play("zycie");
-        toasts.show(`Humbacza premia +${event.premium}`, { kind: "reward", key: "bonus" });
+        toasts.show(`Humbacza premia +${event.premium}`, { kind: "reward", key: "bonus-koniec" });
         progress.emit(EVENTS.WHALE, { leaves: event.leaves });
         break;
       case "biome":

@@ -12,6 +12,7 @@ import {
   findOnset,
   loopPoints,
   MAX_VOICES,
+  trimToLoop,
   variedRate,
   volumesFromSettings,
   volumeToGain,
@@ -97,6 +98,31 @@ test("pomocnicy: początek dźwięku, punkty pętli, wariacja wysokości ±5%", 
   assert.equal(loopPoints({ decodedOnset: 0.03, onset: 0, duration: 2, bufferDuration: 1.5 }).loopEnd, 1.5);
   assert.equal(loopPoints({ decodedOnset: 0, onset: 0.01, duration: 1 }).offset, 0);
   assert.equal(loopPoints({ decodedOnset: 5, onset: 0, duration: 1 }).offset, 0.2);
+  // Jedno okrążenie pętli jako osobny bufor (bez opóźnienia dekodera na początku i ciszy na końcu).
+  const channels = [
+    Float32Array.from({ length: 10 }, (_, index) => index),
+    Float32Array.from({ length: 10 }, (_, index) => -index),
+  ];
+  const decoded = {
+    length: 10,
+    numberOfChannels: 2,
+    sampleRate: 48000,
+    getChannelData: (channel) => channels[channel],
+  };
+  const created = [];
+  const createBuffer = (count, length, rate) => {
+    const data = Array.from({ length: count }, () => new Float32Array(length));
+    created.push([count, length, rate]);
+    return { length, numberOfChannels: count, sampleRate: rate, getChannelData: (channel) => data[channel] };
+  };
+  const lap = trimToLoop(decoded, 2.4, 5.6, createBuffer);
+  assert.deepEqual(created, [[2, 6, 48000]]);
+  assert.deepEqual([...lap.getChannelData(0)], [2, 3, 4, 5, 6, 7]);
+  assert.deepEqual([...lap.getChannelData(1)], [-2, -3, -4, -5, -6, -7]);
+  assert.equal(trimToLoop(decoded, 8, 5, createBuffer).length, 2, "koniec bufora ogranicza okrążenie");
+  assert.equal(trimToLoop(decoded, 0, 10, createBuffer), decoded, "nic do przycięcia — oryginał");
+  assert.equal(trimToLoop(decoded, 0, 12, createBuffer), decoded);
+  assert.equal(trimToLoop(decoded, 9.6, 3, createBuffer), decoded, "za krótkie okrążenie — oryginał");
   assert.equal(
     variedRate(1, () => 0),
     0.95,
@@ -180,7 +206,13 @@ function fakeContext() {
       return source;
     },
     decodeAudioData(_data, resolve) {
-      const buffer = { duration: 1.2, sampleRate: 44100, getChannelData: () => new Float32Array(44100) };
+      const buffer = {
+        duration: 1.2,
+        length: 52920,
+        numberOfChannels: 1,
+        sampleRate: 44100,
+        getChannelData: () => new Float32Array(52920),
+      };
       resolve(buffer);
       return Promise.resolve(buffer);
     },
@@ -250,8 +282,11 @@ test("silnik audio: muzyka w pętli z przenikaniem, ściszanie, suwaki, ustawien
   assert.equal(await audio.playMusic("menu"), true);
   assert.equal(audio.currentMusic(), "menu");
   const menuSource = context.started.at(-1);
+  // Bufor pętli to jedno okrążenie: gra w całości, bez punktów pętli i bez przesunięcia startu.
   assert.equal(menuSource.loop, true);
-  assert.ok(menuSource.loopEnd > menuSource.loopStart);
+  assert.equal(menuSource.loopStart, undefined);
+  assert.equal(menuSource.loopEnd, undefined);
+  assert.deepEqual(menuSource.startedAt, [0, undefined]);
   await audio.playMusic("humbak");
   assert.equal(menuSource.stopped, true, "poprzedni utwór wygaszony");
   audio.duck(0.3);
