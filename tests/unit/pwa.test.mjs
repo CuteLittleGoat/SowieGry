@@ -8,6 +8,7 @@ const read = (file) => fs.readFileSync(file, "utf8");
 const pages = [
   "index.html",
   "SowiaUcieczka/index.html",
+  "SowieTory/index.html",
   "SowaJumper/index.html",
   "Sowa3/index.html",
   "SowieOgrody/index.html",

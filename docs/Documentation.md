@@ -12,7 +12,7 @@ Repozytorium zawiera menu główne i pięć samodzielnych gier przeglądarkowych
 | Sowie Ogrody    | `SowieOgrody/`    | `ogrody`              | idle                          |
 | Sowia Szklarnia | `SowiaSzklarnia/` | `szklarnia`           | idle                          |
 
-Identyfikatory w bazie są stałe (są wpisane w opublikowane reguły Firestore) i nie zmieniają się przy zmianie nazw gier ani folderów. **Sowia Ucieczka** (etap E4) zastąpiła dawny **SowaRunner** z tym samym identyfikatorem `runner` — rekordy, top 10 i historia są wspólne, a folder `SowaRunner/` zawiera już tylko stronę przekierowania (`SowaRunner/docs/Documentation.md`). Wspólna warstwa w `shared/` zapewnia rejestr gier, **zapis postępu w Firestore (`SowieCloud`)**, ekran hasła, profil, kosmetyki, misje, Sowią Akademię, Galerię Sów, instrukcje, ustawienia, audio, pauzę i powiadomienia. Plan dalszych zmian: `Analizy/`.
+Identyfikatory w bazie są stałe (są wpisane w opublikowane reguły Firestore) i nie zmieniają się przy zmianie nazw gier ani folderów. **Sowie Tory** (etap E5, folder `SowieTory/`) to nowa wersja Sowa3 w podglądzie przed podmianą — z tym samym identyfikatorem `sowa3` (wpis `preview` w rejestrze, przycisk „Wypróbuj nową wersję: Sowie Tory” na karcie Sowa3; `SowieTory/docs/Documentation.md`). **Sowia Ucieczka** (etap E4) zastąpiła dawny **SowaRunner** z tym samym identyfikatorem `runner` — rekordy, top 10 i historia są wspólne, a folder `SowaRunner/` zawiera już tylko stronę przekierowania (`SowaRunner/docs/Documentation.md`). Wspólna warstwa w `shared/` zapewnia rejestr gier, **zapis postępu w Firestore (`SowieCloud`)**, ekran hasła, profil, kosmetyki, misje, Sowią Akademię, Galerię Sów, instrukcje, ustawienia, audio, pauzę i powiadomienia. Plan dalszych zmian: `Analizy/`.
 
 ## Struktura główna
 
@@ -43,6 +43,7 @@ shared/
   meta/                   (SowieProgress — zdarzenia i most do Akademii; guides-data.js — instrukcje)
   menu/                   (menu główne — moduły ES: zakładki Gry, Jak grać, Galeria, Sowa; menu.css)
 SowiaUcieczka/            (Sowia Ucieczka — przebudowany SowaRunner, moduły ES na Sowim Silniku; docs/)
+SowieTory/                (Sowie Tory — nowa wersja Sowa3 w podglądzie (E5), moduły ES na Sowim Silniku; docs/)
 lab/                      (Sowie Laboratorium — strona testowa silnika na telefonie: postacie, gesty, informacje)
 assets/icons/             (ikona aplikacji SVG i PNG)
 assets/svg/               (źródła SVG postaci: sowa/, garderoba/, kozki/, humbak/, pracu/, amic/, liscie/, interfejs/)
@@ -185,7 +186,7 @@ IIFE bez zapisu danych. Udostępnia (obiekt zamrożony):
 - `GAME_REGISTRY` — 5 gier: `{ id, name, path, icon, kind, dailyMetric | saveVersion }`:
   - `runner` — „Sowia Ucieczka”, `SowiaUcieczka/`, 🏃, `kind: "arcade"`, `dailyMetric: "distance"`, `rebuilt: true` (znaczek „Nowe!” na karcie). Od E4f zastępuje SowaRunner (ten sam identyfikator i rekordy). W E4a–E4e wpis miał `path: "SowaRunner/"` i `preview: { path: "SowiaUcieczka/", name: "Sowia Ucieczka" }` — pole `preview` (nowa wersja w podglądzie przed podmianą: przycisk „Wypróbuj nową wersję” na karcie w menu, rozpoznanie strony podglądu przez `SowieCloud`) zostaje obsługiwane dla kolejnych przebudów;
   - `jumper` — „SowaJumper”, `SowaJumper/`, 🪶, `arcade`, `dailyMetric: "height"`;
-  - `sowa3` — „Sowa3”, `Sowa3/`, 🛣️, `arcade`, `dailyMetric: "score"`;
+  - `sowa3` — „Sowa3”, `Sowa3/`, 🛣️, `arcade`, `dailyMetric: "score"`, od E5a `preview: { path: "SowieTory/", name: "Sowie Tory" }` (nowa wersja w podglądzie — `SowieTory/docs/Documentation.md`; ten sam identyfikator i rekordy);
   - `ogrody` — „Sowie Ogrody”, `SowieOgrody/`, 🌿, `kind: "idle"`, `saveVersion: 2`;
   - `szklarnia` — „Sowia Szklarnia”, `SowiaSzklarnia/`, 🏡, `idle`, `saveVersion: 1`;
 - `COSMETICS` — 9 dodatków (`none`, `bow`, `glasses`, `flowerCrown`, `gardenerHat`, `cap`, `scarf`, `backpack`, `bubbleTrail`) z `label` i `icon`;
@@ -703,9 +704,11 @@ Zależności deweloperskie są przypięte tam, gdzie wersja wpływa na przegląd
 
 `ucieczka.spec.js` (E4 — Sowia Ucieczka): opis w `SowiaUcieczka/docs/Documentation.md`, rozdział „Testy”.
 
+`tory.spec.js` (E5 — Sowie Tory, podgląd): opis w `SowieTory/docs/Documentation.md`, rozdział „Testy”.
+
 `menu.spec.js` (E3 — „Gotowe, gdy” z Analizy 3):
 
-- zakładka „Gry”: 5 kart z nazwami z rejestru, szkielet rekordu znika po wczytaniu chmury („Jeszcze bez rekordu…”), karta „runner” — „Graj” do `SowiaUcieczka/`, znaczek „Nowe!”, bez odnośnika podglądu `[data-preview]`, atlas gotowy i narysowane klatki; „Graj” otwiera `/SowiaUcieczka/` z planszą, a stuknięcie nie pobiera żadnych dźwięków;
+- zakładka „Gry”: 5 kart z nazwami z rejestru, szkielet rekordu znika po wczytaniu chmury („Jeszcze bez rekordu…”), karta „runner” — „Graj” do `SowiaUcieczka/`, znaczek „Nowe!”; karta Sowa3 — „Graj” do `Sowa3/` i jedyny odnośnik podglądu `[data-preview="sowa3"]` „Wypróbuj nową wersję: Sowie Tory” do `SowieTory/`; atlas gotowy i narysowane klatki; „Graj” otwiera `/SowiaUcieczka/` z planszą, a stuknięcie nie pobiera żadnych dźwięków;
 - emulator: rekordy zapisane w `sowiegry/profil` pokazują się na kartach („Rekord: 1250 m”, „Rekord: 15 300 pkt”, „Liście: 4200”, bez rekordu dla SowaJumper);
 - instrukcje: „Jak grać?” na karcie → okno „Jak grać — SowaJumper” (5 kart, 1 demonstracja gestu), „Rozumiem” oddaje fokus; zakładka „Jak grać”: 6 sekcji (pierwsza „Poznaj Sowi Świat”), 7 demonstracji gestów (w tym 3 w sekcji Sowiej Ucieczki `#jak-grac-runner`);
 - odnośnik `#jak-grac-sowa3` otwiera zakładkę i sekcję Sowa3 w widoku; klawiatura na pasku zakładek (→, End, Home) z adresem `#galeria` i bez `#` dla „Gry”;

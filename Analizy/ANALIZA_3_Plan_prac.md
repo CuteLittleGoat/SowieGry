@@ -1,6 +1,6 @@
 # Analiza 3 — plan prac: kolejność wdrożenia
 
-> Data: 2026-09-27 · Podstawa: [`ANALIZA_1_Firestore_zapis_postepu.md`](ANALIZA_1_Firestore_zapis_postepu.md) (wersja 2) i [`ANALIZA_2_Przebudowa_gier.md`](ANALIZA_2_Przebudowa_gier.md) (wersja 2) · Status: **plan**, bez zmian w kodzie.
+> Data: 2026-09-27 · Podstawa: [`ANALIZA_1_Firestore_zapis_postepu.md`](ANALIZA_1_Firestore_zapis_postepu.md) (wersja 2) i [`ANALIZA_2_Przebudowa_gier.md`](ANALIZA_2_Przebudowa_gier.md) (wersja 2) · Status: **w realizacji** — bieżący stan, zasady pracy i dokładne miejsce wznowienia: [rozdział 8](#8-stan-realizacji-i-wznowienie-pracy-aktualizowane-na-bieżąco) (aktualizacja 2026-09-29).
 
 ---
 
@@ -275,3 +275,98 @@ Czytelne moduły zamiast obecnego `script.js`; nowy format stanu z migracją ze 
 - Ograniczenie klucza API i App Check (opcjonalnie później; ograniczenie klucza musi uwzględnić domenę drugiego projektu).
 - Reklamy, płatności, konta — gry pozostają prywatne i darmowe.
 - Nowe gry (poza obecnymi pięcioma) — możliwe w przyszłości. Wymagają aktualizacji reguł Firestore; przy tej rozbudowie porządkujemy też identyfikatory gier i sposób ich zapisu w regułach (Analiza 1, rozdział 9.2).
+
+---
+
+## 8. Stan realizacji i wznowienie pracy (aktualizowane na bieżąco)
+
+> Ostatnia aktualizacja: **2026-09-29**. Ten rozdział pozwala podjąć pracę w nowym oknie / nowej sesji bez znajomości wcześniejszej rozmowy. Po każdym zamkniętym kroku aktualizuj tabelę 8.2 i rozdział 8.5.
+
+### 8.1. Zasady obowiązujące przy każdej zmianie (wymagania właściciela)
+
+1. **Firestore jest współdzielony** z innym projektem właściciela (projekt `rpg-dataslate-relay`, `config/firebase-config.js`; kolekcje `audio`, `character_builder`, `dataslate`). Kod SowieGry czyta i pisze **wyłącznie** w kolekcji `sowiegry` i jej podkolekcjach `sowiegry_gry` i `sowiegry_historia` (pilnuje tego `tests/unit/architecture.test.mjs`).
+2. **Nic nie zapisujemy do produkcyjnej bazy** — ani ręcznie, ani uruchamiając aplikację podłączoną do produkcji. Testy tylko na emulatorze Firestore (projekt `demo-sowiegry`, adres `?cloud=emulator&projekt=…`) albo na `MemoryBackend` (`?cloud=memory`). Pierwszy zapis do produkcji robi właściciel, otwierając stronę po wdrożeniu. Fikstura e2e przerywa każde żądanie do `*.googleapis.com` i oblewa test.
+3. **Reguły Firestore są opublikowane (2026-09-27).** `firestore.rules` w repo to dokładna kopia bloku z Analizy 1, rozdz. 9.2 — **nie zmieniać**. Gdyby zmiana była konieczna: zatrzymać się i zapytać właściciela.
+4. Jeden profil, hasło **`huhu`** (bez rozróżniania wielkości liter i spacji).
+5. Stare wyniki: kasujemy **wyłącznie** klucze i prefiksy SowieGry z listy w Analizie 1, rozdz. 12. **Nigdy `localStorage.clear()`** — domena jest współdzielona z innymi stronami właściciela. `localStorage` / `sessionStorage` tylko w `shared/sowie-cloud.js`.
+6. Identyfikatory gier `runner`, `jumper`, `sowa3`, `ogrody`, `szklarnia` są stałe; foldery zmieniamy dopiero w etapie przebudowy danej gry. Obecne (stare) gry zmieniamy minimalnie.
+7. **Telefon najpierw:** e2e na profilach telefonów (Playwright, Chromium + WebKit). WebKit działa tylko w CI; lokalnie `SOWIE_E2E_BEZ_WEBKIT=1`. **Nie uruchamiać `playwright install`** w środowisku, gdzie przeglądarki są już zainstalowane.
+8. `AGENTS.md`: po każdej zmianie kodu gry aktualizuj jej `docs/Documentation.md` (dokładny opis kodu — ma wystarczyć do odtworzenia 1:1) i `docs/README.md` (instrukcja dla gracza po polsku); zmiana modułów wspólnych → `docs/Documentation.md` i `docs/README.md` w katalogu głównym.
+9. **Przed każdym wypchnięciem na `main`: `npm test` musi przejść w całości** (składnia, lint, formatowanie, HTML, testy jednostkowe, reguły, e2e). Nie wyłączać ani nie pomijać testów. Wypychać małymi krokami, każdy z zielonymi testami. **Komunikaty commitów po polsku**, zakończone stopką:
+   ```
+   Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+   Claude-Session: https://claude.ai/code/session_017xGVnU4bozpKQL5dLdXzTT
+   ```
+10. Zmiany wypychamy **na `main`** (wyraźne polecenie właściciela). Po wypchnięciu sprawdzamy CI („Quality and browser tests”, ok. 20 min) i nie zostawiamy czerwonego `main` — przyczyna do znalezienia, nie „flaky”.
+11. Nowa wersja gry powstaje najpierw w nowym folderze jako **podgląd** (wpis `preview` w rejestrze → przycisk „Wypróbuj nową wersję” w menu). Podmiana (karta menu na nowy folder, usunięcie starych plików, przekierowanie w starym folderze) dopiero **po akceptacji właściciela**.
+
+### 8.2. Stan etapów
+
+| Etap | Stan | Najważniejsze commity / uwagi |
+|---|---|---|
+| E0 Przygotowanie | ✅ | profile telefonów w `playwright.config.js`, emulator Firestore, porządki |
+| E1 Chmura | ✅ | `shared/sowie-cloud.js` (SowieCloud), `shared/password-gate.js`, moduły wspólne na SowieCloud, okno Rekordów (`shared/records.js`), WebKit w CI |
+| E2 Fundament | ✅ | 2a silnik `shared/engine/`, powłoka telefonu, PWA (`sw.js`), Laboratorium `lab/`; 2b Sowi Świat `shared/world/`, Fredoka, SVG postaci, atlas; 2c dźwięk (`scripts/make-audio.mjs`, `assets/audio/`); 2d wspólny interfejs `shared/ui/`, `shared/meta/` (SowieProgress, `guides-data.js`) — właściciel zaakceptował wygląd |
+| E3 Menu główne | ✅ | `index.html` + `shared/menu/` (Gry, Jak grać, Galeria, Sowa), stare `main-menu.*` usunięte — właściciel zaakceptował |
+| E4 Sowia Ucieczka | ✅ | 4a–4e w `SowiaUcieczka/` (a83d4d4 E4d, fa4e97c i 5054766 E4e, 09c2660); **4f podmiana** 48fa386 (SowaRunner/ → tylko przekierowanie; misje garderoby `shared/meta/missions.js`); poprawka CI WebKit **2258a79** (CI zielone 2026-09-29, patrz 8.4). Właściciel: „Wstępnie mi się podoba… zielone światło na dalsze prace” |
+| E5 Sowie Tory | 🔧 w toku | E5a (rdzeń, podgląd `SowieTory/`) ✅; następny E5b — patrz 8.5 |
+| E6 Sowa w Chmurach | ⏳ | — |
+| E7 Sowie Ogrody | ⏳ | — |
+| E8 Łącz i Hoduj | ⏳ | — |
+| E9 Meta i sprzątanie | ⏳ | — |
+
+### 8.3. Praktyczne wskazówki techniczne
+
+- **Testy lokalnie:** `SOWIE_E2E_BEZ_WEBKIT=1 npm test` (ok. 8–10 min; ok. 260 testów e2e w Chromium). Pojedynczy plik: `node --test tests/unit/<plik>.test.mjs`; e2e: `SOWIE_E2E_BEZ_WEBKIT=1 npx firebase emulators:exec --only firestore --project demo-sowiegry "npx playwright test tests/e2e/telefon/<plik>.spec.js"`.
+- **Serwer do ręcznych zrzutów:** `npx http-server . -p 4191 -c-1 -s` i skrypt Playwright (Chromium) z `?cloud=memory&seed=…` oraz odblokowanym urządzeniem (`localStorage["sowiegry:urzadzenie"] = {"unlocked":true,"deviceId":"d-test01","cleaned":true}` w skrypcie startowym kontekstu testu, nigdy w kodzie gry). Zatrzymanie: `pkill -x http-server` (**nie** `pkill -f …` — dopasowuje własną powłokę).
+- **CI:** `.github/workflows/js-check.yml` (push na `main`, `audit/**`, PR). `retries: 1`, `workers: 2`. Przy czerwonym CI: artefakty `test-results` (ślady `trace.zip`: zdarzenia `before/after`, `screencast-frame`, `log`, `0-trace.network`) i log zadania.
+- **Nowy folder gry** wymaga dopisania go do: `eslint.config.js` (moduły ES), `package.json` (`format`, `format:check`, `html`), `tests/unit/architecture.test.mjs` (`gamePages`, `projectScripts`), `tests/unit/pwa.test.mjs`, `tests/unit/owl-gallery.test.mjs`; folder ma `package.json` z `{"type":"module"}`.
+- **Rejestr gier** (`shared/sowie-platform.js`): podgląd = `preview: { path, name }`; po podmianie: `name`, `path`, `rebuilt: true`, bez `preview`. `SowieCloud.currentGame()` rozpoznaje stronę po `path` albo `preview.path`.
+- **Service worker** (`sw.js`): podnieś `VERSION`, gdy zmienia się lista `SHELL` albo strategia.
+- **Dźwięk:** efekty i muzyka z `scripts/make-audio.mjs` (deterministycznie, lamejs); budżet gry < 800 KB (gzip) — lista `GAME_SOUNDS` w `config.js` gry ogranicza wczytywane efekty.
+- **Komunikaty w grze:** najwyżej 1 naraz (`shared/ui/toasts.js`, `maxQueue: 3`, `priority`); wskazówki sterowania dostają `priority: 2`.
+
+### 8.4. Wiedza z E4f: zawieszanie WebKit w CI
+
+W CI (Playwright WebKit na Linuksie) strona Sowiej Ucieczki czasem zawieszała się na stałe tuż po starcie zapętlonej muzyki (po zdekodowaniu albo przy przełączeniu bieg ↔ humbak). Poprawka 2258a79: pętla muzyki to osobny bufor z jednym okrążeniem (`trimToLoop` w `shared/engine/audio.js`), grany w całości z `loop = true` — bez `loopStart`/`loopEnd` i bez startu z przesunięciem. Diagnostyka zostaje: fikstura `webAudioTrace` w `tests/e2e/fixtures.js` (WebKit: dekodowanie, start/stop długich nagrań, „strona żyje” co sekundę w konsoli → widać w śladzie nieudanego testu) i `DEBUG: pw:browser` w kroku e2e CI. Jeśli zawieszenie wróci: pobrać ślad, sprawdzić ostatnie wpisy `[webaudio …]` i wyjście przeglądarki w logu. Po kilku zielonych przebiegach `DEBUG` można usunąć (osobny mały commit).
+
+### 8.5. E5 — Sowie Tory: plan kroków i miejsce wznowienia
+
+Kroki (każdy osobnym commitem na `main`, z testami i dokumentacją `SowieTory/docs/`):
+
+| Krok | Zakres (Analiza 3, E5) | Stan |
+|---|---|---|
+| **E5a** | 5.0 checklista smaczków obecnej Sowa3 + 5.1 rdzeń: rzutnia perspektywiczna, sortowanie po głębokości, mgła, przesunięcia w 4 kierunkach z martwymi strefami, stuknięcia przy bokach, klawiatura; przeszkody według typu; wzory z testem przejścia; kampania 4 plansz (prosta scenografia, krótka przerwa zamiast finału); podgląd w `SowieTory/` z wpisem `preview` dla `sowa3` | ✅ commit „E5a: Sowie Tory — rdzeń gry w podglądzie…” (pełne `npm test` lokalnie zielone: 278 e2e w Chromium); **sprawdzić CI** tego commita |
+| **E5b** | 5.2 oprawa czterech plansz (Biedronka: regały, „SUPER CENA!”, pieczywo, pracownik z paleciakiem; festiwal: hala, stojaki, wózki z kwiatami, zraszacze, zwiedzający; PRL: bloki z wielkiej płyty, trzepak, ławka, kot na balkonie, gołębie; Amic: zadaszenie z zielonym pasem, sklep stacji, dystrybutory), skórki przeszkód na planszę (paleta, stojak promocyjny, wózki sklepowe, samochody, katalogi), ludzie/donice/słupki jako dekoracja bez kolizji, ≥ 30 wzorów w 4 progach; 5.3 pościg dzików na PRL (stado u dołu = życia, dzik szarżujący torem ze strzałką 1 s) | 🔧 **następny krok** (szczegóły niżej) |
+| E5c | 5.4 finał: działka z basenem (szara ryflowana ścianka, niebieski rant, turkusowa woda, trawa, płot, drzewa, koza na leżaku, grill), sekwencja ok. 4 s (bieg → skok → plusk → przemiana w humbaka), skracanie tapnięciem po pierwszym obejrzeniu (`sowiegry_gry/sowa3.finishSeen`); 5.5 „Humbacze Tory” (20 s, 3 morskie tory, ↑ = wyskok, liście w kółkach, bez obrażeń), podsumowanie planszy z gwiazdkami (★ ukończenie, ★★ liście, ★★★ bez trafienia) | ⏳ |
+| E5d | 5.6 kózki przeskakujące tory (Turbo → „Kozia jazda” 8 s), liście, combo, Gorączka Monster (najczęstsza na festiwalu), tryb Nieskończony po kampanii (4 plansze w pętli), rekordy kampanii i Nieskończonego (top 10 na poziom), dodatkowe życia | ⏳ |
+| E5e | 5.7 samouczek, instrukcja w `shared/meta/guides-data.js` (klucz `sowa3`, nazwa „Sowie Tory”), ilustracja karty w menu, muzyka na każdą planszę (`scripts/make-audio.mjs`, budżet < 800 KB), tryb diagnostyczny, dokumentacja i README; **podgląd do akceptacji właściciela** | ⏳ |
+| E5f | 5.8 po akceptacji: rejestr `sowa3` → „Sowie Tory”, `SowieTory/`, `rebuilt: true`; usunięcie 16 plików JS z `Sowa3/` (+ `style.css`), `Sowa3/index.html` → przekierowanie z parametrami adresu (jak `SowaRunner/index.html`), aktualizacja odwołań (testy, `package.json`, `eslint.config.js`, `guides-data.js`, menu, dokumentacja, Akademia/Galeria — teksty „w Sowa3”) | ⏳ |
+
+**E5a — co jest gotowe (pliki w `SowieTory/`, dokładny opis w `SowieTory/docs/Documentation.md`):**
+
+- `config.js` (tory co 1,6 m; rzutnia: kamera 4,2 m za sową, droga 84% szerokości w pionie / ≤ 115% wysokości w poziomie, horyzont 30% / 24%, sowa na 80% wysokości, mgła 38–64 m; sowa: skok 7,9 m/s przy g = 24, ślizg 0,7 s, zmiana toru 15 m/s; poziomy Chill 11→15 m/s 4 życia, Arcade 13→18 m/s 3 życia, Chaos 15→21 m/s 2 życia, +0,6/0,8/1 m/s na planszę; plansza 1200 m; typy przeszkód low/high/full; ruchomy telefon: strzałka 0,8 s, przejazd 0,35 s, zapas 0,6 s), `projection.js`, `physics.js`, `obstacles.js` (12 rodzajów Pracu/Amic ze sprite'ami z atlasu), `patterns.js` (język wzorów: 3 znaki na rząd; 23 wzory w progach 0–3; generator z oddechem co 4. wzór), `stages.js` (4 plansze w kolejności z obecnej gry), `game.js`, `render.js`, `main.js`, `index.html`, `style.css`, `package.json`, `docs/`.
+- Poza folderem: wpis `preview: { path: "SowieTory/", name: "Sowie Tory" }` dla `sowa3` w `shared/sowie-platform.js`; `SowieTory` dopisane do `eslint.config.js`, `package.json` (`format`, `format:check`, `html`), `tests/unit/architecture.test.mjs`, `tests/unit/pwa.test.mjs`, `tests/unit/owl-gallery.test.mjs`; `tests/e2e/telefon/menu.spec.js` (karta Sowa3 ma przycisk podglądu `SowieTory/`); nowe testy `tests/unit/tory.test.mjs` (rzutnia, fizyka, kolizje, BFS przejścia każdego wzoru z każdego toru przy 9,35 / 18 / 24 m/s, generator, autopilot przechodzi kampanię bez trafienia, ruchomy telefon) i `tests/e2e/telefon/tory.spec.js`; dokumentacja: `SowieTory/docs/*`, `docs/Documentation.md`, `docs/README.md`, `Sowa3/docs/README.md` (notka o podglądzie).
+- Zrzuty w Chromium (iPhone 13 pion/poziom) pokazały działającą drogę w perspektywie, sowę, przeszkody i liście; w poziomie pasek planszy przeniesiony pod przycisk pauzy.
+
+**Miejsce wznowienia — E5b (plan techniczny):**
+
+1. Najpierw sprawdzić, czy CI commita E5a jest zielone (także WebKit). Czerwone → naprawić przed E5b.
+2. `SowieTory/props.js` — rekwizyty rysowane kodem w metrach (kontekst przesunięty do punktu na ziemi i przeskalowany, y w górę ujemne, kontur `#3b2f4a`): przeszkody `paleta` (niska, Amic), `stojak` („SUPER CENA!”, wysoka, Amic), `wozek-sklepowy` (pełna), `katalogi` (niska, Pracu), `stoisko` (stoisko Amic, pełna), `samochod` (pełna, długa ok. 4,5 m, widok od tyłu), `zadaszenie` (wysoka, Amic); dzik `drawBoar`; dekoracje `regal`, `piekarnia`, `pracownik` (z paleciakiem), `stojakRoslin`, `wozekKwiatow`, `zwiedzajacy`, `zraszacz`, `blok` (wielka płyta, kot na balkonie, gołębie), `trzepak`, `lawka`, `slupek`, `sklepAmic`, `pylon` (ceny paliw), `auto`, `donica`; elementy nad drogą `drawOverhead`: `baner` („SUPER CENA!”), `girlanda` (z balonami i napisem „FESTIWAL ROŚLIN”), `zadaszenie` (Amic), `napisPrl`. *(Szkic pliku powstał lokalnie w sesji 2026-09-29, ale nie został zatwierdzony — jeśli go nie ma w repo, napisać od nowa.)*
+3. `SowieTory/scenery.js` — plan scenografii na planszę (`SCENERY[id] = { spacing, ground, side(slot, strona), overhead: { kind, every, height, width } }`) i `sceneryBetween(id, dystans, near, far)`; dekoracje zawsze poza korytarzem trzech torów (x ≥ połowa drogi + ok. 0,3–4 m) albo wysoko nad drogą. *(Też szkic lokalny, niezatwierdzony.)*
+4. `obstacles.js`: nowe rodzaje z polem `prop` (rysunek z `props.js` zamiast sprite'a) i ich typy/głębokości; `stages.js`: `remap` rodzajów na planszę (Biedronka: `wozek → wozek-sklepowy`, `kanister → paleta`, `znak-cen → stojak`; festiwal: `dystrybutor → stoisko`, `teczka → katalogi`; Amic: `wozek → samochod`, `znak-cen → zadaszenie`; PRL bez zmian + dziki); `game.js` stosuje `remap` przy wstawianiu wzoru; test BFS sprawdza każdy wzór **na każdej planszy po zamianie** (samochód jest dłuższy niż wózek).
+5. `patterns.js`: ≥ 30 wzorów (dopisać ok. 8–10, w tym wzory tylko dla wybranych plansz — pole `stages`, filtr w generatorze).
+6. Pościg dzików (tylko PRL): parametry `BOARS` w `config.js` (pierwszy po ok. 140 m, potem co 110–170 m, strzałka 1 s, dzik szybszy od sowy o ok. 9 m/s, bez dzików w ostatnich 150 m); dzik celuje w tor sowy, ale tylko gdy inny tor jest wolny od pełnych przeszkód (inaczej przesunięcie o 15 m); trafienie jak zwykłe („Dzik! Uciekaj na inny tor!”, rodzina `dzik`); zdarzenia `boarWarning` / `boarCharge` / `nearMiss`; stado u dołu ekranu jako wskaźnik żyć (im mniej żyć, tym bliżej i większe). Testy: dziki tylko na PRL, strzałka 1 s przed szarżą, autopilot omija dziki, sowa bez ruchu dostaje od dzika.
+7. `render.js`: scenografia z `scenery.js` (mgła, sortowanie po głębokości), rekwizyty z `props.js`, kolor poboczy z planu, dziki i strzałka szarży przy dolnej krawędzi toru, stado u dołu ekranu na PRL.
+8. Zrzuty wszystkich 4 plansz (pion i poziom) w Chromium i ocena czytelności (dekoracje nie mogą wchodzić w korytarz torów); dokumentacja `SowieTory/docs/*` (checklista smaczków: odhaczyć 5.2/5.3), testy, `npm test`, commit „E5b: …”, CI.
+
+Jeżeli pliki E5a nie istnieją w repo (sesja sklonowana przed wypchnięciem E5a) — odtworzyć je według `SowieTory/docs/Documentation.md` albo, gdy i jej brak, według Analizy 2 (rozdz. 3.2) i parametrów z listy wyżej.
+
+### 8.6. Czynności właściciela — stan
+
+| Etap | Stan |
+|---|---|
+| E1 | ✅ reguły opublikowane; do zrobienia przez właściciela: pierwsze wejście na stronę produkcyjną (`huhu`) i sprawdzenie kolekcji `sowiegry` w konsoli |
+| E2, E3 | ✅ zaakceptowane (Fredoka, syntezowane dźwięki, postacie, menu; „Kasuj wszystko co stare i zbędne”) |
+| E4 | ✅ podgląd zaakceptowany wstępnie, podmiana wykonana (E4f) |
+| E5 | czeka: po E5e — test podglądu Sowich Torów na telefonie i zielone światło na podmianę (E5f) |

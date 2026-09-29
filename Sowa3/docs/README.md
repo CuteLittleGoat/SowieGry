@@ -4,6 +4,10 @@
 
 `Sowa3` to trzytorowy runner w perspektywie wgłąb ekranu. Sowa biegnie przez cztery różne plansze, zbiera liście, zdobywa życia i omija przeszkody, aż dotrze do ogródka działkowego z basenem.
 
+> Nowa wersja tej gry — **Sowie Tory** (przesunięcia palcem w cztery strony: tor, skok, ślizg) — jest w podglądzie:
+> w menu głównym na karcie Sowa3 stuknij **„Wypróbuj nową wersję: Sowie Tory”** (instrukcja: `SowieTory/docs/README.md`).
+> Rekordy są wspólne z Sowa3.
+
 ## Sterowanie
 
 - **Swipe w lewo/prawo** — zmiana toru.

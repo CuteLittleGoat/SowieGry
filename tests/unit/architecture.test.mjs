@@ -12,8 +12,9 @@ const legacyGamePages = [
   "SowieOgrody/index.html",
   "SowiaSzklarnia/index.html",
 ];
-// Wszystkie gry z rejestru: Sowia Ucieczka (E4, moduły ES na Sowim Silniku; zastąpiła SowaRunner) i obecne gry.
-const gamePages = ["SowiaUcieczka/index.html", ...legacyGamePages];
+// Wszystkie gry z rejestru: Sowia Ucieczka (E4, moduły ES na Sowim Silniku; zastąpiła SowaRunner), podgląd
+// Sowich Torów (E5, nowa wersja Sowa3) i obecne gry.
+const gamePages = ["SowiaUcieczka/index.html", "SowieTory/index.html", ...legacyGamePages];
 
 test("centralny rejestr zawiera dokładnie pięć gier", async () => {
   const platform = await read("shared/sowie-platform.js");
@@ -44,7 +45,9 @@ test("wszystkie gry ładują platformę; obecne gry — wspólny menedżer powia
     assert.match(await read(path), /shared\/sowie-platform\.js/, `${path} nie ładuje SowiePlatform`);
   }
   // Sowia Ucieczka: komunikaty z shared/ui (toasts.js), moduł ES main.js.
-  assert.match(await read("SowiaUcieczka/index.html"), /<script type="module" src="main\.js"><\/script>/);
+  for (const path of ["SowiaUcieczka/index.html", "SowieTory/index.html"]) {
+    assert.match(await read(path), /<script type="module" src="main\.js"><\/script>/, path);
+  }
   for (const path of legacyGamePages) {
     const html = await read(path);
     assert.match(html, /shared\/notification-manager\.js/, `${path} nie ładuje wspólnych powiadomień`);
@@ -60,7 +63,17 @@ test("runtime nie podmienia metod SowieCore", async () => {
 
 // Wszystkie pliki JavaScript gier, modułów wspólnych (także podkatalogów), Laboratorium i service worker.
 async function projectScripts() {
-  const folders = ["shared", "config", "lab", "SowiaUcieczka", "SowaJumper", "Sowa3", "SowieOgrody", "SowiaSzklarnia"];
+  const folders = [
+    "shared",
+    "config",
+    "lab",
+    "SowiaUcieczka",
+    "SowieTory",
+    "SowaJumper",
+    "Sowa3",
+    "SowieOgrody",
+    "SowiaSzklarnia",
+  ];
   const files = ["sw.js"];
   async function walk(folder) {
     for (const entry of await readdir(folder, { withFileTypes: true })) {
@@ -117,7 +130,7 @@ test("każda strona ładuje config, platformę, SowieCloud i ekran hasła w tej 
       positions,
       `${path}: zła kolejność skryptów`,
     );
-    // Obecne gry: SowieCloud przed SowieCore. Menu i Sowia Ucieczka (bez SowieCore): przed Akademią.
+    // Obecne gry: SowieCloud przed SowieCore. Menu, Sowia Ucieczka i Sowie Tory (bez SowieCore): przed Akademią.
     const later = legacyGamePages.includes(path) ? "shared/sowie-core.js" : "shared/sowie-academy.js";
     assert.ok(positions[3] < html.indexOf(later), `${path}: SowieCloud musi być przed ${later}`);
     if (path === "index.html") assert.ok(html.indexOf("shared/owl-gallery.js") < html.indexOf("shared/menu/menu.js"));

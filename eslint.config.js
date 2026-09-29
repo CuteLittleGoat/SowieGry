@@ -33,6 +33,7 @@ module.exports = [
       "shared/menu/**/*.js",
       "lab/**/*.js",
       "SowiaUcieczka/**/*.js",
+      "SowieTory/**/*.js",
     ],
     languageOptions: {
       sourceType: "module",

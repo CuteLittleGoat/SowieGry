@@ -1,0 +1,561 @@
+// Sowie Tory — strona gry: Sowi Silnik (widok, pętla, gesty, powłoka telefonu), wspólny interfejs (HUD, pauza,
+// wyniki, komunikaty), dźwięk, SowieProgress i zapis w chmurze (SowieCloud.submitRun, identyfikator „sowa3”).
+import { connectAudioSettings, createAudio } from "../shared/engine/audio.js";
+import { bindInput } from "../shared/engine/input.js";
+import { createLoop } from "../shared/engine/loop.js";
+import { createParticles } from "../shared/engine/particles.js";
+import { createShell } from "../shared/engine/shell.js";
+import { createAtlas } from "../shared/engine/sprites.js";
+import { createView } from "../shared/engine/view.js";
+import { guideFor } from "../shared/meta/guides-data.js";
+import { EVENTS, progress } from "../shared/meta/progress.js";
+import { createHud, createPauseMenu, createResults, createToasts, openModal, renderGuide } from "../shared/ui/index.js";
+import { SPRITES, SVG_BASE } from "../shared/world/catalog.js";
+import { createOwlAnimator } from "../shared/world/owl.js";
+import { COLORS } from "../shared/world/tokens.js";
+import { DIFFICULTIES, DIFFICULTY_ORDER, GAME_ID, GAME_SOUNDS, TRACK } from "./config.js";
+import { createRun } from "./game.js";
+import { laneX } from "./projection.js";
+import { createRenderer } from "./render.js";
+import { STAGES } from "./stages.js";
+
+const cloud = window.SowieCloud;
+const params = new URLSearchParams(location.search);
+const AUDIO_BASE = new URL("../assets/audio/", import.meta.url).href;
+const GUIDE_ID = GAME_ID;
+
+const stage = document.querySelector("[data-stage]");
+const canvas = document.querySelector("[data-canvas]");
+const titleNode = document.querySelector("[data-title]");
+const recordNode = document.querySelector("[data-record]");
+const cozyNode = document.querySelector("[data-cozy]");
+const difficultyGroup = document.querySelector("[data-difficulty]");
+
+// Adaptacyjna rozdzielczość płótna jak w Sowiej Ucieczce: najwyżej DPR 2, przy < 50 kl./s przez 3 s — 1,5, potem 1.
+let dprCap = 2;
+const view = createView({
+  canvas,
+  getSize: () => {
+    const rect = stage.getBoundingClientRect();
+    return { width: rect.width, height: rect.height };
+  },
+  getDpr: () => Math.min(window.devicePixelRatio || 1, dprCap),
+});
+const atlas = createAtlas({ catalog: SPRITES, baseUrl: SVG_BASE });
+const renderer = createRenderer({ canvas, view, atlas });
+const particles = createParticles({ max: 200 });
+const animator = createOwlAnimator();
+
+let audio = null;
+let game = null;
+let screen = "title"; // title | playing | results
+let difficulty = "arcade";
+let gameReady = false;
+let hitStop = 0;
+let stageEndTimer = 0;
+let previousCombo = 1;
+let lastFrame = 0;
+const drag = { used: false };
+
+const settings = () => cloud?.profile?.()?.settings || {};
+const cosmetic = () => cloud?.profile?.()?.cosmetics?.selected || "none";
+const motionQuery = window.matchMedia?.("(prefers-reduced-motion: reduce)");
+const reducedMotion = () => Boolean(motionQuery?.matches) || Boolean(settings().reducedEffects);
+const cozyEnabled = () => difficulty === "chill" && Boolean(settings().cozy);
+
+// ---------- Interfejs ----------
+
+const loop = createLoop({ update, render });
+const shell = createShell({
+  stage,
+  loop,
+  overlay: false,
+  onBatterySaver: (on) => particles.setDensity(on ? 0.4 : reducedMotion() ? 0.5 : 1),
+});
+const inGame = () => screen === "playing" && shell.state() === "running";
+const hud = createHud({ root: stage, onPause: () => shell.pause("gracz"), maxLives: DIFFICULTIES.chill.lives });
+hud.hide();
+const toasts = createToasts({ root: stage, isInGame: inGame });
+const pause = createPauseMenu({
+  root: stage,
+  shell,
+  gameId: GUIDE_ID,
+  audio: () => audio,
+  atlas,
+  sprites: SPRITES,
+  onRestart: () => startRun(),
+  onResume: () => toasts.refresh(),
+  onExit: () => location.assign("../"),
+  endAction: { label: "Zakończ bieg", visible: () => Boolean(game?.state.cozy), onClick: () => game?.end("gracz") },
+});
+const results = createResults({ root: stage, onAgain: () => startRun(), onMenu: () => location.assign("../") });
+
+// Pasek planszy: „1/4 · Biedronka” i postęp do mety.
+const progressNode = document.createElement("div");
+progressNode.className = "tory-progress";
+progressNode.hidden = true;
+progressNode.innerHTML =
+  '<span data-stage-name></span><span class="tory-progress-bar" aria-hidden="true"><span></span></span>';
+stage.appendChild(progressNode);
+const progressName = progressNode.querySelector("[data-stage-name]");
+const progressFill = progressNode.querySelector(".tory-progress-bar span");
+let progressShown = "";
+
+function updateProgress(state) {
+  const share = Math.min(1, state.stageDistance / TRACK.stageLength);
+  const key = `${state.stage}|${Math.round(share * 100)}`;
+  if (key === progressShown) return;
+  progressShown = key;
+  progressName.textContent = `${state.stage + 1}/${STAGES.length} · ${STAGES[state.stage].short}`;
+  progressFill.style.transform = `scaleX(${share})`;
+}
+
+// Akademia i Galeria: w trakcie biegu komunikaty czekają na ekran wyników (Analiza 2, rozdz. 4.3).
+let collectingResults = false;
+window.SowieNotifications ||= {
+  toast({ title = "", detail = "", reward = "" } = {}) {
+    const text = [title, detail, reward].filter(Boolean).join(" · ");
+    if (inGame() || collectingResults) toasts.defer(text);
+    else toasts.show(text, { kind: "reward", duration: 3200 });
+  },
+};
+progress.linkProfile({
+  onMission: ({ label, rewardLabel }) =>
+    window.SowieNotifications?.toast?.({ title: "Misja ukończona", detail: label, reward: `Nagroda: ${rewardLabel}` }),
+});
+
+function play(name, options) {
+  try {
+    return audio?.play(name, options) || null;
+  } catch (_error) {
+    return null;
+  }
+}
+
+// ---------- Ekran tytułowy ----------
+
+function selectDifficulty(level, { save = true } = {}) {
+  difficulty = DIFFICULTIES[level] ? level : "arcade";
+  for (const button of difficultyGroup.querySelectorAll("[data-level]")) {
+    button.setAttribute("aria-pressed", String(button.dataset.level === difficulty));
+  }
+  cozyNode.hidden = !cozyEnabled();
+  showRecord();
+  if (save) cloud?.updateGame?.(GAME_ID, { difficulty }, { delayMs: 2000 });
+}
+
+function showRecord() {
+  if (!cloud?.isReady?.()) {
+    recordNode.textContent = "Wczytuję rekordy…";
+    return;
+  }
+  const best = cloud.records(GAME_ID, difficulty);
+  recordNode.textContent = best.bestScore
+    ? `Rekord (${DIFFICULTIES[difficulty].label}): ${Math.floor(best.bestScore).toLocaleString("pl-PL")} pkt`
+    : `Jeszcze bez rekordu na poziomie ${DIFFICULTIES[difficulty].label}.`;
+}
+
+function openGuide(trigger) {
+  openModal({
+    title: `Jak grać — ${guideFor(GUIDE_ID).title}`,
+    content: renderGuide(guideFor(GUIDE_ID), { atlas, sprites: SPRITES }),
+    root: stage,
+    className: "is-guide",
+    actions: [{ label: "Rozumiem", primary: true, onClick: (close) => close() }],
+    onClose: () => trigger?.focus?.({ preventScroll: true }),
+  });
+}
+
+difficultyGroup.addEventListener("click", (event) => {
+  const button = event.target.closest("[data-level]");
+  if (button) selectDifficulty(button.dataset.level);
+});
+titleNode.querySelector("[data-start]").addEventListener("click", () => startRun());
+titleNode.querySelector("[data-guide]").addEventListener("click", (event) => openGuide(event.currentTarget));
+
+// ---------- Bieg ----------
+
+function seedFor() {
+  const seed = params.get("seed");
+  return seed ? `${seed}:${difficulty}` : `${Date.now()}:${Math.random()}`;
+}
+
+function startRun() {
+  // Bieg dopiero po wczytaniu dokumentu gry (top 10) — inaczej zapis nadpisałby top 10.
+  if (!gameReady) return;
+  results.hide();
+  toasts.clear();
+  renderer.clearPopups();
+  particles.clear();
+  game = createRun({ difficulty, seed: seedFor(), cozy: cozyEnabled() });
+  stageEndTimer = 0;
+  previousCombo = 1;
+  screen = "playing";
+  titleNode.hidden = true;
+  hud.show();
+  hud.setScore(0, { animate: false });
+  hud.setLeaves(0);
+  hud.setLives(game.state.lives, game.state.maxLives);
+  hud.setPowerups([]);
+  progressNode.hidden = false;
+  progressShown = "";
+  animator.set("bieg");
+  view.lockScale(true);
+  shell.setActive(true);
+  progress.beginRun(GAME_ID, { difficulty });
+  cloud?.updateGame?.(GAME_ID, { difficulty }, { delayMs: 2000 });
+  toasts.refresh();
+  if (game.state.cozy) toasts.show("Tryb Przytulny — bez końca gry", { kind: "success" });
+  audio?.unduck?.();
+}
+
+function finishRun() {
+  if (screen !== "playing") return;
+  screen = "results";
+  shell.setActive(false);
+  view.lockScale(false);
+  hud.hide();
+  progressNode.hidden = true;
+  const summary = game.summary();
+  const saved = cloud?.submitRun?.(GAME_ID, {
+    score: summary.score,
+    distance: summary.distance,
+    leaves: summary.leaves,
+    difficulty,
+    durationMs: Math.round(game.state.time * 1000),
+  });
+  collectingResults = true;
+  const run = progress.endRun({
+    score: summary.score,
+    distance: summary.distance,
+    finished: summary.finished,
+    bestCombo: summary.bestCombo,
+  });
+  collectingResults = false;
+  const isRecord = Boolean(saved?.newRecord);
+  play(isRecord ? "rekord" : "koniec-gry");
+  animator.set(isRecord || summary.finished ? "radosc" : "oszolomienie");
+  toasts.clear();
+  results.show({
+    title: summary.finished ? "Kampania ukończona!" : "Koniec biegu!",
+    score: summary.score,
+    best: saved?.best?.bestScore ?? summary.score,
+    isRecord,
+    leaves: summary.leaves,
+    rank: saved?.place || 0,
+    tasks: run.tasks || [],
+    extra: [
+      { label: "Plansze", value: `${summary.stages} / ${STAGES.length}` },
+      { label: "Dystans", value: `${summary.distance.toLocaleString("pl-PL")} m` },
+      { label: "Najlepsze combo", value: `×${summary.bestCombo}` },
+      { label: "O włos!", value: String(summary.nearMisses) },
+      { label: "Trafienia", value: String(summary.hits) },
+    ],
+    messages: toasts.takeDeferred(),
+  });
+}
+
+// Zdarzenia biegu → dźwięk, komunikaty, cząsteczki, SowieProgress.
+const point = { x: 0, y: 0, scale: 0 };
+
+function burst(x, y, z, options) {
+  const screenPoint = renderer.toScreen(x, y, z, point);
+  if (!screenPoint) return;
+  const ppm = screenPoint.scale;
+  particles.emit(screenPoint.x, screenPoint.y, {
+    ...options,
+    speed: (options.speed ?? 3) * ppm,
+    radius: (options.radius ?? 0.1) * ppm,
+    fall: 6 * ppm,
+  });
+}
+
+function handleEvents() {
+  for (const event of game.takeEvents()) {
+    const owl = game.state.owl;
+    switch (event.type) {
+      case "jump":
+        play("skok");
+        break;
+      case "slide":
+        play("slizg");
+        burst(owl.x, 0.1, 0.3, { count: 5, speed: 1.5, tint: COLORS.kozaCien, radius: 0.07 });
+        break;
+      case "land":
+        animator.land(0.6);
+        break;
+      case "leaf": {
+        play(event.kind === "zloty" ? "lisc-zloty" : "lisc", {
+          pitch: event.kind === "zielony" ? 1 + (game.state.streak % 10) * 0.04 : 1,
+        });
+        burst(laneX(event.lane), 0.7, 0, {
+          count: event.kind === "zielony" ? 4 : 10,
+          speed: 2.2,
+          tint: event.kind === "zloty" ? COLORS.zloto : COLORS.monsteraJasna,
+          radius: 0.08,
+        });
+        if (event.kind !== "zielony" || event.combo > 1) {
+          const at = renderer.toScreen(laneX(event.lane), 1.6, 0, point);
+          if (at) renderer.popup(`+${event.points}`, at.x, at.y, event.kind === "zloty" ? COLORS.zloto : COLORS.bialy);
+        }
+        progress.emit(EVENTS.LEAF, { kind: event.kind, count: event.count, points: event.points });
+        if (event.combo > previousCombo) {
+          toasts.show(`Combo ×${event.combo}!`, { kind: "reward", key: "combo" });
+          progress.emit(EVENTS.COMBO, { value: event.combo });
+        }
+        previousCombo = event.combo;
+        break;
+      }
+      case "hit":
+        hitStop = 0.06;
+        previousCombo = game.state.combo;
+        play(event.family === "pracu" ? "trafienie-pracu" : "trafienie-amic");
+        audio?.vibrate?.(30);
+        burst(owl.x, 1, 0, { count: 10, speed: 3, tint: COLORS.zloto, radius: 0.09 });
+        toasts.show(event.label, { kind: "warn", key: "hit" });
+        progress.emit(EVENTS.HIT, { by: event.family, variant: event.kind });
+        break;
+      case "nearMiss": {
+        play("polaczenie", { volume: 0.7 });
+        const at = renderer.toScreen(owl.x, 2.2, 0, point);
+        if (at) renderer.popup(`O włos! +${event.bonus}`, at.x, at.y, COLORS.zloto, 24);
+        progress.emit(EVENTS.NEAR_MISS, { by: event.family });
+        break;
+      }
+      case "warning":
+        play("dzwonek", { volume: 0.7 });
+        break;
+      case "stage":
+        if (event.stage > 0 || screen === "playing") {
+          toasts.show(`Plansza ${event.stage + 1}: ${STAGES[event.stage].name}`, {
+            kind: "success",
+            key: `stage-${event.stage}`,
+          });
+        }
+        break;
+      case "stageEnd":
+        play("zycie");
+        toasts.show(event.last ? "Meta kampanii!" : `Meta: ogród działkowy z basenem! +${event.bonus}`, {
+          kind: "reward",
+          key: `meta-${event.stage}`,
+          priority: 2,
+        });
+        // Finał z basenem i przemianą w humbaka — kolejny krok etapu E5; na razie krótka przerwa.
+        stageEndTimer = 1.4;
+        break;
+      case "over":
+        finishRun();
+        break;
+      default:
+        break;
+    }
+  }
+}
+
+// ---------- Pętla ----------
+
+function update(step) {
+  if (screen === "playing" && game) {
+    if (hitStop > 0) hitStop -= step;
+    else if (shell.state() === "running") {
+      if (game.state.phase === "stageEnd") {
+        stageEndTimer -= step;
+        if (stageEndTimer <= 0) game.nextStage();
+      } else game.update(step);
+      handleEvents();
+    }
+    const owl = game.state.owl;
+    if (game.state.phase === "stageEnd") animator.set("radosc");
+    else if (!owl.grounded) animator.set("skok");
+    else animator.set("bieg");
+    animator.update(step, { vy: -owl.vy });
+  } else {
+    if (screen === "title") animator.set("stoi");
+    animator.update(step);
+  }
+  particles.update(step);
+}
+
+// Tryb diagnostyczny (?debug=1).
+const DEBUG = params.get("debug") === "1";
+const debugNode = DEBUG ? document.createElement("pre") : null;
+if (debugNode) {
+  debugNode.className = "tory-debug";
+  debugNode.setAttribute("aria-hidden", "true");
+  stage.appendChild(debugNode);
+}
+let debugTime = 0;
+let debugFrames = 0;
+let perfTime = 0;
+let perfFrames = 0;
+
+function adaptResolution(dt) {
+  if (screen !== "playing" || shell.state() !== "running" || dt <= 0) {
+    perfTime = 0;
+    perfFrames = 0;
+    return;
+  }
+  perfTime += dt;
+  perfFrames += 1;
+  if (perfTime < 3) return;
+  const fps = perfFrames / perfTime;
+  perfTime = 0;
+  perfFrames = 0;
+  if (fps >= 50 || Math.min(window.devicePixelRatio || 1, dprCap) <= 1) return;
+  dprCap = dprCap > 1.5 ? 1.5 : 1;
+  view.resize();
+}
+
+function updateDebug(dt) {
+  if (!debugNode || !game) return;
+  debugFrames += 1;
+  debugTime += dt;
+  if (debugTime < 0.25) return;
+  const fps = debugFrames / debugTime;
+  debugFrames = 0;
+  debugTime = 0;
+  const state = game.state;
+  debugNode.textContent = [
+    `kl./s ${fps.toFixed(0)} · DPR ${view.layout().pixelRatio} · ${screen}`,
+    `v ${state.speed.toFixed(1)} m/s · plansza ${state.stage + 1} · ${Math.floor(state.stageDistance)} m`,
+    `wzór ${state.patterns.at(-1) ?? "—"}`,
+    `tor ${state.owl.lane} · przeszkody ${state.obstacles.length} · liście ${state.leaves.length}`,
+    `combo ×${state.combo} · życia ${state.lives}`,
+  ].join("\n");
+}
+
+function render() {
+  const now = performance.now();
+  const dt = lastFrame ? Math.min(0.1, (now - lastFrame) / 1000) : 0;
+  lastFrame = now;
+  if (!game) return;
+  adaptResolution(dt);
+  updateDebug(dt);
+  renderer.draw({ state: game.state, animator, cosmetic: cosmetic(), particles, dt });
+  if (screen === "playing") {
+    const state = game.state;
+    hud.setScore(state.score);
+    hud.setLeaves(state.leafCount);
+    hud.setLives(state.lives, state.maxLives);
+    updateProgress(state);
+  }
+}
+
+// ---------- Gesty ----------
+
+// Przesunięcie palcem: ←/→ tor, ↑ skok, ↓ ślizg. Wolniejsze przesunięcie (przeciąganie) też działa — raz na dotyk.
+// Stuknięcie: lewa i prawa część ekranu zmieniają tor, środek — skok. Martwe strefy przy krawędziach (gest „cofnij”).
+function steer(direction) {
+  game.input(direction);
+}
+
+bindInput(stage, (gesture) => {
+  if (screen !== "playing" || !game) {
+    if (screen === "title" && gesture.type === "press" && gesture.source === "keyboard") startRun();
+    return;
+  }
+  if (gesture.type === "pause" || gesture.type === "menu") {
+    shell.pause("gracz");
+    return;
+  }
+  if (shell.state() !== "running" || game.state.phase !== "run") return;
+  if (gesture.type === "press" && gesture.source === "keyboard") steer("up");
+  else if (gesture.type === "swipe") {
+    drag.used = true;
+    steer(gesture.direction);
+  } else if (gesture.type === "dragstart") drag.used = false;
+  else if (gesture.type === "drag" && !drag.used && Math.hypot(gesture.dx, gesture.dy) >= 36) {
+    drag.used = true;
+    steer(
+      Math.abs(gesture.dx) >= Math.abs(gesture.dy)
+        ? gesture.dx > 0
+          ? "right"
+          : "left"
+        : gesture.dy > 0
+          ? "down"
+          : "up",
+    );
+  } else if (gesture.type === "tap") {
+    const width = stage.getBoundingClientRect().width;
+    steer(gesture.x < width * 0.33 ? "left" : gesture.x > width * 0.67 ? "right" : "up");
+  }
+});
+
+// ---------- Start strony ----------
+
+function resize() {
+  view.resize();
+}
+window.addEventListener("resize", resize);
+window.visualViewport?.addEventListener?.("resize", resize);
+
+// Scena na ekranie tytułowym: sowa na pustej alejce sklepu (bieg jeszcze nie ruszył).
+game = createRun({ difficulty, seed: "tytul" });
+resize();
+loop.start();
+
+atlas
+  .ensure(
+    Math.min(220, renderer.layout().focal / renderer.layout().cameraBack) * Math.min(2, window.devicePixelRatio || 1),
+  )
+  .catch((error) => console.warn("SowieTory: grafiki", error));
+
+fetch(new URL("audio.json", AUDIO_BASE))
+  .then((response) => (response.ok ? response.json() : Promise.reject(new Error(`audio.json: ${response.status}`))))
+  .then((manifest) => {
+    audio = createAudio({ manifest, baseUrl: AUDIO_BASE, preloadOnUnlock: GAME_SOUNDS });
+    connectAudioSettings(audio, cloud);
+    audio.bindUnlock(window, { ignore: (event) => Boolean(event.target?.closest?.("a[href]")) });
+  })
+  .catch((error) => console.warn("SowieTory: bez dźwięku", error));
+
+shell.onChange?.((change) => {
+  if (change.state === "countdown") play(change.count > 1 ? "odliczanie" : "odliczanie-start");
+  if (change.state === "paused") audio?.duck?.(0.3);
+  else if (change.state === "running") audio?.unduck?.();
+});
+
+showRecord();
+cloud?.ready
+  ?.then(() => cloud.loadGame(GAME_ID))
+  .then(() => {
+    gameReady = true;
+    const saved = cloud.game(GAME_ID)?.difficulty;
+    selectDifficulty(DIFFICULTY_ORDER.includes(saved) ? saved : difficulty, { save: false });
+    document.documentElement.classList.toggle("sowie-reduced-effects", Boolean(settings().reducedEffects));
+    particles.setDensity(shell.batterySaver() ? 0.4 : reducedMotion() ? 0.5 : 1);
+    progress.emit(EVENTS.VISIT, { gameId: GAME_ID });
+  })
+  .catch((error) => console.warn("SowieTory: chmura", error));
+
+// Dostęp dla testów e2e.
+window.SowieTory = Object.freeze({
+  screen: () => screen,
+  ready: () => gameReady,
+  atlasReady: () => atlas.ready(),
+  state: () =>
+    game
+      ? {
+          ...game.summary(),
+          phase: game.state.phase,
+          speed: game.state.speed,
+          lives: game.state.lives,
+          stageDistance: game.state.stageDistance,
+          owl: { ...game.state.owl },
+        }
+      : null,
+  start: (level) => {
+    if (level) selectDifficulty(level, { save: false });
+    startRun();
+  },
+  end: () => game?.end("gracz"),
+  warp: (meters) => game?.warp(meters),
+  obstacles: () =>
+    game
+      ? game.state.obstacles.map((item) => ({
+          kind: item.kind,
+          lane: item.lane,
+          z: item.at - game.state.stageDistance,
+        }))
+      : [],
+});

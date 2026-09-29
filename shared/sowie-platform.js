@@ -18,7 +18,16 @@
       rebuilt: true,
     },
     { id: "jumper", name: "SowaJumper", path: "SowaJumper/", icon: "🪶", kind: "arcade", dailyMetric: "height" },
-    { id: "sowa3", name: "Sowa3", path: "Sowa3/", icon: "🛣️", kind: "arcade", dailyMetric: "score" },
+    {
+      id: "sowa3",
+      name: "Sowa3",
+      path: "Sowa3/",
+      icon: "🛣️",
+      kind: "arcade",
+      dailyMetric: "score",
+      // Nowa wersja w podglądzie (E5): ten sam identyfikator i te same rekordy.
+      preview: Object.freeze({ path: "SowieTory/", name: "Sowie Tory" }),
+    },
     { id: "ogrody", name: "Sowie Ogrody", path: "SowieOgrody/", icon: "🌿", kind: "idle", saveVersion: 2 },
     { id: "szklarnia", name: "Sowia Szklarnia", path: "SowiaSzklarnia/", icon: "🏡", kind: "idle", saveVersion: 1 },
   ]);
