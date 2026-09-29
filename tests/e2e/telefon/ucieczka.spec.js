@@ -280,6 +280,10 @@ async function swipeDown(page, x, y) {
 test("samouczek pierwszego biegu: gra czeka na pokazany ruch, 4 kroki bez trafień, potem zapis w dokumencie gry (emulator)", async ({
   page,
 }, testInfo) => {
+  // Długi scenariusz (4 kroki biegu): w WebKit w CI trwa dłużej niż domyślne 30 s, a między krokami gra biegnie
+  // kilka sekund — dlatego dłuższy limit testu i czekania na kolejną podpowiedź.
+  test.setTimeout(90_000);
+  const step = { timeout: 15_000 };
   const project = uniqueProject(testInfo);
   const errors = watchErrors(page);
   await openGame(page, cloudUrl("/SowiaUcieczka/", project));
@@ -290,33 +294,33 @@ test("samouczek pierwszego biegu: gra czeka na pokazany ruch, 4 kroki bez trafie
   const cy = box.y + box.height / 2;
 
   // 1. Skok: gra stoi, dopóki gracz nie stuknie.
-  await expect(prompt).toContainText("Stuknij ekran — skok nad telefonem!");
+  await expect(prompt).toContainText("Stuknij ekran — skok nad telefonem!", step);
   await expect(prompt).toContainText("krok 1 z 4");
   await expect(prompt.locator(".sowie-gesture-demo")).toHaveAttribute("data-gesture", "tap");
   const frozen = (await state(page)).distance;
   await page.waitForTimeout(400);
   expect((await state(page)).distance).toBe(frozen);
   await page.mouse.click(cx, cy);
-  await expect(prompt).toBeHidden();
+  await expect(prompt).toBeHidden(step);
 
   // 2. Ślizg: stuknięcie nie wznawia gry, przesunięcie w dół — tak.
-  await expect(prompt).toContainText("Przesuń palcem w dół");
+  await expect(prompt).toContainText("Przesuń palcem w dół", step);
   await expect(prompt.locator(".sowie-gesture-demo")).toHaveAttribute("data-gesture", "swipe-down");
   await page.mouse.click(cx, cy);
   await page.waitForTimeout(200);
   await expect(prompt).toBeVisible();
   await swipeDown(page, cx, cy - 60);
-  await expect(prompt).toBeHidden();
+  await expect(prompt).toBeHidden(step);
 
   // 3. Podwójny skok na wysoką platformę.
-  await expect(prompt).toContainText("Liście na wysokiej platformie");
+  await expect(prompt).toContainText("Liście na wysokiej platformie", step);
   await page.mouse.click(cx, cy);
-  await expect(prompt).toContainText("podwójny skok");
+  await expect(prompt).toContainText("podwójny skok", step);
   await page.mouse.click(cx, cy);
-  await expect(prompt).toBeHidden();
+  await expect(prompt).toBeHidden(step);
 
   // 4. Szybowanie: palec trzymany do lądowania za dziurą.
-  await expect(prompt).toContainText("szybowanie");
+  await expect(prompt).toContainText("szybowanie", step);
   await expect(prompt.locator(".sowie-gesture-demo")).toHaveAttribute("data-gesture", "hold");
   await page.mouse.move(cx, cy);
   await page.mouse.down();
@@ -326,7 +330,7 @@ test("samouczek pierwszego biegu: gra czeka na pokazany ruch, 4 kroki bez trafie
 
   await expect(
     page.locator(".sowie-toast-chip", { hasText: "Świetnie! Teraz uciekaj przed Chmurą Pracu!" }),
-  ).toBeVisible();
+  ).toBeVisible(step);
   expect(await page.evaluate(() => window.SowiaUcieczka.tutorial())).toBeNull();
   expect((await state(page)).hits).toBe(0);
   await page.evaluate(() => window.SowieCloud.flush());
