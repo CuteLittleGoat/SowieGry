@@ -3,12 +3,12 @@
 // strona (dźwięk, komunikaty, cząsteczki, SowieProgress). Położenia przeszkód i liści: `at` — metry od początku
 // planszy; głębokość przed sową z = at − stageDistance.
 import { createRng } from "../shared/engine/rng.js";
-import { COZY_SPEED, DIFFICULTIES, LEAVES, MOVING, OWL, PROJECTION, SCORE, TRACK } from "./config.js";
+import { BOARS, COZY_SPEED, DIFFICULTIES, LEAVES, MOVING, OWL, PROJECTION, SCORE, TRACK } from "./config.js";
 import { OBSTACLES, collides, obstacleShape, obstacleX } from "./obstacles.js";
 import { createTrack, gapAfter, PATTERNS } from "./patterns.js";
 import { createOwlBody, stepOwl } from "./physics.js";
 import { laneX } from "./projection.js";
-import { STAGE_COUNT } from "./stages.js";
+import { STAGES, STAGE_COUNT, stageKind } from "./stages.js";
 
 // Prędkość (m/s) na planszy `stage` przy postępie `progress` (0–1): łagodny wzrost, każda plansza szybsza.
 export function speedAt(progress, difficulty = "arcade", stage = 0, cozy = false) {
@@ -45,6 +45,9 @@ export function createRun({
   const controls = { left: false, right: false, up: false, down: false };
   let track = createTrack({ random: rng, patterns, intro });
   let lastLaneChange = -Infinity;
+  const boars = [];
+  const chaseOn = (stage) => Boolean(STAGES[stage % STAGE_COUNT].chase);
+  const firstBoar = (stage) => (chaseOn(stage) ? BOARS.first + rng() * 30 : Infinity);
 
   const state = {
     difficulty: level,
@@ -77,6 +80,10 @@ export function createRun({
     owl,
     obstacles,
     leaves,
+    // Pościg dzików (plansza PRL): szarżujące dziki (z — względem sowy) i dystans następnej szarży.
+    boars,
+    nextBoarAt: firstBoar(startStage),
+    boarsDodged: 0,
     endReason: null,
   };
 
@@ -88,7 +95,8 @@ export function createRun({
     for (const item of chosen.items) {
       if (item.type === "obstacle") {
         obstacles.push({
-          kind: item.kind,
+          // Skórka planszy: np. wózek → wózek sklepowy w Biedronce, samochód na stacji Amic.
+          kind: stageKind(state.stage, item.kind),
           lane: item.lane,
           at: start + item.z,
           moveTo: item.moveTo,
@@ -110,7 +118,7 @@ export function createRun({
     const limit = TRACK.stageLength - TRACK.finishClear;
     while (state.trackEnd < state.stageDistance + PROJECTION.farZ + 10) {
       const start = state.trackEnd;
-      const chosen = track.choose(state.stage * TRACK.stageLength + start);
+      const chosen = track.choose(state.stage * TRACK.stageLength + start, STAGES[state.stage % STAGE_COUNT].id);
       if (start + chosen.length > limit) {
         state.trackEnd = Infinity;
         break;
@@ -130,7 +138,8 @@ export function createRun({
       state.bonusPoints;
   }
 
-  function hit(item) {
+  // Trafienie przeszkodą (`item` z listy) albo dzikiem (`info` z etykietą).
+  function hit(item, info = OBSTACLES[item.kind]) {
     item.hit = true;
     if (state.safe) {
       emit("safeHit", { kind: item.kind });
@@ -144,7 +153,6 @@ export function createRun({
     state.combo = comboLevel(state.streak);
     state.lives -= 1;
     if (state.cozy) state.lives = Math.max(1, state.lives);
-    const info = OBSTACLES[item.kind];
     emit("hit", { kind: item.kind, family: info.family, label: info.label, lives: state.lives });
     if (state.lives <= 0) end("trafienia");
   }
@@ -207,6 +215,59 @@ export function createRun({
       }
       if (state.invulnerable > 0) continue;
       if (collides(owl, item, z)) hit(item);
+    }
+  }
+
+  // Czy obok toru `lane` (sąsiedni tor — ucieczka bez przebiegania przez trzeci tor) nie ma pełnych przeszkód
+  // od sowy do `ahead` m przed nią (ucieczka przed dzikiem)?
+  function escapeLane(lane, ahead) {
+    return [-1, 0, 1].some((other) => {
+      if (Math.abs(other - lane) !== 1) return false;
+      return !obstacles.some((item) => {
+        const z = item.at - state.stageDistance;
+        const shape = obstacleShape(item.kind);
+        if (shape.type !== "full" || z > ahead || z + shape.depth < -1) return false;
+        return item.lane === other || item.moveTo === other;
+      });
+    });
+  }
+
+  // Pościg dzików: szarża w torze sowy (strzałka 1 s wcześniej), tylko gdy jest wolny tor ucieczki.
+  function updateBoars(dt) {
+    if (
+      !boars.length &&
+      state.stageDistance >= state.nextBoarAt &&
+      state.stageDistance < TRACK.stageLength - BOARS.lastClear
+    ) {
+      if (escapeLane(owl.lane, state.speed * BOARS.fairLook)) {
+        boars.push({ lane: owl.lane, z: BOARS.start, time: 0, phase: "warning", hit: false, passed: false });
+        emit("boarWarning", { lane: owl.lane });
+      } else state.nextBoarAt = state.stageDistance + BOARS.retry;
+    }
+    for (let index = boars.length - 1; index >= 0; index -= 1) {
+      const boar = boars[index];
+      boar.time += dt;
+      if (boar.phase === "warning") {
+        if (boar.time < BOARS.warning) continue;
+        boar.phase = "charge";
+        emit("boarCharge", { lane: boar.lane });
+      }
+      boar.z += BOARS.speed * dt;
+      const near = Math.abs(boar.z) < OWL.halfDepth + 0.4;
+      const sameLane = Math.abs(owl.x - laneX(boar.lane)) < OWL.halfWidth + BOARS.halfWidth;
+      if (!boar.hit && !boar.passed && near && sameLane && state.invulnerable <= 0) {
+        hit(boar, { family: "dzik", label: "Dzik! Uciekaj na inny tor!" });
+      }
+      if (!boar.hit && !boar.passed && boar.z > OWL.halfDepth + 0.4) {
+        boar.passed = true;
+        state.boarsDodged += 1;
+        state.bonusPoints += BOARS.bonus;
+        emit("boarDodge", { lane: boar.lane, bonus: BOARS.bonus });
+      }
+      if (boar.z > PROJECTION.farZ * 0.6) {
+        boars.splice(index, 1);
+        state.nextBoarAt = state.stageDistance + BOARS.every[0] + rng() * (BOARS.every[1] - BOARS.every[0]);
+      }
     }
   }
 
@@ -274,6 +335,7 @@ export function createRun({
       spawn();
       updateMovers(dt);
       checkObstacles();
+      if (state.phase === "run" && chaseOn(state.stage)) updateBoars(dt);
       if (state.phase !== "run") return;
       checkLeaves();
       cleanup();
@@ -295,6 +357,8 @@ export function createRun({
       state.trackEnd = TRACK.startClear;
       obstacles.length = 0;
       leaves.length = 0;
+      boars.length = 0;
+      state.nextBoarAt = firstBoar(state.stage);
       Object.assign(owl, createOwlBody(owl.lane));
       state.invulnerable = 1;
       state.phase = "run";
@@ -309,9 +373,11 @@ export function createRun({
     warp(meters) {
       obstacles.length = 0;
       leaves.length = 0;
+      boars.length = 0;
       state.stageDistance = Math.min(TRACK.stageLength - 1, state.stageDistance + meters);
       state.distance += meters;
       state.trackEnd = state.stageDistance + 10;
+      if (chaseOn(state.stage)) state.nextBoarAt = Math.max(state.nextBoarAt, state.stageDistance + 20);
       track = createTrack({ random: rng, patterns });
     },
     takeEvents() {
@@ -325,6 +391,7 @@ export function createRun({
         bestCombo: state.bestCombo,
         hits: state.hits,
         nearMisses: state.nearMisses,
+        boarsDodged: state.boarsDodged,
         stages: state.stagesDone,
         stage: state.stage,
         finished: state.endReason === "kampania",

@@ -68,6 +68,23 @@ export const OBSTACLE_TYPES = Object.freeze({
 // i kończy się co najmniej 0,6 s przed dotarciem do sowy.
 export const MOVING = Object.freeze({ warning: 0.8, switchTime: 0.35, lead: 0.6 });
 
+// Pościg dzików (tylko plansza PRL, Analiza 2, rozdz. 3.2): pierwszy dzik po ok. 140 m, potem co 110–170 m
+// jeden dzik wyrywa się ze stada i szarżuje torem sowy — strzałka przy dolnej krawędzi toru 1 s wcześniej.
+// Dzik biegnie o `speed` m/s szybciej niż sowa (od `start` m za nią); trzeba zmienić tor. `fairLook` — ile
+// sekund przed sowę sprawdzamy, czy jest wolny tor ucieczki (inaczej szarża czeka `retry` m).
+export const BOARS = Object.freeze({
+  first: 140,
+  every: Object.freeze([110, 170]),
+  warning: 1,
+  speed: 9,
+  start: -3.5,
+  halfWidth: 0.5,
+  lastClear: 150,
+  fairLook: 2.4,
+  retry: 15,
+  bonus: 30,
+});
+
 // Punktacja: liść 10 pkt × combo (×1–×5), combo rośnie co 8 liści bez trafienia, trafienie obniża o 1 poziom.
 export const SCORE = Object.freeze({
   leaf: 10,

@@ -161,7 +161,11 @@ export function bindInput(element, onGesture, options = {}) {
     if (event.target?.closest?.(INTERACTIVE)) return;
     const point = local(event);
     if (recognizer.down(event.pointerId, point.x, point.y, now())) {
-      element.setPointerCapture?.(event.pointerId);
+      try {
+        element.setPointerCapture?.(event.pointerId);
+      } catch (_error) {
+        // Wskaźnik już nieaktywny albo zdarzenie syntetyczne (testy) — gest działa i bez przechwycenia.
+      }
       event.preventDefault();
     }
   };

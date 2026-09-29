@@ -62,11 +62,13 @@ function parseRow(z, obstacles, leaves = "...") {
   return items;
 }
 
-const pattern = (id, tier, length, tags, rows) => ({
+// `stages` — wzór tylko na wybranych planszach (identyfikatory ze stages.js); bez — na każdej.
+const pattern = (id, tier, length, tags, rows, stages = null) => ({
   id,
   tier,
   length,
   tags,
+  stages,
   items: rows.flatMap(([z, obstacles, leaves]) => parseRow(z, obstacles, leaves)),
 });
 
@@ -100,6 +102,42 @@ export const PATTERNS = Object.freeze([
   pattern("t1-dymki", 1, 20, ["pracu", "high"], [[9, "dd.", "__o"]]),
   pattern("t1-budziki", 1, 18, ["pracu", "low"], [[9, "b.b", "^o^"]]),
   pattern("t1-cysterna", 1, 24, ["amic", "full", "long"], [[8, ".C.", "o.o"]]),
+  pattern(
+    "t1-zygzak",
+    1,
+    26,
+    ["pracu", "full"],
+    [
+      [6, ".p.", "o.o"],
+      [16, "p.m", ".o."],
+    ],
+  ),
+  // Plansze: kasy w Biedronce (wózki po bokach, dymek nad kasą), katalogi na festiwalu, podwórko na PRL,
+  // podjazd na stacji Amic (samochody są dłuższe niż wózki).
+  pattern(
+    "b1-kasy",
+    1,
+    26,
+    ["amic", "pracu"],
+    [
+      [8, "W.W", ".o."],
+      [18, ".d.", "._."],
+    ],
+    ["biedronka"],
+  ),
+  pattern("f1-katalogi", 1, 18, ["pracu", "low"], [[9, "ttt", "^^^"]], ["festiwal"]),
+  pattern(
+    "p1-podworko",
+    1,
+    30,
+    ["amic", "long"],
+    [
+      [8, "B.B", ".o."],
+      [18, ".C.", "o.o"],
+    ],
+    ["prl"],
+  ),
+  pattern("a1-podjazd", 1, 22, ["amic", "long"], [[8, "W.W", ".o."]], ["amic"]),
 
   // Próg 2 — pełne rzędy do skoku albo ślizgu, ruchomy telefon.
   pattern("t2-barierki", 2, 18, ["amic", "low"], [[9, "BBB", ".^."]]),
@@ -124,6 +162,60 @@ export const PATTERNS = Object.freeze([
       [8, "p.t", "..^"],
       [16, ".d.", "._."],
     ],
+  ),
+  pattern(
+    "t2-skok-i-slizg",
+    2,
+    30,
+    ["mix"],
+    [
+      [8, ".t.", ".^."],
+      [20, ".d.", "._."],
+    ],
+  ),
+  pattern(
+    "b2-promocje",
+    2,
+    26,
+    ["amic", "mix"],
+    [
+      [8, "Z.K", "_o^"],
+      [18, ".K.", ".^."],
+    ],
+    ["biedronka"],
+  ),
+  pattern(
+    "f2-stoiska",
+    2,
+    28,
+    ["amic", "full"],
+    [
+      [8, "D.D", ".o."],
+      [18, "K.K", "^o^"],
+    ],
+    ["festiwal"],
+  ),
+  pattern(
+    "p2-trzepak",
+    2,
+    28,
+    ["mix"],
+    [
+      [8, "BB.", "^^o"],
+      [18, ".m.", "o.o"],
+    ],
+    ["prl"],
+  ),
+  pattern(
+    "a2-dystrybutory",
+    2,
+    26,
+    ["amic", "mix"],
+    [
+      [8, "D.D", ".o."],
+      [16, ".Z.", "._."],
+    ],
+    ["amic"],
   ),
 
   // Próg 3 — kombinacje: tor trzeba wybrać wcześniej, a potem jeszcze skoczyć albo się ślizgnąć.
@@ -157,6 +249,17 @@ export const PATTERNS = Object.freeze([
       [24, ">..", "..o"],
     ],
   ),
+  pattern(
+    "a3-stacja",
+    3,
+    30,
+    ["amic", "mix"],
+    [
+      [8, "WD.", "..o"],
+      [20, ".KZ", ".^_"],
+    ],
+    ["amic"],
+  ),
 ]);
 
 export const PATTERN_BY_ID = Object.freeze(Object.fromEntries(PATTERNS.map((item) => [item.id, item])));
@@ -175,28 +278,33 @@ export function gapAfter(speed, difficulty = "arcade") {
   return TRACK.gap * (speed / TRACK.gapSpeed) * config.gap;
 }
 
+// Czy wzór może wystąpić na danej planszy (identyfikator ze stages.js; brak — każda plansza).
+export const allowedOn = (item, stageId) => !stageId || !item.stages || item.stages.includes(stageId);
+
 /**
  * Generator trasy: wzór z bieżącego progu (60%) albo niższego (40%), bez powtórzenia ostatnich dwóch;
- * co 4. wzór to oddech. `intro` — wzory na początek (samouczek).
+ * co 4. wzór to oddech; tylko wzory dozwolone na bieżącej planszy. `intro` — wzory na początek (samouczek).
  */
 export function createTrack({ random, patterns = PATTERNS, intro = [] }) {
   const recent = [];
   const queue = intro.map((id) => PATTERN_BY_ID[id] || patterns.find((item) => item.id === id)).filter(Boolean);
   let count = 0;
   return {
-    choose(distance) {
+    choose(distance, stageId = null) {
       if (queue.length) return queue.shift();
       count += 1;
       const tier = tierAt(distance);
       const wantBreather = count % 4 === 0;
       const sameTier = random() < 0.6;
       const pool = patterns.filter((item) => {
-        if (recent.includes(item.id)) return false;
+        if (recent.includes(item.id) || !allowedOn(item, stageId)) return false;
         if (wantBreather) return item.tags.includes("breather");
         if (item.tags.includes("breather")) return false;
         return sameTier ? item.tier === tier : item.tier <= tier;
       });
-      const fallback = patterns.filter((item) => item.tier <= tier && !recent.includes(item.id));
+      const fallback = patterns.filter(
+        (item) => item.tier <= tier && !recent.includes(item.id) && allowedOn(item, stageId),
+      );
       const list = pool.length ? pool : fallback.length ? fallback : patterns;
       const chosen = list[Math.floor(random() * list.length) % list.length];
       recent.push(chosen.id);

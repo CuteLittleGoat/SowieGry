@@ -23,6 +23,8 @@ const cloud = window.SowieCloud;
 const params = new URLSearchParams(location.search);
 const AUDIO_BASE = new URL("../assets/audio/", import.meta.url).href;
 const GUIDE_ID = GAME_ID;
+// Diagnostyka i zrzuty: ?plansza=1…4 zaczyna bieg od wybranej planszy kampanii.
+const START_STAGE = Math.min(STAGES.length - 1, Math.max(0, (Number.parseInt(params.get("plansza"), 10) || 1) - 1));
 
 const stage = document.querySelector("[data-stage]");
 const canvas = document.querySelector("[data-canvas]");
@@ -55,6 +57,7 @@ let hitStop = 0;
 let stageEndTimer = 0;
 let previousCombo = 1;
 let lastFrame = 0;
+let boarHint = false;
 const drag = { used: false };
 
 const settings = () => cloud?.profile?.()?.settings || {};
@@ -187,9 +190,10 @@ function startRun() {
   toasts.clear();
   renderer.clearPopups();
   particles.clear();
-  game = createRun({ difficulty, seed: seedFor(), cozy: cozyEnabled() });
+  game = createRun({ difficulty, seed: seedFor(), cozy: cozyEnabled(), startStage: START_STAGE });
   stageEndTimer = 0;
   previousCombo = 1;
+  boarHint = false;
   screen = "playing";
   titleNode.hidden = true;
   hud.show();
@@ -249,6 +253,7 @@ function finishRun() {
       { label: "Dystans", value: `${summary.distance.toLocaleString("pl-PL")} m` },
       { label: "Najlepsze combo", value: `×${summary.bestCombo}` },
       { label: "O włos!", value: String(summary.nearMisses) },
+      { label: "Uniki przed dzikami", value: String(summary.boarsDodged) },
       { label: "Trafienia", value: String(summary.hits) },
     ],
     messages: toasts.takeDeferred(),
@@ -309,7 +314,9 @@ function handleEvents() {
       case "hit":
         hitStop = 0.06;
         previousCombo = game.state.combo;
-        play(event.family === "pracu" ? "trafienie-pracu" : "trafienie-amic");
+        play(event.family === "pracu" ? "trafienie-pracu" : "trafienie-amic", {
+          pitch: event.family === "dzik" ? 0.75 : 1,
+        });
         audio?.vibrate?.(30);
         burst(owl.x, 1, 0, { count: 10, speed: 3, tint: COLORS.zloto, radius: 0.09 });
         toasts.show(event.label, { kind: "warn", key: "hit" });
@@ -325,6 +332,23 @@ function handleEvents() {
       case "warning":
         play("dzwonek", { volume: 0.7 });
         break;
+      // Pościg dzików (PRL): strzałka przy dolnej krawędzi toru, szarża, unik.
+      case "boarWarning":
+        play("dzwonek", { volume: 0.8, pitch: 0.6 });
+        if (!boarHint) {
+          boarHint = true;
+          toasts.show("Dzik szarżuje! Gdy miga strzałka, zmień tor.", { kind: "warn", key: "dzik", priority: 2 });
+        }
+        break;
+      case "boarCharge":
+        play("ladowanie", { volume: 0.8, pitch: 0.7 });
+        break;
+      case "boarDodge": {
+        play("polaczenie", { volume: 0.7, pitch: 0.9 });
+        const at = renderer.toScreen(owl.x, 2.2, 0, point);
+        if (at) renderer.popup(`Unik przed dzikiem! +${event.bonus}`, at.x, at.y, COLORS.zloto, 22);
+        break;
+      }
       case "stage":
         if (event.stage > 0 || screen === "playing") {
           toasts.show(`Plansza ${event.stage + 1}: ${STAGES[event.stage].name}`, {
@@ -541,6 +565,8 @@ window.SowieTory = Object.freeze({
           speed: game.state.speed,
           lives: game.state.lives,
           stageDistance: game.state.stageDistance,
+          stageIndex: game.state.stage,
+          boars: game.state.boars.map((item) => ({ lane: item.lane, phase: item.phase, z: item.z })),
           owl: { ...game.state.owl },
         }
       : null,

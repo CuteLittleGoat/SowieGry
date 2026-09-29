@@ -106,6 +106,36 @@ async function setVisibility(page, state) {
   }, state);
 }
 
+// Przesunięcie palcem od `from` do `to` (px w oknie): zdarzenia wskaźnika wysłane w jednym kroku strony do elementu
+// pod punktem startu — jak prawdziwy palec. Swipe musi się zmieścić w 200 ms (shared/engine/input.js), a ruch myszy
+// Playwrighta krok po kroku trwa pod obciążeniem (równoległe testy) nawet 250 ms — gra słusznie uznaje go wtedy
+// za przeciąganie, a nie przesunięcie.
+async function swipe(page, from, to, steps = 4) {
+  await page.evaluate(
+    ({ start, end, count }) => {
+      const target = document.elementFromPoint(start.x, start.y);
+      const send = (type, x, y) =>
+        target.dispatchEvent(
+          new PointerEvent(type, {
+            pointerId: 9,
+            pointerType: "touch",
+            isPrimary: true,
+            bubbles: true,
+            cancelable: true,
+            clientX: x,
+            clientY: y,
+          }),
+        );
+      send("pointerdown", start.x, start.y);
+      for (let step = 1; step <= count; step += 1) {
+        send("pointermove", start.x + ((end.x - start.x) * step) / count, start.y + ((end.y - start.y) * step) / count);
+      }
+      send("pointerup", end.x, end.y);
+    },
+    { start: from, end: to, count: steps },
+  );
+}
+
 function watchErrors(page) {
   const errors = [];
   page.on("pageerror", (error) => errors.push(`pageerror: ${error.message}`));
@@ -151,6 +181,7 @@ module.exports = {
   newDevice,
   waitForCloud,
   setVisibility,
+  swipe,
   watchErrors,
   DEVICE_KEY,
 };

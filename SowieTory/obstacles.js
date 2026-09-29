@@ -1,6 +1,7 @@
 // Sowie Tory — przeszkody według sposobu omijania (Analiza 2, rozdz. 3.2): niska (skok), wysoka (ślizg),
 // pełna (zmiana toru; długa zajmuje tor na dłużej) i ruchoma (telefon Pracu zmieniający tor). Rodziny Pracu i Amic.
-// sprite — grafika z atlasu Sowiego Świata (shared/world/catalog.js); draw — wysokość rysunku w metrach.
+// sprite — grafika z atlasu Sowiego Świata (shared/world/catalog.js); draw — wysokość rysunku w metrach;
+// prop — rysunek kodem z props.js (skórki plansz).
 import { LANES, OBSTACLE_TYPES, OWL } from "./config.js";
 import { owlTop } from "./physics.js";
 import { laneX } from "./projection.js";
@@ -22,7 +23,7 @@ export const OBSTACLES = Object.freeze({
   // Amic
   barierka: { family: "amic", type: "low", sprite: "amic-barierka", draw: 0.9, label: "Barierka Amic!" },
   kanister: { family: "amic", type: "low", sprite: "amic-kanister", draw: 0.75, label: "Kanister Amic!" },
-  "znak-cen": { family: "amic", type: "high", sprite: "amic-znak-cen", draw: 3, label: "Znak z cenami Amic!" },
+  "znak-cen": { family: "amic", type: "high", sprite: "amic-znak-cen", draw: 1.8, label: "Znak z cenami Amic!" },
   dystrybutor: {
     family: "amic",
     type: "full",
@@ -39,6 +40,15 @@ export const OBSTACLES = Object.freeze({
     depth: 10,
     label: "Cysterna Amic!",
   },
+  // Skórki plansz (E5b) — rysowane kodem (`prop` z props.js), zastępują rodzaje z wzorów na danej planszy
+  // (stages.js, `remap`); typ i sposób omijania zostają.
+  paleta: { family: "amic", type: "low", prop: "paleta", label: "Paleta z towarem!" },
+  stojak: { family: "amic", type: "high", prop: "stojak", label: "Stojak z promocją!" },
+  "wozek-sklepowy": { family: "amic", type: "full", prop: "wozek-sklepowy", label: "Wózek sklepowy na torze!" },
+  katalogi: { family: "pracu", type: "low", prop: "katalogi", label: "Stos katalogów Pracu!" },
+  stoisko: { family: "amic", type: "full", prop: "stoisko", label: "Stoisko Amic blokuje tor!" },
+  samochod: { family: "amic", type: "full", prop: "samochod", depth: 4.5, label: "Samochód na podjeździe!" },
+  zadaszenie: { family: "amic", type: "high", prop: "zadaszenie", label: "Zadaszenie stacji Amic!" },
 });
 
 // Połowa szerokości przeszkody w bok (tor ma 1,6 m; przeszkoda 1,3 m).

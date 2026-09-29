@@ -1,6 +1,6 @@
 // Sowia Ucieczka na telefonach (Analiza 3, E4 i rozdz. 3): start, 5 s biegu z ziarnem, skok, pauza i wznowienie,
 // obrót telefonu bez resetu biegu, ukrycie karty, ekran wyników, układ 320 × 568 i zapis w chmurze (emulator).
-const { test, expect, waitForCloud, setVisibility, watchErrors } = require("../fixtures");
+const { test, expect, waitForCloud, setVisibility, swipe, watchErrors } = require("../fixtures");
 const { cloudUrl, readDoc, seedDoc, uniqueProject } = require("../emulator");
 
 async function openGame(page, url = "/SowiaUcieczka/?seed=ucieczka-e2e") {
@@ -271,12 +271,7 @@ test("wyzwanie dnia: ziarno z daty, poziom Arcade, rekord dnia w dokumencie gry 
   expect(errors).toEqual([]);
 });
 
-async function swipeDown(page, x, y) {
-  await page.mouse.move(x, y);
-  await page.mouse.down();
-  await page.mouse.move(x, y + 80, { steps: 4 });
-  await page.mouse.up();
-}
+const swipeDown = (page, x, y) => swipe(page, { x, y }, { x, y: y + 80 });
 
 test("samouczek pierwszego biegu: gra czeka na pokazany ruch, 4 kroki bez trafień, potem zapis w dokumencie gry (emulator)", async ({
   page,

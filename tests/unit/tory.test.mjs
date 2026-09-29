@@ -2,10 +2,10 @@
 // (każdy do przejścia z każdego toru), generator trasy i bieg przez całą kampanię z prostym autopilotem.
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { DIFFICULTIES, LANES, MOVING, OWL, PROJECTION, TRACK } from "../../SowieTory/config.js";
+import { BOARS, DIFFICULTIES, LANES, MOVING, OBSTACLE_TYPES, OWL, PROJECTION, TRACK } from "../../SowieTory/config.js";
 import { comboLevel, createRun, moverTrigger, speedAt } from "../../SowieTory/game.js";
 import { OBSTACLES, collides, laneOf, obstacleShape } from "../../SowieTory/obstacles.js";
-import { OBSTACLE_CODES, PATTERNS, createTrack, gapAfter, tierAt } from "../../SowieTory/patterns.js";
+import { OBSTACLE_CODES, PATTERNS, allowedOn, createTrack, gapAfter, tierAt } from "../../SowieTory/patterns.js";
 import { createOwlBody, owlTop, stepOwl } from "../../SowieTory/physics.js";
 import {
   ROAD_WIDTH,
@@ -16,7 +16,7 @@ import {
   project,
   visibleSeconds,
 } from "../../SowieTory/projection.js";
-import { STAGES, STAGE_COUNT } from "../../SowieTory/stages.js";
+import { STAGES, STAGE_COUNT, stageKind } from "../../SowieTory/stages.js";
 
 const STEP = 1 / 120;
 const MIN_SPEED = DIFFICULTIES.chill.speedStart * 0.85; // Chill w Trybie Przytulnym
@@ -161,13 +161,40 @@ test("przeszkody: niska — skok, wysoka — ślizg, pełna — zmiana toru; obi
   assert.equal(collides(standing, at("cysterna"), -11), false);
   assert.equal(obstacleShape("cysterna").depth, 10);
   assert.throws(() => obstacleShape("rower"), /Nieznana przeszkoda/);
+  // Skórki plansz zachowują sposób omijania (typ); samochód na stacji Amic jest długi.
+  for (const stage of STAGES) {
+    for (const [from, to] of Object.entries(stage.remap)) {
+      assert.equal(OBSTACLES[to].type, OBSTACLES[from].type, `${stage.id}: ${from} → ${to}`);
+      assert.ok(OBSTACLES[to].sprite || OBSTACLES[to].prop, `${to}: rysunek`);
+    }
+  }
+  assert.equal(stageKind(0, "wozek"), "wozek-sklepowy");
+  assert.equal(stageKind(3, "wozek"), "samochod");
+  assert.equal(stageKind(2, "wozek"), "wozek");
+  assert.equal(obstacleShape("samochod").depth, 4.5);
+  assert.equal(OBSTACLE_TYPES[obstacleShape("stojak").type].action, "ślizg");
   assert.equal(laneOf(laneX(1) - 0.3), 1);
 });
 
 // ---------- Wzory ----------
 
-test("wzory: co najmniej 20, 4 progi, oddech na każdym progu, poprawne tory i przeszkody wszystkich typów", () => {
-  assert.ok(PATTERNS.length >= 20, `wzory: ${PATTERNS.length}`);
+test("wzory: co najmniej 30, 4 progi, oddech, wzory plansz, poprawne tory i przeszkody wszystkich typów", () => {
+  assert.ok(PATTERNS.length >= 30, `wzory: ${PATTERNS.length}`);
+  // Każda plansza ma własne wzory (np. kasy w Biedronce, podjazd na stacji Amic), a wzory ogólne są wszędzie.
+  for (const stage of STAGES) {
+    assert.ok(
+      PATTERNS.some((item) => item.stages?.includes(stage.id)),
+      `wzory planszy ${stage.id}`,
+    );
+    assert.ok(PATTERNS.filter((item) => allowedOn(item, stage.id)).length >= 24, `pula planszy ${stage.id}`);
+  }
+  for (const item of PATTERNS) {
+    for (const id of item.stages || [])
+      assert.ok(
+        STAGES.some((stage) => stage.id === id),
+        `${item.id}: plansza ${id}`,
+      );
+  }
   assert.equal(new Set(PATTERNS.map((item) => item.id)).size, PATTERNS.length);
   for (const tier of [0, 1, 2, 3])
     assert.ok(
@@ -191,7 +218,7 @@ test("wzory: co najmniej 20, 4 progi, oddech na każdym progu, poprawne tory i p
 });
 
 // Przeszukiwanie ruchów (BFS): czy da się przejść wzór bez trafienia przy stałej prędkości, startując z danego toru?
-// Decyzje co 1/15 s: nic / ← / → / ↑ / ↓. Ruchomy telefon: strzałka i przejazd liczone z odległości (stała prędkość).
+// Decyzje co 1/10 s (gracz ma mniej okazji niż w grze, więc wzór przechodzi tym pewniej): nic / ← / → / ↑ / ↓. Ruchomy telefon: strzałka i przejazd liczone z odległości (stała prędkość).
 function solvable(chosen, speed, startLane = 0) {
   const step = 1 / 60;
   const startZ = -6;
@@ -209,7 +236,7 @@ function solvable(chosen, speed, startLane = 0) {
     const owlZ = startZ + speed * step * (frame + 1);
     const next = new Map();
     for (const node of layer) {
-      const options = frame % 4 === 0 ? ["none", "left", "right", "up", "down"] : ["none"];
+      const options = frame % 6 === 0 ? ["none", "left", "right", "up", "down"] : ["none"];
       for (const action of options) {
         const body = { ...node };
         stepOwl(body, { [action]: true }, step);
@@ -233,15 +260,30 @@ function solvable(chosen, speed, startLane = 0) {
   return true;
 }
 
-test("każdy wzór da się przejść bez trafienia z każdego toru przy najmniejszej i największej prędkości", () => {
+test("każdy wzór na każdej planszy (po zamianie skórek) da się przejść z każdego toru przy najmniejszej i największej prędkości", () => {
   const failures = [];
-  for (const chosen of PATTERNS) {
-    for (const speed of [MIN_SPEED, DIFFICULTIES.arcade.speedMax, MAX_SPEED]) {
-      for (const lane of [-1, 0, 1]) {
-        if (!solvable(chosen, speed, lane)) failures.push(`${chosen.id} przy ${speed.toFixed(1)} m/s z toru ${lane}`);
+  // Ten sam układ przeszkód (wzór bez skórek planszy) sprawdzamy raz.
+  const checked = new Set();
+  STAGES.forEach((stage, index) => {
+    for (const chosen of PATTERNS.filter((item) => allowedOn(item, stage.id))) {
+      const skinned = {
+        ...chosen,
+        items: chosen.items.map((part) =>
+          part.type === "obstacle" ? { ...part, kind: stageKind(index, part.kind) } : part,
+        ),
+      };
+      const key = JSON.stringify(skinned.items.filter((part) => part.type === "obstacle"));
+      if (checked.has(key)) continue;
+      checked.add(key);
+      for (const speed of [MIN_SPEED, DIFFICULTIES.arcade.speedMax, MAX_SPEED]) {
+        for (const lane of [-1, 0, 1]) {
+          if (!solvable(skinned, speed, lane)) {
+            failures.push(`${stage.id}: ${chosen.id} przy ${speed.toFixed(1)} m/s z toru ${lane}`);
+          }
+        }
       }
     }
-  }
+  });
   assert.deepEqual(failures, []);
 });
 
@@ -333,6 +375,16 @@ function autopilot(run) {
   const best = [-1, 0, 1]
     .map((lane) => ({ lane, free: blocked(lane) - Math.abs(lane - owl.lane) * 3 }))
     .sort((a, b) => b.free - a.free || Math.abs(a.lane - owl.lane) - Math.abs(b.lane - owl.lane))[0];
+  // Dzik szarżuje w torze sowy (strzałka) — uciekamy na najlepszy inny tor.
+  const boar = state.boars.find((item) => !item.passed && !item.hit && item.lane === owl.lane);
+  if (boar) {
+    const escape = [-1, 0, 1]
+      .filter((lane) => Math.abs(lane - owl.lane) === 1)
+      .map((lane) => ({ lane, free: blocked(lane) - Math.abs(lane - owl.lane) * 3 }))
+      .sort((a, b) => b.free - a.free)[0];
+    run.input(escape.lane < owl.lane ? "left" : "right");
+    return;
+  }
   if (blocked(owl.lane) < 25 && best.lane !== owl.lane) run.input(best.lane < owl.lane ? "left" : "right");
   for (const entry of ahead) {
     if (entry.item.lane !== owl.lane || entry.z <= 0) continue;
@@ -373,6 +425,10 @@ test("autopilot przechodzi całą kampanię (4 plansze, ok. 75 s każda) bez tra
     assert.equal(ends.length, 4);
     assert.equal(ends.at(-1).last, true);
     assert.ok(ends.every((event) => event.hits === 0 && event.bonus === 550));
+    // Blokowisko PRL: dziki szarżują, a autopilot za każdym razem ucieka na inny tor.
+    assert.ok(summary.boarsDodged >= 3, `uniki przed dzikami: ${summary.boarsDodged}`);
+    const warnings = seen.filter((event) => event.type === "boarWarning");
+    assert.equal(warnings.length, summary.boarsDodged);
     const seconds = run.state.time / STAGE_COUNT;
     assert.ok(seconds > 60 && seconds < 90, `plansza trwa ${seconds.toFixed(0)} s`);
     // Ostatnie metry planszy bez przeszkód (meta).
@@ -437,4 +493,41 @@ test("ruchomy telefon: strzałka 0,8 s przed ruchem, przejazd na sąsiedni tor p
   assert.equal(moved.lane, 1);
   assert.ok(Math.abs(moved.time - warning.time - MOVING.warning - MOVING.switchTime) < 0.05);
   assert.ok(moved.z > run.state.speed * MOVING.lead * 0.9, `zostało ${moved.z.toFixed(1)} m`);
+});
+
+test("pościg dzików: tylko na blokowisku PRL, strzałka 1 s przed szarżą, dzik trafia sowę, która nie zmieni toru", () => {
+  // Plansze bez pościgu: żadnego dzika.
+  for (const stage of [0, 1, 3]) {
+    const run = createRun({ seed: 3, startStage: stage, cozy: true, difficulty: "chill" });
+    for (let time = 0; time < 40; time += STEP) run.update(STEP);
+    assert.equal(run.takeEvents().filter((event) => event.type.startsWith("boar")).length, 0, `plansza ${stage}`);
+  }
+  // PRL bez przeszkód (tylko dziki): sowa stoi w torze — strzałka, po 1 s szarża, trafienie „dzik”.
+  const idle = createRun({ seed: 3, startStage: 2, patterns: PATTERNS.filter((item) => item.id === "t0-oddech") });
+  const events = [];
+  for (let time = 0; time < 30 && !events.some((event) => event.type === "hit"); time += STEP) {
+    idle.update(STEP);
+    for (const event of idle.takeEvents()) events.push({ ...event, time: idle.state.time });
+  }
+  const warning = events.find((event) => event.type === "boarWarning");
+  const charge = events.find((event) => event.type === "boarCharge");
+  const hit = events.find((event) => event.type === "hit");
+  assert.ok(warning && charge && hit, "strzałka, szarża i trafienie");
+  assert.equal(warning.lane, 0);
+  assert.ok(Math.abs(charge.time - warning.time - BOARS.warning) < 0.02);
+  assert.equal(hit.family, "dzik");
+  assert.match(hit.label, /Dzik/);
+  assert.ok(idle.state.stageDistance >= BOARS.first, "pierwszy dzik po ok. 140 m");
+  // Ta sama plansza, ale sowa ucieka na inny tor po strzałce: unik i premia.
+  const dodge = createRun({ seed: 3, startStage: 2, patterns: PATTERNS.filter((item) => item.id === "t0-oddech") });
+  let dodged = null;
+  for (let time = 0; time < 30 && !dodged; time += STEP) {
+    if (dodge.state.boars.some((item) => item.lane === dodge.state.owl.lane)) dodge.input("left");
+    dodge.update(STEP);
+    dodged = dodge.takeEvents().find((event) => event.type === "boarDodge") || null;
+  }
+  assert.ok(dodged, "unik przed dzikiem");
+  assert.equal(dodged.bonus, BOARS.bonus);
+  assert.equal(dodge.state.hits, 0);
+  assert.equal(dodge.summary().boarsDodged, 1);
 });

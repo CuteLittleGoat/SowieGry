@@ -1,5 +1,5 @@
 // Sowie Laboratorium na telefonie: gesty z martwymi strefami, auto-pauza z odliczaniem, oszczędzanie baterii.
-const { test, expect, setVisibility, waitForCloud, watchErrors } = require("../fixtures");
+const { test, expect, setVisibility, swipe, waitForCloud, watchErrors } = require("../fixtures");
 
 async function openLab(page) {
   const errors = watchErrors(page);
@@ -8,13 +8,6 @@ async function openLab(page) {
   await page.waitForFunction(() => Boolean(window.SowieLab));
   const stage = await page.locator("[data-stage]").boundingBox();
   return { errors, stage, cx: stage.x + stage.width / 2, cy: stage.y + stage.height / 2 };
-}
-
-async function swipe(page, from, to) {
-  await page.mouse.move(from.x, from.y);
-  await page.mouse.down();
-  await page.mouse.move(to.x, to.y, { steps: 3 });
-  await page.mouse.up();
 }
 
 test("gesty: stuknięcie, przesunięcia, przytrzymanie i martwe strefy przy krawędziach", async ({ page }) => {

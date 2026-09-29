@@ -1,20 +1,18 @@
 // Sowie Tory — rysowanie (Canvas 2D, piksele CSS przez rzutnię perspektywiczną z projection.js): niebo, scenografia
 // po bokach drogi (poza korytarzem trzech torów), droga z przesuwającą się teksturą, podświetlenie toru pod sową,
-// przeszkody i liście posortowane po głębokości, mgła w oddali, sowa, strzałki ostrzegawcze, napisy punktów.
+// przeszkody i liście posortowane po głębokości, mgła w oddali, sowa, strzałki ostrzegawcze, napisy punktów;
+// na blokowisku PRL szarżujące dziki (strzałka przy dolnej krawędzi toru) i stado u dołu ekranu (wskaźnik żyć).
 import { drawShadow } from "../shared/engine/sprites.js";
 import { drawOwl } from "../shared/world/owl.js";
 import { COLORS, font } from "../shared/world/tokens.js";
 import { OWL } from "./config.js";
 import { OBSTACLES, obstacleShape, obstacleX } from "./obstacles.js";
+import { DECOR_PROPS, OBSTACLE_PROPS, drawBoar, drawOverhead } from "./props.js";
 import { ROAD_WIDTH, computeProjection, depthAtScreenY, fogAt, laneX, project } from "./projection.js";
+import { SCENERY, sceneryBetween } from "./scenery.js";
 import { STAGES } from "./stages.js";
 
 const LEAF_SPRITE = { zielony: "lisc-zielony", zloty: "lisc-zloty", teczowy: "lisc-teczowy" };
-
-function hash(value) {
-  const x = Math.sin(value * 127.1) * 43758.5453;
-  return x - Math.floor(x);
-}
 
 // Kolor „#rrggbb” zmieszany z drugim (t = 0–1) — mgła i cienie scenografii.
 export function mix(a, b, t) {
@@ -89,8 +87,9 @@ export function createRenderer({ canvas, view, atlas }) {
     const near = nearZ();
     const far = layout.farZ;
     // Pobocza (poza korytarzem trzech torów) i droga.
-    quad(-half - 30, 0, near, -half, 0, far, mix(stage.floor, "#6b5a4a", 0.12));
-    quad(half, 0, near, half + 30, 0, far, mix(stage.floor, "#6b5a4a", 0.12));
+    const ground = SCENERY[stage.id]?.ground || mix(stage.floor, "#6b5a4a", 0.12);
+    quad(-half - 30, 0, near, -half, 0, far, ground);
+    quad(half, 0, near, half + 30, 0, far, ground);
     quad(-half, 0, near, half, 0, far, stage.floor);
     // Przesuwająca się tekstura: poprzeczne pasy co 4 m.
     context.strokeStyle = mix(stage.floor, "#000000", 0.08);
@@ -131,35 +130,23 @@ export function createRenderer({ canvas, view, atlas }) {
     context.globalAlpha = 1;
   }
 
-  // Scenografia po bokach: słupki i skrzynie co 6 m (oprawę plansz rozbudowuje E5b).
-  function scenery(stage, distance) {
-    const half = ROAD_WIDTH / 2;
-    const first = Math.floor(distance / 6) * 6;
-    for (let at = first + 60; at >= first - 6; at -= 6) {
-      const z = at - distance;
-      if (z < nearZ() || z > layout.farZ) continue;
-      const fog = fogAt(layout, z);
-      for (const side of [-1, 1]) {
-        const seed = at * 0.37 + side;
-        const height = 1.6 + hash(seed) * 2.2;
-        const x = side * (half + 1.4 + hash(seed + 1) * 1.2);
-        drawList.push({
-          z,
-          draw: () => {
-            context.globalAlpha = 1 - fog * 0.85;
-            const base = project(layout, x, 0, z, point);
-            if (!base) return;
-            const bx = base.x;
-            const by = base.y;
-            const scale = base.scale;
-            context.fillStyle = mix(hash(seed + 2) > 0.5 ? stage.accent : stage.sky[0], stage.fog, fog);
-            context.fillRect(bx - 0.7 * scale, by - height * scale, 1.4 * scale, height * scale);
-            context.fillStyle = mix(stage.fog, "#ffffff", 0.3);
-            context.fillRect(bx - 0.55 * scale, by - height * scale + 0.2 * scale, 1.1 * scale, 0.25 * scale);
-            context.globalAlpha = 1;
-          },
-        });
-      }
+  // Scenografia planszy (scenery.js, rysunki z props.js): dekoracje przy bokach i elementy wysoko nad drogą.
+  function scenery(stage, distance, time) {
+    for (const item of sceneryBetween(stage.id, distance, nearZ() - 1, layout.farZ)) {
+      drawList.push({
+        z: item.z,
+        draw: () => {
+          const base = project(layout, item.x, item.overhead ? item.height : 0, item.z, point);
+          if (!base) return;
+          context.save();
+          context.globalAlpha = 1 - fogAt(layout, item.z) * 0.9;
+          context.translate(base.x, base.y);
+          context.scale(base.scale, base.scale);
+          if (item.overhead) drawOverhead(context, item.kind, item.width, time);
+          else DECOR_PROPS[item.kind]?.(context, time, item.seed);
+          context.restore();
+        },
+      });
     }
   }
 
@@ -169,9 +156,9 @@ export function createRenderer({ canvas, view, atlas }) {
     if (z > layout.farZ || z + shape.depth < nearZ()) return;
     const info = OBSTACLES[item.kind];
     // Długie przeszkody (cysterna) — kilka rysunków wzdłuż toru.
-    const copies = shape.depth > 3 ? Math.ceil(shape.depth / 4.5) : 1;
+    const copies = shape.depth > 5 ? Math.ceil(shape.depth / 4.5) : 1;
     for (let copy = 0; copy < copies; copy += 1) {
-      const zz = z + (copies > 1 ? copy * (shape.depth / copies) + 1 : shape.depth / 2);
+      const zz = z + (copies > 1 ? copy * (shape.depth / copies) + 1 : Math.min(shape.depth / 2, 0.6));
       drawList.push({
         z: zz,
         draw: () => {
@@ -185,6 +172,16 @@ export function createRenderer({ canvas, view, atlas }) {
           context.globalAlpha = 1 - fog;
           const ground = project(layout, x, 0, zz, point2);
           drawShadow(context, ground.x, ground.y, 1.3 * scale, {});
+          if (info.prop) {
+            // Skórka planszy rysowana kodem (props.js) — w metrach od punktu na ziemi.
+            context.save();
+            context.translate(ground.x, ground.y);
+            context.scale(ground.scale, ground.scale);
+            OBSTACLE_PROPS[info.prop](context, time, Math.floor(item.at));
+            context.restore();
+            context.globalAlpha = 1;
+            return;
+          }
           const sprite = atlas.sprite(info.sprite);
           const height = info.draw * scale;
           const width = sprite ? (height * sprite.size[0]) / sprite.size[1] : height;
@@ -228,6 +225,50 @@ export function createRenderer({ canvas, view, atlas }) {
     context.stroke();
     context.fill();
     context.restore();
+  }
+
+  // Szarżujący dzik (PRL): w czasie ostrzeżenia pulsująca strzałka przy dolnej krawędzi toru, potem dzik biegnie
+  // torem od dołu ekranu w głąb (szybciej niż sowa).
+  function boar(item, time) {
+    const z = item.phase === "warning" ? nearZ() + 1.2 : item.z;
+    if (item.phase === "charge" && (z < nearZ() || z > layout.farZ)) return;
+    drawList.push({
+      z: item.phase === "warning" ? -99 : z,
+      draw: () => {
+        const base = project(layout, laneX(item.lane), 0, z, point);
+        if (!base) return;
+        if (item.phase === "warning") {
+          context.save();
+          context.translate(base.x, base.y - 0.5 * base.scale);
+          context.rotate(-Math.PI / 2);
+          arrow(0, 0, base.scale, 1, time);
+          context.restore();
+          return;
+        }
+        context.save();
+        context.globalAlpha = 1 - fogAt(layout, z);
+        drawShadow(context, base.x, base.y, 1.1 * base.scale, {});
+        context.translate(base.x, base.y);
+        context.scale(base.scale * 1.3, base.scale * 1.3);
+        drawBoar(context, time, item.lane, { angry: true });
+        context.restore();
+      },
+    });
+  }
+
+  // Stado dzików u dołu ekranu (PRL): im mniej żyć, tym bliżej i większe.
+  function herd(state, time) {
+    const spread = state.maxLives > 1 ? (state.maxLives - Math.max(1, state.lives)) / (state.maxLives - 1) : 1;
+    const perMeter = (layout.roadPx / ROAD_WIDTH) * (0.55 + spread * 0.45);
+    for (let index = 0; index < 4; index += 1) {
+      const x = layout.width * (0.14 + index * 0.24) + Math.sin(time * 3 + index * 1.7) * perMeter * 0.1;
+      const y = layout.height + perMeter * (0.42 - spread * 0.28) + Math.abs(Math.sin(time * 9 + index)) * 3;
+      context.save();
+      context.translate(x, y);
+      context.scale(perMeter, perMeter);
+      drawBoar(context, time, index * 1.3, { angry: spread > 0.5 });
+      context.restore();
+    }
   }
 
   function leaf(item, distance, time) {
@@ -322,12 +363,14 @@ export function createRenderer({ canvas, view, atlas }) {
       road(stage, distance);
       if (showOwl) laneGlow(state.owl);
       drawList.length = 0;
-      scenery(stage, distance);
+      scenery(stage, distance, state.time);
       for (const item of state.obstacles) obstacle(item, distance, state.time);
       for (const item of state.leaves) leaf(item, distance, state.time);
+      for (const item of state.boars || []) boar(item, state.time);
       if (showOwl) owlSprite(state, animator, cosmetic);
       drawList.sort((a, b) => b.z - a.z);
       for (const item of drawList) item.draw();
+      if (stage.chase && showOwl && state.phase !== "over") herd(state, state.time);
       particles?.render(context);
       popupsDraw(dt);
     },

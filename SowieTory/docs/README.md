@@ -18,9 +18,25 @@ Każda plansza trwa około 75 sekund. Pasek pod wynikiem pokazuje numer i nazwę
 Po każdej planszy (na razie krótka przerwa) biegniesz dalej — następna plansza jest trochę szybsza.
 Po ostatniej planszy kampania jest ukończona.
 
-> W kolejnych krokach etapu dochodzą: oprawa czterech plansz, pościg dzików na blokowisku, finał z basenem
-> ogrodowym i przemianą sowy w humbaka, grywalne „Humbacze Tory”, gwiazdki, kózki, tryb Nieskończony,
-> samouczek i muzyka.
+> W kolejnych krokach etapu dochodzą: finał z basenem ogrodowym i przemianą sowy w humbaka, grywalne
+> „Humbacze Tory”, gwiazdki, kózki, tryb Nieskończony, samouczek i muzyka.
+
+## Plansze
+
+- **Sklep Biedronka** — alejka między regałami pełnymi produktów („PROMOCJA”, „SUPER CENA!”, „NOWOŚĆ”), piekarnia,
+  pracownik z paleciakiem i czerwone tablice nad alejką. Uważaj na **wózki sklepowe** (zmień tor), **palety z płynem
+  do spryskiwaczy** (przeskocz) i **stojaki z promocją** (ślizg pod spodem) — a przy kasach na dymki Pracu Pracu.
+- **Festiwal roślin** — stojaki z roślinami, wózki z kwiatami, zwiedzający przy bokach, zraszacze i girlandy
+  z balonami. Przeszkody: **stoiska Amic** (zmień tor), **stosy katalogów** Pracu (przeskocz) i kanistry z wodą.
+- **Blokowisko PRL** — bloki z wielkiej płyty (wypatrz kota na balkonie i gołębie), trzepak, ławka, słupki.
+  Za sową biegnie **stado dzików** — widać je u dołu ekranu: im mniej masz żyć, tym są bliżej. Co jakiś czas
+  jeden dzik **szarżuje torem sowy**: przy dolnej krawędzi toru miga **pomarańczowa strzałka** — masz 1 sekundę,
+  żeby **zmienić tor** (skok nie wystarczy). Udany unik: **+30 pkt**. Obok zawsze jest wolny tor.
+- **Stacja benzynowa Amic** — sklep stacji, pylon z cenami paliw, zaparkowane auta i zadaszenie z zielonym pasem.
+  Przeszkody: **dystrybutory** i **samochody** na podjeździe (długie — zmień tor), **zadaszenie** i znaki z cenami
+  (ślizg), kanistry (przeskocz).
+
+Dekoracje (ludzie, donice, słupki, regały) stoją zawsze przy bokach i nie przeszkadzają w biegu.
 
 ## Sterowanie
 
@@ -45,7 +61,8 @@ Po ostatniej planszy kampania jest ukończona.
 | **pełna**                       | zmiana toru | telefon, „Telefon od Magdy”, tablica „Przyjmiesz zmianę?”                                               | dystrybutor, wózek, **cysterna** (długa — zajmuje tor dłużej) |
 | **ruchoma**                     | zmiana toru | telefon, który przejeżdża na sąsiedni tor — nad nim miga **pomarańczowa strzałka** (0,8 s przed ruchem) | —                                                             |
 
-Przeszkody pojawiają się z mgły w oddali — przy każdej prędkości masz co najmniej 2 sekundy na reakcję
+Na każdej planszy te same rodziny przeszkód mają inny wygląd (np. wózek sklepowy w Biedronce, samochód na stacji
+Amic) — sposób omijania się nie zmienia. Przeszkody pojawiają się z mgły w oddali — przy każdej prędkości masz co najmniej 2 sekundy na reakcję
 (na pierwszej planszy Arcade prawie 3 sekundy), na każdym telefonie tyle samo.
 
 ## Życia i punkty
@@ -70,7 +87,7 @@ Przeszkody pojawiają się z mgły w oddali — przy każdej prędkości masz co
 
 Wybrany poziom zapamiętuje się w chmurze. Rekord każdego poziomu widać na ekranie tytułowym, a po biegu —
 na ekranie wyników (z miejscem w top 10). Ekran wyników pokazuje też ukończone plansze, dystans, najlepsze
-combo, „O włos!” i liczbę trafień.
+combo, „O włos!”, uniki przed dzikami i liczbę trafień.
 
 ## Na telefonie
 
@@ -82,4 +99,5 @@ combo, „O włos!” i liczbę trafień.
 ## Tryb diagnostyczny
 
 Dopisz do adresu `?debug=1` — w prawym dolnym rogu pojawi się panel z liczbą klatek na sekundę, prędkością,
-planszą, dystansem, bieżącym wzorem przeszkód, torem sowy, combo i życiami.
+planszą, dystansem, bieżącym wzorem przeszkód, torem sowy, combo i życiami. `?plansza=3` zaczyna bieg od wybranej
+planszy (1 — Biedronka, 2 — festiwal roślin, 3 — blokowisko PRL, 4 — stacja Amic).

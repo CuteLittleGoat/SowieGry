@@ -1,6 +1,6 @@
 // Sowie Tory (wersja podglądowa nowej Sowa3, Analiza 3, E5) na telefonach: start, przesunięcia palcem (tor, skok,
 // ślizg), stuknięcia przy bokach, klawiatura, pauza, koniec biegu z wynikami i zapis rekordu „sowa3” w chmurze.
-const { test, expect, waitForCloud, watchErrors } = require("../fixtures");
+const { test, expect, swipe: swipeFrom, waitForCloud, watchErrors } = require("../fixtures");
 const { cloudUrl, readDoc, uniqueProject } = require("../emulator");
 
 async function openGame(page, url = "/SowieTory/?seed=tory-e2e") {
@@ -18,10 +18,7 @@ async function swipe(page, dx, dy) {
   const box = await page.locator("[data-stage]").boundingBox();
   const x = box.x + box.width / 2;
   const y = box.y + box.height * 0.55;
-  await page.mouse.move(x, y);
-  await page.mouse.down();
-  await page.mouse.move(x + dx, y + dy, { steps: 3 });
-  await page.mouse.up();
+  await swipeFrom(page, { x, y }, { x: x + dx, y: y + dy });
 }
 
 test("Sowie Tory: przesunięcia zmieniają tor, w górę — skok, w dół — ślizg; stuknięcia przy bokach i klawiatura", async ({
@@ -103,6 +100,28 @@ test("Sowie Tory: koniec biegu — wyniki z planszami i rekord „sowa3” zapis
   await results.getByRole("button", { name: "Jeszcze raz" }).click();
   await expect(results).toBeHidden();
   expect((await state(page)).stageDistance).toBeLessThan(15);
+  expect(errors).toEqual([]);
+});
+
+test("Sowie Tory: plansze w kolejności z obecnej gry, na blokowisku PRL szarżujący dzik ze strzałką (?plansza=)", async ({
+  page,
+}) => {
+  const errors = watchErrors(page);
+  await openGame(page, "/SowieTory/?seed=tory-plansze&plansza=4");
+  await page.locator("[data-start]").click();
+  await expect(page.locator(".tory-progress")).toContainText("4/4 · Stacja Amic");
+  expect((await state(page)).stageIndex).toBe(3);
+
+  await openGame(page, "/SowieTory/?seed=tory-dziki&plansza=3");
+  await page.locator('[data-level="chill"]').click();
+  await page.locator("[data-start]").click();
+  await expect(page.locator(".tory-progress")).toContainText("3/4 · Blokowisko PRL");
+  // Przeskok tuż przed pierwszą szarżą: strzałka i podpowiedź, potem dzik biegnie torem sowy.
+  await page.evaluate(() => window.SowieTory.warp(125));
+  await expect(page.locator(".sowie-toast-chip", { hasText: "Dzik szarżuje!" })).toBeVisible({ timeout: 15_000 });
+  await expect
+    .poll(async () => (await state(page)).boars.some((item) => item.phase === "charge"), { timeout: 5000 })
+    .toBe(true);
   expect(errors).toEqual([]);
 });
 
