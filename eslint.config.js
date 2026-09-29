@@ -2,7 +2,7 @@ const globals = require("globals");
 
 module.exports = [
   {
-    ignores: ["node_modules/**", "playwright-report/**", "test-results/**", "SowaRunner/p5.js"],
+    ignores: ["node_modules/**", "playwright-report/**", "test-results/**"],
   },
   {
     files: ["**/*.js"],

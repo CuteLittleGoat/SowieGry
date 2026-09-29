@@ -46,7 +46,7 @@ test("garderoba: zablokowany dodatek podpowiada misję i jej postęp", () => {
     cosmeticHint("glasses", { leaves20: { progress: 12.7 } }, defaults),
     "Zbierz 20 liści monster (12 / 20)",
   );
-  assert.equal(cosmeticHint("cap", {}, defaults), "Przebiegnij 1000 m w SowaRunner (0 / 1000)");
+  assert.equal(cosmeticHint("cap", {}, defaults), "Przebiegnij 1000 m w Sowiej Ucieczce (0 / 1000)");
   assert.equal(cosmeticHint("none", {}, defaults), "");
   // Każda misja profilu ma opis (klucze jak w SowiePlatform.DEFAULT_MISSIONS).
   const platform = read("shared/sowie-platform.js");

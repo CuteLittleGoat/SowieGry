@@ -75,49 +75,9 @@ export const GUIDES = Object.freeze({
       },
     ],
   },
-  // Obecne gry (treść przeniesiona z shared/game-guides.js w E3). Po przebudowie każdej gry podmieniamy jej karty.
+  // Sowia Ucieczka (E4) — zastąpiła SowaRunner; ten sam identyfikator gry „runner”.
   runner: {
     id: "runner",
-    title: "SowaRunner",
-    summary:
-      "Biegnij jak najdalej, omijaj przeszkody i zbieraj liście. Tempo stale rośnie, więc liczą się rytm, obserwacja trasy i rozsądne używanie podwójnego skoku.",
-    cards: [
-      {
-        id: "cel",
-        title: "Cel gry",
-        text: "Zdobywaj punkty, bij rekord dystansu i kończ długie biegi z jak najmniejszą liczbą obrażeń.",
-        sprite: "sowa-bieg-2",
-      },
-      {
-        id: "sterowanie",
-        title: "Sterowanie",
-        text: "Dotknięcie ekranu, kliknięcie lub Spacja to skok. Drugi skok można wykonać w powietrzu. Na ekranie tytułowym ten sam gest rozpoczyna bieg.",
-        gesture: "tap",
-        sprite: "sowa-skok",
-      },
-      {
-        id: "podwojny-skok",
-        title: "Podwójny skok",
-        text: "Nie zużywaj drugiego skoku zbyt wcześnie — zachowaj go do korekty.",
-        sprite: "pracu-dymek",
-      },
-      {
-        id: "liscie",
-        title: "Liście i seria",
-        text: "Liście zwiększają serię i dają dodatkowe premie punktowe.",
-        sprite: "lisc-zielony",
-      },
-      {
-        id: "humbak",
-        title: "Humbak",
-        text: "Humbak uruchamia krótką minigrę bonusową.",
-        sprite: "humbak",
-      },
-    ],
-  },
-  // Sowia Ucieczka — nowa wersja SowaRunner (podgląd w SowiaUcieczka/; po akceptacji zastąpi „runner”).
-  ucieczka: {
-    id: "ucieczka",
     title: "Sowia Ucieczka",
     summary:
       "Sówka ucieka przed Chmurą Pracu przez coraz bardziej zwariowane okolice. Skacz, szybuj i ślizgaj się, zbieraj liście monstery i nie daj się dogonić.",
@@ -169,6 +129,7 @@ export const GUIDES = Object.freeze({
       },
     ],
   },
+  // Obecne gry (treść przeniesiona z shared/game-guides.js w E3). Po przebudowie każdej gry podmieniamy jej karty.
   jumper: {
     id: "jumper",
     title: "SowaJumper",

@@ -6,8 +6,8 @@ import test from "node:test";
 const root = process.cwd();
 const read = (file) => fs.readFileSync(path.join(root, file), "utf8");
 
+// Obecne gry na starym interfejsie (Sowia Ucieczka ma własne zadania, wyzwanie dnia i instrukcję).
 const gameIndexes = [
-  "SowaRunner/index.html",
   "SowaJumper/index.html",
   "Sowa3/index.html",
   "SowieOgrody/index.html",
@@ -16,15 +16,7 @@ const gameIndexes = [
 
 test("katalog instrukcji (shared/meta/guides-data.js) obejmuje pięć gier i „Poznaj Sowi Świat”", async () => {
   const { GUIDES } = await import("../../shared/meta/guides-data.js");
-  assert.deepEqual(Object.keys(GUIDES).sort(), [
-    "jumper",
-    "ogrody",
-    "runner",
-    "sowa3",
-    "swiat",
-    "szklarnia",
-    "ucieczka",
-  ]);
+  assert.deepEqual(Object.keys(GUIDES).sort(), ["jumper", "ogrody", "runner", "sowa3", "swiat", "szklarnia"]);
   for (const id of ["runner", "jumper", "sowa3", "ogrody", "szklarnia"]) {
     assert.ok(GUIDES[id].summary && GUIDES[id].cards.length >= 4, id);
   }
@@ -59,14 +51,13 @@ test("Akademia ma wersjonowany zapis i idempotentne nagrody", () => {
   assert.match(source, /daily\.metrics/);
 });
 
-test("rozszerzenia zawierają mechanikę dla każdej gry", () => {
+test("rozszerzenia zawierają mechanikę dla każdej obecnej gry (SowaRunner zastąpiła Sowia Ucieczka)", () => {
   const source = read("shared/gameplay-expansion.js");
-  assert.match(source, /initializeRunner/);
+  assert.doesNotMatch(source, /initializeRunner|sowarunner/);
   assert.match(source, /initializeJumper/);
   assert.match(source, /initializeSowa3/);
   assert.match(source, /initializeGardens/);
   assert.match(source, /initializeGreenhouse/);
-  assert.match(source, /Seria liści/);
   assert.match(source, /Precyzyjne lądowania/);
   assert.match(source, /Combo liści/);
   assert.match(source, /Kontrakty/);

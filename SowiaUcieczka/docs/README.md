@@ -1,8 +1,8 @@
 # Sowia Ucieczka — instrukcja
 
-Sowia Ucieczka to nowa wersja gry SowaRunner. Sówka ucieka przed **Chmurą Pracu** i biegnie przez Sowi Świat: skacze, szybuje, ślizga się i zbiera liście monstery.
+Sowia Ucieczka to przebudowany SowaRunner. Sówka ucieka przed **Chmurą Pracu** i biegnie przez Sowi Świat: skacze, szybuje, ślizga się i zbiera liście monstery.
 
-Na razie to **wersja podglądowa**: otwierasz ją w menu przyciskiem **„Wypróbuj nową wersję: Sowia Ucieczka”** na karcie SowaRunner (albo pod adresem strony + `/SowiaUcieczka/`). Stara gra działa dalej. Rekordy są wspólne — wynik z nowej wersji trafia do rekordów SowaRunner.
+Grasz z menu: karta **Łąka — Sowia Ucieczka** (ze znaczkiem „Nowe!”), przycisk **Graj**. Stary adres gry (`…/SowaRunner/`) sam przenosi tutaj, więc zakładki i skrót na ekranie telefonu działają dalej. Twoje rekordy, top 10 i wyniki wyzwań dnia z SowaRunner zostały.
 
 ## Start
 
@@ -98,6 +98,10 @@ Ekran wyników pokazuje wynik, rekord („Nowy rekord!”), zebrane liście, mie
 ## Przerwy
 
 Gra sama się wstrzymuje, gdy przejdziesz do innej aplikacji, zablokujesz ekran, ściągniesz pasek powiadomień albo obrócisz telefon — bieg się nie resetuje. Po **Wznów** gra odlicza 3-2-1.
+
+## Misje i dodatki do garderoby
+
+Jak w dawnym SowaRunner, bieg posuwa **misje garderoby** (zakładka **Sowa** w menu): 20 liści, dodatkowe życie (tu: Chmura Pracu się oddala), 3 × „O włos!”, combo ×4 i **1000 m w jednym biegu** (nagroda: **Czapka z daszkiem**). Ukończona misja odblokowuje dodatek — komunikat „Misja ukończona” zobaczysz na ekranie wyników. Seria liści zebranych bez trafienia liczy się do zadań Sowiej Akademii i zdjęć w Galerii.
 
 ## Komentarze sowy
 

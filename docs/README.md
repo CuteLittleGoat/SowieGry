@@ -14,9 +14,9 @@
 
 Na dole ekranu jest pasek z czterema zakładkami: **Gry**, **Jak grać**, **Galeria** i **Sowa**. Na górze: napis SowieGry, stan zapisu (np. „Zapisano”, „Zapisuję…”, „Offline”; na małym telefonie sama ikona chmurki) i przycisk ustawień (koło zębate). Pod nim Sówka w dymku — stuknij ją, a podskoczy i przywita się „hu-hu!”. W dymku widać też kropki zadań dnia (zielona = zrobione).
 
-- **Gry** — pięć kart na krętej ścieżce przez Sowi Świat: Łąka (SowaRunner), Chmury (SowaJumper), Miasto (Sowa3), Ogród (Sowie Ogrody), Szklarnia (Sowia Szklarnia). Na karcie SowaRunner jest też przycisk **„Wypróbuj nową wersję: Sowia Ucieczka”** — nowa, przebudowana wersja gry w podglądzie (instrukcja: `SowiaUcieczka/docs/README.md`); wyniki z niej liczą się do rekordów SowaRunner. Na karcie jest ruchomy obrazek z postaciami, opis, Twój rekord (np. „Rekord: 1250 m”) oraz przyciski **Graj** i **Jak grać?** (krótka instrukcja tej gry w oknie; z okna też można od razu zagrać). Rekordy wczytują się z chmury po chwili — do tego czasu w ich miejscu miga szary pasek. Na tablecie i komputerze karty układają się w siatkę. Pod kartami jest karta **Zainstaluj SowieGry na telefonie** (znika, gdy gra działa jako aplikacja).
+- **Gry** — pięć kart na krętej ścieżce przez Sowi Świat: Łąka (Sowia Ucieczka), Chmury (SowaJumper), Miasto (Sowa3), Ogród (Sowie Ogrody), Szklarnia (Sowia Szklarnia). **Sowia Ucieczka** to przebudowany SowaRunner (znaczek **„Nowe!”** na karcie; instrukcja: `SowiaUcieczka/docs/README.md`) — Twoje rekordy z SowaRunner zostały, a stary adres gry sam przenosi do nowej. Na karcie jest ruchomy obrazek z postaciami, opis, Twój rekord (np. „Rekord: 1250 m”) oraz przyciski **Graj** i **Jak grać?** (krótka instrukcja tej gry w oknie; z okna też można od razu zagrać). Rekordy wczytują się z chmury po chwili — do tego czasu w ich miejscu miga szary pasek. Na tablecie i komputerze karty układają się w siatkę. Pod kartami jest karta **Zainstaluj SowieGry na telefonie** (znika, gdy gra działa jako aplikacja).
 - **Jak grać** — instrukcje wszystkich gier: najpierw „Poznaj Sowi Świat” (kim są Sówka, Pracu Pracu, Amic, kózki, humbak), potem każda gra. Karty przesuwa się palcem w bok; na karcie „Sterowanie” animowana kropka pokazuje gest (stuknięcie, przytrzymanie, przesunięcie).
-- **Galeria** — 30 zdjęć sów. Licznik (np. „3 / 30”) i filtry: **Wszystkie**, **Odblokowane**, **Do zdobycia**. Zablokowane zdjęcie jest rozmyte, ma kłódkę, opis celu (np. „Przebiegnij 1000 m w SowaRunner”) i pasek postępu. Nowo zdobyte zdjęcie ma znaczek **Nowe!**, obraca się przy pierwszym pokazaniu i słychać „hu-hu”. Stuknięcie w zdjęcie otwiera je na cały ekran:
+- **Galeria** — 30 zdjęć sów. Licznik (np. „3 / 30”) i filtry: **Wszystkie**, **Odblokowane**, **Do zdobycia**. Zablokowane zdjęcie jest rozmyte, ma kłódkę, opis celu (np. „Przebiegnij 1000 m w Sowiej Ucieczce”) i pasek postępu. Nowo zdobyte zdjęcie ma znaczek **Nowe!**, obraca się przy pierwszym pokazaniu i słychać „hu-hu”. Stuknięcie w zdjęcie otwiera je na cały ekran:
   - przesuń palcem w lewo / w prawo — następne / poprzednie zdjęcie (albo strzałki po bokach),
   - dwa palce albo podwójne stuknięcie — powiększenie (podwójne stuknięcie jeszcze raz — powrót),
   - przesuń w dół albo ✕ — zamknięcie,
@@ -25,7 +25,7 @@ Na dole ekranu jest pasek z czterema zakładkami: **Gry**, **Jak grać**, **Gale
   - pod zdjęciem autor i link do źródła (Pexels).
 - **Sowa** — Twój profil: poziom, punkty doświadczenia (XP) i piórka Sowiej Akademii; **Zadania** (trzy zadania dnia i jedno tygodnia — nagrody przychodzą same); **Garderoba** (dodatek, który sowa nosi we wszystkich grach; przy zablokowanym widać, co trzeba zrobić, np. „Zbierz 20 liści monster (12 / 20)”); **Rekordy** każdej gry (przycisk „Rekordy” — najlepszy wynik i 10 najlepszych gier na każdym poziomie trudności); **Ustawienia** (patrz niżej).
 
-Menu działa też z klawiatury: strzałki w lewo / w prawo przełączają zakładki, Tab przechodzi po przyciskach. Adres strony pamięta zakładkę (np. `…/#galeria`), a `…/#jak-grac-runner` otwiera od razu instrukcję SowaRunner. Po pierwszym dotknięciu w menu gra cicha muzyka (można ją wyłączyć suwakiem „Muzyka”).
+Menu działa też z klawiatury: strzałki w lewo / w prawo przełączają zakładki, Tab przechodzi po przyciskach. Adres strony pamięta zakładkę (np. `…/#galeria`), a `…/#jak-grac-runner` otwiera od razu instrukcję Sowiej Ucieczki. Po pierwszym dotknięciu w menu gra cicha muzyka (można ją wyłączyć suwakiem „Muzyka”).
 
 Najpewniejszym sposobem uruchomienia jest GitHub Pages albo lokalny serwer HTTP. Przy bezpośrednim otwieraniu plików przez `file://` część funkcji przeglądarki może nie działać.
 
@@ -52,7 +52,7 @@ Strona testowa `lab/` (adres strony + `/lab/`) służy do sprawdzania na telefon
 
 ## Gry
 
-- `SowaRunner` — boczny endless runner.
+- `Sowia Ucieczka` (folder `SowiaUcieczka/`, dawny SowaRunner) — ucieczka przed Chmurą Pracu: skoki, szybowanie, ślizg, kózki, rejs na humbaku, zadania biegu i wyzwanie dnia. Stary adres `SowaRunner/` przekierowuje do nowej gry.
 - `SowaJumper` — pionowy jumper arcade.
 - `Sowa3` — trzytorowy runner w perspektywie w głąb ekranu.
 - `Sowie Ogrody` — gra idle: sadź, podlewaj, automatyzuj.
@@ -73,7 +73,7 @@ Gry zręcznościowe mają:
 
 ## Komunikaty w grach
 
-W SowaRunner, SowaJumper i Sowa3 komunikaty w trakcie gry pojawiają się pojedynczo, u góry ekranu (pod paskiem narzędzi), żeby nie zasłaniały sowy. W SowaRunner przyciski paska narzędzi i doku działają na telefonie po dotknięciu.
+W Sowiej Ucieczce, SowaJumper i Sowa3 komunikaty w trakcie gry pojawiają się pojedynczo, u góry ekranu, żeby nie zasłaniały sowy. Komunikaty o zadaniach Akademii, zdjęciach Galerii i ukończonych misjach garderoby Sowia Ucieczka pokazuje dopiero na ekranie wyników.
 
 ## Zapis postępu w chmurze
 

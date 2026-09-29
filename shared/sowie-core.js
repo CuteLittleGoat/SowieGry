@@ -15,7 +15,7 @@
     nearMiss3: "Wykonaj 3 uniki „O włos!”",
     chaosFinish: "Ukończ etap na poziomie Chaos",
     combo4: "Osiągnij combo ×4",
-    runner1000: "Przebiegnij 1000 m w SowaRunner",
+    runner1000: "Przebiegnij 1000 m w Sowiej Ucieczce",
     jumper250: "Osiągnij 250 m w SowaJumper",
   };
   const QUIPS = [

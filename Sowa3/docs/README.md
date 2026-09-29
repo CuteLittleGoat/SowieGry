@@ -113,7 +113,7 @@ Po pierwszym pełnym obejrzeniu finał można skrócić tapnięciem.
 
 ## Profil, kosmetyki i misje
 
-Wspólny profil działa również w `SowaRunner` i `SowaJumper` i zapisuje się w chmurze — ten sam postęp na telefonie i komputerze (przy pierwszym wejściu na nowym urządzeniu wpisz hasło `huhu`). Rekord jest osobny dla każdego poziomu trudności, a wybrany poziom i to, że finał był już obejrzany, są zapamiętywane na wszystkich urządzeniach. Garderoba pozwala wybierać odblokowane dodatki, a misje zapewniają kolejne kosmetyki.
+Wspólny profil działa również w Sowiej Ucieczce (dawny SowaRunner) i `SowaJumper` i zapisuje się w chmurze — ten sam postęp na telefonie i komputerze (przy pierwszym wejściu na nowym urządzeniu wpisz hasło `huhu`). Rekord jest osobny dla każdego poziomu trudności, a wybrany poziom i to, że finał był już obejrzany, są zapamiętywane na wszystkich urządzeniach. Garderoba pozwala wybierać odblokowane dodatki, a misje zapewniają kolejne kosmetyki.
 
 ## Audio i pauza
 

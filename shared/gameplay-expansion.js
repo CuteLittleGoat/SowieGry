@@ -18,7 +18,6 @@
 
   function detectFromPath() {
     const path = location.pathname.toLowerCase();
-    if (path.includes("sowarunner")) return "runner";
     if (path.includes("sowajumper")) return "jumper";
     if (path.includes("sowa3")) return "sowa3";
     if (path.includes("sowieogrody")) return "ogrody";
@@ -174,49 +173,6 @@
         <button class="sowie-feature-button" type="button" data-feature-claim="${objective.id}" ${complete && !claimed ? "" : "disabled"}>${claimed ? "Odebrano" : "Odbierz nagrodę"}</button>
       </article>`;
     }).join("");
-  }
-
-  function initializeRunner() {
-    attachFeatureButton("Serie i wyzwanie dnia SowaRunner");
-    let previousMode = null;
-    let previousLives = null;
-    let previousScore = 0;
-    let chain = 0;
-    let bestChain = 0;
-
-    featureRenderer = () => `${dailyPanel("Przebiegnij jak najdalej na identycznej trasie dnia i porównuj własne próby.")}
-      <article class="sowie-feature-card"><h3>Seria liści</h3><p>Zbieranie kolejnych liści bez utraty życia zwiększa serię. Każdy następny liść daje rosnącą premię punktową.</p><strong>Najlepsza seria tej sesji: ${bestChain}</strong></article>`;
-
-    window.setInterval(() => {
-      try {
-        if (typeof mode === "undefined" || typeof score === "undefined" || typeof lives === "undefined") return;
-        const running = typeof SCREEN !== "undefined" && mode === SCREEN.RUN;
-        const over = typeof SCREEN !== "undefined" && mode === SCREEN.OVER;
-        if (previousLives !== null && lives < previousLives) chain = 0;
-        if (running) {
-          const delta = score - previousScore;
-          if (delta >= 24 && delta <= 120) {
-            chain += 1;
-            bestChain = Math.max(bestChain, chain);
-            const bonus = Math.min(60, chain * 4);
-            score += bonus;
-            academy?.record?.("runner", "runnerLeafChain", bestChain, "max");
-          }
-          previousScore = score;
-          setHud(`🍃 Seria liści: ${chain} · premia następnego: +${Math.min(60, (chain + 1) * 4)}`);
-        } else {
-          previousScore = score;
-        }
-        if (over && previousMode !== mode) {
-          academy?.record?.("runner", "runnerDistance", Number(distM || 0), "max");
-          academy?.record?.("runner", "runnerScore", Number(score || 0), "max");
-        }
-        previousLives = lives;
-        previousMode = mode;
-      } catch (_error) {
-        // Gra może jeszcze inicjalizować globalny stan.
-      }
-    }, 140);
   }
 
   function initializeJumper() {
@@ -447,8 +403,8 @@
   } else initialize();
 
   function initialize() {
-    if (gameId === "runner") initializeRunner();
-    else if (gameId === "jumper") initializeJumper();
+    // SowaRunner zastąpiła Sowia Ucieczka (moduły ES, własne zadania i wyzwanie dnia) — bez tego skryptu.
+    if (gameId === "jumper") initializeJumper();
     else if (gameId === "sowa3") initializeSowa3();
     else if (gameId === "ogrody") initializeGardens();
     else if (gameId === "szklarnia") initializeGreenhouse();

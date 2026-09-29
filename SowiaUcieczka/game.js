@@ -179,6 +179,9 @@ export function createRun({
     perfectPoints: 0,
     lastPerfect: -Infinity,
     safe: Boolean(safe),
+    // Seria liści (jak w dawnym SowaRunner): liście zebrane od ostatniego trafienia; trafienie zeruje.
+    leafChain: 0,
+    bestLeafChain: 0,
   };
   state.nextGoatAt = GOATS.every[0] * 0.5 + rng() * (GOATS.every[1] - GOATS.every[0]) * 0.5;
   state.nextBubbleAt = SPLASH.bubbleEvery[0] + rng() * (SPLASH.bubbleEvery[1] - SPLASH.bubbleEvery[0]);
@@ -286,6 +289,7 @@ export function createRun({
     // Trafienie obniża combo o 1 poziom (nie do zera).
     state.streak = Math.max(0, (state.combo - 2) * SCORE.comboStep);
     state.combo = comboLevel(state.streak);
+    state.leafChain = 0;
     emit("hit", { by, variant, cloud: state.cloud });
     if (state.cloud <= 0) {
       if (state.cozy) state.cloud = 1;
@@ -311,6 +315,8 @@ export function createRun({
     state.streak += count;
     state.combo = comboLevel(state.streak);
     state.bestCombo = Math.max(state.bestCombo, state.combo);
+    state.leafChain += 1;
+    state.bestLeafChain = Math.max(state.bestLeafChain, state.leafChain);
     const gained = points * state.combo;
     state.leafPoints += gained;
     state.leafCount += count;
@@ -701,6 +707,7 @@ export function createRun({
         smashed: state.smashed,
         perfects: state.perfects,
         multiplier: state.multiplier,
+        bestChain: state.bestLeafChain,
       };
     },
   };

@@ -1,6 +1,7 @@
 // Zakładka „Sowa”: profil (poziom, XP, piórka), garderoba, zadania dnia i tygodnia (Sowia Akademia), rekordy
 // wszystkich gier (okno z Top 10 na poziom trudności) i ustawienia: dźwięk, efekty, wibracje, Tryb Przytulny,
 // komentarze sowy, stan zapisu i „Wyloguj to urządzenie”.
+import { MISSION_LABELS } from "../meta/missions.js";
 import { taskProgress } from "../meta/progress.js";
 import { ICONS } from "../ui/icons.js";
 import { openModal } from "../ui/modal.js";
@@ -8,16 +9,8 @@ import { drawOwl } from "../world/owl.js";
 import { cloudStatusInfo } from "./cloud-status.js";
 import { formatNumber, recordText } from "./games.js";
 
-// Misje profilu odblokowujące dodatki (klucze jak w SowiePlatform.DEFAULT_MISSIONS, opisy jak w shared/sowie-core.js).
-export const MISSION_LABELS = Object.freeze({
-  leaves20: "Zbierz 20 liści monster",
-  extraLife: "Zdobądź dodatkowe życie",
-  nearMiss3: "Wykonaj 3 uniki „O włos!”",
-  chaosFinish: "Ukończ etap na poziomie Chaos",
-  combo4: "Osiągnij combo ×4",
-  runner1000: "Przebiegnij 1000 m w SowaRunner",
-  jumper250: "Osiągnij 250 m w SowaJumper",
-});
+// Misje profilu odblokowujące dodatki: opisy z shared/meta/missions.js (klucze jak w SowiePlatform.DEFAULT_MISSIONS).
+export { MISSION_LABELS };
 
 const DIFFICULTIES = [
   ["chill", "Chill"],

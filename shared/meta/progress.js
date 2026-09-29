@@ -3,20 +3,10 @@
 // wyników, a do czasu E9 cienki „most” przekazuje je do obecnej Sowiej Akademii (metryki → misje dnia i tygodnia),
 // od której zależy też odblokowywanie zdjęć w Galerii Sów.
 
-export const EVENTS = Object.freeze({
-  RUN_STARTED: "run:started", // { gameId, difficulty, daily }
-  RUN_ENDED: "run:ended", // { gameId, score, distance?, height?, finished?, bestChain?, bestStreak?, bestCombo? }
-  LEAF: "leaf:collected", // { kind: "zielony" | "zloty" | "teczowy", count = 1, points }
-  GOAT: "goat:caught", // { kind: "sprezynka" | "tarcza" | "magnes" | "turbo" | "podwajaczka" }
-  HIT: "hit", // { by: "pracu" | "amic", variant }
-  NEAR_MISS: "near-miss", // { by }
-  COMBO: "combo", // { value }
-  FEVER: "fever:start", // {}
-  WHALE: "whale:bonus", // { leaves }
-  IDLE: "idle:progress", // gry idle: { gameId, lifetimeLeaves, clicks, buys, watering, prestiges, plants, rooms, goats, hybrids }
-  VISIT: "game:visit", // { gameId }
-  AWARD: "award", // { id, xp, feathers, label }
-});
+import { EVENTS } from "./progress-events.js";
+import { applyProfileUpdates, profileUpdates } from "./missions.js";
+
+export { EVENTS };
 
 const KNOWN = new Set(Object.values(EVENTS));
 const number = (value) => (Number.isFinite(Number(value)) ? Number(value) : null);
@@ -123,6 +113,8 @@ export function createProgress({ getAcademy = () => globalThis.SowieAcademy, now
   const listeners = new Map();
   let run = null;
   let tasksBefore = [];
+  // Misje garderoby i statystyki profilu (shared/meta/missions.js) — włączane przez grę (linkProfile).
+  let profileLink = null;
 
   function notify(type, detail) {
     for (const key of [type, "*"]) {
@@ -167,6 +159,12 @@ export function createProgress({ getAcademy = () => globalThis.SowieAcademy, now
           academy.award?.(payload.id, payload.xp ?? 25, payload.feathers ?? 3, payload.label || "Nagroda");
         }
       }
+      if (profileLink) {
+        const completed = applyProfileUpdates(profileLink.getCloud(), profileUpdates(type, payload), {
+          cosmetics: profileLink.getPlatform()?.COSMETICS || {},
+        });
+        for (const item of completed) profileLink.onMission(item);
+      }
       notify(type, payload);
       return payload;
     },
@@ -194,6 +192,14 @@ export function createProgress({ getAcademy = () => globalThis.SowieAcademy, now
       });
       run = null;
       return { ...finished, ...detail, durationMs: now() - finished.startedAt, tasks };
+    },
+    // Gra (nie Laboratorium) włącza zapis misji garderoby i statystyk profilu; onMission — ukończona misja.
+    linkProfile({
+      getCloud = () => globalThis.SowieCloud,
+      getPlatform = () => globalThis.SowiePlatform,
+      onMission = () => {},
+    } = {}) {
+      profileLink = { getCloud, getPlatform, onMission };
     },
     current: () => (run ? JSON.parse(JSON.stringify(run)) : null),
     tasks: () => taskProgress(getAcademy()?.snapshot?.()),

@@ -9,7 +9,7 @@ import { COLORS } from "../world/tokens.js";
 export const MENU_GAMES = Object.freeze({
   runner: {
     station: "Łąka",
-    description: "Biegnij przez łąkę, skacz nad przeszkodami i zbieraj liście monstery.",
+    description: "Uciekaj przed Chmurą Pracu: skacz, szybuj, ślizgaj się i łap skaczące kózki.",
     biome: [COLORS.nieboGora, COLORS.monsteraJasna],
   },
   jumper: {

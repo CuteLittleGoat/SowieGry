@@ -78,8 +78,7 @@
   font-variant-numeric: tabular-nums;
 }
 
-.ucieczka-title-note,
-.ucieczka-title-preview {
+.ucieczka-title-note {
   font-size: 14px;
   opacity: 0.85;
 }
@@ -228,8 +227,7 @@
     font-size: 26px;
   }
 
-  .ucieczka-title-lead,
-  .ucieczka-title-preview {
+  .ucieczka-title-lead {
     display: none;
   }
 }

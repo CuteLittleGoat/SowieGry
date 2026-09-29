@@ -2,7 +2,6 @@
 const { test, expect, waitForCloud, watchErrors } = require("../fixtures");
 
 const GAMES = [
-  { name: "SowaRunner", path: "/SowaRunner/?seed=komunikaty", playing: "mode === SCREEN.RUN" },
   { name: "SowaJumper", path: "/SowaJumper/?seed=komunikaty", playing: "state.scene === 'playing'" },
   { name: "Sowa3", path: "/Sowa3/?seed=komunikaty", playing: "state.mode === 'run'" },
 ];
@@ -43,3 +42,33 @@ for (const game of GAMES) {
     expect(errors).toEqual([]);
   });
 }
+
+// Sowia Ucieczka (E4, zastąpiła SowaRunner): komunikaty z shared/ui/toasts.js — w biegu 1 naraz, u góry planszy.
+test("Sowia Ucieczka: w trakcie gry 1 komunikat u góry ekranu", async ({ page }) => {
+  const errors = watchErrors(page);
+  await page.goto("/SowiaUcieczka/?seed=komunikaty", { waitUntil: "load" });
+  await waitForCloud(page);
+  await page.waitForFunction(() => window.SowiaUcieczka?.ready?.());
+  await page.locator("[data-start]").click();
+  await expect.poll(() => page.evaluate(() => window.SowiaUcieczka.screen())).toBe("playing");
+
+  // Trzy komunikaty naraz: dwie kózki i trafienie pochłonięte przez Tarczę.
+  await page.evaluate(() => {
+    window.SowiaUcieczka.goat("tarcza");
+    window.SowiaUcieczka.goat("magnes");
+    window.SowiaUcieczka.hit("pracu");
+  });
+  const toasts = page.locator(".sowie-toast-chip:not(.is-leaving)");
+  await expect(toasts).toHaveCount(1);
+  await expect(toasts.first()).toContainText("Kózka Tarcza");
+
+  // Komunikat jest w górnej części ekranu (sowa i tor zostają odsłonięte) i nie wychodzi poza szerokość.
+  const viewport = page.viewportSize();
+  const box = await toasts.first().boundingBox();
+  expect(box.y + box.height).toBeLessThan(viewport.height * 0.45);
+  expect(box.x).toBeGreaterThanOrEqual(0);
+  expect(box.x + box.width).toBeLessThanOrEqual(viewport.width);
+  // Kolejne komunikaty czekają i pokazują się po kolei.
+  await expect(page.locator(".sowie-toast-chip", { hasText: "Kózka Magnes" })).toBeVisible({ timeout: 8000 });
+  expect(errors).toEqual([]);
+});

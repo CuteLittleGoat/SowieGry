@@ -5,13 +5,15 @@ import { test } from "node:test";
 
 const read = (path) => readFile(path, "utf8");
 
-const gamePages = [
-  "SowaRunner/index.html",
+// Obecne gry na starym interfejsie (SowieCore, wspólny menedżer powiadomień, okno Rekordów).
+const legacyGamePages = [
   "SowaJumper/index.html",
   "Sowa3/index.html",
   "SowieOgrody/index.html",
   "SowiaSzklarnia/index.html",
 ];
+// Wszystkie gry z rejestru: Sowia Ucieczka (E4, moduły ES na Sowim Silniku; zastąpiła SowaRunner) i obecne gry.
+const gamePages = ["SowiaUcieczka/index.html", ...legacyGamePages];
 
 test("centralny rejestr zawiera dokładnie pięć gier", async () => {
   const platform = await read("shared/sowie-platform.js");
@@ -37,10 +39,14 @@ test("menu główne jest generowane wyłącznie z centralnego rejestru", async (
   assert.doesNotMatch(html, /sowie-core\.js|main-menu|game-guides\.js/);
 });
 
-test("wszystkie gry ładują platformę i wspólny menedżer powiadomień", async () => {
+test("wszystkie gry ładują platformę; obecne gry — wspólny menedżer powiadomień", async () => {
   for (const path of gamePages) {
+    assert.match(await read(path), /shared\/sowie-platform\.js/, `${path} nie ładuje SowiePlatform`);
+  }
+  // Sowia Ucieczka: komunikaty z shared/ui (toasts.js), moduł ES main.js.
+  assert.match(await read("SowiaUcieczka/index.html"), /<script type="module" src="main\.js"><\/script>/);
+  for (const path of legacyGamePages) {
     const html = await read(path);
-    assert.match(html, /shared\/sowie-platform\.js/, `${path} nie ładuje SowiePlatform`);
     assert.match(html, /shared\/notification-manager\.js/, `${path} nie ładuje wspólnych powiadomień`);
     assert.doesNotMatch(html, /Sowa3\/notification-manager\.js/, `${path} zależy od katalogu innej gry`);
   }
@@ -54,7 +60,7 @@ test("runtime nie podmienia metod SowieCore", async () => {
 
 // Wszystkie pliki JavaScript gier, modułów wspólnych (także podkatalogów), Laboratorium i service worker.
 async function projectScripts() {
-  const folders = ["shared", "config", "lab", "SowaRunner", "SowaJumper", "Sowa3", "SowieOgrody", "SowiaSzklarnia"];
+  const folders = ["shared", "config", "lab", "SowiaUcieczka", "SowaJumper", "Sowa3", "SowieOgrody", "SowiaSzklarnia"];
   const files = ["sw.js"];
   async function walk(folder) {
     for (const entry of await readdir(folder, { withFileTypes: true })) {
@@ -111,8 +117,8 @@ test("każda strona ładuje config, platformę, SowieCloud i ekran hasła w tej 
       positions,
       `${path}: zła kolejność skryptów`,
     );
-    // Gry: SowieCloud przed SowieCore. Menu: przed Akademią, Galerią i modułem menu (bez SowieCore).
-    const later = path === "index.html" ? "shared/sowie-academy.js" : "shared/sowie-core.js";
+    // Obecne gry: SowieCloud przed SowieCore. Menu i Sowia Ucieczka (bez SowieCore): przed Akademią.
+    const later = legacyGamePages.includes(path) ? "shared/sowie-core.js" : "shared/sowie-academy.js";
     assert.ok(positions[3] < html.indexOf(later), `${path}: SowieCloud musi być przed ${later}`);
     if (path === "index.html") assert.ok(html.indexOf("shared/owl-gallery.js") < html.indexOf("shared/menu/menu.js"));
   }
@@ -149,12 +155,13 @@ test("kod SowieGry pisze tylko w kolekcji sowiegry i jej podkolekcjach", async (
   }
 });
 
-test("każda gra ma okno Rekordów zasilane przez SowieCloud", async () => {
+test("każda obecna gra ma okno Rekordów zasilane przez SowieCloud", async () => {
   const records = await read("shared/records.js");
   assert.match(records, /cloud\.history\(gameId, 10\)/);
   assert.match(records, /top10/);
   assert.match(records, /dailyBest/);
-  for (const path of gamePages) {
+  // Sowia Ucieczka: rekordy na ekranie tytułowym i wyników oraz w menu (zakładka „Sowa”).
+  for (const path of legacyGamePages) {
     const html = await read(path);
     assert.ok(
       html.indexOf("shared/records.js") > html.indexOf("shared/game-guides.js"),
@@ -184,4 +191,15 @@ test("projekt respektuje reduced motion", async () => {
   const css = await read("shared/cute-ui.css");
   assert.match(css, /prefers-reduced-motion:\s*reduce/);
   assert.match(css, /sowie-reduced-effects/);
+});
+
+test("SowaRunner/ to tylko przekierowanie do Sowiej Ucieczki (stare pliki gry i p5.js usunięte)", async () => {
+  assert.deepEqual((await readdir("SowaRunner")).sort(), ["docs", "index.html"]);
+  const html = await read("SowaRunner/index.html");
+  assert.match(html, /<meta http-equiv="refresh" content="0; url=\.\.\/SowiaUcieczka\/"/);
+  assert.match(html, /location\.replace\(`\.\.\/SowiaUcieczka\/\$\{location\.search\}\$\{location\.hash\}`\)/);
+  assert.doesNotMatch(html, /<script src=/, "strona przekierowania nie ładuje skryptów (ani SowieCloud)");
+  const platform = await read("shared/sowie-platform.js");
+  assert.match(platform, /name: "Sowia Ucieczka",\s*path: "SowiaUcieczka\/"/);
+  assert.doesNotMatch(platform, /path: "SowaRunner\/"/);
 });

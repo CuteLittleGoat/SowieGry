@@ -7,7 +7,7 @@ import { test } from "node:test";
 const read = (file) => fs.readFileSync(file, "utf8");
 const pages = [
   "index.html",
-  "SowaRunner/index.html",
+  "SowiaUcieczka/index.html",
   "SowaJumper/index.html",
   "Sowa3/index.html",
   "SowieOgrody/index.html",

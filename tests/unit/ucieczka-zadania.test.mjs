@@ -240,3 +240,22 @@ test("mijanie przeszkód: zdarzenie „pass” mówi, czy dołem (ślizg pod zna
   assert.ok(over.passes.every((event) => event.kind === "telefon" && event.over && !event.under));
   assert.equal(over.game.state.hits, 0);
 });
+
+test("seria liści (Akademia: runnerLeafChain): liście od ostatniego trafienia, trafienie zeruje; najlepsza w podsumowaniu", () => {
+  const game = createRun({ difficulty: "arcade", seed: "seria", patterns: [single("teczka")] });
+  const owl = game.state.owl;
+  const give = () => {
+    game.state.leaves.push({ kind: "zielony", x: owl.x + 0.2, y: -0.5, taken: false, phase: 0 });
+    game.state.leaves.sort((a, b) => a.x - b.x);
+    game.update(DT);
+  };
+  for (let index = 0; index < 6; index += 1) give();
+  assert.equal(game.state.leafChain, 6);
+  game.hit("pracu");
+  assert.equal(game.state.leafChain, 0);
+  game.state.invulnerable = 0;
+  give();
+  give();
+  assert.equal(game.state.leafChain, 2);
+  assert.equal(game.summary().bestChain, 6);
+});

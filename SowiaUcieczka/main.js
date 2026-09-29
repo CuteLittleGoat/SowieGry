@@ -25,7 +25,7 @@ import { LEVEL_MAX, TASKS_PER_LEVEL, createTaskTracker, describeTasks, normalize
 const cloud = window.SowieCloud;
 const params = new URLSearchParams(location.search);
 const AUDIO_BASE = new URL("../assets/audio/", import.meta.url).href;
-const GUIDE_ID = "ucieczka";
+const GUIDE_ID = GAME_ID; // instrukcja „runner” w shared/meta/guides-data.js
 // Wyzwanie dnia (?daily=1): ta sama trasa przez cały dzień (ziarno z daty), zawsze poziom Arcade.
 const DAILY = params.get("daily") === "1";
 const todayKey = () => cloud?.helpers?.dayKey?.(Date.now()) || new Date().toISOString().slice(0, 10);
@@ -177,11 +177,20 @@ const GOAT_TEXT = {
   podwajaczka: "Kózka Podwajaczka — liście ×2",
 };
 
+// Misje garderoby i statystyki profilu (jak w dawnym SowaRunner przez SowieCore): liście, „O włos!”, combo,
+// odzyskane życie, 1000 m. Ukończona misja odblokowuje dodatek; komunikat trafia na ekran wyników.
+progress.linkProfile({
+  onMission: ({ label, rewardLabel }) =>
+    window.SowieNotifications?.toast?.({ title: "Misja ukończona", detail: label, reward: `Nagroda: ${rewardLabel}` }),
+});
+
 // Akademia i Galeria: w trakcie biegu komunikaty czekają na ekran wyników (Analiza 2, rozdz. 4.3).
+// Także w chwili składania ekranu wyników (misje kończą się w progress.endRun) — trafiają na listę wyników.
+let collectingResults = false;
 window.SowieNotifications ||= {
   toast({ title = "", detail = "", reward = "" } = {}) {
     const text = [title, detail, reward].filter(Boolean).join(" · ");
-    if (inGame()) toasts.defer(text);
+    if (inGame() || collectingResults) toasts.defer(text);
     else toasts.show(text, { kind: "reward", duration: 3200 });
   },
 };
@@ -397,11 +406,13 @@ function finishRun() {
     seed: baseSeed(),
   });
   showDaily();
+  collectingResults = true;
   const run = progress.endRun({
     score: summary.score,
     distance: summary.distance,
-    bestChain: summary.bestCombo,
+    bestChain: summary.bestChain,
   });
+  collectingResults = false;
   const isRecord = Boolean(saved?.newRecord);
   play(isRecord ? "rekord" : "koniec-gry");
   animator.set(isRecord ? "radosc" : "oszolomienie");
@@ -568,6 +579,7 @@ function handleEvents() {
       case "cloudBack":
         play("zycie");
         toasts.show("Chmura Pracu się oddala!", { kind: "success", key: "chmura" });
+        progress.emit(EVENTS.LIFE, {});
         break;
       case "goat":
         play("koza-meee");

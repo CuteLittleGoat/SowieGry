@@ -2,12 +2,15 @@ const { test, expect, waitForCloud } = require("./fixtures");
 
 const games = [
   {
+    // Sowia Ucieczka (E4, zastąpiła SowaRunner): moduły ES, bez SowieCore; Spacja na ekranie tytułowym startuje bieg.
     id: "runner",
-    name: "SowaRunner",
-    path: "/SowaRunner/",
-    marker: "canvas",
+    name: "Sowia Ucieczka",
+    path: "/SowiaUcieczka/",
+    marker: "[data-stage] canvas",
     action: "keyboard",
-    started: "mode === SCREEN.RUN",
+    started: "window.SowiaUcieczka.screen() === 'playing'",
+    ready: "window.SowiaUcieczka?.ready?.() === true",
+    core: false,
   },
   {
     id: "jumper",
@@ -55,8 +58,13 @@ async function openGame(page, game) {
   const errors = watchRuntimeErrors(page);
   await page.goto(`${game.path}?seed=${game.id}-audit&testNow=1783656000000`, { waitUntil: "load" });
   await expect(page.locator(game.marker).first()).toBeVisible({ timeout: 15_000 });
-  await expect.poll(() => page.evaluate(() => Boolean(window.SowiePlatform && window.SowieCore))).toBe(true);
+  await expect
+    .poll(() =>
+      page.evaluate((core) => Boolean(window.SowiePlatform && (!core || window.SowieCore)), game.core !== false),
+    )
+    .toBe(true);
   await waitForCloud(page);
+  if (game.ready) await page.waitForFunction(game.ready);
   return errors;
 }
 

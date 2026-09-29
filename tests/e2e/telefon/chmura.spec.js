@@ -65,13 +65,14 @@ test.describe("ekran „Hasło sowy”", () => {
 
   test("pisanie hasła nie uruchamia gry pod spodem", async ({ page }) => {
     const errors = watchErrors(page);
-    await page.goto("/SowaRunner/?seed=haslo-gra", { waitUntil: "load" });
+    // Sowia Ucieczka (zastąpiła SowaRunner): Spacja na ekranie tytułowym startuje bieg — pisanie hasła nie może.
+    await page.goto("/SowiaUcieczka/?seed=haslo-gra", { waitUntil: "load" });
     const gate = page.getByRole("dialog", { name: "Hasło sowy" });
     const input = gate.getByLabel("Hasło", { exact: true });
-    // Ekran hasła przykrywa także dok przycisków gry (instrukcja, rekordy, galeria).
-    await expect(page.locator("[data-records-fab]")).toHaveCount(1);
+    // Ekran hasła przykrywa także kartę tytułową gry (przycisk Start).
+    await expect(page.locator("[data-start]")).toHaveCount(1);
     const covered = await page.evaluate(() => {
-      const rect = document.querySelector("[data-records-fab]").getBoundingClientRect();
+      const rect = document.querySelector("[data-start]").getBoundingClientRect();
       const top = document.elementFromPoint(rect.x + rect.width / 2, rect.y + rect.height / 2);
       return Boolean(top?.closest(".sowie-gate"));
     });
@@ -79,16 +80,16 @@ test.describe("ekran „Hasło sowy”", () => {
     await input.tap();
     await input.pressSequentially(" huhu ");
     await expect(input).toHaveValue(" huhu ");
-    expect(await page.evaluate(() => mode === SCREEN.TITLE)).toBe(true);
+    expect(await page.evaluate(() => window.SowiaUcieczka.screen())).toBe("title");
     await input.press("Enter");
     await expect(gate).toBeHidden();
     await waitForCloud(page);
-    expect(await page.evaluate(() => mode === SCREEN.TITLE)).toBe(true);
+    await page.waitForFunction(() => window.SowiaUcieczka.ready());
+    expect(await page.evaluate(() => window.SowiaUcieczka.screen())).toBe("title");
 
-    // Po wejściu stuknięcie w planszę startuje bieg.
-    const viewport = page.viewportSize();
-    await page.touchscreen.tap(viewport.width / 2, viewport.height * 0.85);
-    await expect.poll(() => page.evaluate(() => mode === SCREEN.RUN)).toBe(true);
+    // Po wejściu stuknięcie w „Start” zaczyna bieg.
+    await page.locator("[data-start]").tap();
+    await expect.poll(() => page.evaluate(() => window.SowiaUcieczka.screen())).toBe("playing");
     expect(errors).toEqual([]);
   });
 });

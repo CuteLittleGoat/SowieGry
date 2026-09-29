@@ -35,15 +35,17 @@ test("zakładka „Gry”: pięć kart z rejestru, „Graj” otwiera grę", asy
   await openMenu(page);
   await expect(page.getByRole("tab", { name: "Gry" })).toHaveAttribute("aria-selected", "true");
   const cards = page.locator(".game-card");
-  for (const name of ["SowaRunner", "SowaJumper", "Sowa3", "Sowie Ogrody", "Sowia Szklarnia"]) {
+  for (const name of ["Sowia Ucieczka", "SowaJumper", "Sowa3", "Sowie Ogrody", "Sowia Szklarnia"]) {
     await expect(cards.filter({ hasText: name })).toHaveCount(1);
   }
   // Rekord z profilu (tu: jeszcze bez gry) zastępuje szkielet karty po wczytaniu chmury.
   await expect(page.locator(".game-card-record.is-loading")).toHaveCount(0);
   await expect(page.locator('[data-game="runner"] [data-record]')).toHaveText(/Jeszcze bez rekordu/);
-  // Nowa wersja SowaRunner w podglądzie (E4): „Wypróbuj nową wersję: Sowia Ucieczka”.
-  await expect(page.locator('[data-preview="runner"]')).toHaveAttribute("href", "SowiaUcieczka/");
-  await expect(page.locator("[data-preview]")).toHaveCount(1);
+  // Sowia Ucieczka zastąpiła SowaRunner (E4f): karta „runner” prowadzi do nowej gry, ma znaczek „Nowe!”,
+  // a przycisku wersji podglądowej już nie ma.
+  await expect(page.locator('[data-play="runner"]')).toHaveAttribute("href", "SowiaUcieczka/");
+  await expect(page.locator('[data-game="runner"] .game-card-new')).toHaveText("Nowe!");
+  await expect(page.locator("[data-preview]")).toHaveCount(0);
   // Ilustracje rysują postacie z atlasu.
   await page.waitForFunction(() => window.SowieMenu.atlas.ready() && window.SowieMenu.frames() > 3);
 
@@ -54,9 +56,10 @@ test("zakładka „Gry”: pięć kart z rejestru, „Graj” otwiera grę", asy
     if (/assets\/audio\/(sfx|music)\//.test(request.url())) audioRequests.push(request.url());
   });
   await page.locator('[data-play="runner"]').click();
-  await expect(page).toHaveURL(/\/SowaRunner\/$/);
-  expect(audioRequests.filter((url) => !url.includes("/SowaRunner/"))).toEqual([]);
-  await expect(page.locator("canvas").first()).toBeVisible({ timeout: 15_000 });
+  await expect(page).toHaveURL(/\/SowiaUcieczka\/$/);
+  // Menu nie pobiera dźwięków po stuknięciu; gra wczytuje swoje dopiero po pierwszym dotknięciu na swojej stronie.
+  expect(audioRequests).toEqual([]);
+  await expect(page.locator("[data-stage] canvas")).toBeVisible({ timeout: 15_000 });
   expect(errors).toEqual([]);
 });
 
@@ -98,8 +101,10 @@ test("instrukcje: „Jak grać?” na karcie i zakładka z kartami wszystkich gi
   const panel = page.locator("#jak-grac");
   await expect(panel.locator(".menu-guide")).toHaveCount(6);
   await expect(panel.locator(".menu-guide").first()).toContainText("Poznaj Sowi Świat");
-  // „Sterowanie” każdej gry ma animowaną demonstrację gestu.
-  await expect(panel.locator(".sowie-gesture-demo")).toHaveCount(5);
+  // Karty sterowania mają animowaną demonstrację gestu: po jednej w obecnych grach i trzy w Sowiej Ucieczce
+  // (skok — stuknięcie, szybowanie — przytrzymanie, ślizg — przesunięcie w dół).
+  await expect(panel.locator(".sowie-gesture-demo")).toHaveCount(7);
+  await expect(panel.locator("#jak-grac-runner .sowie-gesture-demo")).toHaveCount(3);
   expect(errors).toEqual([]);
 });
 
@@ -124,7 +129,7 @@ test("odnośnik do instrukcji jednej gry i przełączanie zakładek z klawiatury
 test("galeria: nowe zdjęcia, zablokowane z postępem i przeglądarka z gestami", async ({ page }) => {
   const errors = watchErrors(page);
   await openMenu(page);
-  // Cele Akademii odblokowują kolejne zdjęcia (1000 m w SowaRunner, 250 m w SowaJumper).
+  // Cele Akademii odblokowują kolejne zdjęcia (1000 m w Sowiej Ucieczce, 250 m w SowaJumper).
   await page.evaluate(() => {
     window.SowieAcademy.record("runner", "runnerDistance", 1500);
     window.SowieAcademy.record("jumper", "jumperHeight", 300);
@@ -210,7 +215,7 @@ test("zakładka „Sowa”: garderoba, ustawienia, rekordy i wylogowanie urządz
   expect(settings).toMatchObject({ cosmetic: "bow", cozy: true, reducedEffects: true, volumeMusic: 0, music: false });
 
   await page.locator('[data-records="runner"]').click();
-  const records = page.getByRole("dialog", { name: "Rekordy — SowaRunner" });
+  const records = page.getByRole("dialog", { name: "Rekordy — Sowia Ucieczka" });
   await expect(records).toContainText("Brak rozgrywek na tym poziomie");
   await records.getByRole("button", { name: "Chaos" }).click();
   await expect(records.getByRole("button", { name: "Chaos" })).toHaveAttribute("aria-pressed", "true");

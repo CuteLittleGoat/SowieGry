@@ -36,7 +36,7 @@
       alt: "Sowa siedząca na pniu drzewa.",
       photographer: "Erik Karits",
       sourceUrl: "https://www.pexels.com/photo/25559342/",
-      requirement: "Przebiegnij 1000 m w SowaRunner.",
+      requirement: "Przebiegnij 1000 m w Sowiej Ucieczce.",
       goals: [["runnerDistance", 1000]],
     },
     {
@@ -116,7 +116,7 @@
       alt: "Dwie młode uszatki siedzące razem na konarze.",
       photographer: "Twórca w serwisie Pexels",
       sourceUrl: "https://www.pexels.com/photo/4823989/",
-      requirement: "Zdobądź 1800 punktów w SowaRunner.",
+      requirement: "Zdobądź 1800 punktów w Sowiej Ucieczce.",
       goals: [["runnerScore", 1800]],
     },
     {
@@ -126,7 +126,7 @@
       alt: "Dwie puchate młode sowy przytulone na gałęzi.",
       photographer: "Twórca w serwisie Pexels",
       sourceUrl: "https://www.pexels.com/photo/4823986/",
-      requirement: "Zbuduj serię 5 liści w SowaRunner.",
+      requirement: "Zbierz 5 liści z rzędu bez trafienia w Sowiej Ucieczce.",
       goals: [["runnerLeafChain", 5]],
     },
     {

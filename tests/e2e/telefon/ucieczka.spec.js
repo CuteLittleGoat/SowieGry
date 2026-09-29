@@ -373,3 +373,23 @@ test("tryb diagnostyczny ?debug=1: panel z klatkami na sekundę, prędkością i
   expect(box.y + box.height).toBeLessThanOrEqual(viewport.height);
   expect(errors).toEqual([]);
 });
+
+test("misje garderoby: 1000 m w biegu kończy misję i odblokowuje Czapkę z daszkiem (jak w dawnym SowaRunner)", async ({
+  page,
+}) => {
+  const errors = watchErrors(page);
+  await openGame(page);
+  expect(await page.evaluate(() => window.SowieCloud.profile().missions.runner1000.done)).toBe(false);
+  await page.locator("[data-start]").click();
+  await page.waitForTimeout(300);
+  await page.evaluate(() => window.SowiaUcieczka.warp(1100));
+  await expect.poll(async () => (await state(page)).distance).toBeGreaterThan(1000);
+  await page.evaluate(() => window.SowiaUcieczka.end());
+  const results = page.getByRole("dialog", { name: /Koniec biegu/ });
+  await expect(results).toContainText("Misja ukończona");
+  await expect(results).toContainText("Nagroda: Czapka z daszkiem");
+  const profile = await page.evaluate(() => window.SowieCloud.profile());
+  expect(profile.missions.runner1000).toMatchObject({ progress: 1000, done: true });
+  expect(profile.cosmetics.unlocked).toContain("cap");
+  expect(errors).toEqual([]);
+});

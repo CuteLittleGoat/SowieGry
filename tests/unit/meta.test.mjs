@@ -202,7 +202,9 @@ test("instrukcje obecnych gier: każda gra z rejestru ma przewodnik (treść z d
       `${id}: karta sterowania z gestem`,
     );
   }
-  assert.match(guideFor("runner").summary, /podwójnego skoku/);
+  // „runner” to od E4 Sowia Ucieczka.
+  assert.equal(guideFor("runner").title, "Sowia Ucieczka");
+  assert.match(guideFor("runner").summary, /Chmurą Pracu/);
   assert.match(guideFor("szklarnia").cards[1].text, /SIO! SIO!/);
   // Klasyczny skrypt gier nie ma już własnej kopii treści.
   const legacy = readFileSync(new URL("../../shared/game-guides.js", import.meta.url), "utf8");

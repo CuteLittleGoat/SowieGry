@@ -3,7 +3,7 @@ const { test, expect, watchErrors } = require("../fixtures");
 
 const pages = [
   { name: "Menu główne", path: "/", marker: ".game-card" },
-  { name: "SowaRunner", path: "/SowaRunner/", marker: "canvas" },
+  { name: "Sowia Ucieczka", path: "/SowiaUcieczka/", marker: "[data-stage] canvas" },
   { name: "SowaJumper", path: "/SowaJumper/", marker: "#game" },
   { name: "Sowa3", path: "/Sowa3/", marker: "#game" },
   { name: "Sowie Ogrody", path: "/SowieOgrody/", marker: "#gardenCanvas" },
@@ -19,6 +19,16 @@ for (const entry of pages) {
     expect(errors).toEqual([]);
   });
 }
+
+// SowaRunner zastąpiła Sowia Ucieczka (E4f): stare adresy i zakładki prowadzą do nowej gry z parametrami adresu.
+test("stary adres SowaRunner przekierowuje do Sowiej Ucieczki z parametrami", async ({ page }) => {
+  const errors = watchErrors(page);
+  await page.goto("/SowaRunner/?daily=1", { waitUntil: "load" });
+  await expect(page).toHaveURL(/\/SowiaUcieczka\/\?daily=1$/);
+  await expect(page.getByRole("heading", { name: "Sowia Ucieczka" })).toBeVisible({ timeout: 15_000 });
+  await expect(page.locator("[data-daily-note]")).toBeVisible();
+  expect(errors).toEqual([]);
+});
 
 test("menu główne mieści się w szerokości telefonu", async ({ page }) => {
   await page.goto("/?seed=telefon-szerokosc", { waitUntil: "load" });

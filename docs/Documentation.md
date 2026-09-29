@@ -6,13 +6,13 @@ Repozytorium zawiera menu główne i pięć samodzielnych gier przeglądarkowych
 
 | Gra             | Folder            | Identyfikator w bazie | Rodzaj                        |
 | --------------- | ----------------- | --------------------- | ----------------------------- |
-| SowaRunner      | `SowaRunner/`     | `runner`              | arcade (p5.js)                |
+| Sowia Ucieczka  | `SowiaUcieczka/`  | `runner`              | arcade (Sowi Silnik, moduły ES) |
 | SowaJumper      | `SowaJumper/`     | `jumper`              | arcade (Canvas 2D)            |
 | Sowa3           | `Sowa3/`          | `sowa3`               | arcade (Canvas 2D, pseudo-3D) |
 | Sowie Ogrody    | `SowieOgrody/`    | `ogrody`              | idle                          |
 | Sowia Szklarnia | `SowiaSzklarnia/` | `szklarnia`           | idle                          |
 
-Identyfikatory w bazie są stałe (są wpisane w opublikowane reguły Firestore) i nie zmieniają się przy zmianie nazw gier ani folderów. Wspólna warstwa w `shared/` zapewnia rejestr gier, **zapis postępu w Firestore (`SowieCloud`)**, ekran hasła, profil, kosmetyki, misje, Sowią Akademię, Galerię Sów, instrukcje, ustawienia, audio, pauzę i powiadomienia. Plan dalszych zmian: `Analizy/`.
+Identyfikatory w bazie są stałe (są wpisane w opublikowane reguły Firestore) i nie zmieniają się przy zmianie nazw gier ani folderów. **Sowia Ucieczka** (etap E4) zastąpiła dawny **SowaRunner** z tym samym identyfikatorem `runner` — rekordy, top 10 i historia są wspólne, a folder `SowaRunner/` zawiera już tylko stronę przekierowania (`SowaRunner/docs/Documentation.md`). Wspólna warstwa w `shared/` zapewnia rejestr gier, **zapis postępu w Firestore (`SowieCloud`)**, ekran hasła, profil, kosmetyki, misje, Sowią Akademię, Galerię Sów, instrukcje, ustawienia, audio, pauzę i powiadomienia. Plan dalszych zmian: `Analizy/`.
 
 ## Struktura główna
 
@@ -42,7 +42,7 @@ shared/
   ui/                     (wspólny interfejs gier: HUD, komunikaty, okna, menu pauzy, ekran wyników, ui.css)
   meta/                   (SowieProgress — zdarzenia i most do Akademii; guides-data.js — instrukcje)
   menu/                   (menu główne — moduły ES: zakładki Gry, Jak grać, Galeria, Sowa; menu.css)
-SowiaUcieczka/            (Sowia Ucieczka — nowa wersja SowaRunner w podglądzie, moduły ES; docs/)
+SowiaUcieczka/            (Sowia Ucieczka — przebudowany SowaRunner, moduły ES na Sowim Silniku; docs/)
 lab/                      (Sowie Laboratorium — strona testowa silnika na telefonie: postacie, gesty, informacje)
 assets/icons/             (ikona aplikacji SVG i PNG)
 assets/svg/               (źródła SVG postaci: sowa/, garderoba/, kozki/, humbak/, pracu/, amic/, liscie/, interfejs/)
@@ -63,7 +63,8 @@ tests/
 firebase.json     (tylko emulator Firestore)
 firestore.rules   (kopia reguł opublikowanych 2026-09-27)
 playwright.config.js
-SowaRunner/ SowaJumper/ Sowa3/ SowieOgrody/ SowiaSzklarnia/   (gry, każda z docs/)
+SowaJumper/ Sowa3/ SowieOgrody/ SowiaSzklarnia/   (obecne gry, każda z docs/)
+SowaRunner/       (tylko index.html — przekierowanie do SowiaUcieczka/ z parametrami adresu; docs/)
 Obrazki/          (30 zdjęć Galerii Sów)
 Analizy/          (analizy i plan prac)
 docs/
@@ -133,7 +134,7 @@ Nowe menu (Analiza 2, rozdz. 4.1) zastąpiło `shared/main-menu.js`, `shared/mai
 ### `shared/menu/games.js` — zakładka „Gry”
 
 - `MENU_GAMES` — dane menu dla gier z rejestru: przystanek, opis, kolory biomu (`[góra, dół]` z tokenów): `runner` — „Łąka”, `[nieboGora, monsteraJasna]`; `jumper` — „Chmury”, `[niebieski, wodaJasna]`; `sowa3` — „Miasto”, `[policzki, sowaBrzuszek]`; `ogrody` — „Ogród”, `[nieboDol, monsteraJasna]`; `szklarnia` — „Szklarnia”, `[wodaJasna, monsteraJasna]` (opisy jednym zdaniem — jak na kartach);
-- `formatNumber(n)` (`pl-PL`, obcięcie w dół), `recordText(gameId, records)` — rekord osobisty z `profil.records` (bez dodatkowego odczytu z bazy): najlepszy ze wszystkich poziomów (`chill`, `arcade`, `chaos`) — SowaRunner `bestDistance` „Rekord: N m”, SowaJumper `bestHeight` „Rekord: N m”, Sowa3 `bestScore` „Rekord: N pkt”; Ogrody „Liście: N” (`lifetimeLeaves`), Szklarnia „Pomieszczenia: N” (`rooms`); brak — `null`;
+- `formatNumber(n)` (`pl-PL`, obcięcie w dół), `recordText(gameId, records)` — rekord osobisty z `profil.records` (bez dodatkowego odczytu z bazy): najlepszy ze wszystkich poziomów (`chill`, `arcade`, `chaos`) — Sowia Ucieczka (`runner`) `bestDistance` „Rekord: N m”, SowaJumper `bestHeight` „Rekord: N m”, Sowa3 `bestScore` „Rekord: N pkt”; Ogrody „Liście: N” (`lifetimeLeaves`), Szklarnia „Pomieszczenia: N” (`rooms`); brak — `null`;
 - **ilustracje** (`drawCardArt(ctx, atlas, gameId, czas, szerokośćCSS, wysokośćCSS, stan)`): jednostka świata = wysokość / 2,3, szerokość sceny = szerokość / jednostka; `hop(czas, okres, wysokość)` — podskok przez 60% okresu (parabola), potem przerwa; `cloud()` — trzy białe elipsy; `ground()` — pas ziemi 10 j. od `y`; `workCloud(ctx, x, y, rozmiar, czas)` (od E4e) — Chmura Pracu: 3 elipsy `#6d6480` (0,6 × 0,36, 0,34 × 0,26 przesunięta o −0,4 / +0,06, 0,36 × 0,3 przesunięta o +0,28 / −0,16 rozmiaru), unoszenie `sin(2t) · 0,05`, dwoje białych oczu (promień 0,09) z źrenicami `--kontur` (0,045, przesunięte o 0,03) na 0,1 i 0,34 rozmiaru, groźne brwi (linie 0,05); sceny: **Łąka** — ziemia `monstera` na 2,05, Chmura Pracu przy lewej krawędzi pod etykietą (0,2; 1,35; rozmiar 0,95), biegnąca sowa (1,45; rozmiar 1,05), łuk 3 kołyszących się liści (od x = 2,5 co 0,55), dymek Pracu Pracu unoszący się przy prawej krawędzi; **Chmury** — sterowiec Amic (przezroczystość 0,75) przesuwający się u góry, dwie chmury, sowa podskakująca na chmurze (okres 1,4 s, 0,7 j.; w powietrzu „skok”, cień z `lift`), złoty liść; **Miasto** — trzy tory w perspektywie (trapez `kozaCien`, białe linie), nadlatujący telefon Magdy (rośnie od 0,3 do 1,0 j.), dystrybutor Amic, biegnąca sowa na środku; **Ogród** — ziemia `monsteraCiemna`, stojąca sowa, serduszko-doniczka, 3 kołyszące się liście, kózka-podwajaczka podskakująca (okres 1,6 s; odbita w poziomie); **Szklarnia** — trzy białe łuki szklarni, sowa na środku na przemian „stoi” i „radość” (co 2,2 s), tęczowy liść, podskakująca kózka-sprężynka;
 - `renderGameCards({ root, platform, onGuide })` — dla każdej gry z `GAME_REGISTRY` (kolejność rejestru) `article.game-card[data-game]` (`aria-labelledby` = nazwa, zmienne biomu) z ilustracją (płótno `aria-hidden`, przystanek „N. Nazwa”, „Nowe!” dla `rebuilt`), nazwą `h3`, opisem, rekordem `[data-record]` (szkielet „…”), odnośnikiem **Graj** `a.menu-button.is-primary[data-play=<id>]` (`href` = ścieżka gry, ikona ▶), przyciskiem **Jak grać?** `[data-guide=<id>]` (`aria-label="Jak grać w <nazwa>?"`) i — gdy gra ma w rejestrze `preview` (E4–E8) — odnośnikiem **„Wypróbuj nową wersję: <nazwa>”** `a.menu-button.is-preview[data-preview=<id>]` (`href` = `preview.path`, na całą szerokość akcji, min. 48 px, tło `--niebo-gora`, 16 px); na początku `root` — `svg.menu-path-line` z jedną ścieżką; zwraca `{ cards: [{ game, card, canvas, visible }], layoutPath(), updateRecords(records, gotowe) }`; `layoutPath()` prowadzi krzywą Béziera od środka góry przez środki kart na przemian na 28% i 72% szerokości do środka dołu; `updateRecords` zdejmuje szkielet i wpisuje „★ Rekord…” albo „Jeszcze bez rekordu — zagraj pierwszy raz!”;
 - `createArtState(random)` → `{ owl: createOwlAnimator(), cosmetic: "none" }` — osobna sowa na kartę (mrugają niezależnie).
@@ -182,7 +183,7 @@ Przy starcie menu pobiera 131 plików (w tym 48 SVG postaci): **ok. 160 KB po ko
 IIFE bez zapisu danych. Udostępnia (obiekt zamrożony):
 
 - `GAME_REGISTRY` — 5 gier: `{ id, name, path, icon, kind, dailyMetric | saveVersion }`:
-  - `runner` — „SowaRunner”, `SowaRunner/`, 🏃, `kind: "arcade"`, `dailyMetric: "distance"`, od E4 `preview: { path: "SowiaUcieczka/", name: "Sowia Ucieczka" }` — nowa wersja w podglądzie (ten sam identyfikator i rekordy; menu pokazuje przycisk „Wypróbuj nową wersję”, a `SowieCloud` rozpoznaje stronę podglądu jako grę `runner`);
+  - `runner` — „Sowia Ucieczka”, `SowiaUcieczka/`, 🏃, `kind: "arcade"`, `dailyMetric: "distance"`, `rebuilt: true` (znaczek „Nowe!” na karcie). Od E4f zastępuje SowaRunner (ten sam identyfikator i rekordy). W E4a–E4e wpis miał `path: "SowaRunner/"` i `preview: { path: "SowiaUcieczka/", name: "Sowia Ucieczka" }` — pole `preview` (nowa wersja w podglądzie przed podmianą: przycisk „Wypróbuj nową wersję” na karcie w menu, rozpoznanie strony podglądu przez `SowieCloud`) zostaje obsługiwane dla kolejnych przebudów;
   - `jumper` — „SowaJumper”, `SowaJumper/`, 🪶, `arcade`, `dailyMetric: "height"`;
   - `sowa3` — „Sowa3”, `Sowa3/`, 🛣️, `arcade`, `dailyMetric: "score"`;
   - `ogrody` — „Sowie Ogrody”, `SowieOgrody/`, 🌿, `kind: "idle"`, `saveVersion: 2`;
@@ -240,12 +241,13 @@ API (`window.SowieOwlGallery`): `PHOTOS`, `open()`, `close()`, `refreshUnlocks()
 
 ### `shared/gameplay-expansion.js`
 
-Mechaniki dodatkowe per gra (seria liści w Runnerze, precyzyjne lądowania w Jumperze, combo w Sowa3, kontrakty w Ogrodach, cele laboratorium i album cech w Szklarni) oraz wyzwanie dnia (`?daily=1&seed=daily-RRRR-MM-DD-gra`). Zmiany E1:
+Mechaniki dodatkowe per obecna gra (precyzyjne lądowania w Jumperze, combo w Sowa3, kontrakty w Ogrodach, cele laboratorium i album cech w Szklarni) oraz wyzwanie dnia (`?daily=1&seed=daily-RRRR-MM-DD-gra`). Zmiany E1:
 
 - stan gier idle czyta przez `window.SowieIdleGame.snapshot()` (po `SowieIdleGame.ready`), a nie z pamięci przeglądarki;
 - stan dnia kontraktów `{ date, baseline, claimed }` jest w dokumencie gry `sowiegry_gry/{gra}.daily` (`SowieCloud.game` / `updateGame`); dane z poprzedniego dnia są zastępowane;
 - album cech Szklarni: `sowiegry_gry/szklarnia.traitAlbum` (tablica kluczy `wzrost|zapach`);
-- rekord wyzwania dnia zapisuje gra przez `SowieCloud.submitRun()` (`dailyBest` w dokumencie gry); moduł nie zapisuje go sam.
+- rekord wyzwania dnia zapisuje gra przez `SowieCloud.submitRun()` (`dailyBest` w dokumencie gry); moduł nie zapisuje go sam;
+- od E4f bez części SowaRunner (dawny panel „Serie i wyzwanie dnia SowaRunner” i seria liści): Sowia Ucieczka nie ładuje tego skryptu — ma własne zadania biegu, serię liści (metryka Akademii `runnerLeafChain` z SowieProgress) i wyzwanie dnia; `shared/game-guides.js` też nie rozpoznaje już folderu `SowaRunner/`.
 
 ### `shared/records.js` — okno „🏆 Rekordy” (`window.SowieRecords`)
 
@@ -524,19 +526,28 @@ Demonstracja gestu (od E3): `span.sowie-gesture-demo[data-gesture]` (`aria-hidde
 
 ### `progress.js` — `window.SowieProgress`
 
-- `EVENTS`: `run:started`, `run:ended`, `leaf:collected` (`kind`: zielony / zloty / teczowy, `count`, `points`), `goat:caught` (`kind`), `hit` (`by`: pracu / amic), `near-miss`, `combo` (`value`), `fever:start`, `whale:bonus`, `idle:progress`, `game:visit`, `award` (`id`, `xp`, `feathers`, `label`);
+- `EVENTS` (od E4f w osobnym module `progress-events.js`, eksportowane dalej z `progress.js`): `run:started`, `run:ended`, `leaf:collected` (`kind`: zielony / zloty / teczowy, `count`, `points`), `goat:caught` (`kind`), `hit` (`by`: pracu / amic), `near-miss`, `combo` (`value`), `fever:start`, `whale:bonus`, `life:gained` (od E4f: odzyskane życie — w Sowiej Ucieczce Chmura Pracu się oddala), `idle:progress`, `game:visit`, `award` (`id`, `xp`, `feathers`, `label`);
 - `bridgeCalls(typ, szczegóły)` — **most do obecnej Sowiej Akademii** (okres przejściowy E4–E8, Analiza 3): koniec biegu → `runnerScore`/`runnerDistance`/`runnerLeafChain`, `jumperScore`/`jumperHeight`/`jumperStreak`, `sowa3Score`/`sowa3Combo`/`sowa3Finishes` (+1 przy `finished`); postęp idle → `ogrodyLeaves`/`Clicks`/`Buys`/`Watering`/`Prestiges`/`Plants`, `szklarniaRooms`/`Plants`/`Goats`/`Hybrids` (tryby `max` / `set` / `add` jak w `gameplay-expansion.js`); wizyta → `<gra>Visits` +1; brak wartości albo nieznana gra → brak wywołań. Misje dnia i tygodnia oraz odblokowywanie zdjęć Galerii (wymagania oparte na metrykach Akademii) działają więc tak samo dla starych i nowych gier;
 - `taskProgress(migawka Akademii)` → `[{ id, label, progress, target, done }]` — misje dnia (`max`: metryka dnia, `delta`: metryka − `baseline`, obcięte do celu) i misja tygodnia („Zagraj w 3 różne gry w tym tygodniu”);
 - `createProgress({ getAcademy = () => window.SowieAcademy, now })` → `emit(typ, szczegóły)` (nieznany typ → błąd; bez `gameId` bierze grę bieżącego biegu; liczniki biegu; most; `award` → `SowieAcademy.award`), `on(typ | "*", słuchacz)` → odłączenie, `beginRun(gra, { difficulty, daily })` (liczniki od zera, migawka zadań „przed”), `endRun(wynik)` → podsumowanie `{ gameId, difficulty, daily, startedAt, leaves: { zielony, zloty, teczowy, total }, leafPoints, goats, hits, nearMisses, fevers, whales, bestCombo, …wynik, durationMs, tasks: [{ …, advanced, newlyDone }] }` (bez `beginRun` → błąd), `current()`, `tasks()`;
+- `linkProfile({ getCloud = () => window.SowieCloud, getPlatform = () => window.SowiePlatform, onMission })` (od E4f) — gra (nie Laboratorium) włącza zapis **misji garderoby i statystyk profilu**: każde zdarzenie przechodzi przez `profileUpdates` i `applyProfileUpdates` (`missions.js`, niżej) z `COSMETICS` platformy; ukończona misja → `onMission({ key, label, reward, rewardLabel })`;
 - `progress` — wspólna instancja strony, także `window.SowieProgress`.
+
+### `missions.js` — misje garderoby i statystyki profilu (od E4f)
+
+Obecne gry posuwają misje profilu przez `SowieCore.progressMission` / `recordStat`; przebudowane gry — przez zdarzenia SowieProgress. Moduł zamienia je na te same zmiany profilu (dawny SowaRunner robił to przez SowieCore — po podmianie Sowia Ucieczka robi to tutaj, więc np. „Czapka z daszkiem” za 1000 m nadal jest do zdobycia).
+
+- `MISSION_LABELS` — opisy misji (`leaves20` „Zbierz 20 liści monster”, `extraLife` „Zdobądź dodatkowe życie”, `nearMiss3` „Wykonaj 3 uniki „O włos!””, `chaosFinish` „Ukończ etap na poziomie Chaos”, `combo4` „Osiągnij combo ×4”, `runner1000` „Przebiegnij 1000 m w Sowiej Ucieczce”, `jumper250` „Osiągnij 250 m w SowaJumper”); zakładka „Sowa” (`shared/menu/owl-tab.js`) importuje je stąd (`shared/sowie-core.js` ma kopię dla obecnych gier);
+- `profileUpdates(typ, szczegóły)` → `{ missions: [[klucz, wartość, "add" | "max"]], stats: [[…]] }`: `leaf:collected` → `leaves20` i `stats.leaves` + `count`; `near-miss` → `nearMiss3` i `stats.nearMisses` + 1; `combo` → `stats.maxCombo` (maksimum), od ×4 `combo4` + 1; `life:gained` → `extraLife` i `stats.extraLives` + 1; `run:ended` gry `runner` → `runner1000` = maksimum z dystansu, gry `jumper` → `jumper250` = maksimum z wysokości; inne zdarzenia — nic;
+- `applyProfileUpdates(cloud, zmiany, { cosmetics })` — bez gotowej chmury nic; statystyki: `add` → `cloud.increment("stats.<klucz>")`, `max` → `updateProfile` tylko przy poprawie; misje (pomijane nieznane i ukończone): nowy postęp (suma albo maksimum, obcięty do celu) w `updateProfile`, przy osiągnięciu celu `done: true` i nagroda dopisana raz do `cosmetics.unlocked`; zwraca ukończone właśnie teraz `[{ key, label, reward, rewardLabel }]`.
 
 ### `guides-data.js` — instrukcje
 
 Struktura przewodnika `{ id, title, summary, cards: [{ id, title, text, sprite?, gesture?, tip? }] }`; `GESTURES` (tap „Stuknij”, hold „Przytrzymaj”, swipe-up/down/left/right „Przesuń w …”, drag „Przeciągnij”); `GUIDES.swiat` — „Poznaj Sowi Świat” (7 kart: Sówka, Liście monstery, Pracu Pracu, Amic, Skaczące kózki, Humbak, Serduszka-doniczki); `validateGuide(przewodnik, { sprites })` → lista błędów (brak pól, puste karty, powtórzone id, nieznany gest, brak grafiki w katalogu); `guideFor(id)`; `GUIDE_ORDER = ["swiat", "runner", "jumper", "sowa3", "ogrody", "szklarnia"]` (kolejność w zakładce „Jak grać”).
 
-Od E4 jest też przewodnik **`ucieczka`** — Sowia Ucieczka (podgląd; nie ma go w `GUIDE_ORDER`, zastąpi `runner` po akceptacji): „Cel gry” (Chmura Pracu, 400 m bez trafienia), „Skok” (`tap`), „Szybowanie” (`hold`), „Ślizg” (`swipe-down`), „Pracu i Amic” (rodziny przeszkód, znak „!”), od E4e „Kózki i humbak” (grafika `kozka-magnes-skok`: 5 kózek, Plusk-o-metr — 60 liści albo 3 bąbelki, 20 s rejsu; wskazówka o zadaniach biegu i Sowim mnożniku). Okno „Jak grać?” na ekranie tytułowym Sowiej Ucieczki ma też przycisk „Zagraj samouczek”.
+Przewodnik **`runner`** to od E4f **Sowia Ucieczka** (w E4a–E4e był osobnym przewodnikiem `ucieczka`, a `runner` opisywał dawny SowaRunner): tytuł „Sowia Ucieczka”, opis „Sówka ucieka przed Chmurą Pracu przez coraz bardziej zwariowane okolice. Skacz, szybuj i ślizgaj się, zbieraj liście monstery i nie daj się dogonić.”; 6 kart: „Cel gry” (Chmura Pracu, wskazówka: 400 m bez trafienia), „Skok” (`tap`), „Szybowanie” (`hold`), „Ślizg” (`swipe-down`), „Pracu i Amic” (rodziny przeszkód, znak „!”), „Kózki i humbak” (grafika `kozka-magnes-skok`: 5 kózek, Plusk-o-metr — 60 liści albo 3 bąbelki, 20 s rejsu; wskazówka o zadaniach biegu i Sowim mnożniku). Okno „Jak grać?” na ekranie tytułowym Sowiej Ucieczki ma też przycisk „Zagraj samouczek”; menu pauzy gry pokazuje ten sam przewodnik.
 
-Od E3 w pliku są też przewodniki **obecnych gier** (treść przeniesiona z `shared/game-guides.js`, bez zmian merytorycznych) — każdy ma opis `summary` i 5 kart: „Cel gry”, „Sterowanie” (z gestem: SowaRunner `tap`, SowaJumper `hold`, Sowa3 `swipe-right`, Ogrody i Szklarnia `tap`) oraz 3 karty ze wskazówkami (np. „Podwójny skok”, „Liście i seria”, „Humbak”; „Przez krawędź”, „Precyzyjne lądowanie”, „Platformy”; „Patrz na horyzont”, „Combo liści”, „Plansze”; „Najpierw rośliny”, „Podlewanie”, „Ogród rośnie beze mnie”; „Woda i nasiona”, „Krzyżowanie”, „Cele laboratorium”), każda z grafiką z katalogu. Po przebudowie gry podmieniamy tylko jej karty.
+Od E3 w pliku są też przewodniki **obecnych gier** (treść przeniesiona z `shared/game-guides.js`, bez zmian merytorycznych) — każdy ma opis `summary` i 5 kart: „Cel gry”, „Sterowanie” (z gestem: SowaJumper `hold`, Sowa3 `swipe-right`, Ogrody i Szklarnia `tap`) oraz 3 karty ze wskazówkami (np. „Przez krawędź”, „Precyzyjne lądowanie”, „Platformy”; „Patrz na horyzont”, „Combo liści”, „Plansze”; „Najpierw rośliny”, „Podlewanie”, „Ogród rośnie beze mnie”; „Woda i nasiona”, „Krzyżowanie”, „Cele laboratorium”), każda z grafiką z katalogu. Po przebudowie gry podmieniamy tylko jej karty.
 
 ### `shared/game-guides.js` — `window.SowieGameGuides` (strony gier)
 
@@ -560,8 +571,8 @@ Wszystkie dźwięki są syntezowane kodem (własna twórczość, CC0 — `assets
 - każda strona (menu, gry, Laboratorium) ma w `<head>`: `<link rel="manifest">`, ikonę SVG, `apple-touch-icon`, `mobile-web-app-capable`, `apple-mobile-web-app-capable`, `apple-mobile-web-app-title` „SowieGry” oraz skrypt `shared/pwa.js` po `password-gate.js`;
 - `shared/pwa.js` — po `load` rejestruje `sw.js` z katalogu głównego (zakres = cała strona) na `https` i `localhost`; błąd rejestracji to tylko `console.warn`; od E3 od razu przechwytuje `beforeinstallprompt` (`preventDefault`, zdarzenie zapamiętane — może przyjść, zanim wczyta się menu) i `appinstalled`; `window.SowiePwa` (zawsze, także bez service workera): `standalone()` — czy gra działa jako zainstalowana aplikacja (`display-mode: standalone` albo `navigator.standalone`), `canPrompt()` — czy przeglądarka pozwala zainstalować przyciskiem, `prompt()` → `"accepted"` / `"dismissed"` / `null` (systemowe okno instalacji; zdarzenie jednorazowe), `onInstallChange(słuchacz)` → odłączenie (słuchacz dostaje `true` po `beforeinstallprompt`, `false` po instalacji);
 - `sw.js` (katalog główny — service worker w `shared/` obejmowałby tylko ten katalog, a GitHub Pages nie pozwala ustawić nagłówka `Service-Worker-Allowed`):
-  - `VERSION = "sowiegry-v3"` (v2 — E3a: `shared/meta/guides-data.js`; v3 — nowe menu E3) — jedna pamięć podręczna na wersję; przy aktywacji usuwane są stare `sowiegry-*`; **przy każdej zmianie listy lub strategii trzeba podnieść `VERSION`**;
-  - `SHELL` (100 plików): `./`, `index.html`, manifest, 6 ikon, obie czcionki Fredoka, `config/firebase-config.js`, style (`cute-ui.css`, `world/tokens.css`, `ui/ui.css`, `menu/menu.css`, a dla gier `game-enhancements.css`, `owl-gallery.css`), skrypty klasyczne (`sowie-platform`, `sowie-cloud`, `password-gate`, `pwa`, `sowie-core`, `notification-manager`, `game-guides`, `sowie-academy`, `owl-gallery`), **cały graf modułów ES menu** (7 plików `shared/menu/`, `engine/assets, audio, loop, sprites`, `meta/guides-data, progress`, `ui/guide-view, icons, modal, toasts`, `world/catalog, owl, tokens`), `assets/audio/audio.json` z czterema efektami menu (`klik`, `hu-hu`, `zakup`, `rekord`) i **48 plików SVG postaci** z katalogu (`svgFiles(SPRITES)`) — menu rysuje postacie także przy pierwszym starcie bez zasięgu; kompletność pilnuje test jednostkowy (graf `import … from "./…"` od `shared/menu/menu.js`);
+  - `VERSION = "sowiegry-v4"` (v2 — E3a: `shared/meta/guides-data.js`; v3 — nowe menu E3; v4 — E4f: podmiana SowaRunner na Sowią Ucieczkę, nowe moduły `meta/progress-events.js` i `meta/missions.js`, a podniesienie wersji usuwa z telefonów stare pliki SowaRunner razem z `p5.js` ok. 5 MB) — jedna pamięć podręczna na wersję; przy aktywacji usuwane są stare `sowiegry-*`; **przy każdej zmianie listy lub strategii trzeba podnieść `VERSION`**;
+  - `SHELL` (102 pliki): `./`, `index.html`, manifest, 6 ikon, obie czcionki Fredoka, `config/firebase-config.js`, style (`cute-ui.css`, `world/tokens.css`, `ui/ui.css`, `menu/menu.css`, a dla gier `game-enhancements.css`, `owl-gallery.css`), skrypty klasyczne (`sowie-platform`, `sowie-cloud`, `password-gate`, `pwa`, `sowie-core`, `notification-manager`, `game-guides`, `sowie-academy`, `owl-gallery`), **cały graf modułów ES menu** (7 plików `shared/menu/`, `engine/assets, audio, loop, sprites`, `meta/guides-data, progress, progress-events, missions`, `ui/guide-view, icons, modal, toasts`, `world/catalog, owl, tokens`), `assets/audio/audio.json` z czterema efektami menu (`klik`, `hu-hu`, `zakup`, `rekord`) i **48 plików SVG postaci** z katalogu (`svgFiles(SPRITES)`) — menu rysuje postacie także przy pierwszym starcie bez zasięgu; kompletność pilnuje test jednostkowy (graf `import … from "./…"` od `shared/menu/menu.js`);
   - instalacja: `SHELL` z `cache: "reload"`, w tle pliki SDK Firebase 12.19.0 z gstatic (błąd nie blokuje instalacji), `skipWaiting`, przy aktywacji `clients.claim`;
   - pobieranie (tylko `GET`): strony i kod z tej domeny — **najpierw sieć** (aktualizacje z GitHub Pages od razu), przy braku sieci lub po 4 s — pamięć, a dla nawigacji bez kopii — menu `./`; obrazki, czcionki i dźwięki (`png, jpg, webp, gif, svg, ico, woff/woff2, mp3, ogg, wav`) oraz SDK z gstatic — **najpierw pamięć**; zapisywane są tylko odpowiedzi `ok` typu `basic`/`cors`; żądania do Firestore nie są obsługiwane (zapis offline robi SDK w IndexedDB);
   - gry trafiają do pamięci przy pierwszej wizycie (start bez zasięgu działa dla menu i gier już otwieranych);
@@ -613,7 +624,7 @@ Dostępne warianty: brak, kokardka, okulary, wianek, kapelusz ogrodnika, czapka 
 
 ## Misje
 
-20 liści, dodatkowe życie, 3 uniki „O włos!”, ukończenie etapu `Chaos`, combo `×4`, 1000 m w `SowaRunner`, 250 m w `SowaJumper`. Nagrodami są kosmetyki.
+20 liści, dodatkowe życie, 3 uniki „O włos!”, ukończenie etapu `Chaos`, combo `×4`, 1000 m w Sowiej Ucieczce (`runner1000`), 250 m w `SowaJumper`. Nagrodami są kosmetyki. Obecne gry posuwają misje przez `SowieCore.progressMission` / `recordStat`, a przebudowane gry — przez zdarzenia SowieProgress i `shared/meta/missions.js` (niżej).
 
 ## Audio
 
@@ -682,9 +693,9 @@ Zależności deweloperskie są przypięte tam, gdzie wersja wpływa na przegląd
 
 ### Testy obecnych gier (desktop, `tests/e2e/*.spec.js`)
 
-- `smoke.spec.js` — menu z 5 kartami i 4 zakładkami (wybrana „Gry”), każda gra startuje po wczytaniu postępu (Runner `mode === SCREEN.RUN`, Jumper `state.scene === "playing"`, Sowa3 `state.mode === "run"`, gry idle — licznik kliknięć), profil z `SowieCloud` (`schemaVersion: 1`), wspólne powiadomienia;
-- `guides-and-expansion.spec.js` — menu: 5 przycisków „Jak grać?”, brak starych przycisków `#academyButton` / `#galleryButton`, okno „Jak grać — SowaRunner” z kartą „Sterowanie”, Escape zamyka i oddaje fokus; instrukcje, Akademia i panele rozszerzeń w każdej grze; idempotentne nagrody Akademii i ich widok w zakładce „Sowa” (4 zadania, w tym tygodniowe, piórka w profilu);
-- `owl-gallery.spec.js` — zakładka „Galeria”: licznik „1 / 30”, 29 zablokowanych z paskiem postępu i wymaganiem, miniatura `-400.webp`, „Nowe!”, filtry (29 / 1 / 30), przeglądarka „1 / 1” z linkiem Pexels, „Ulubione” i „Tło menu” (`body.has-photo`, `profil.gallery.favorite/background/viewed`), Escape oddaje fokus kafelkowi bez „Nowe!” i z serduszkiem; profil z osiągnięciami zapisany wcześniej w emulatorze odblokowuje 30 zdjęć (licznik „30 / 30”, przeglądarka: → „2 / 30”, dwa razy „Poprzednie” → „30 / 30”) i zapisuje je w bazie; galeria dostępna z każdej gry (okno);
+- `smoke.spec.js` — menu z 5 kartami i 4 zakładkami (wybrana „Gry”), każda gra startuje po wczytaniu postępu (Sowia Ucieczka — po `SowiaUcieczka.ready()` Spacja, `screen() === "playing"`, bez `SowieCore`; Jumper `state.scene === "playing"`, Sowa3 `state.mode === "run"`, gry idle — licznik kliknięć), profil z `SowieCloud` (`schemaVersion: 1`), wspólne powiadomienia;
+- `guides-and-expansion.spec.js` — menu: 5 przycisków „Jak grać?”, brak starych przycisków `#academyButton` / `#galleryButton`, okno „Jak grać — Sowia Ucieczka” z kartą „Szybowanie”, Escape zamyka i oddaje fokus; instrukcje, Akademia i panele rozszerzeń w każdej obecnej grze (SowaJumper, Sowa3, Ogrody, Szklarnia; Sowia Ucieczka ma własną instrukcję, zadania i wyzwanie dnia — `ucieczka.spec.js`); idempotentne nagrody Akademii i ich widok w zakładce „Sowa” (4 zadania, w tym tygodniowe, piórka w profilu);
+- `owl-gallery.spec.js` — zakładka „Galeria”: licznik „1 / 30”, 29 zablokowanych z paskiem postępu i wymaganiem, miniatura `-400.webp`, „Nowe!”, filtry (29 / 1 / 30), przeglądarka „1 / 1” z linkiem Pexels, „Ulubione” i „Tło menu” (`body.has-photo`, `profil.gallery.favorite/background/viewed`), Escape oddaje fokus kafelkowi bez „Nowe!” i z serduszkiem; profil z osiągnięciami zapisany wcześniej w emulatorze odblokowuje 30 zdjęć (licznik „30 / 30”, przeglądarka: → „2 / 30”, dwa razy „Poprzednie” → „30 / 30”) i zapisuje je w bazie; galeria dostępna z każdej obecnej gry (okno; w Sowiej Ucieczce Galeria jest w zakładce menu głównego);
 - `platform.spec.js` — kasowanie wyłącznie starych kluczy SowieGry (dane innych stron zostają, zostaje `sowiegry:urzadzenie`), zapis stanu Ogrodów i Szklarni w emulatorze przy zejściu do tła i odtworzenie po przeładowaniu, stabilny panel Szklarni, modal z fokusem, ustawienia (stan zapisu, zapis ustawienia w bazie, „Wyloguj to urządzenie”), ograniczenie ruchu (chmury menu bez animacji, `SowieMenu.animating() === false` po zbudowaniu atlasu).
 
 ### Testy na telefonach (`tests/e2e/telefon/`)
@@ -693,9 +704,9 @@ Zależności deweloperskie są przypięte tam, gdzie wersja wpływa na przegląd
 
 `menu.spec.js` (E3 — „Gotowe, gdy” z Analizy 3):
 
-- zakładka „Gry”: 5 kart z nazwami z rejestru, szkielet rekordu znika po wczytaniu chmury („Jeszcze bez rekordu…”), jeden odnośnik podglądu `[data-preview="runner"]` do `SowiaUcieczka/`, atlas gotowy i narysowane klatki; „Graj” przy SowaRunner otwiera `/SowaRunner/` z planszą, a samo stuknięcie nie pobiera żadnych dźwięków menu;
+- zakładka „Gry”: 5 kart z nazwami z rejestru, szkielet rekordu znika po wczytaniu chmury („Jeszcze bez rekordu…”), karta „runner” — „Graj” do `SowiaUcieczka/`, znaczek „Nowe!”, bez odnośnika podglądu `[data-preview]`, atlas gotowy i narysowane klatki; „Graj” otwiera `/SowiaUcieczka/` z planszą, a stuknięcie nie pobiera żadnych dźwięków;
 - emulator: rekordy zapisane w `sowiegry/profil` pokazują się na kartach („Rekord: 1250 m”, „Rekord: 15 300 pkt”, „Liście: 4200”, bez rekordu dla SowaJumper);
-- instrukcje: „Jak grać?” na karcie → okno „Jak grać — SowaJumper” (5 kart, 1 demonstracja gestu), „Rozumiem” oddaje fokus; zakładka „Jak grać”: 6 sekcji (pierwsza „Poznaj Sowi Świat”), 5 demonstracji gestów;
+- instrukcje: „Jak grać?” na karcie → okno „Jak grać — SowaJumper” (5 kart, 1 demonstracja gestu), „Rozumiem” oddaje fokus; zakładka „Jak grać”: 6 sekcji (pierwsza „Poznaj Sowi Świat”), 7 demonstracji gestów (w tym 3 w sekcji Sowiej Ucieczki `#jak-grac-runner`);
 - odnośnik `#jak-grac-sowa3` otwiera zakładkę i sekcję Sowa3 w widoku; klawiatura na pasku zakładek (→, End, Home) z adresem `#galeria` i bez `#` dla „Gry”;
 - galeria: dwa cele Akademii (1500 m, 300 m) odblokowują zdjęcia → „3 / 30”, 3 „Nowe!”, 27 zablokowanych z kłódką i paskiem; przeglądarka: przesunięcie w lewo → „2 / 3”, w prawo → „1 / 3”, podwójne stuknięcie → powiększenie 2,5×, kolejne → 1×, przesunięcie w dół zamyka; zostaje 1 „Nowe!” (gesty jako zdarzenia `PointerEvent` na scenie — tak samo w Chromium i WebKit);
 - zakładka „Sowa”: przycisk ustawień w nagłówku otwiera zakładkę z fokusem na `#ustawienia`; „Kokardka” wybrana, „Okulary” zablokowane z podpowiedzią „Zbierz 20 liści monster (0 / 20)”; Tryb Przytulny, Efekty (klasa `sowie-reduced-effects`), suwak muzyki 0 → profil `{ cosmetics.selected: "bow", cozy: true, reducedEffects: true, volumeMusic: 0, music: false }`; okno „Rekordy — SowaRunner” z chipem Chaos; „Wyloguj to urządzenie” → „Anuluj” zostawia, „Wyloguj” przeładowuje stronę z ekranem hasła (`unlocked: false`);
@@ -704,12 +715,13 @@ Zależności deweloperskie są przypięte tam, gdzie wersja wpływa na przegląd
 `start.spec.js`:
 
 - menu główne i każda z pięciu gier otwiera się bez błędów (znacznik strony widoczny, brak błędów po 0,5 s);
+- stary adres `/SowaRunner/?daily=1` kończy na `/SowiaUcieczka/?daily=1` (nagłówek „Sowia Ucieczka”, notka wyzwania dnia), bez błędów;
 - menu główne mieści się w szerokości ekranu (`scrollWidth ≤ innerWidth`).
 
 `chmura.spec.js` (Analiza 3, zadanie 1.9):
 
 - ekran „Hasło sowy”: atrybuty pola (`autocapitalize`, `autocorrect`, `spellcheck`, `enterkeyhint`), czcionka ≥ 16 px, przycisk „Wejdź” ≥ 48 px, w całości na ekranie i w dolnej połowie, pole, oczko i przycisk w całości w szerokości ekranu, brak przewijania w bok i powiększenia po dotknięciu pola, błąd dla „hu hu”, oczko, wejście przez „ Huhu ” + Enter, w `localStorage` tylko `sowiegry:urzadzenie`, po przeładowaniu brak ekranu hasła;
-- pisanie hasła na stronie SowaRunner nie uruchamia gry; po wejściu stuknięcie startuje bieg;
+- pisanie hasła (ze spacjami) na stronie Sowiej Ucieczki nie uruchamia gry (ekran hasła przykrywa przycisk Start, ekran tytułowy zostaje); po wejściu stuknięcie w „Start” zaczyna bieg;
 - emulator: pierwsze połączenie tworzy `sowiegry/meta` (schemaVersion 1, 5 gier, `createdAt`) i `sowiegry/profil`; status `online`;
 - emulator: koniec gry w SowaJumper zapisuje rekord (`records.jumper.arcade`, `runs`, `top10`, historia), a **drugi kontekst przeglądarki (drugie urządzenie)** widzi ten rekord w `SowieCloud.records` i na ekranie gry;
 - emulator: zejście do tła zapisuje stan Ogrodów od razu, a powrót po 10 minutach pokazuje okno postępu offline;
@@ -721,9 +733,9 @@ Zależności deweloperskie są przypięte tam, gdzie wersja wpływa na przegląd
 - menu pauzy: „Wznów” ≥ 56 px, pozostałe ≥ 48 px, powłoka w stanie `paused`; Ustawienia: suwak muzyki 40 → `settings.volumeMusic`, Tryb Przytulny → `settings.cozy`; Garderoba: „Kokardka” → `cosmetics.selected = "bow"`; „Jak grać” → okno „Jak grać — Poznaj Sowi Świat” z 7 kartami; „Wznów” → cyfra 3, potem `running`; auto-pauza po przejściu w tło otwiera menu z „Witaj z powrotem”;
 - ekran wyników: wynik 50, „Nowy rekord!”, „1. miejsce”, 2 zadania, „Jeszcze raz” ≥ 56 px zaczyna nowy bieg (wynik 0).
 
-`komunikaty.spec.js` (E2d, SowaRunner, SowaJumper, Sowa3):
+`komunikaty.spec.js` (E2d, SowaJumper, Sowa3; od E4f też Sowia Ucieczka):
 
-- po starcie gry (Spacja) `SowieCore.isPlaying()` = `true`, klasa `sowie-arcade`; 3 komunikaty → widoczny 1 („O włos nad Amic! +25”), 2 w kolejce; komunikat w górnych 45% ekranu i w całości w jego szerokości (także telefon poziomo); dotknięcie ⏸ na pasku narzędzi pauzuje grę (w SowaRunner wymagało poprawki obsługi dotyku), a w pauzie widać 2 komunikaty.
+- po starcie gry (Spacja) `SowieCore.isPlaying()` = `true`, klasa `sowie-arcade`; 3 komunikaty → widoczny 1 („O włos nad Amic! +25”), 2 w kolejce; komunikat w górnych 45% ekranu i w całości w jego szerokości (także telefon poziomo); dotknięcie ⏸ na pasku narzędzi pauzuje grę, a w pauzie widać 2 komunikaty; Sowia Ucieczka (`shared/ui/toasts.js`): po starcie kózka Tarcza, kózka Magnes i trafienie (pochłonięte przez Tarczę) → widoczny 1 komunikat („Kózka Tarcza…”), w górnych 45% ekranu i w całości w jego szerokości, kolejne pokazują się po kolei („Kózka Magnes”).
 
 `dzwiek.spec.js` (E2c, `lab/?dzial=dzwiek`):
 
@@ -816,9 +828,10 @@ Fizyka, kamera i czas reakcji ≥ 1,1 s, przeszkody, 37 wzorów (każdy do przej
 ### Test architektury (`tests/unit/architecture.test.mjs`)
 
 - rejestr ma dokładnie 5 gier; menu generowane z rejestru (`shared/menu/games.js`: `platform.GAME_REGISTRY.map`, `index.html` bez kart w HTML, z modułem `shared/menu/menu.js`); `shared/main-menu.js` i `.css` usunięte, menu nie ładuje `sowie-core.js` ani `game-guides.js`; każda gra ładuje platformę i wspólne powiadomienia;
-- **`localStorage` i `sessionStorage` występują tylko w `shared/sowie-cloud.js`** (przeszukiwane są rekursywnie wszystkie pliki `.js` w `shared/`, `config/`, `lab/`, folderach gier i `sw.js`, bez `p5.js`);
+- **`localStorage` i `sessionStorage` występują tylko w `shared/sowie-cloud.js`** (przeszukiwane są rekursywnie wszystkie pliki `.js` w `shared/`, `config/`, `lab/`, folderach gier — od E4f `SowiaUcieczka/` zamiast `SowaRunner/` — i `sw.js`);
 - `shared/progress-reset.js` i `shared/idle-save-bridge.js` nie istnieją i nie są ładowane; platforma nie ma migracji, kopii, eksportu ani importu; ustawienia mają „Wyloguj to urządzenie”;
-- każda strona ładuje `config/firebase-config.js`, `sowie-platform.js`, `sowie-cloud.js`, `password-gate.js` w tej kolejności i przed `sowie-core.js` (menu: przed `sowie-academy.js`, a `owl-gallery.js` przed `shared/menu/menu.js`);
+- każda strona ładuje `config/firebase-config.js`, `sowie-platform.js`, `sowie-cloud.js`, `password-gate.js` w tej kolejności i przed `sowie-core.js` (menu i Sowia Ucieczka: przed `sowie-academy.js`, a w menu `owl-gallery.js` przed `shared/menu/menu.js`); wspólny menedżer powiadomień i okno Rekordów (`records.js` po `game-guides.js`) — w obecnych grach (Sowia Ucieczka ma `main.js` jako moduł i komunikaty z `shared/ui/`);
+- `SowaRunner/` zawiera tylko `index.html` i `docs/`: `<meta http-equiv="refresh" content="0; url=../SowiaUcieczka/">`, `location.replace` z `location.search` i `location.hash`, bez skryptów zewnętrznych; rejestr ma „Sowia Ucieczka” z `path: "SowiaUcieczka/"` i nie ma `SowaRunner/`;
 - `sowie-cloud.js` nie czyści całej pamięci (`clear`), ma hasło `huhu`, klucz `sowiegry:urzadzenie`, przypiętą wersję SDK, nazwaną aplikację i cache IndexedDB; wszystkie ścieżki w kodzie leżą w kolekcjach `sowiegry`, `sowiegry_gry`, `sowiegry_historia`, a żaden inny plik nie używa Firestore;
 - gry idle ładują stan przez `loadGameState`, zapisują przez `saveGameState`, udostępniają `SowieIdleGame` i nie mają warunku `now % 7000`.
 

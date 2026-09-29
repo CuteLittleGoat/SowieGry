@@ -5,8 +5,8 @@
   const cloud = window.SowieCloud;
   const VERSION = 2;
   const MISSION_POOL = Object.freeze([
-    { id: "runner-distance", game: "runner", metric: "runnerDistance", type: "max", target: 500, label: "Przebiegnij 500 m w SowaRunner" },
-    { id: "runner-score", game: "runner", metric: "runnerScore", type: "max", target: 1200, label: "Zdobądź 1200 pkt w SowaRunner" },
+    { id: "runner-distance", game: "runner", metric: "runnerDistance", type: "max", target: 500, label: "Przebiegnij 500 m w Sowiej Ucieczce" },
+    { id: "runner-score", game: "runner", metric: "runnerScore", type: "max", target: 1200, label: "Zdobądź 1200 pkt w Sowiej Ucieczce" },
     { id: "jumper-height", game: "jumper", metric: "jumperHeight", type: "max", target: 120, label: "Wznieś się na 120 m w SowaJumper" },
     { id: "jumper-streak", game: "jumper", metric: "jumperStreak", type: "max", target: 5, label: "Zrób serię 5 precyzyjnych lądowań" },
     { id: "sowa3-score", game: "sowa3", metric: "sowa3Score", type: "max", target: 900, label: "Zdobądź 900 pkt w Sowa3" },
