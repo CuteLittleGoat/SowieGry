@@ -70,14 +70,46 @@ function ground(context, width, y, color) {
   context.fillRect(0, y, width, 10);
 }
 
+// Chmura Pracu (Sowia Ucieczka): szaro-fioletowa chmura z groźnymi oczami, unosi się przy lewej krawędzi.
+function workCloud(context, x, y, size, time) {
+  const top = y + Math.sin(time * 2) * 0.05;
+  context.fillStyle = "#6d6480";
+  context.beginPath();
+  context.ellipse(x, top, size * 0.6, size * 0.36, 0, 0, Math.PI * 2);
+  context.ellipse(x - size * 0.4, top + size * 0.06, size * 0.34, size * 0.26, 0, 0, Math.PI * 2);
+  context.ellipse(x + size * 0.28, top - size * 0.16, size * 0.36, size * 0.3, 0, 0, Math.PI * 2);
+  context.fill();
+  for (const dx of [0.1, 0.34]) {
+    context.fillStyle = COLORS.bialy;
+    context.beginPath();
+    context.arc(x + dx * size, top, size * 0.09, 0, Math.PI * 2);
+    context.fill();
+    context.fillStyle = COLORS.kontur;
+    context.beginPath();
+    context.arc(x + dx * size + size * 0.03, top + size * 0.01, size * 0.045, 0, Math.PI * 2);
+    context.fill();
+  }
+  context.strokeStyle = COLORS.kontur;
+  context.lineWidth = size * 0.05;
+  context.lineCap = "round";
+  context.beginPath();
+  context.moveTo(x + 0.02 * size, top - size * 0.16);
+  context.lineTo(x + 0.18 * size, top - size * 0.1);
+  context.moveTo(x + 0.26 * size, top - size * 0.1);
+  context.lineTo(x + 0.42 * size, top - size * 0.16);
+  context.stroke();
+}
+
 // Każda scena rysuje w jednostkach świata: szerokość w (zwykle ok. 5–6 j.), wysokość 2,3 j.
 const SCENES = {
   runner(context, atlas, time, w, state) {
     ground(context, w, 2.05, COLORS.monstera);
+    // Sowia Ucieczka: sowa ucieka przed Chmurą Pracu.
+    workCloud(context, 0.2, 1.35, 0.95, time);
     state.owl.set("bieg");
-    drawOwl(context, atlas, 1.1, 2.05, { state: state.owl.state(), size: 1.05, cosmetic: state.cosmetic });
+    drawOwl(context, atlas, 1.45, 2.05, { state: state.owl.state(), size: 1.05, cosmetic: state.cosmetic });
     for (let index = 0; index < 3; index += 1) {
-      const x = 2.3 + index * 0.55;
+      const x = 2.5 + index * 0.55;
       const y = 1.2 - Math.sin((index / 2) * Math.PI) * 0.45 + Math.sin(time * 3 + index) * 0.05;
       atlas.draw(context, "lisc-zielony", x, y, { width: 0.42, rotation: Math.sin(time * 2 + index) * 0.2 });
     }

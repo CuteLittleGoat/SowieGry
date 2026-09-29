@@ -197,6 +197,26 @@
   opacity: 0.75;
 }
 
+/* Tryb diagnostyczny (?debug=1): panel w prawym dolnym rogu, nie łapie dotyku. */
+.ucieczka-debug {
+  position: absolute;
+  right: max(8px, env(safe-area-inset-right));
+  bottom: max(8px, env(safe-area-inset-bottom));
+  z-index: 33;
+  margin: 0;
+  padding: 6px 8px;
+  border-radius: 8px;
+  background: rgba(59, 47, 74, 0.75);
+  color: var(--bialy);
+  font:
+    11px/1.3 ui-monospace,
+    "SFMono-Regular",
+    Menlo,
+    monospace;
+  white-space: pre;
+  pointer-events: none;
+}
+
 /* Telefon poziomo: niższa karta. */
 @media (max-height: 500px) {
   .ucieczka-title-card {

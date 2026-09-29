@@ -40,7 +40,7 @@ test("manifest dźwięków: ok. 25 efektów, muzyka menu i humbaka, pliki MP3, r
   ]) {
     assert.ok(manifest.sfx[name], name);
   }
-  assert.deepEqual(Object.keys(manifest.music).sort(), ["humbak", "menu"]);
+  assert.deepEqual(Object.keys(manifest.music).sort(), ["humbak", "menu", "ucieczka"]);
   let total = 0;
   for (const [name, item] of [...sfx, ...Object.entries(manifest.music)]) {
     const path = join(audioRoot, item.file);
@@ -59,6 +59,10 @@ test("manifest dźwięków: ok. 25 efektów, muzyka menu i humbaka, pliki MP3, r
     total += statSync(path).size;
   }
   assert.ok(manifest.music.menu.loop && manifest.music.humbak.loop && manifest.sfx.szybowanie.loop);
+  // Motyw Sowiej Ucieczki: 125 BPM, 8 taktów (ok. 15 s), lekki (budżet gry < 800 KB).
+  assert.ok(manifest.music.ucieczka.loop && manifest.music.ucieczka.bpm === 125);
+  assert.ok(Math.abs(manifest.music.ucieczka.duration - (8 * 4 * 60) / 125) < 0.01);
+  assert.ok(manifest.music.ucieczka.bytes < 200 * 1024);
   assert.ok(total < 3 * 1024 * 1024, `razem ${total} B`);
   assert.match(readFileSync(join(audioRoot, "LICENSES.md"), "utf8"), /CC0/);
 });

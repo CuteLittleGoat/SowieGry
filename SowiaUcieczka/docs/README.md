@@ -107,6 +107,14 @@ Czasem sowa coś powie („Hu-hu! Ale lot!”, „Pracu Pracu? Nie dzisiaj!”, 
 
 Dodatek wybrany w garderobie (menu pauzy albo menu główne) sowa nosi w biegu. **Ślad bąbelków** zostawia za sową unoszące się bąbelki (nie przy włączonym ograniczeniu ruchu).
 
-## W przygotowaniu
+## Muzyka i dźwięk
 
-W kolejnym kroku dojdzie własna muzyka gry.
+W biegu gra własna, skoczna muzyka, a w czasie rejsu — pieśń humbaka. W pauzie muzyka cichnie. Muzykę i efekty wyłączysz w menu pauzy (**Ustawienia**) albo w menu głównym (zakładka **Sowa**). Gdy muzyka jest wyłączona, gra jej w ogóle nie pobiera.
+
+## Płynność
+
+Na słabszym telefonie gra sama trochę obniża ostrość obrazu, żeby bieg był płynny.
+
+## Dla ciekawskich
+
+Dopisek `?debug=1` do adresu gry pokazuje w prawym dolnym rogu liczby z gry (klatki na sekundę, prędkość, bieżący fragment trasy, okolicę).

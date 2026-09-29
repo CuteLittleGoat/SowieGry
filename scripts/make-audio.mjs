@@ -935,6 +935,126 @@ function menuTheme() {
   });
 }
 
+// Motyw Sowiej Ucieczki: bieg, 125 BPM, G-dur (G–e–C–D), 8 taktów (ok. 15 s): bas ósemkami z oktawą na „i”,
+// krótkie akordy marimby, skoczna melodia i perkusja z dodatkowym uderzeniem stopy (napęd biegu).
+function runTheme() {
+  const bpm = 125;
+  const beat = 60 / bpm;
+  const bars = 8;
+  const length = samples(bars * 4 * beat);
+  const chords = [
+    ["G2", "G3", "B3", "D4"],
+    ["E2", "E3", "G3", "B3"],
+    ["C3", "C4", "E4", "G4"],
+    ["D3", "D4", "F#4", "A4"],
+    ["G2", "G3", "B3", "D4"],
+    ["E2", "E3", "G3", "B3"],
+    ["C3", "C4", "E4", "G4"],
+    ["D3", "D4", "F#4", "A4"],
+  ];
+  // Melodia: [nuta, początek w ćwierćnutach, długość w ćwierćnutach].
+  const melody = [
+    ["B4", 0, 0.5],
+    ["D5", 0.5, 0.5],
+    ["G5", 1, 1],
+    ["F#5", 2, 0.5],
+    ["G5", 2.5, 0.5],
+    ["D5", 3, 1],
+    ["E5", 4, 0.5],
+    ["G5", 4.5, 0.5],
+    ["B5", 5, 1],
+    ["A5", 6, 0.5],
+    ["G5", 6.5, 0.5],
+    ["E5", 7, 1],
+    ["C5", 8, 0.5],
+    ["E5", 8.5, 0.5],
+    ["G5", 9, 1],
+    ["A5", 10, 0.5],
+    ["G5", 10.5, 0.5],
+    ["E5", 11, 1],
+    ["D5", 12, 1],
+    ["F#5", 13, 0.5],
+    ["A5", 13.5, 0.5],
+    ["D6", 14, 1.5],
+    ["C6", 15.5, 0.5],
+    ["B5", 16, 0.5],
+    ["A5", 16.5, 0.5],
+    ["G5", 17, 1],
+    ["D5", 18, 0.5],
+    ["G5", 18.5, 0.5],
+    ["B5", 19, 1],
+    ["G5", 20, 0.5],
+    ["E5", 20.5, 0.5],
+    ["B4", 21, 1],
+    ["E5", 22, 0.5],
+    ["F#5", 22.5, 0.5],
+    ["G5", 23, 1],
+    ["E5", 24, 0.5],
+    ["G5", 24.5, 0.5],
+    ["C6", 25, 1],
+    ["B5", 26, 0.5],
+    ["A5", 26.5, 0.5],
+    ["G5", 27, 1],
+    ["A5", 28, 1],
+    ["F#5", 29, 0.5],
+    ["E5", 29.5, 0.5],
+    ["D5", 30, 1],
+    ["A4", 31, 1],
+  ];
+  return circular(length, (channels) => {
+    chords.forEach((chord, bar) => {
+      const at = bar * 4 * beat;
+      const root = note(chord[0]);
+      // bas: ósemki prymy, na „i” oktawa wyżej
+      for (let step = 0; step < 8; step += 1) {
+        voice(channels, at + step * (beat / 2), beat * 0.4, {
+          wave: "triangle",
+          frequency: root * (step % 2 ? 2 : 1),
+          env: { a: 0.004, d: 0.12, s: 0.4, r: 0.06 },
+          gain: step % 2 ? 0.18 : 0.3,
+        });
+      }
+      // akordy: krótka marimba na „i” (ósemki 2, 4, 6, 8)
+      for (const step of [1, 3, 5, 7]) {
+        chord.slice(1).forEach((name, index) =>
+          voice(channels, at + step * (beat / 2), 0.04, {
+            frequency: note(name),
+            env: { a: 0.002, d: 0.18, s: 0, r: 0.18 },
+            gain: 0.08,
+            harmonics: [
+              [1, 1],
+              [4, 0.15],
+            ],
+            pan: (index - 1) * 0.4,
+          }),
+        );
+      }
+    });
+    for (const [name, start, length] of melody) {
+      voice(channels, start * beat, length * beat * 0.85, {
+        wave: "square",
+        frequency: note(name),
+        env: { a: 0.008, d: 0.15, s: 0.45, r: 0.08 },
+        gain: 0.1,
+        lowpass: 3000,
+        vibrato: { rate: 6, depth: 0.006, delay: 0.12 },
+        pan: 0.1,
+      });
+      voice(channels, start * beat, 0.04, {
+        frequency: note(name) * 2,
+        env: { a: 0.002, d: 0.1, s: 0, r: 0.1 },
+        gain: 0.045,
+        pan: -0.2,
+      });
+    }
+    drums(channels, beat, ["k", "", "", "", "s", "", "", "k", "k", "", "", "", "s", "", "k", ""], bars, {
+      kick: 0.6,
+      snare: 0.22,
+      hat: 0.09,
+    });
+  });
+}
+
 // Motyw humbaka: ocean, wolno, 72 BPM, D-dur, 8 taktów (ok. 27 s): pady, pieśń wieloryba, krople.
 function whaleTheme() {
   const bpm = 72;
@@ -1147,9 +1267,12 @@ for (const [name, effect] of Object.entries(EFFECTS)) {
   });
 }
 
-for (const [name, render, meta] of [
-  ["menu", menuTheme, { label: "Motyw menu", bpm: 112, volume: 0.55 }],
-  ["humbak", whaleTheme, { label: "Pieśń humbaka (bonus)", bpm: 72, volume: 0.6 }],
+// Muzyka: [nazwa, synteza, opis, kb/s] — motyw biegu 80 kb/s i pieśń humbaka 64 kb/s (lżejsze: Sowia Ucieczka
+// ma budżet < 800 KB razem z rejsem na humbaku).
+for (const [name, render, meta, kbps] of [
+  ["menu", menuTheme, { label: "Motyw menu", bpm: 112, volume: 0.55 }, 96],
+  ["humbak", whaleTheme, { label: "Pieśń humbaka (bonus)", bpm: 72, volume: 0.6 }, 64],
+  ["ucieczka", runTheme, { label: "Sowia Ucieczka — bieg", bpm: 125, volume: 0.5 }, 80],
 ]) {
   random = mulberry32(name.length * 104729);
   const channels = render();
@@ -1159,7 +1282,7 @@ for (const [name, render, meta] of [
   for (const channel of channels)
     for (let index = 0; index < channel.length; index += 1)
       channel[index] = Math.tanh((channel[index] / peak) * 0.8 * 1.2) / Math.tanh(1.2);
-  manifest.music[name] = write("music", name, channels, 96, { ...meta, loop: true });
+  manifest.music[name] = write("music", name, channels, kbps, { ...meta, loop: true });
 }
 
 writeFileSync(join(OUT, "audio.json"), `${JSON.stringify(manifest, null, 2)}\n`);

@@ -354,3 +354,18 @@ test("„Jak grać?” na ekranie tytułowym uruchamia samouczek od nowa", async
   await expect(page.locator(".ucieczka-tutorial")).toContainText("krok 1 z 4");
   expect(errors).toEqual([]);
 });
+
+test("tryb diagnostyczny ?debug=1: panel z klatkami na sekundę, prędkością i bieżącym wzorem", async ({ page }) => {
+  const errors = watchErrors(page);
+  await openGame(page, "/SowiaUcieczka/?seed=ucieczka-debug&debug=1");
+  await page.locator("[data-start]").click();
+  const panel = page.locator(".ucieczka-debug");
+  await expect(panel).toContainText("kl./s");
+  await expect(panel).toContainText(/wzór r0-/);
+  await expect(panel).toContainText("biom Łąka");
+  const box = await panel.boundingBox();
+  const viewport = page.viewportSize();
+  expect(box.x + box.width).toBeLessThanOrEqual(viewport.width);
+  expect(box.y + box.height).toBeLessThanOrEqual(viewport.height);
+  expect(errors).toEqual([]);
+});

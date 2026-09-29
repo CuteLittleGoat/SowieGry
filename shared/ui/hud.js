@@ -49,7 +49,13 @@ export function createHud({ root, onPause = () => {}, maxLives = 3 } = {}) {
   let leaves = 0;
   let lives = [maxLives, maxLives];
 
+  // Podskok liczby: najwyżej raz na czas animacji (220 ms) — wynik biegu rośnie prawie co klatkę, a każde
+  // ponowne uruchomienie animacji wymusza przeliczenie układu strony.
+  const lastBump = new WeakMap();
   function bump(node) {
+    const now = globalThis.performance?.now?.() ?? Date.now();
+    if (now - (lastBump.get(node) ?? -Infinity) < 250) return;
+    lastBump.set(node, now);
     node.classList.remove("is-bump");
     // ponowne uruchomienie animacji
     void node.offsetWidth;

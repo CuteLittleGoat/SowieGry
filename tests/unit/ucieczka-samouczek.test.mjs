@@ -1,7 +1,8 @@
 // Sowia Ucieczka — samouczek pierwszego uruchomienia (Analiza 3, E4 zadanie 4.5).
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import test from "node:test";
-import { COZY_SPEED, DIFFICULTIES } from "../../SowiaUcieczka/config.js";
+import { COZY_SPEED, DIFFICULTIES, GAME_SOUNDS } from "../../SowiaUcieczka/config.js";
 import { createRun } from "../../SowiaUcieczka/game.js";
 import { PATTERNS, TUTORIAL_PATTERNS } from "../../SowiaUcieczka/patterns.js";
 import { TUTORIAL_STEPS, createTutorial } from "../../SowiaUcieczka/tutorial.js";
@@ -144,4 +145,19 @@ test("zatrzymanie: inne ruchy są pomijane, właściwy wznawia grę; ruch przed 
   }
   assert.equal(frozenOnSlide, false);
   assert.equal(early.progress().step, 3);
+});
+
+test("dźwięki gry: lista wczytywana po pierwszym dotknięciu obejmuje każde play() z main.js i istnieje w manifeście", () => {
+  const source = readFileSync(new URL("../../SowiaUcieczka/main.js", import.meta.url), "utf8");
+  const manifest = JSON.parse(readFileSync(new URL("../../assets/audio/audio.json", import.meta.url), "utf8"));
+  const literal = [...source.matchAll(/play\("([a-z-]+)"/g)].map((match) => match[1]);
+  // Wywołania z nazwą wyliczaną: liście, trafienia, rekord / koniec gry, odliczanie.
+  const computed = ["lisc", "lisc-zloty", "lisc-teczowy", "trafienie-pracu", "rekord", "koniec-gry", "odliczanie"];
+  for (const name of [...literal, ...computed]) assert.ok(GAME_SOUNDS.includes(name), name);
+  for (const name of GAME_SOUNDS) assert.ok(manifest.sfx[name], name);
+  assert.ok(!GAME_SOUNDS.includes("klik") && !GAME_SOUNDS.includes("humbak-piesn"));
+  assert.ok(manifest.music.ucieczka && manifest.music.humbak);
+  for (const name of [...source.matchAll(/playMusic\("([a-z]+)"\)/g)].map((match) => match[1])) {
+    assert.ok(manifest.music[name], name);
+  }
 });

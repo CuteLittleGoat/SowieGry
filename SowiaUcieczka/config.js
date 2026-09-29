@@ -4,6 +4,36 @@
 
 export const GAME_ID = "runner";
 
+// Efekty wczytywane po pierwszym dotknięciu — tylko te, których gra używa (bez „klik” i „humbak-piesn”);
+// budżet gry < 800 KB (Analiza 3, E4). Test sprawdza, że lista obejmuje wszystkie wywołania play() w main.js.
+export const GAME_SOUNDS = Object.freeze([
+  "skok",
+  "podwojny-skok",
+  "szybowanie",
+  "slizg",
+  "ladowanie",
+  "lisc",
+  "lisc-zloty",
+  "lisc-teczowy",
+  "goraczka-start",
+  "trafienie-pracu",
+  "trafienie-amic",
+  "koza-meee",
+  "powerup-start",
+  "powerup-koniec",
+  "humbak-plusk",
+  "bonus-start",
+  "zycie",
+  "rekord",
+  "koniec-gry",
+  "odliczanie",
+  "odliczanie-start",
+  "hu-hu",
+  "dzwonek",
+  "polaczenie",
+  "zakup",
+]);
+
 // Fizyka sowy.
 export const PHYSICS = Object.freeze({
   gravity: 38, // j./s²

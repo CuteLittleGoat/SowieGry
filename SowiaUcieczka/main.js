@@ -15,9 +15,9 @@ import { createOwlAnimator } from "../shared/world/owl.js";
 import { COLORS } from "../shared/world/tokens.js";
 import { createRunCamera } from "./camera.js";
 import { BIOMES } from "./backgrounds.js";
-import { CLOUD, DIFFICULTIES, DIFFICULTY_ORDER, FEVER, GAME_ID, GOATS, VIEW, WHALE } from "./config.js";
+import { CLOUD, DIFFICULTIES, DIFFICULTY_ORDER, FEVER, GAME_ID, GAME_SOUNDS, GOATS, VIEW, WHALE } from "./config.js";
 import { createRun } from "./game.js";
-import { TUTORIAL_PATTERNS } from "./patterns.js";
+import { TUTORIAL_PATTERNS, tierAt } from "./patterns.js";
 import { createRenderer } from "./render.js";
 import { createTutorial } from "./tutorial.js";
 import { LEVEL_MAX, TASKS_PER_LEVEL, createTaskTracker, describeTasks, normalizeTasks } from "./tasks.js";
@@ -40,6 +40,9 @@ const dailyNote = document.querySelector("[data-daily-note]");
 const dailyLink = document.querySelector("[data-daily]");
 const tasksButton = document.querySelector("[data-tasks]");
 
+// Adaptacyjna rozdzielczość płótna: najwyżej DPR 2; gdy bieg przez 3 s ma średnio < 50 kl./s, 1,5, potem 1
+// (słabszy telefon: płynność ważniejsza niż ostrość). Zmniejszamy tylko w trakcie biegu, nigdy nie zwiększamy.
+let dprCap = 2;
 const view = createView({
   canvas,
   minWorld: VIEW.minWorld,
@@ -47,6 +50,7 @@ const view = createView({
     const rect = stage.getBoundingClientRect();
     return { width: rect.width, height: rect.height };
   },
+  getDpr: () => Math.min(window.devicePixelRatio || 1, dprCap),
 });
 const camera = createRunCamera();
 const atlas = createAtlas({ catalog: SPRITES, baseUrl: SVG_BASE });
@@ -74,8 +78,9 @@ let forceTutorial = params.get("samouczek") === "1";
 
 const settings = () => cloud?.profile?.()?.settings || {};
 const cosmetic = () => cloud?.profile?.()?.cosmetics?.selected || "none";
-const reducedMotion = () =>
-  Boolean(window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) || Boolean(settings().reducedEffects);
+// Ograniczenie ruchu: ustawienie systemu (zapamiętane, bez pytania matchMedia w każdej klatce) albo profilu.
+const motionQuery = window.matchMedia?.("(prefers-reduced-motion: reduce)");
+const reducedMotion = () => Boolean(motionQuery?.matches) || Boolean(settings().reducedEffects);
 const cozyEnabled = () => difficulty === "chill" && Boolean(settings().cozy);
 
 // ---------- Interfejs ----------
@@ -180,6 +185,13 @@ window.SowieNotifications ||= {
     else toasts.show(text, { kind: "reward", duration: 3200 });
   },
 };
+
+// Muzyka: motyw biegu („ucieczka”, 125 BPM) i pieśń humbaka w rejsie; przy wyłączonej muzyce pliku nie pobieramy.
+const musicOn = () => settings().music !== false;
+function playMusic(name) {
+  if (!musicOn()) return;
+  audio?.playMusic?.(name)?.catch?.(() => {});
+}
 
 function play(name, options) {
   try {
@@ -350,6 +362,8 @@ function startRun() {
   if (game.state.cozy) toasts.show("Tryb Przytulny — bez końca gry", { kind: "success" });
   if (DAILY) toasts.show("Wyzwanie dnia — powodzenia!", { kind: "success" });
   if (tutorial) toasts.show("Samouczek: 4 krótkie kroki. Chmura Pracu poczeka!", { kind: "info", key: "samouczek" });
+  audio?.unduck?.();
+  playMusic("ucieczka");
 }
 
 function finishRun() {
@@ -589,7 +603,7 @@ function handleEvents() {
       case "bonusStart":
         play("bonus-start");
         play("humbak-plusk");
-        audio?.playMusic?.("humbak")?.catch?.(() => {});
+        playMusic("humbak");
         toasts.show("Rejs na humbaku! Stukaj, żeby humbak wyskakiwał", { kind: "reward", key: "bonus" });
         break;
       case "whaleJump":
@@ -600,7 +614,7 @@ function handleEvents() {
         particles.emit(event.x, 0, { count: 16, speed: 4, tint: COLORS.wodaJasna, radius: 0.1, spread: 1.6 });
         break;
       case "bonusEnd":
-        audio?.stopMusic?.();
+        playMusic("ucieczka");
         play("zycie");
         toasts.show(`Humbacza premia +${event.premium}`, { kind: "reward", key: "bonus" });
         progress.emit(EVENTS.WHALE, { leaves: event.leaves });
@@ -686,11 +700,64 @@ function update(step) {
   particles.update(step);
 }
 
+// Tryb diagnostyczny (?debug=1): panel w prawym dolnym rogu, odświeżany 4 razy na sekundę.
+const DEBUG = params.get("debug") === "1";
+const debugNode = DEBUG ? document.createElement("pre") : null;
+if (debugNode) {
+  debugNode.className = "ucieczka-debug";
+  debugNode.setAttribute("aria-hidden", "true");
+  stage.appendChild(debugNode);
+}
+let debugTime = 0;
+let debugFrames = 0;
+let perfTime = 0;
+let perfFrames = 0;
+
+function adaptResolution(dt) {
+  if (screen !== "playing" || shell.state() !== "running" || tutorial?.frozen() || dt <= 0) {
+    perfTime = 0;
+    perfFrames = 0;
+    return;
+  }
+  perfTime += dt;
+  perfFrames += 1;
+  if (perfTime < 3) return;
+  const fps = perfFrames / perfTime;
+  perfTime = 0;
+  perfFrames = 0;
+  if (fps >= 50 || Math.min(window.devicePixelRatio || 1, dprCap) <= 1) return;
+  dprCap = dprCap > 1.5 ? 1.5 : 1;
+  view.resize();
+}
+
+function updateDebug(dt) {
+  if (!debugNode || !game) return;
+  debugFrames += 1;
+  debugTime += dt;
+  if (debugTime < 0.25) return;
+  const fps = debugFrames / debugTime;
+  debugFrames = 0;
+  debugTime = 0;
+  const state = game.state;
+  debugNode.textContent = [
+    `kl./s ${fps.toFixed(0)} · DPR ${view.layout().pixelRatio} · ${screen}${tutorial ? " · samouczek" : ""}`,
+    `v ${state.speed.toFixed(2)} j./s · zoom ${camera.zoom.toFixed(2)}`,
+    `dystans ${Math.floor(state.distance)} m · próg ${tierAt(state.distance, state.difficulty)}`,
+    `wzór ${state.patterns.at(-1) ?? "—"}`,
+    `biom ${BIOMES[state.biome].name} · okrążenie ${state.loop + 1}`,
+    `przeszkody ${state.obstacles.length} · liście ${state.leaves.length} · kózki ${state.goats.length}`,
+    `combo ×${state.combo} · mnożnik ×${state.multiplier} · chmura ${state.cloud}`,
+    `plusk ${Math.round(state.splash * 100)}%${state.bonus ? ` · rejs ${state.bonus.time.toFixed(1)} s` : ""}`,
+  ].join("\n");
+}
+
 function render() {
   const now = performance.now();
   const dt = lastFrame ? Math.min(0.1, (now - lastFrame) / 1000) : 0;
   lastFrame = now;
   if (!game) return;
+  adaptResolution(dt);
+  updateDebug(dt);
   renderer.draw({
     state: game.state,
     animator,
@@ -771,7 +838,7 @@ atlas
 fetch(new URL("audio.json", AUDIO_BASE))
   .then((response) => (response.ok ? response.json() : Promise.reject(new Error(`audio.json: ${response.status}`))))
   .then((manifest) => {
-    audio = createAudio({ manifest, baseUrl: AUDIO_BASE });
+    audio = createAudio({ manifest, baseUrl: AUDIO_BASE, preloadOnUnlock: GAME_SOUNDS });
     connectAudioSettings(audio, cloud);
     audio.bindUnlock(window, { ignore: (event) => Boolean(event.target?.closest?.("a[href]")) });
   })
@@ -779,6 +846,9 @@ fetch(new URL("audio.json", AUDIO_BASE))
 
 shell.onChange?.((change) => {
   if (change.state === "countdown") play(change.count > 1 ? "odliczanie" : "odliczanie-start");
+  // Pauza: muzyka ciszej; po odliczaniu wraca.
+  if (change.state === "paused") audio?.duck?.(0.3);
+  else if (change.state === "running") audio?.unduck?.();
 });
 
 showRecord();

@@ -16,7 +16,8 @@ zapisane w tym samym skrypcie.
 |---|---|
 | `sfx/*.mp3` | 27 efektów (mono, 64 kb/s, 44,1 kHz): skok, podwójny skok, szybowanie (pętla), ślizg, lądowanie, liść, złoty liść, tęczowy liść, start Gorączki Monster, trafienie przez Pracu („pracu!”), trafienie przez Amic (bonk), kózka („meee”), start i koniec power-upu, plusk humbaka, zawołanie humbaka, start bonusu, dodatkowe życie, nowy rekord, kliknięcie, zakup, połączenie (merge), odliczanie, odliczanie — start, koniec gry (smutne „hu-hu”), sowa „hu-hu!”, dzwonek (zapowiedź Pracu) |
 | `music/menu.mp3` | motyw menu — 112 BPM, C-dur, 8 taktów, pętla bez szwu (stereo, 96 kb/s) |
-| `music/humbak.mp3` | pieśń humbaka (bonus) — 72 BPM, D-dur, 8 taktów, pady, pieśń wieloryba, krople, szum fal (stereo, 96 kb/s) |
+| `music/humbak.mp3` | pieśń humbaka (bonus) — 72 BPM, D-dur, 8 taktów, pady, pieśń wieloryba, krople, szum fal (stereo, 64 kb/s) |
+| `music/ucieczka.mp3` | motyw Sowiej Ucieczki (bieg) — 125 BPM, G-dur (G–e–C–D), 8 taktów, bas ósemkami, marimba, melodia, perkusja (stereo, 80 kb/s) |
 | `audio.json` | manifest: plik, rozmiar, długość, liczba próbek, początek dźwięku, podpis, głośność, pętla, limit głosów, odstęp, odcisk początku pętli |
 
 ## Nagrania właściciela (opcjonalne)
