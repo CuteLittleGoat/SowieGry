@@ -1,6 +1,7 @@
 // Sowie Tory — rekwizyty plansz rysowane kodem w stylu Sowiego Świata (kontur #3b2f4a, zaokrąglone kształty).
 // Każda funkcja rysuje w metrach: kontekst przesunięty do punktu na ziemi (środek podstawy) i przeskalowany
-// (1 jednostka = 1 m), oś y w górę jest ujemna. `t` — czas (s) do drobnych animacji.
+// (1 jednostka = 1 m), oś y w górę jest ujemna. `t` — czas (s) do drobnych animacji. `box` i `ellipse` (kształty
+// z konturem) używa też garden.js.
 import { COLORS, font } from "../shared/world/tokens.js";
 
 const INK = COLORS.kontur;
@@ -16,7 +17,7 @@ function rounded(context, x, y, width, height, radius) {
   context.closePath();
 }
 
-function box(context, x, y, width, height, fill, radius = 0.06, line = 0.05) {
+export function box(context, x, y, width, height, fill, radius = 0.06, line = 0.05) {
   rounded(context, x, y, width, height, radius);
   context.fillStyle = fill;
   context.fill();
@@ -25,7 +26,7 @@ function box(context, x, y, width, height, fill, radius = 0.06, line = 0.05) {
   context.stroke();
 }
 
-function ellipse(context, x, y, rx, ry, fill, line = 0.04) {
+export function ellipse(context, x, y, rx, ry, fill, line = 0.04) {
   context.beginPath();
   context.ellipse(x, y, rx, ry, 0, 0, Math.PI * 2);
   context.fillStyle = fill;

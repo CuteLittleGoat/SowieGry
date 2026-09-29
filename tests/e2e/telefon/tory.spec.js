@@ -125,6 +125,56 @@ test("Sowie Tory: plansze w kolejności z obecnej gry, na blokowisku PRL szarżu
   expect(errors).toEqual([]);
 });
 
+test("Sowie Tory: meta → finał z basenem → Humbacze Tory → podsumowanie z gwiazdkami → plansza 2 (emulator)", async ({
+  page,
+}, testInfo) => {
+  // Rejs humbaka trwa 20 s w czasie rzeczywistym — dłuższy limit testu (WebKit w CI).
+  test.setTimeout(120_000);
+  const project = uniqueProject(testInfo);
+  const errors = watchErrors(page);
+  await openGame(page, cloudUrl("/SowieTory/", project));
+  await page.locator("[data-start]").click();
+  await page.evaluate(() => window.SowieTory.warp(1200));
+  await expect.poll(async () => (await state(page)).phase).toBe("finale");
+  expect((await state(page)).finishSeen).toBe(false);
+
+  // Pierwszy finał: stuknięcie go nie skraca.
+  const box = await page.locator("[data-stage]").boundingBox();
+  await page.mouse.click(box.x + box.width / 2, box.y + box.height * 0.55);
+  expect((await state(page)).phase).toBe("finale");
+  await expect.poll(async () => (await state(page)).phase, { timeout: 15_000 }).toBe("whale");
+  await expect(page.locator(".sowie-toast-chip", { hasText: "Humbacze Tory!" })).toBeVisible();
+  await expect(page.locator(".tory-progress")).toContainText("Humbacze Tory · 0:");
+  await page.evaluate(() => window.SowieCloud.flush());
+  expect((await readDoc(project, "sowiegry/profil/sowiegry_gry/sowa3")).finishSeen).toBe(true);
+
+  // Rejs: w prawo — tor humbaka, w górę — wyskok.
+  await swipe(page, 90, 0);
+  await expect.poll(async () => (await state(page)).ride.lane).toBe(1);
+  await swipe(page, 0, -90);
+  await expect.poll(async () => (await state(page)).ride.airborne).toBe(true);
+
+  const summary = page.getByRole("dialog", { name: /1\/4 · Biedronka — ukończona!/ });
+  await expect(summary).toBeVisible({ timeout: 40_000 });
+  await expect(summary).toContainText("Plansza ukończona");
+  await expect(summary).toContainText("Liście z Humbaczych Torów");
+  const stars = Number(await summary.locator("[data-stars]").getAttribute("data-stars"));
+  expect(stars).toBeGreaterThanOrEqual(1);
+  await summary.getByRole("button", { name: "Dalej" }).click();
+  await expect(summary).toBeHidden();
+  await expect(page.locator(".tory-progress")).toContainText("2/4 · Festiwal");
+  expect((await state(page)).phase).toBe("run");
+  await page.evaluate(() => window.SowieCloud.flush());
+  expect((await readDoc(project, "sowiegry/profil/sowiegry_gry/sowa3")).stars.biedronka).toBe(stars);
+
+  // Drugi finał: już obejrzany — stuknięcie przechodzi od razu do rejsu.
+  await page.evaluate(() => window.SowieTory.warp(1200));
+  await expect.poll(async () => (await state(page)).phase).toBe("finale");
+  await page.mouse.click(box.x + box.width / 2, box.y + box.height * 0.55);
+  await expect.poll(async () => (await state(page)).phase, { timeout: 2000 }).toBe("whale");
+  expect(errors).toEqual([]);
+});
+
 test.describe("Sowie Tory — najmniejszy telefon (320 × 568)", () => {
   test.use({ viewport: { width: 320, height: 568 } });
 

@@ -95,6 +95,10 @@ export const SCORE = Object.freeze({
   noHitBonus: 300,
 });
 
+// Gwiazdki planszy (podsumowanie po rejsie humbaka), każda za osobne osiągnięcie: ★ ukończenie planszy,
+// ★ zebranie co najmniej `leafShare` liści wystawionych na planszy (złoty = 5), ★ plansza bez trafienia.
+export const STARS = Object.freeze({ leafShare: 0.6 });
+
 // Liście: w torze na wysokości 0,6 m, zbierane w promieniu 0,7 m (w bok) i 0,8 m (w głąb).
 export const LEAVES = Object.freeze({ height: 0.6, reachX: 0.7, reachZ: 0.8, spacing: 3 });
 
@@ -114,4 +118,7 @@ export const GAME_SOUNDS = Object.freeze([
   "hu-hu",
   "dzwonek",
   "polaczenie",
+  "bonus-start",
+  "humbak-plusk",
+  "humbak-piesn",
 ]);

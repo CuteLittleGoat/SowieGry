@@ -1,14 +1,17 @@
 // Sowie Tory — logika biegu (bez DOM i bez rysowania; testy jednostkowe i symulacje w Node).
 // Stan w jednym obiekcie; zdarzenia (skok, liść, trafienie…) trafiają do kolejki `events`, z której korzysta
 // strona (dźwięk, komunikaty, cząsteczki, SowieProgress). Położenia przeszkód i liści: `at` — metry od początku
-// planszy; głębokość przed sową z = at − stageDistance.
+// planszy; głębokość przed sową z = at − stageDistance. Po mecie planszy: finał z basenem (finale.js), rejs
+// „Humbacze Tory” (whale.js) i podsumowanie z gwiazdkami; dopiero potem następna plansza.
 import { createRng } from "../shared/engine/rng.js";
-import { BOARS, COZY_SPEED, DIFFICULTIES, LEAVES, MOVING, OWL, PROJECTION, SCORE, TRACK } from "./config.js";
+import { BOARS, COZY_SPEED, DIFFICULTIES, LEAVES, MOVING, OWL, PROJECTION, SCORE, STARS, TRACK } from "./config.js";
+import { createFinale } from "./finale.js";
 import { OBSTACLES, collides, obstacleShape, obstacleX } from "./obstacles.js";
 import { createTrack, gapAfter, PATTERNS } from "./patterns.js";
 import { createOwlBody, stepOwl } from "./physics.js";
 import { laneX } from "./projection.js";
 import { STAGES, STAGE_COUNT, stageKind } from "./stages.js";
+import { WHALE, createWhaleRide } from "./whale.js";
 
 // Prędkość (m/s) na planszy `stage` przy postępie `progress` (0–1): łagodny wzrost, każda plansza szybsza.
 export function speedAt(progress, difficulty = "arcade", stage = 0, cozy = false) {
@@ -22,6 +25,13 @@ export function speedAt(progress, difficulty = "arcade", stage = 0, cozy = false
 // Poziom combo (×1–×5): +1 co SCORE.comboStep liści bez trafienia.
 export const comboLevel = (streak) => Math.min(SCORE.comboMax, 1 + Math.floor(streak / SCORE.comboStep));
 
+// Gwiazdki planszy: ★ za ukończenie, ★ za co najmniej STARS.leafShare wystawionych liści, ★ bez trafienia.
+export function stageStars({ hits, leaves, total }) {
+  const leafStar = total > 0 && leaves >= total * STARS.leafShare;
+  const noHit = hits === 0;
+  return { count: 1 + (leafStar ? 1 : 0) + (noHit ? 1 : 0), leaves: leafStar, noHit };
+}
+
 // Odległość (m), z której ruchomy telefon zaczyna ostrzegać strzałką (przy danej prędkości).
 export const moverTrigger = (speed) => speed * (MOVING.warning + MOVING.switchTime + MOVING.lead);
 
@@ -34,6 +44,7 @@ export function createRun({
   intro = [],
   safe = false,
   startStage = 0,
+  finishSeen = false,
 } = {}) {
   const rng = random || createRng(seed).next;
   const level = DIFFICULTIES[difficulty] ? difficulty : "arcade";
@@ -45,6 +56,8 @@ export function createRun({
   const controls = { left: false, right: false, up: false, down: false };
   let track = createTrack({ random: rng, patterns, intro });
   let lastLaneChange = -Infinity;
+  let finale = null;
+  let ride = null;
   const boars = [];
   const chaseOn = (stage) => Boolean(STAGES[stage % STAGE_COUNT].chase);
   const firstBoar = (stage) => (chaseOn(stage) ? BOARS.first + rng() * 30 : Infinity);
@@ -53,7 +66,7 @@ export function createRun({
     difficulty: level,
     cozy: Boolean(cozy),
     safe: Boolean(safe),
-    phase: "run", // run | stageEnd | over
+    phase: "run", // run | finale | whale | stageEnd | over
     time: 0,
     stage: startStage,
     stageTime: 0,
@@ -66,6 +79,9 @@ export function createRun({
     hits: 0,
     stageHits: 0,
     stageLeaves: 0,
+    stageLeafTotal: 0, // liście wystawione na planszy (złoty = 5) — do gwiazdki za liście
+    stageWhaleLeaves: 0,
+    stageStars: [], // gwiazdki ukończonych plansz: { count, leaves, noHit }
     leafCount: 0,
     leafPoints: 0,
     bonusPoints: 0,
@@ -84,6 +100,13 @@ export function createRun({
     boars,
     nextBoarAt: firstBoar(startStage),
     boarsDodged: 0,
+    // Finał z basenem: stan osi czasu (finale.js), położenie sowy w bok na mecie; po pierwszym pełnym
+    // obejrzeniu (`finishSeen` w dokumencie gry) finał można skrócić tapnięciem.
+    finishSeen: Boolean(finishSeen),
+    finale: null,
+    finaleX: 0,
+    // Rejs „Humbacze Tory” (whale.js).
+    ride: null,
     endReason: null,
   };
 
@@ -107,6 +130,7 @@ export function createRun({
         });
       } else {
         leaves.push({ lane: item.lane, at: start + item.z, y: item.y, kind: item.kind || "zielony", taken: false });
+        state.stageLeafTotal += item.kind === "zloty" ? 5 : 1;
       }
     }
     obstacles.sort((a, b) => a.at - b.at);
@@ -294,18 +318,71 @@ export function createRun({
     emit("over", { reason });
   }
 
+  // Meta planszy: premia i początek finału z basenem.
   function finishStage() {
-    state.phase = "stageEnd";
+    state.phase = "finale";
     state.stagesDone += 1;
-    state.bonusPoints += SCORE.stageBonus;
-    const noHit = state.stageHits === 0;
-    if (noHit) state.bonusPoints += SCORE.noHitBonus;
+    const bonus = SCORE.stageBonus + (state.stageHits === 0 ? SCORE.noHitBonus : 0);
+    state.bonusPoints += bonus;
     updateScore();
+    boars.length = 0;
+    state.finaleX = owl.x;
+    finale = createFinale({ seen: state.finishSeen });
+    state.finale = finale.state;
+    emit("finish", {
+      stage: state.stage,
+      bonus,
+      seconds: state.stageTime,
+      seen: state.finishSeen,
+      last: state.stage + 1 >= STAGE_COUNT,
+    });
+  }
+
+  // Zdarzenia osi czasu finału; po końcu (także skróconym) — rejs humbaka.
+  function finaleEvents(list) {
+    for (const event of list) {
+      emit(event.type, event);
+      if (event.type !== "finaleDone") continue;
+      if (!state.finishSeen) {
+        state.finishSeen = true;
+        emit("finishSeen");
+      }
+      // Osobny generator: kółka rejsu nie zmieniają trasy kolejnych plansz.
+      ride = createWhaleRide({ random: random || createRng(`${seed}|humbak|${state.stage}`).next, lane: 0 });
+      state.ride = ride.state;
+      state.stageWhaleLeaves = 0;
+      state.phase = "whale";
+      emit("whaleStart", { duration: WHALE.duration });
+    }
+  }
+
+  // Rejs: liście z kółek liczą się do wyniku (bez combo); po 20 s — podsumowanie planszy.
+  function updateWhale(dt) {
+    for (const event of ride.update(dt)) {
+      if (event.type !== "whaleLeaf") {
+        emit(event.type, event);
+        continue;
+      }
+      const count = event.kind === "zloty" ? 5 : 1;
+      const points = WHALE.points * count;
+      state.leafPoints += points;
+      state.leafCount += count;
+      state.stageWhaleLeaves += count;
+      emit("whaleLeaf", { ...event, count, points });
+    }
+    updateScore();
+    if (!ride.done()) return;
+    const stars = stageStars({ hits: state.stageHits, leaves: state.stageLeaves, total: state.stageLeafTotal });
+    state.stageStars.push(stars);
+    state.phase = "stageEnd";
+    emit("whaleEnd", { leaves: state.stageWhaleLeaves });
     emit("stageEnd", {
       stage: state.stage,
+      stars,
       leaves: state.stageLeaves,
+      leafTotal: state.stageLeafTotal,
+      whaleLeaves: state.stageWhaleLeaves,
       hits: state.stageHits,
-      bonus: SCORE.stageBonus + (noHit ? SCORE.noHitBonus : 0),
       last: state.stage + 1 >= STAGE_COUNT,
     });
   }
@@ -313,11 +390,19 @@ export function createRun({
   const api = {
     state,
     events,
-    // Gest albo klawisz: "left" | "right" | "up" | "down" — wykonany w najbliższym kroku.
+    // Gest albo klawisz: "left" | "right" | "up" | "down" — wykonany w najbliższym kroku (w rejsie steruje
+    // humbakiem: tor i wyskok; w finale nic nie robi).
     input(direction) {
-      if (direction in controls) controls[direction] = true;
+      if (state.phase === "whale") ride.input(direction);
+      else if (direction in controls) controls[direction] = true;
     },
     update(dt) {
+      if (state.phase === "finale" || state.phase === "whale") {
+        state.time += dt;
+        if (state.phase === "finale") finaleEvents(finale.update(dt));
+        else updateWhale(dt);
+        return;
+      }
       if (state.phase !== "run") return;
       state.time += dt;
       state.stageTime += dt;
@@ -342,7 +427,18 @@ export function createRun({
       updateScore();
       if (state.stageDistance >= TRACK.stageLength) finishStage();
     },
-    // Następna plansza (po finale); po ostatniej — koniec kampanii.
+    // Tapnięcie w finale: skraca go tylko po pierwszym pełnym obejrzeniu. Zwraca, czy skrócono.
+    skipFinale() {
+      if (state.phase !== "finale") return false;
+      const list = finale.skip();
+      finaleEvents(list);
+      return list.length > 0;
+    },
+    setFinishSeen(value) {
+      state.finishSeen = Boolean(value);
+      if (finale) finale.state.seen = state.finishSeen;
+    },
+    // Następna plansza (po podsumowaniu); po ostatniej — koniec kampanii.
     nextStage() {
       if (state.phase !== "stageEnd") return false;
       if (state.stage + 1 >= STAGE_COUNT) {
@@ -354,12 +450,18 @@ export function createRun({
       state.stageDistance = 0;
       state.stageHits = 0;
       state.stageLeaves = 0;
+      state.stageLeafTotal = 0;
+      state.stageWhaleLeaves = 0;
       state.trackEnd = TRACK.startClear;
       obstacles.length = 0;
       leaves.length = 0;
       boars.length = 0;
       state.nextBoarAt = firstBoar(state.stage);
-      Object.assign(owl, createOwlBody(owl.lane));
+      Object.assign(owl, createOwlBody(ride ? ride.state.lane : owl.lane));
+      finale = null;
+      ride = null;
+      state.finale = null;
+      state.ride = null;
       state.invulnerable = 1;
       state.phase = "run";
       emit("stage", { stage: state.stage });
@@ -369,8 +471,9 @@ export function createRun({
     setSafe(value) {
       state.safe = Boolean(value);
     },
-    // Testy i diagnostyka: przeskok o `meters` (czysta trasa od nowego miejsca).
+    // Testy i diagnostyka: przeskok o `meters` (czysta trasa od nowego miejsca; tylko w biegu).
     warp(meters) {
+      if (state.phase !== "run") return;
       obstacles.length = 0;
       leaves.length = 0;
       boars.length = 0;
@@ -393,6 +496,7 @@ export function createRun({
         nearMisses: state.nearMisses,
         boarsDodged: state.boarsDodged,
         stages: state.stagesDone,
+        stars: state.stageStars.reduce((sum, item) => sum + item.count, 0),
         stage: state.stage,
         finished: state.endReason === "kampania",
       };

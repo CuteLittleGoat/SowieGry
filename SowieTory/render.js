@@ -2,10 +2,12 @@
 // po bokach drogi (poza korytarzem trzech torów), droga z przesuwającą się teksturą, podświetlenie toru pod sową,
 // przeszkody i liście posortowane po głębokości, mgła w oddali, sowa, strzałki ostrzegawcze, napisy punktów;
 // na blokowisku PRL szarżujące dziki (strzałka przy dolnej krawędzi toru) i stado u dołu ekranu (wskaźnik żyć).
+// Po mecie: działka z basenem (finał) i morskie tory rejsu humbaka — finale-scene.js.
 import { drawShadow } from "../shared/engine/sprites.js";
 import { drawOwl } from "../shared/world/owl.js";
 import { COLORS, font } from "../shared/world/tokens.js";
 import { OWL } from "./config.js";
+import { createFinaleScene } from "./finale-scene.js";
 import { OBSTACLES, obstacleShape, obstacleX } from "./obstacles.js";
 import { DECOR_PROPS, OBSTACLE_PROPS, drawBoar, drawOverhead } from "./props.js";
 import { ROAD_WIDTH, computeProjection, depthAtScreenY, fogAt, laneX, project } from "./projection.js";
@@ -30,6 +32,7 @@ export function createRenderer({ canvas, view, atlas }) {
   const point2 = { x: 0, y: 0, scale: 0 };
   let layout = null;
   let skyCache = null;
+  const scene = createFinaleScene({ context, atlas });
 
   function updateLayout() {
     const screen = view.layout();
@@ -357,6 +360,41 @@ export function createRenderer({ canvas, view, atlas }) {
     draw({ state, animator, cosmetic = "none", particles, dt = 0, showOwl = true }) {
       updateLayout();
       view.applyScreen(context);
+      if (state.phase === "finale" && state.finale) {
+        scene.drawGarden({
+          layout,
+          finale: state.finale,
+          startX: state.finaleX,
+          time: state.time,
+          drawOwlAt: (x, y, scale, alpha) => {
+            context.save();
+            context.translate(x, y);
+            context.scale(scale, scale);
+            drawOwl(context, atlas, 0, 0, {
+              state: animator.state(),
+              size: OWL.drawSize,
+              cosmetic,
+              alpha: alpha < 1 ? Math.max(0, alpha) : undefined,
+              shadow: false,
+            });
+            context.restore();
+          },
+        });
+        particles?.render(context);
+        popupsDraw(dt);
+        return;
+      }
+      if (state.ride && (state.phase === "whale" || state.phase === "stageEnd")) {
+        scene.drawSea({
+          layout,
+          ride: state.ride,
+          time: state.time,
+          leafSprite: (kind) => LEAF_SPRITE[kind] || LEAF_SPRITE.zielony,
+        });
+        particles?.render(context);
+        popupsDraw(dt);
+        return;
+      }
       const stage = STAGES[state.stage % STAGES.length];
       const distance = state.stageDistance;
       sky(stage);

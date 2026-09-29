@@ -1,5 +1,7 @@
 // Sowie Tory — strona gry: Sowi Silnik (widok, pętla, gesty, powłoka telefonu), wspólny interfejs (HUD, pauza,
 // wyniki, komunikaty), dźwięk, SowieProgress i zapis w chmurze (SowieCloud.submitRun, identyfikator „sowa3”).
+// Po mecie planszy: finał z basenem (tapnięcie skraca go po pierwszym obejrzeniu — `finishSeen` w dokumencie gry),
+// rejs „Humbacze Tory” (muzyka humbaka) i okno podsumowania planszy z gwiazdkami.
 import { connectAudioSettings, createAudio } from "../shared/engine/audio.js";
 import { bindInput } from "../shared/engine/input.js";
 import { createLoop } from "../shared/engine/loop.js";
@@ -14,10 +16,12 @@ import { SPRITES, SVG_BASE } from "../shared/world/catalog.js";
 import { createOwlAnimator } from "../shared/world/owl.js";
 import { COLORS } from "../shared/world/tokens.js";
 import { DIFFICULTIES, DIFFICULTY_ORDER, GAME_ID, GAME_SOUNDS, TRACK } from "./config.js";
+import { GARDEN } from "./finale.js";
 import { createRun } from "./game.js";
 import { laneX } from "./projection.js";
 import { createRenderer } from "./render.js";
 import { STAGES } from "./stages.js";
+import { WHALE } from "./whale.js";
 
 const cloud = window.SowieCloud;
 const params = new URLSearchParams(location.search);
@@ -54,7 +58,7 @@ let screen = "title"; // title | playing | results
 let difficulty = "arcade";
 let gameReady = false;
 let hitStop = 0;
-let stageEndTimer = 0;
+let summaryModal = null;
 let previousCombo = 1;
 let lastFrame = 0;
 let boarHint = false;
@@ -104,12 +108,18 @@ const progressName = progressNode.querySelector("[data-stage-name]");
 const progressFill = progressNode.querySelector(".tory-progress-bar span");
 let progressShown = "";
 
+// W rejsie pasek pokazuje „Humbacze Tory · 0:14” i pozostały czas.
 function updateProgress(state) {
-  const share = Math.min(1, state.stageDistance / TRACK.stageLength);
-  const key = `${state.stage}|${Math.round(share * 100)}`;
+  const whale = state.phase === "whale" && state.ride;
+  const left = whale ? Math.max(0, WHALE.duration - state.ride.time) : 0;
+  const share = whale ? left / WHALE.duration : Math.min(1, state.stageDistance / TRACK.stageLength);
+  const key = `${state.stage}|${whale ? `h${Math.ceil(left)}` : ""}|${Math.round(share * 100)}`;
   if (key === progressShown) return;
   progressShown = key;
-  progressName.textContent = `${state.stage + 1}/${STAGES.length} · ${STAGES[state.stage].short}`;
+  progressNode.classList.toggle("is-whale", Boolean(whale));
+  progressName.textContent = whale
+    ? `Humbacze Tory · 0:${String(Math.ceil(left)).padStart(2, "0")}`
+    : `${state.stage + 1}/${STAGES.length} · ${STAGES[state.stage].short}`;
   progressFill.style.transform = `scaleX(${share})`;
 }
 
@@ -133,6 +143,13 @@ function play(name, options) {
   } catch (_error) {
     return null;
   }
+}
+
+// Muzyka: pieśń humbaka w rejsie; przy wyłączonej muzyce pliku nie pobieramy.
+const musicOn = () => settings().music !== false;
+function playMusic(name) {
+  if (!musicOn()) return;
+  audio?.playMusic?.(name)?.catch?.(() => {});
 }
 
 // ---------- Ekran tytułowy ----------
@@ -190,8 +207,15 @@ function startRun() {
   toasts.clear();
   renderer.clearPopups();
   particles.clear();
-  game = createRun({ difficulty, seed: seedFor(), cozy: cozyEnabled(), startStage: START_STAGE });
-  stageEndTimer = 0;
+  closeSummary();
+  audio?.stopMusic?.();
+  game = createRun({
+    difficulty,
+    seed: seedFor(),
+    cozy: cozyEnabled(),
+    startStage: START_STAGE,
+    finishSeen: Boolean(cloud?.game?.(GAME_ID)?.finishSeen),
+  });
   previousCombo = 1;
   boarHint = false;
   screen = "playing";
@@ -216,6 +240,8 @@ function startRun() {
 function finishRun() {
   if (screen !== "playing") return;
   screen = "results";
+  closeSummary();
+  audio?.stopMusic?.();
   shell.setActive(false);
   view.lockScale(false);
   hud.hide();
@@ -250,6 +276,7 @@ function finishRun() {
     tasks: run.tasks || [],
     extra: [
       { label: "Plansze", value: `${summary.stages} / ${STAGES.length}` },
+      { label: "Gwiazdki", value: `${summary.stars} / ${STAGES.length * 3}` },
       { label: "Dystans", value: `${summary.distance.toLocaleString("pl-PL")} m` },
       { label: "Najlepsze combo", value: `×${summary.bestCombo}` },
       { label: "O włos!", value: String(summary.nearMisses) },
@@ -257,6 +284,71 @@ function finishRun() {
       { label: "Trafienia", value: String(summary.hits) },
     ],
     messages: toasts.takeDeferred(),
+  });
+}
+
+// Podsumowanie planszy po rejsie humbaka: gwiazdki, liście, trafienia; „Dalej” — następna plansza (po ostatniej
+// — wyniki kampanii). Najlepsze gwiazdki planszy trafiają do dokumentu gry (`stars.<plansza>`).
+function closeSummary() {
+  const modal = summaryModal;
+  summaryModal = null;
+  modal?.close();
+}
+
+function showStageSummary(event) {
+  const stageInfo = STAGES[event.stage];
+  const content = document.createElement("div");
+  content.className = "tory-summary";
+  const stars = document.createElement("p");
+  stars.className = "tory-stars";
+  stars.setAttribute("aria-label", `Gwiazdki: ${event.stars.count} z 3`);
+  stars.dataset.stars = String(event.stars.count);
+  for (let index = 0; index < 3; index += 1) {
+    const star = document.createElement("span");
+    star.textContent = "★";
+    star.className = index < event.stars.count ? "is-earned" : "";
+    star.setAttribute("aria-hidden", "true");
+    stars.appendChild(star);
+  }
+  const list = document.createElement("ul");
+  list.className = "tory-summary-list";
+  for (const [earned, text] of [
+    [true, "Plansza ukończona"],
+    [event.stars.leaves, `Liście: ${event.leaves} z ${event.leafTotal} (gwiazdka od 60%)`],
+    [event.stars.noHit, event.hits ? `Trafienia: ${event.hits}` : "Bez trafienia"],
+  ]) {
+    const item = document.createElement("li");
+    item.className = earned ? "is-earned" : "";
+    item.textContent = `${earned ? "★" : "☆"} ${text}`;
+    list.appendChild(item);
+  }
+  const whale = document.createElement("li");
+  whale.textContent = `Liście z Humbaczych Torów: ${event.whaleLeaves}`;
+  list.appendChild(whale);
+  const score = document.createElement("li");
+  score.textContent = `Wynik: ${Math.floor(game.state.score).toLocaleString("pl-PL")} pkt`;
+  list.appendChild(score);
+  content.append(stars, list);
+  cloud?.updateGame?.(GAME_ID, (doc) => {
+    doc.stars = doc.stars && typeof doc.stars === "object" ? doc.stars : {};
+    doc.stars[stageInfo.id] = Math.max(Number(doc.stars[stageInfo.id]) || 0, event.stars.count);
+  });
+  summaryModal = openModal({
+    title: `${event.stage + 1}/${STAGES.length} · ${stageInfo.short} — ukończona!`,
+    content,
+    root: stage,
+    className: "is-stage-summary",
+    actions: [
+      {
+        label: event.last ? "Zobacz wyniki" : "Dalej",
+        primary: true,
+        onClick: (close) => close(),
+      },
+    ],
+    onClose: () => {
+      summaryModal = null;
+      if (screen === "playing" && game?.state.phase === "stageEnd") game.nextStage();
+    },
   });
 }
 
@@ -357,15 +449,68 @@ function handleEvents() {
           });
         }
         break;
-      case "stageEnd":
+      // Meta: działka z basenem, sowa wskakuje do wody i zmienia się w humbaka.
+      case "finish":
         play("zycie");
-        toasts.show(event.last ? "Meta kampanii!" : `Meta: ogród działkowy z basenem! +${event.bonus}`, {
+        toasts.show(
+          event.seen
+            ? `Meta! +${event.bonus} · Stuknij, żeby pominąć finał`
+            : `Meta: ogród działkowy z basenem! +${event.bonus}`,
+          // Krótko: znika przed przemianą w humbaka (w poziomie komunikat leży nad basenem).
+          { kind: "reward", key: `meta-${event.stage}`, priority: 2, duration: 1800 },
+        );
+        break;
+      case "finaleJump":
+        play("skok");
+        break;
+      case "finaleSplash":
+        play("humbak-plusk");
+        burst(0, GARDEN.water, GARDEN.poolZ, { count: 18, speed: 3.5, tint: COLORS.wodaJasna, radius: 0.1 });
+        break;
+      case "finaleMorph":
+        play("humbak-piesn", { volume: 0.8 });
+        break;
+      case "finishSeen":
+        cloud?.updateGame?.(GAME_ID, { finishSeen: true });
+        break;
+      // Humbacze Tory: 20 s rejsu, przesunięcia zmieniają tor, w górę — wyskok; bez obrażeń.
+      case "whaleStart":
+        play("bonus-start");
+        playMusic("humbak");
+        toasts.show("Humbacze Tory! Przesuwaj palcem: tor i wyskok do kółek", {
           kind: "reward",
-          key: `meta-${event.stage}`,
+          key: "humbak",
           priority: 2,
         });
-        // Finał z basenem i przemianą w humbaka — kolejny krok etapu E5; na razie krótka przerwa.
-        stageEndTimer = 1.4;
+        break;
+      case "whaleLeap":
+        play("skok", { pitch: 0.7 });
+        break;
+      case "whaleSplash":
+        play("humbak-plusk", { volume: 0.7 });
+        burst(game.state.ride.x, 0.1, 0.4, { count: 12, speed: 3, tint: COLORS.wodaJasna, radius: 0.09 });
+        break;
+      case "whaleLeaf": {
+        play(event.kind === "zloty" ? "lisc-zloty" : "lisc");
+        const ride = game.state.ride;
+        burst(ride.x, ride.y + 0.6, 0.4, {
+          count: event.kind === "zloty" ? 10 : 5,
+          speed: 2.2,
+          tint: event.kind === "zloty" ? COLORS.zloto : COLORS.monsteraJasna,
+          radius: 0.08,
+        });
+        const at = renderer.toScreen(ride.x, ride.y + 1.8, 0.4, point);
+        if (at) renderer.popup(`+${event.points}`, at.x, at.y, event.kind === "zloty" ? COLORS.zloto : COLORS.bialy);
+        progress.emit(EVENTS.LEAF, { kind: event.kind, count: event.count, points: event.points });
+        break;
+      }
+      case "whaleEnd":
+        audio?.stopMusic?.();
+        progress.emit(EVENTS.WHALE, { leaves: event.leaves });
+        break;
+      case "stageEnd":
+        play("zycie");
+        showStageSummary(event);
         break;
       case "over":
         finishRun();
@@ -382,14 +527,13 @@ function update(step) {
   if (screen === "playing" && game) {
     if (hitStop > 0) hitStop -= step;
     else if (shell.state() === "running") {
-      if (game.state.phase === "stageEnd") {
-        stageEndTimer -= step;
-        if (stageEndTimer <= 0) game.nextStage();
-      } else game.update(step);
+      game.update(step);
       handleEvents();
     }
     const owl = game.state.owl;
-    if (game.state.phase === "stageEnd") animator.set("radosc");
+    const phase = game.state.phase;
+    if (phase === "finale") animator.set(game.state.finale?.phase === "run" ? "bieg" : "skok");
+    else if (phase === "whale" || phase === "stageEnd") animator.set("radosc");
     else if (!owl.grounded) animator.set("skok");
     else animator.set("bieg");
     animator.update(step, { vy: -owl.vy });
@@ -482,7 +626,13 @@ bindInput(stage, (gesture) => {
     shell.pause("gracz");
     return;
   }
-  if (shell.state() !== "running" || game.state.phase !== "run") return;
+  if (shell.state() !== "running") return;
+  // Finał z basenem: stuknięcie (albo klawisz) skraca go — tylko po pierwszym pełnym obejrzeniu.
+  if (game.state.phase === "finale") {
+    if (gesture.type === "tap" || (gesture.type === "press" && gesture.source === "keyboard")) game.skipFinale();
+    return;
+  }
+  if (game.state.phase !== "run" && game.state.phase !== "whale") return;
   if (gesture.type === "press" && gesture.source === "keyboard") steer("up");
   else if (gesture.type === "swipe") {
     drag.used = true;
@@ -567,6 +717,17 @@ window.SowieTory = Object.freeze({
           stageDistance: game.state.stageDistance,
           stageIndex: game.state.stage,
           boars: game.state.boars.map((item) => ({ lane: item.lane, phase: item.phase, z: item.z })),
+          finishSeen: game.state.finishSeen,
+          finale: game.state.finale ? { phase: game.state.finale.phase, t: game.state.finale.t } : null,
+          ride: game.state.ride
+            ? {
+                lane: game.state.ride.lane,
+                y: game.state.ride.y,
+                airborne: game.state.ride.airborne,
+                time: game.state.ride.time,
+                collected: game.state.ride.collected,
+              }
+            : null,
           owl: { ...game.state.owl },
         }
       : null,

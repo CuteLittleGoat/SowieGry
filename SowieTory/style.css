@@ -134,6 +134,53 @@
   transform-origin: left;
 }
 
+/* Rejs „Humbacze Tory”: pasek pozostałego czasu w kolorze fali. */
+.tory-progress.is-whale .tory-progress-bar span {
+  background: var(--woda-ciemna);
+}
+
+/* Podsumowanie planszy: trzy gwiazdki (zdobyte złote, pozostałe szare) i lista osiągnięć. */
+.tory-stars {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin: 0 0 12px;
+  font-size: 44px;
+  line-height: 1;
+  color: var(--szary);
+}
+
+.tory-stars .is-earned {
+  color: var(--zloto);
+  text-shadow: 0 2px 0 var(--zloto-ciemne);
+}
+
+.tory-summary-list {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 17px;
+}
+
+.tory-summary-list .is-earned {
+  font-weight: 700;
+}
+
+/* Niski ekran w poziomie: podsumowanie mieści się bez przewijania. */
+@media (orientation: landscape) and (max-height: 500px) {
+  .tory-stars {
+    margin-bottom: 4px;
+    font-size: 30px;
+  }
+
+  .tory-summary-list {
+    gap: 2px;
+    font-size: 15px;
+  }
+}
+
 /* Tryb diagnostyczny (?debug=1): panel w prawym dolnym rogu, nie łapie dotyku. */
 .tory-debug {
   position: absolute;

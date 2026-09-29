@@ -15,11 +15,39 @@ i dobiegnij do mety każdej planszy. Kampania ma cztery plansze (w tej kolejnoś
 4. **Sowa na stacji benzynowej Amic**.
 
 Każda plansza trwa około 75 sekund. Pasek pod wynikiem pokazuje numer i nazwę planszy oraz ile zostało do mety.
-Po każdej planszy (na razie krótka przerwa) biegniesz dalej — następna plansza jest trochę szybsza.
-Po ostatniej planszy kampania jest ukończona.
+Po mecie każdej planszy jest **finał z basenem**, potem **Humbacze Tory** i podsumowanie z gwiazdkami — a następna
+plansza jest trochę szybsza. Po ostatniej planszy kampania jest ukończona.
 
-> W kolejnych krokach etapu dochodzą: finał z basenem ogrodowym i przemianą sowy w humbaka, grywalne
-> „Humbacze Tory”, gwiazdki, kózki, tryb Nieskończony, samouczek i muzyka.
+> W kolejnych krokach etapu dochodzą: kózki, tryb Nieskończony, samouczek i muzyka plansz.
+
+## Meta: basen i przemiana w humbaka
+
+Na mecie sowa dobiega na **działkę z okrągłym basenem ogrodowym** (trawa, płot, drzewa, koza na leżaku i grill),
+wybija się, wskakuje do wody — **plusk!** — i zmienia się w **humbaka**, który wynurza się z fontanną. Finał trwa
+około 4 sekund. Za pierwszym razem obejrzysz go w całości; potem (także w kolejnych biegach) możesz go **pominąć
+stuknięciem** w ekran.
+
+## Humbacze Tory
+
+Zaraz po przemianie humbak jest Twój przez **20 sekund**. Płynie trzema morskimi torami, a nad wodą wiszą
+**złote kółka z liśćmi monstery**:
+
+- przesuń palcem w lewo / w prawo (albo stuknij bok ekranu) — humbak zmienia tor,
+- przesuń palcem w górę (albo stuknij środek) — **wyskok**; co trzeci rząd kółek wisi wysoko i trzeba wyskoczyć,
+- każdy liść z kółka to **+10 pkt** (złote kółko: 5 liści, +50 pkt). Humbak nie może oberwać — płyń na luzie.
+
+Pasek u góry pokazuje „Humbacze Tory” i ile sekund zostało. W czasie rejsu gra pieśń humbaka.
+
+## Gwiazdki
+
+Po rejsie pojawia się **podsumowanie planszy** z trzema gwiazdkami:
+
+- ★ za **ukończenie** planszy,
+- ★ za zebranie co najmniej **60% liści** wystawionych na planszy (złoty liść liczy się jak 5),
+- ★ za planszę **bez trafienia**.
+
+W podsumowaniu widać też liście z Humbaczych Torów i wynik. **Dalej** zaczyna następną planszę (po ostatniej —
+wyniki kampanii). Najlepszy wynik gwiazdek każdej planszy zapisuje się w chmurze.
 
 ## Plansze
 
@@ -86,8 +114,8 @@ Amic) — sposób omijania się nie zmienia. Przeszkody pojawiają się z mgły 
 | Chaos  | 15 → 21 m/s            | +1 m/s                | 2     |
 
 Wybrany poziom zapamiętuje się w chmurze. Rekord każdego poziomu widać na ekranie tytułowym, a po biegu —
-na ekranie wyników (z miejscem w top 10). Ekran wyników pokazuje też ukończone plansze, dystans, najlepsze
-combo, „O włos!”, uniki przed dzikami i liczbę trafień.
+na ekranie wyników (z miejscem w top 10). Ekran wyników pokazuje też ukończone plansze, zdobyte gwiazdki (na 12),
+dystans, najlepsze combo, „O włos!”, uniki przed dzikami i liczbę trafień.
 
 ## Na telefonie
 

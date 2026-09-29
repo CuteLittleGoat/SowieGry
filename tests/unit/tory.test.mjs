@@ -385,11 +385,28 @@ function autopilot(run) {
     run.input(escape.lane < owl.lane ? "left" : "right");
     return;
   }
-  if (blocked(owl.lane) < 25 && best.lane !== owl.lane) run.input(best.lane < owl.lane ? "left" : "right");
+  // Nie wjeżdża (ani nie przejeżdża) przez tor, w którym dzik jeszcze szarżuje obok sowy.
+  const charging = state.boars.some(
+    (item) =>
+      !item.passed &&
+      !item.hit &&
+      Math.min(owl.lane, best.lane) <= item.lane &&
+      item.lane <= Math.max(owl.lane, best.lane),
+  );
+  if (blocked(owl.lane) < 25 && best.lane !== owl.lane && !charging) run.input(best.lane < owl.lane ? "left" : "right");
   for (const entry of ahead) {
     if (entry.item.lane !== owl.lane || entry.z <= 0) continue;
     if (entry.shape.type === "low" && entry.z < state.speed * 0.16 && owl.grounded) run.input("up");
-    if (entry.shape.type === "high" && entry.z < state.speed * 0.3 && owl.grounded && owl.slide <= 0.05)
+    // Wysoka: ślizg; w powietrzu (tuż po skoku nad niską) — w dół = szybkie lądowanie i ślizg, gdy pod sową
+    // nie ma już niskiej przeszkody.
+    const overLow = ahead.some(
+      (other) =>
+        other.shape.type === "low" &&
+        other.item.lane === owl.lane &&
+        other.z < 1.5 &&
+        other.z + other.shape.depth > -0.5,
+    );
+    if (entry.shape.type === "high" && entry.z < state.speed * 0.3 && owl.slide <= 0.05 && (owl.grounded || !overLow))
       run.input("down");
   }
 }
@@ -408,9 +425,15 @@ function playCampaign(options) {
   return { run, seen };
 }
 
-test("autopilot przechodzi całą kampanię (4 plansze, ok. 75 s każda) bez trafienia", () => {
-  for (const seed of [1, 2, 3]) {
-    const { run, seen } = playCampaign({ seed, difficulty: "arcade" });
+test("autopilot przechodzi całą kampanię (4 plansze, w Arcade ok. 75 s każda) bez trafienia", () => {
+  // Chaos 6: skok nad teczką i od razu dymek przy 23,6 m/s — w powietrzu w dół = szybkie lądowanie i ślizg.
+  for (const [seed, difficulty] of [
+    [1, "arcade"],
+    [2, "arcade"],
+    [3, "arcade"],
+    [6, "chaos"],
+  ]) {
+    const { run, seen } = playCampaign({ seed, difficulty });
     const summary = run.summary();
     assert.equal(run.state.endReason, "kampania", `ziarno ${seed}`);
     assert.equal(summary.finished, true);
@@ -421,16 +444,26 @@ test("autopilot przechodzi całą kampanię (4 plansze, ok. 75 s każda) bez tra
       seen.filter((event) => event.type === "stage").map((event) => event.stage),
       [0, 1, 2, 3],
     );
+    // Każda plansza: meta z premią (550 bez trafienia), finał, rejs humbaka i podsumowanie z gwiazdkami.
+    const finishes = seen.filter((event) => event.type === "finish");
+    assert.equal(finishes.length, 4);
+    assert.ok(finishes.every((event) => event.bonus === 550));
+    assert.equal(seen.filter((event) => event.type === "whaleStart").length, 4);
     const ends = seen.filter((event) => event.type === "stageEnd");
     assert.equal(ends.length, 4);
     assert.equal(ends.at(-1).last, true);
-    assert.ok(ends.every((event) => event.hits === 0 && event.bonus === 550));
+    assert.ok(ends.every((event) => event.hits === 0 && event.stars.noHit && event.stars.count >= 2));
+    assert.equal(
+      summary.stars,
+      ends.reduce((sum, event) => sum + event.stars.count, 0),
+    );
     // Blokowisko PRL: dziki szarżują, a autopilot za każdym razem ucieka na inny tor.
     assert.ok(summary.boarsDodged >= 3, `uniki przed dzikami: ${summary.boarsDodged}`);
     const warnings = seen.filter((event) => event.type === "boarWarning");
     assert.equal(warnings.length, summary.boarsDodged);
-    const seconds = run.state.time / STAGE_COUNT;
-    assert.ok(seconds > 60 && seconds < 90, `plansza trwa ${seconds.toFixed(0)} s`);
+    if (difficulty === "arcade") {
+      for (const event of finishes) assert.ok(event.seconds > 60 && event.seconds < 90, `plansza: ${event.seconds} s`);
+    }
     // Ostatnie metry planszy bez przeszkód (meta).
     assert.ok(seen.filter((event) => event.type === "pattern").every((event) => event.start < TRACK.stageLength));
   }
