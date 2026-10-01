@@ -2,8 +2,8 @@
 
 Wszystkie pliki w `assets/audio/sfx/` i `assets/audio/music/` zostały **wygenerowane kodem** skryptu
 `scripts/make-audio.mjs` (syntezator zapisany w tym repozytorium, stałe ziarno losowania — wynik jest powtarzalny).
-Nie zawierają cudzych nagrań, próbek ani fragmentów utworów. Melodie „Motyw menu” i „Pieśń humbaka” to własne kompozycje
-zapisane w tym samym skrypcie.
+Nie zawierają cudzych nagrań, próbek ani fragmentów utworów. Melodie „Motyw menu”, „Pieśń humbaka”, motyw
+Sowiej Ucieczki i cztery motywy plansz Sowich Torów to własne kompozycje zapisane w tym samym skrypcie.
 
 - Licencja plików dźwiękowych: **CC0 1.0** (domena publiczna) — jak paczki CC0 wymienione w Analizie 2 (rozdz. 2.4);
   właściciel projektu może ją zmienić.
@@ -18,6 +18,10 @@ zapisane w tym samym skrypcie.
 | `music/menu.mp3` | motyw menu — 112 BPM, C-dur, 8 taktów, pętla bez szwu (stereo, 96 kb/s) |
 | `music/humbak.mp3` | pieśń humbaka (bonus) — 72 BPM, D-dur, 8 taktów, pady, pieśń wieloryba, krople, szum fal (stereo, 64 kb/s) |
 | `music/ucieczka.mp3` | motyw Sowiej Ucieczki (bieg) — 125 BPM, G-dur (G–e–C–D), 8 taktów, bas ósemkami, marimba, melodia, perkusja (stereo, 80 kb/s) |
+| `music/tory-biedronka.mp3` | Sowie Tory, plansza 1 (sklep Biedronka) — 118 BPM, F-dur (F–d–B–C), 8 taktów, sklepowy dżingiel: melodia trójkątną falą, bas ósemkami, marimba, perkusja (stereo, 48 kb/s) |
+| `music/tory-festiwal.mp3` | Sowie Tory, plansza 2 (festiwal roślin) — 104 BPM, A-dur (A–fis–D–E), 8 taktów, flet (sinus z vibrato), bas półnutami, lekka perkusja (stereo, 48 kb/s) |
+| `music/tory-prl.mp3` | Sowie Tory, plansza 3 (blokowisko PRL, pościg dzików) — 132 BPM, a-moll (a–F–G–E), 8 taktów, kwadratowy syntezator, gęsta perkusja (stereo, 48 kb/s) |
+| `music/tory-amic.mp3` | Sowie Tory, plansza 4 (stacja Amic) — 126 BPM, D-dur (D–h–G–A), 8 taktów, piłokształtny syntezator z filtrem, bas ósemkami (stereo, 48 kb/s) |
 | `audio.json` | manifest: plik, rozmiar, długość, liczba próbek, początek dźwięku, podpis, głośność, pętla, limit głosów, odstęp, odcisk początku pętli |
 
 ## Nagrania właściciela (opcjonalne)

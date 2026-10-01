@@ -283,11 +283,17 @@ export const allowedOn = (item, stageId) => !stageId || !item.stages || item.sta
 
 /**
  * Generator trasy: wzór z bieżącego progu (60%) albo niższego (40%), bez powtórzenia ostatnich dwóch;
- * co 4. wzór to oddech; tylko wzory dozwolone na bieżącej planszy. `intro` — wzory na początek (samouczek).
+ * co 4. wzór to oddech; tylko wzory dozwolone na bieżącej planszy. `intro` — wzory na początek (identyfikatory
+ * albo obiekty wzorów, np. samouczek).
  */
 export function createTrack({ random, patterns = PATTERNS, intro = [] }) {
   const recent = [];
-  const queue = intro.map((id) => PATTERN_BY_ID[id] || patterns.find((item) => item.id === id)).filter(Boolean);
+  // Wzory wstępne: identyfikatory albo gotowe wzory (np. samouczek — tutorial.js).
+  const queue = intro
+    .map((entry) =>
+      typeof entry === "object" ? entry : PATTERN_BY_ID[entry] || patterns.find((item) => item.id === entry),
+    )
+    .filter(Boolean);
   let count = 0;
   return {
     choose(distance, stageId = null) {

@@ -20,12 +20,14 @@ import { GARDEN } from "./finale.js";
 import { createRun } from "./game.js";
 import { createRenderer } from "./render.js";
 import { STAGES } from "./stages.js";
+import { TUTORIAL_PATTERNS, createTutorial } from "./tutorial.js";
 import { WHALE } from "./whale.js";
 
 const cloud = window.SowieCloud;
 const params = new URLSearchParams(location.search);
 const AUDIO_BASE = new URL("../assets/audio/", import.meta.url).href;
-const GUIDE_ID = GAME_ID;
+// Instrukcja wersji podglądowej (shared/meta/guides-data.js); po podmianie (E5f) — klucz gry „sowa3”.
+const GUIDE_ID = "sowietory";
 // Diagnostyka i zrzuty: ?plansza=1…4 zaczyna bieg od wybranej planszy kampanii.
 const START_STAGE = Math.min(STAGES.length - 1, Math.max(0, (Number.parseInt(params.get("plansza"), 10) || 1) - 1));
 
@@ -65,6 +67,9 @@ const recordMode = () => (mode === "nieskonczony" ? mode : undefined);
 let gameReady = false;
 let hitStop = 0;
 let summaryModal = null;
+// Samouczek: przy pierwszym biegu kampanii (brak `tutorialDone` w dokumencie gry), z „Jak grać?” albo z ?samouczek=1.
+let tutorial = null;
+let forceTutorial = params.get("samouczek") === "1";
 let lastLeafPopup = -1;
 let previousCombo = 1;
 let lastFrame = 0;
@@ -131,6 +136,37 @@ function updateProgress(state) {
   progressFill.style.transform = `scaleX(${share})`;
 }
 
+// Podpowiedź samouczka: krok, demonstracja gestu i tekst (nad drogą, nie zasłania sowy).
+const tutorialNode = document.createElement("div");
+tutorialNode.className = "tory-tutorial";
+tutorialNode.hidden = true;
+tutorialNode.setAttribute("role", "status");
+tutorialNode.setAttribute("aria-live", "assertive");
+tutorialNode.innerHTML =
+  '<span class="tory-tutorial-step" data-tutorial-step></span><span class="sowie-gesture-demo" aria-hidden="true"><span class="sowie-gesture-finger"></span></span><p data-tutorial-text></p>';
+stage.appendChild(tutorialNode);
+
+function showTutorialPrompt(item) {
+  tutorialNode.hidden = !item;
+  if (!item) return;
+  tutorialNode.querySelector("[data-tutorial-step]").textContent = `Samouczek · krok ${item.step} z ${item.steps}`;
+  tutorialNode.querySelector(".sowie-gesture-demo").dataset.gesture = item.gesture;
+  tutorialNode.querySelector("[data-tutorial-text]").textContent = item.text;
+}
+
+function wantsTutorial() {
+  if (forceTutorial) return true;
+  return !params.get("seed") && START_STAGE === 0 && mode === "kampania" && !cloud?.game?.(GAME_ID)?.tutorialDone;
+}
+
+function tutorialFinished() {
+  game?.setSafe(false);
+  tutorial = null;
+  play("zycie", { pitch: 1.2 });
+  toasts.show("Świetnie! Teraz sama trasa — powodzenia!", { kind: "success", key: "samouczek", priority: 2 });
+  cloud?.updateGame?.(GAME_ID, { tutorialDone: true });
+}
+
 // Akademia i Galeria: w trakcie biegu komunikaty czekają na ekran wyników (Analiza 2, rozdz. 4.3).
 let collectingResults = false;
 window.SowieNotifications ||= {
@@ -153,11 +189,18 @@ function play(name, options) {
   }
 }
 
-// Muzyka: pieśń humbaka w rejsie; przy wyłączonej muzyce pliku nie pobieramy.
+// Muzyka: motyw planszy w biegu (`tory-<id planszy>`), cisza w finale, pieśń humbaka w rejsie; przy wyłączonej
+// muzyce pliku nie pobieramy.
 const musicOn = () => settings().music !== false;
 function playMusic(name) {
   if (!musicOn()) return;
   audio?.playMusic?.(name)?.catch?.(() => {});
+}
+// Utwór bieżącej fazy biegu (gdy dźwięk wczytał się dopiero w trakcie biegu): motyw planszy albo pieśń humbaka.
+function phaseMusic() {
+  if (!game || screen !== "playing") return null;
+  if (game.state.phase === "run") return `tory-${STAGES[game.state.stage].id}`;
+  return game.state.phase === "whale" ? "humbak" : null;
 }
 
 // ---------- Ekran tytułowy ----------
@@ -202,7 +245,17 @@ function openGuide(trigger) {
     content: renderGuide(guideFor(GUIDE_ID), { atlas, sprites: SPRITES }),
     root: stage,
     className: "is-guide",
-    actions: [{ label: "Rozumiem", primary: true, onClick: (close) => close() }],
+    actions: [
+      {
+        label: "Zagraj samouczek",
+        onClick: (close) => {
+          close();
+          forceTutorial = true;
+          startRun();
+        },
+      },
+      { label: "Rozumiem", primary: true, onClick: (close) => close() },
+    ],
     onClose: () => trigger?.focus?.({ preventScroll: true }),
   });
 }
@@ -234,14 +287,21 @@ function startRun() {
   particles.clear();
   closeSummary();
   audio?.stopMusic?.();
+  const withTutorial = wantsTutorial();
+  forceTutorial = false;
   game = createRun({
     difficulty,
     seed: seedFor(),
     cozy: cozyEnabled(),
     startStage: START_STAGE,
     finishSeen: Boolean(cloud?.game?.(GAME_ID)?.finishSeen),
-    mode,
+    mode: withTutorial ? "kampania" : mode,
+    intro: withTutorial ? TUTORIAL_PATTERNS : [],
+    // W samouczku trafienia się nie liczą.
+    safe: withTutorial,
   });
+  tutorial = withTutorial ? createTutorial({ onPrompt: showTutorialPrompt, onDone: tutorialFinished }) : null;
+  showTutorialPrompt(null);
   previousCombo = 1;
   boarHint = false;
   screen = "playing";
@@ -260,12 +320,16 @@ function startRun() {
   cloud?.updateGame?.(GAME_ID, { difficulty }, { delayMs: 2000 });
   toasts.refresh();
   if (game.state.cozy) toasts.show("Tryb Przytulny — bez końca gry", { kind: "success" });
+  if (tutorial)
+    toasts.show("Samouczek: 4 krótkie kroki. Gra poczeka na Twój ruch!", { kind: "info", key: "samouczek" });
   audio?.unduck?.();
 }
 
 function finishRun() {
   if (screen !== "playing") return;
   screen = "results";
+  tutorial = null;
+  showTutorialPrompt(null);
   closeSummary();
   audio?.stopMusic?.();
   shell.setActive(false);
@@ -434,6 +498,7 @@ function burst(x, y, z, options) {
 function handleEvents() {
   for (const event of game.takeEvents()) {
     const owl = game.state.owl;
+    tutorial?.handleEvent(event);
     switch (event.type) {
       case "jump":
         play("skok");
@@ -560,6 +625,7 @@ function handleEvents() {
         toasts.show(`Okrążenie ${event.loop + 1} — szybciej!`, { kind: "reward", key: "okrazenie", priority: 1 });
         break;
       case "stage":
+        playMusic(`tory-${STAGES[event.stage].id}`);
         if (event.stage > 0 || screen === "playing") {
           toasts.show(`Plansza ${event.stage + 1}: ${STAGES[event.stage].name}`, {
             kind: "success",
@@ -570,6 +636,7 @@ function handleEvents() {
       // Meta: działka z basenem, sowa wskakuje do wody i zmienia się w humbaka.
       case "finish":
         play("zycie");
+        audio?.stopMusic?.({ fade: 1.2 });
         toasts.show(
           event.seen
             ? `Meta! +${event.bonus} · Stuknij, żeby pominąć finał`
@@ -645,8 +712,12 @@ function update(step) {
   if (screen === "playing" && game) {
     if (hitStop > 0) hitStop -= step;
     else if (shell.state() === "running") {
-      game.update(step);
-      handleEvents();
+      // Samouczek zatrzymuje grę przed przeszkodą, dopóki gracz nie wykona pokazanego ruchu.
+      if (!tutorial?.frozen()) {
+        game.update(step);
+        handleEvents();
+      }
+      if (screen === "playing" && game.state.phase === "run") tutorial?.update(game.state);
     }
     const owl = game.state.owl;
     const phase = game.state.phase;
@@ -733,6 +804,8 @@ function render() {
 // Przesunięcie palcem: ←/→ tor, ↑ skok, ↓ ślizg. Wolniejsze przesunięcie (przeciąganie) też działa — raz na dotyk.
 // Stuknięcie: lewa i prawa część ekranu zmieniają tor, środek — skok. Martwe strefy przy krawędziach (gest „cofnij”).
 function steer(direction) {
+  // Samouczek: w zatrzymaniu przepuszczamy tylko pokazany ruch.
+  if (tutorial && !tutorial.accept(direction)) return;
   game.input(direction);
 }
 
@@ -799,6 +872,8 @@ fetch(new URL("audio.json", AUDIO_BASE))
     audio = createAudio({ manifest, baseUrl: AUDIO_BASE, preloadOnUnlock: GAME_SOUNDS });
     connectAudioSettings(audio, cloud);
     audio.bindUnlock(window, { ignore: (event) => Boolean(event.target?.closest?.("a[href]")) });
+    const name = phaseMusic();
+    if (name) playMusic(name);
   })
   .catch((error) => console.warn("SowieTory: bez dźwięku", error));
 
@@ -876,6 +951,8 @@ window.SowieTory = Object.freeze({
   },
   goat: (kind) => game?.giveGoat(kind),
   fever: () => game?.giveFever(),
+  tutorial: () => (tutorial ? tutorial.progress() : null),
+  music: () => audio?.currentMusic?.() ?? null,
   extras: () =>
     game
       ? {

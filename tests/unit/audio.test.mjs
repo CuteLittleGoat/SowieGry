@@ -17,6 +17,8 @@ import {
   volumesFromSettings,
   volumeToGain,
 } from "../../shared/engine/audio.js";
+import { GAME_SOUNDS as TORY_SOUNDS } from "../../SowieTory/config.js";
+import { STAGES as TORY_STAGES } from "../../SowieTory/stages.js";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "../..");
 const audioRoot = join(root, "assets/audio");
@@ -41,7 +43,15 @@ test("manifest dźwięków: ok. 25 efektów, muzyka menu i humbaka, pliki MP3, r
   ]) {
     assert.ok(manifest.sfx[name], name);
   }
-  assert.deepEqual(Object.keys(manifest.music).sort(), ["humbak", "menu", "ucieczka"]);
+  assert.deepEqual(Object.keys(manifest.music).sort(), [
+    "humbak",
+    "menu",
+    "tory-amic",
+    "tory-biedronka",
+    "tory-festiwal",
+    "tory-prl",
+    "ucieczka",
+  ]);
   let total = 0;
   for (const [name, item] of [...sfx, ...Object.entries(manifest.music)]) {
     const path = join(audioRoot, item.file);
@@ -66,6 +76,24 @@ test("manifest dźwięków: ok. 25 efektów, muzyka menu i humbaka, pliki MP3, r
   assert.ok(manifest.music.ucieczka.bytes < 200 * 1024);
   assert.ok(total < 3 * 1024 * 1024, `razem ${total} B`);
   assert.match(readFileSync(join(audioRoot, "LICENSES.md"), "utf8"), /CC0/);
+});
+
+test("Sowie Tory: motyw każdej planszy (8 taktów, pętla, 48 kb/s) i budżet dźwięku gry poniżej 800 KB", () => {
+  const themes = TORY_STAGES.map((stage) => `tory-${stage.id}`);
+  assert.deepEqual(themes, ["tory-biedronka", "tory-festiwal", "tory-prl", "tory-amic"]);
+  const licenses = readFileSync(join(audioRoot, "LICENSES.md"), "utf8");
+  for (const name of themes) {
+    const item = manifest.music[name];
+    assert.ok(item?.loop && item.bpm > 0, name);
+    assert.ok(Math.abs(item.duration - (8 * 4 * 60) / item.bpm) < 0.01, `${name}: 8 taktów`);
+    assert.ok(item.bytes < 120 * 1024, `${name}: ${item.bytes} B`);
+    assert.ok(licenses.includes(item.file), `${name}: licencja`);
+  }
+  for (const name of TORY_SOUNDS) assert.ok(manifest.sfx[name], name);
+  const total =
+    TORY_SOUNDS.reduce((sum, name) => sum + manifest.sfx[name].bytes, 0) +
+    [...themes, "humbak"].reduce((sum, name) => sum + manifest.music[name].bytes, 0);
+  assert.ok(total < 800 * 1024, `Sowie Tory: ${total} B`);
 });
 
 test("głośność: suwak 0–100 → wzmocnienie, ustawienia profilu i stare przełączniki", () => {

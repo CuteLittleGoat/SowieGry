@@ -18,7 +18,24 @@ Każda plansza trwa około 75 sekund. Pasek pod przyciskiem pauzy pokazuje numer
 Po mecie każdej planszy jest **finał z basenem**, potem **Humbacze Tory** i podsumowanie z gwiazdkami — a następna
 plansza jest trochę szybsza. Po ostatniej planszy kampania jest ukończona.
 
-> W kolejnych krokach etapu dochodzą: samouczek i muzyka plansz.
+Każda plansza ma **własną muzykę**: wesoły sklepowy dżingiel w Biedronce, spokojny flet na festiwalu roślin,
+szybki motyw pościgu na blokowisku PRL i energiczny motyw na stacji Amic. Na mecie muzyka cichnie, a w Humbaczych
+Torach gra pieśń humbaka. Muzykę ściszysz albo wyłączysz w ustawieniach (zakładka Sowa w menu głównym).
+
+## Samouczek
+
+Przy **pierwszym biegu** (Kampania, od pierwszej planszy) gra prowadzi Cię przez **4 krótkie kroki**:
+
+1. **Telefon na torze** — przesuń palcem w bok, żeby zmienić tor,
+2. **Teczki na każdym torze** — przesuń palcem w górę, żeby przeskoczyć,
+3. **Dymki Pracu Pracu** — przesuń palcem w dół, żeby prześlizgnąć się pod spodem,
+4. **Kózka** — przesuń palcem w jej stronę i wbiegnij w nią.
+
+Przed każdą przeszkodą gra **zatrzymuje się** i pokazuje ruch palca nad drogą („Samouczek · krok 1 z 4”).
+Rusza dalej dopiero wtedy, gdy wykonasz pokazany ruch — inne ruchy nic nie robią. Jeśli wykonasz go chwilę
+wcześniej, gra w ogóle się nie zatrzyma. W samouczku przeszkody **nie zabierają życia**. Po czwartym kroku pojawia
+się „Świetnie! Teraz sama trasa — powodzenia!” i dalej biegniesz już normalnie. Samouczek pojawia się tylko raz
+(zapisuje się w chmurze); możesz go powtórzyć przyciskiem **Zagraj samouczek** w oknie **Jak grać?**.
 
 ## Tryb Nieskończony
 
@@ -125,6 +142,8 @@ Amic) — sposób omijania się nie zmienia. Przeszkody pojawiają się z mgły 
 
 ## Życia i punkty
 
+- **Jak grać?** na ekranie tytułowym otwiera instrukcję z ilustracjami i ruchem palca (cel gry, zmiana toru, skok,
+  ślizg, dziki, kózki i Gorączka, basen i Humbacze Tory, tryb Nieskończony).
 - Życia (serduszka-doniczki w prawym górnym rogu): **Chill 4, Arcade 3, Chaos 2**. Trafienie zabiera jedno życie,
   a przez 1,5 s sowa miga i jest nietykalna. Bez żyć bieg się kończy.
 - **Tryb Przytulny** (ustawienie w menu głównym, zakładka Sowa; działa na poziomie Chill): wolniej i bez końca
@@ -158,4 +177,5 @@ dystans, najlepsze combo, „O włos!”, uniki przed dzikami, złapane kózki i
 
 Dopisz do adresu `?debug=1` — w prawym dolnym rogu pojawi się panel z liczbą klatek na sekundę, prędkością,
 planszą, dystansem, bieżącym wzorem przeszkód, torem sowy, combo i życiami. `?plansza=3` zaczyna bieg od wybranej
-planszy (1 — Biedronka, 2 — festiwal roślin, 3 — blokowisko PRL, 4 — stacja Amic).
+planszy (1 — Biedronka, 2 — festiwal roślin, 3 — blokowisko PRL, 4 — stacja Amic). `?samouczek=1` pokazuje
+samouczek jeszcze raz w pierwszym biegu.

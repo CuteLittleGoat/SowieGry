@@ -83,7 +83,7 @@ test("Sowie Tory: koniec biegu — wyniki z planszami i rekord „sowa3” zapis
 }, testInfo) => {
   const project = uniqueProject(testInfo);
   const errors = watchErrors(page);
-  await openGame(page, cloudUrl("/SowieTory/", project));
+  await openGame(page, cloudUrl("/SowieTory/?seed=tory-wyniki", project));
   await page.locator("[data-start]").click();
   await page.waitForTimeout(1200);
   await page.evaluate(() => window.SowieTory.end());
@@ -133,11 +133,15 @@ test("Sowie Tory: meta → finał z basenem → Humbacze Tory → podsumowanie z
   test.setTimeout(90_000);
   const project = uniqueProject(testInfo);
   const errors = watchErrors(page);
-  await openGame(page, cloudUrl("/SowieTory/", project));
+  await openGame(page, cloudUrl("/SowieTory/?seed=tory-final", project));
+  const music = () => page.evaluate(() => window.SowieTory.music());
   await page.locator("[data-start]").click();
+  // Muzyka: motyw planszy w biegu, cisza w finale, pieśń humbaka w rejsie, motyw następnej planszy.
+  await expect.poll(music, { timeout: 10_000 }).toBe("tory-biedronka");
   await page.evaluate(() => window.SowieTory.warp(1200));
   await expect.poll(async () => (await state(page)).phase).toBe("finale");
   expect((await state(page)).finishSeen).toBe(false);
+  expect(await music()).toBe(null);
 
   // Pierwszy finał: stuknięcie go nie skraca.
   const box = await page.locator("[data-stage]").boundingBox();
@@ -145,6 +149,7 @@ test("Sowie Tory: meta → finał z basenem → Humbacze Tory → podsumowanie z
   expect((await state(page)).phase).toBe("finale");
   await expect.poll(async () => (await state(page)).phase, { timeout: 15_000 }).toBe("whale");
   await expect(page.locator(".sowie-toast-chip", { hasText: "Humbacze Tory!" })).toBeVisible();
+  expect(await music()).toBe("humbak");
   await expect(page.locator(".tory-progress")).toContainText("Humbacze Tory · 0:");
   await page.evaluate(() => window.SowieCloud.flush());
   expect((await readDoc(project, "sowiegry/profil/sowiegry_gry/sowa3")).finishSeen).toBe(true);
@@ -167,6 +172,7 @@ test("Sowie Tory: meta → finał z basenem → Humbacze Tory → podsumowanie z
   await expect(summary).toBeHidden();
   await expect(page.locator(".tory-progress")).toContainText("2/4 · Festiwal");
   expect((await state(page)).phase).toBe("run");
+  await expect.poll(music).toBe("tory-festiwal");
   await page.evaluate(() => window.SowieCloud.flush());
   expect((await readDoc(project, "sowiegry/profil/sowiegry_gry/sowa3")).stars.biedronka).toBe(stars);
 
@@ -275,6 +281,65 @@ test("Sowie Tory: ukończona kampania odblokowuje tryb Nieskończony — pętla 
   const doc = await readDoc(project, "sowiegry/profil/sowiegry_gry/sowa3");
   expect(doc.top10["nieskonczony-arcade"][0].mode).toBe("nieskonczony");
   expect(errorsAgain).toEqual([]);
+});
+
+test("Sowie Tory: samouczek pierwszego biegu — gra czeka na pokazany ruch, 4 kroki, zapis w dokumencie gry (emulator)", async ({
+  page,
+}, testInfo) => {
+  // Między krokami gra biegnie kilka sekund czasu gry — w WebKit w CI wolniej niż czas rzeczywisty (wolne klatki).
+  test.setTimeout(150_000);
+  const step = { timeout: 30_000 };
+  const project = uniqueProject(testInfo);
+  const errors = watchErrors(page);
+  await openGame(page, cloudUrl("/SowieTory/", project));
+  await page.locator("[data-start]").click();
+  const prompt = page.locator(".tory-tutorial");
+  const demo = prompt.locator(".sowie-gesture-demo");
+
+  // 1. Zmiana toru: gra stoi; stuknięcie w środek (skok) nic nie daje, przesunięcie w lewo — wznawia.
+  await expect(prompt).toContainText("Telefon na torze!", step);
+  await expect(prompt).toContainText("krok 1 z 4");
+  await expect(demo).toHaveAttribute("data-gesture", "swipe-left");
+  const frozen = (await state(page)).stageDistance;
+  await page.waitForTimeout(400);
+  expect((await state(page)).stageDistance).toBe(frozen);
+  const box = await page.locator("[data-stage]").boundingBox();
+  await page.mouse.click(box.x + box.width / 2, box.y + box.height * 0.55);
+  await page.waitForTimeout(200);
+  await expect(prompt).toBeVisible();
+  await swipe(page, -90, 0);
+  await expect(prompt).toBeHidden(step);
+
+  // 2. Skok, 3. ślizg, 4. kózka na środkowym torze (sowa jest na lewym — w prawo).
+  await expect(prompt).toContainText("Teczki", step);
+  await expect(demo).toHaveAttribute("data-gesture", "swipe-up");
+  await swipe(page, 0, -90);
+  await expect(prompt).toBeHidden(step);
+  await expect(prompt).toContainText("Dymki", step);
+  await expect(demo).toHaveAttribute("data-gesture", "swipe-down");
+  await swipe(page, 0, 90);
+  await expect(prompt).toBeHidden(step);
+  await expect(prompt).toContainText("Kózka!", step);
+  await expect(demo).toHaveAttribute("data-gesture", "swipe-right");
+  await swipe(page, 90, 0);
+  await expect(prompt).toBeHidden(step);
+
+  await expect(page.locator(".sowie-toast-chip", { hasText: "Świetnie! Teraz sama trasa" })).toBeVisible(step);
+  expect(await page.evaluate(() => window.SowieTory.tutorial())).toBeNull();
+  // Po samouczku tryb bezpieczny się kończy (sowa bez ruchu może już trafić w zwykłą przeszkodę) — brak trafień
+  // przy właściwych ruchach sprawdza test jednostkowy; tu: kózka z kroku 4 złapana.
+  expect((await state(page)).goats).toBe(1);
+  await page.evaluate(() => window.SowieCloud.flush());
+  expect((await readDoc(project, "sowiegry/profil/sowiegry_gry/sowa3")).tutorialDone).toBe(true);
+
+  // Kolejny bieg już bez samouczka.
+  await page.evaluate(() => window.SowieTory.end());
+  await page
+    .getByRole("dialog", { name: /Koniec biegu/ })
+    .getByRole("button", { name: "Jeszcze raz" })
+    .click();
+  expect(await page.evaluate(() => window.SowieTory.tutorial())).toBeNull();
+  expect(errors).toEqual([]);
 });
 
 test.describe("Sowie Tory — najmniejszy telefon (320 × 568)", () => {

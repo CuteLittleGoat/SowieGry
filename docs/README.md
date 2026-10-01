@@ -54,7 +54,7 @@ Strona testowa `lab/` (adres strony + `/lab/`) służy do sprawdzania na telefon
 
 - `Sowia Ucieczka` (folder `SowiaUcieczka/`, dawny SowaRunner) — ucieczka przed Chmurą Pracu: skoki, szybowanie, ślizg, kózki, rejs na humbaku, zadania biegu i wyzwanie dnia. Stary adres `SowaRunner/` przekierowuje do nowej gry.
 - `SowaJumper` — pionowy jumper arcade.
-- `Sowa3` — trzytorowy runner w perspektywie w głąb ekranu. Jego nowa wersja, **Sowie Tory** (folder `SowieTory/`, instrukcja: `SowieTory/docs/README.md`), jest już w podglądzie: na karcie Sowa3 w menu stuknij **„Wypróbuj nową wersję: Sowie Tory”**. Rekordy liczą się wspólnie z Sowa3.
+- `Sowa3` — trzytorowy runner w perspektywie w głąb ekranu. Jego nowa wersja, **Sowie Tory** (folder `SowieTory/`, instrukcja: `SowieTory/docs/README.md`), jest już w podglądzie: na karcie Sowa3 w menu stuknij **„Wypróbuj nową wersję: Sowie Tory”**. Rekordy liczą się wspólnie z Sowa3. Pierwszy bieg prowadzi przez krótki samouczek (4 kroki: zmiana toru, skok, ślizg, kózka — gra czeka na Twój ruch), a każda z czterech plansz ma własną muzykę.
 - `Sowie Ogrody` — gra idle: sadź, podlewaj, automatyzuj.
 - `Sowia Szklarnia` — gra idle: buduj szklarnię, krzyżuj rośliny, przeganiaj kozy.
 

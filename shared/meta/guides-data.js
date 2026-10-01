@@ -208,6 +208,73 @@ export const GUIDES = Object.freeze({
       },
     ],
   },
+  // Sowie Tory — nowa wersja Sowa3 w podglądzie (SowieTory/, Analiza 3 E5); po podmianie (E5f) zastąpi klucz `sowa3`.
+  sowietory: {
+    id: "sowietory",
+    title: "Sowie Tory",
+    summary:
+      "Sowa biegnie w głąb ekranu po trzech torach przez sklep Biedronka, festiwal roślin, blokowisko PRL i stację Amic. Na mecie każdej planszy wskakuje do basenu i zmienia się w humbaka.",
+    cards: [
+      {
+        id: "cel",
+        title: "Cel gry",
+        text: "Przebiegnij cztery plansze kampanii. Omijaj Pracu Pracu i Amic, zbieraj liście monstery i dbaj o serduszka.",
+        sprite: "sowa-bieg-2",
+        tip: "Każda plansza trwa ok. 75 s, a następna jest trochę szybsza.",
+      },
+      {
+        id: "tory",
+        title: "Zmiana toru",
+        text: "Przesuń palcem w lewo lub w prawo (albo stuknij bok ekranu). Pełną przeszkodę — telefon, dystrybutor, wózek — omijasz tylko zmianą toru.",
+        gesture: "swipe-left",
+        sprite: "amic-dystrybutor",
+        tip: "Cysterna Amic jest długa — zajmuje tor dłużej.",
+      },
+      {
+        id: "skok",
+        title: "Skok",
+        text: "Przesuń palcem w górę (albo stuknij środek ekranu), żeby przeskoczyć niską przeszkodę: teczkę, budzik, barierkę, kanister.",
+        gesture: "swipe-up",
+        sprite: "pracu-teczka",
+        tip: "Łuk liści nad przeszkodą pokazuje, że trzeba skoczyć.",
+      },
+      {
+        id: "slizg",
+        title: "Ślizg",
+        text: "Przesuń palcem w dół, żeby prześlizgnąć się pod wysoką przeszkodą — dymkiem Pracu Pracu albo znakiem z cenami.",
+        gesture: "swipe-down",
+        sprite: "pracu-dymek",
+        tip: "W powietrzu przesunięcie w dół szybko sprowadza sowę na ziemię i od razu zaczyna ślizg.",
+      },
+      {
+        id: "dziki",
+        title: "Dziki na blokowisku",
+        text: "Na blokowisku PRL dzik szarżuje torem sowy. Gdy przy dolnej krawędzi toru miga strzałka, zmień tor.",
+        sprite: "amic-barierka",
+        tip: "Obok zawsze jest wolny tor. Udany unik: +30 pkt.",
+      },
+      {
+        id: "kozki",
+        title: "Kózki i Gorączka",
+        text: "Wbiegnij w skaczącą kózkę: Sprężynka, Tarcza, Magnes, Podwajaczka albo Kózia jazda (8 s na kozie, która przeskakuje wszystko). Tęczowy liść uruchamia Gorączkę Monster.",
+        sprite: "kozka-turbo-skok",
+        tip: "Serduszko-doniczka nad torem daje dodatkowe życie.",
+      },
+      {
+        id: "humbak",
+        title: "Basen i Humbacze Tory",
+        text: "Na mecie sowa wskakuje do basenu i zmienia się w humbaka. Przez 20 s płyniesz trzema torami i łapiesz liście w kółkach — w górę wyskok.",
+        sprite: "humbak",
+        tip: "Po rejsie: gwiazdki za ukończenie, 60% liści i planszę bez trafienia.",
+      },
+      {
+        id: "nieskonczony",
+        title: "Tryb Nieskończony",
+        text: "Po ukończeniu kampanii odblokujesz tryb Nieskończony: cztery plansze w pętli, coraz szybciej, z osobnym rekordem.",
+        sprite: "lisc-teczowy",
+      },
+    ],
+  },
   ogrody: {
     id: "ogrody",
     title: "Sowie Ogrody",

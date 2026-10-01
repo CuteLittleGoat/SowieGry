@@ -1055,6 +1055,407 @@ function runTheme() {
   });
 }
 
+// Motywy plansz Sowich Torów (E5e): wspólny układ jak motyw Sowiej Ucieczki — bas, marimba na „i”, melodia
+// z dzwoneczkiem oktawę wyżej i perkusja; każda plansza ma własne tempo, tonację, barwę melodii i rytm.
+// `bars` — melodia w taktach: [nuta | "-" (pauza), długość w ćwierćnutach], każdy takt = 4 ćwierćnuty.
+function stageTheme({ bpm, chords, bars, lead, leadGain = 0.1, lowpass = 3000, bass = "eighths", drums: kit }) {
+  const beat = 60 / bpm;
+  const length = samples(chords.length * 4 * beat);
+  const melody = [];
+  bars.forEach((bar, index) => {
+    let at = index * 4;
+    for (const [name, duration] of bar) {
+      if (name !== "-") melody.push([name, at, duration]);
+      at += duration;
+    }
+    if (Math.abs(at - (index + 1) * 4) > 1e-9) throw new Error(`Motyw planszy, takt ${index + 1}: zła długość`);
+  });
+  return circular(length, (channels) => {
+    chords.forEach((chord, bar) => {
+      const at = bar * 4 * beat;
+      const root = note(chord[0]);
+      if (bass === "eighths") {
+        for (let step = 0; step < 8; step += 1) {
+          voice(channels, at + step * (beat / 2), beat * 0.4, {
+            wave: "triangle",
+            frequency: root * (step % 2 ? 2 : 1),
+            env: { a: 0.004, d: 0.12, s: 0.4, r: 0.06 },
+            gain: step % 2 ? 0.17 : 0.28,
+          });
+        }
+      } else {
+        [0, 2].forEach((offset, index) =>
+          voice(channels, at + offset * beat, beat * 1.6, {
+            wave: "triangle",
+            frequency: root * (index ? 1.5 : 1),
+            env: { a: 0.005, d: 0.3, s: 0.5, r: 0.1 },
+            gain: 0.3,
+          }),
+        );
+      }
+      for (const step of [1, 3, 5, 7]) {
+        chord.slice(1).forEach((name, index) =>
+          voice(channels, at + step * (beat / 2), 0.04, {
+            frequency: note(name),
+            env: { a: 0.002, d: 0.2, s: 0, r: 0.2 },
+            gain: 0.075,
+            harmonics: [
+              [1, 1],
+              [4, 0.15],
+            ],
+            pan: (index - 1) * 0.4,
+          }),
+        );
+      }
+    });
+    for (const [name, start, duration] of melody) {
+      voice(channels, start * beat, duration * beat * 0.85, {
+        wave: lead,
+        frequency: note(name),
+        env: { a: 0.008, d: 0.15, s: 0.45, r: 0.08 },
+        gain: leadGain,
+        lowpass,
+        vibrato: { rate: 6, depth: lead === "sine" ? 0.01 : 0.006, delay: 0.12 },
+        pan: 0.1,
+      });
+      voice(channels, start * beat, 0.04, {
+        frequency: note(name) * 2,
+        env: { a: 0.002, d: 0.1, s: 0, r: 0.1 },
+        gain: 0.04,
+        pan: -0.2,
+      });
+    }
+    drums(channels, beat, kit.pattern, chords.length, kit.gains);
+  });
+}
+
+// Biedronka: sklepowy dżingiel, 118 BPM, F-dur (F–d–B–C), marimba w melodii, równy rytm „zakupów”.
+const shopTheme = () =>
+  stageTheme({
+    bpm: 118,
+    chords: [
+      ["F2", "F3", "A3", "C4"],
+      ["D2", "D3", "F3", "A3"],
+      ["Bb2", "Bb3", "D4", "F4"],
+      ["C3", "C4", "E4", "G4"],
+      ["F2", "F3", "A3", "C4"],
+      ["D2", "D3", "F3", "A3"],
+      ["Bb2", "Bb3", "D4", "F4"],
+      ["C3", "C4", "E4", "G4"],
+    ],
+    bars: [
+      [
+        ["C5", 0.5],
+        ["F5", 0.5],
+        ["A5", 1],
+        ["G5", 0.5],
+        ["F5", 0.5],
+        ["A5", 1],
+      ],
+      [
+        ["D5", 0.5],
+        ["F5", 0.5],
+        ["A5", 1],
+        ["C6", 1],
+        ["A5", 1],
+      ],
+      [
+        ["Bb4", 0.5],
+        ["D5", 0.5],
+        ["F5", 1],
+        ["G5", 0.5],
+        ["F5", 0.5],
+        ["D5", 1],
+      ],
+      [
+        ["C5", 1],
+        ["E5", 0.5],
+        ["G5", 0.5],
+        ["C6", 2],
+      ],
+      [
+        ["A5", 0.5],
+        ["G5", 0.5],
+        ["F5", 1],
+        ["C5", 1],
+        ["F5", 1],
+      ],
+      [
+        ["F5", 0.5],
+        ["A5", 0.5],
+        ["D6", 1],
+        ["C6", 0.5],
+        ["A5", 0.5],
+        ["F5", 1],
+      ],
+      [
+        ["D5", 0.5],
+        ["F5", 0.5],
+        ["Bb5", 1],
+        ["A5", 0.5],
+        ["G5", 0.5],
+        ["F5", 1],
+      ],
+      [
+        ["G5", 1],
+        ["E5", 1],
+        ["C5", 1],
+        ["-", 1],
+      ],
+    ],
+    lead: "triangle",
+    leadGain: 0.16,
+    drums: {
+      pattern: ["k", "", "", "", "s", "", "", "", "k", "", "k", "", "s", "", "", ""],
+      gains: { kick: 0.55, snare: 0.2, hat: 0.08 },
+    },
+  });
+
+// Festiwal roślin: pogodnie i lekko, 104 BPM, A-dur (A–fis–D–E), flet (sinus z vibrato), bas półnutami.
+const festivalTheme = () =>
+  stageTheme({
+    bpm: 104,
+    chords: [
+      ["A2", "A3", "C#4", "E4"],
+      ["F#2", "F#3", "A3", "C#4"],
+      ["D2", "D3", "F#3", "A3"],
+      ["E2", "E3", "G#3", "B3"],
+      ["A2", "A3", "C#4", "E4"],
+      ["F#2", "F#3", "A3", "C#4"],
+      ["D2", "D3", "F#3", "A3"],
+      ["E2", "E3", "G#3", "B3"],
+    ],
+    bars: [
+      [
+        ["E5", 1],
+        ["A5", 1],
+        ["C#6", 1.5],
+        ["B5", 0.5],
+      ],
+      [
+        ["A5", 1],
+        ["F#5", 1],
+        ["A5", 2],
+      ],
+      [
+        ["D5", 0.5],
+        ["F#5", 0.5],
+        ["A5", 1],
+        ["B5", 1],
+        ["A5", 1],
+      ],
+      [
+        ["G#5", 1],
+        ["E5", 1],
+        ["B4", 2],
+      ],
+      [
+        ["E5", 0.5],
+        ["A5", 0.5],
+        ["C#6", 1],
+        ["E6", 1],
+        ["C#6", 1],
+      ],
+      [
+        ["B5", 1],
+        ["A5", 0.5],
+        ["F#5", 0.5],
+        ["C#6", 2],
+      ],
+      [
+        ["B5", 0.5],
+        ["A5", 0.5],
+        ["F#5", 1],
+        ["D5", 1],
+        ["F#5", 1],
+      ],
+      [
+        ["E5", 1],
+        ["G#5", 1],
+        ["A5", 2],
+      ],
+    ],
+    lead: "sine",
+    leadGain: 0.2,
+    lowpass: null,
+    bass: "half",
+    drums: {
+      pattern: ["k", "", "", "", "", "", "s", "", "k", "", "", "", "", "", "s", ""],
+      gains: { kick: 0.45, snare: 0.14, hat: 0.06 },
+    },
+  });
+
+// Blokowisko PRL: pościg dzików, 132 BPM, a-moll (a–F–G–E), szybki kwadratowy syntezator i gęsta perkusja.
+const prlTheme = () =>
+  stageTheme({
+    bpm: 132,
+    chords: [
+      ["A2", "A3", "C4", "E4"],
+      ["F2", "F3", "A3", "C4"],
+      ["G2", "G3", "B3", "D4"],
+      ["E2", "E3", "G#3", "B3"],
+      ["A2", "A3", "C4", "E4"],
+      ["F2", "F3", "A3", "C4"],
+      ["G2", "G3", "B3", "D4"],
+      ["E2", "E3", "G#3", "B3"],
+    ],
+    bars: [
+      [
+        ["A4", 0.5],
+        ["C5", 0.5],
+        ["E5", 0.5],
+        ["A5", 0.5],
+        ["G5", 0.5],
+        ["E5", 0.5],
+        ["C5", 1],
+      ],
+      [
+        ["F4", 0.5],
+        ["A4", 0.5],
+        ["C5", 0.5],
+        ["F5", 0.5],
+        ["E5", 0.5],
+        ["C5", 0.5],
+        ["A4", 1],
+      ],
+      [
+        ["G4", 0.5],
+        ["B4", 0.5],
+        ["D5", 0.5],
+        ["G5", 0.5],
+        ["F5", 0.5],
+        ["D5", 0.5],
+        ["B4", 1],
+      ],
+      [
+        ["E5", 0.5],
+        ["G#5", 0.5],
+        ["B5", 0.5],
+        ["E6", 0.5],
+        ["D6", 1],
+        ["B5", 1],
+      ],
+      [
+        ["A5", 1],
+        ["G5", 0.5],
+        ["E5", 0.5],
+        ["C5", 1],
+        ["E5", 1],
+      ],
+      [
+        ["F5", 1],
+        ["E5", 0.5],
+        ["C5", 0.5],
+        ["A4", 1],
+        ["C5", 1],
+      ],
+      [
+        ["D5", 1],
+        ["B4", 0.5],
+        ["G4", 0.5],
+        ["B4", 1],
+        ["D5", 1],
+      ],
+      [
+        ["E5", 0.5],
+        ["D5", 0.5],
+        ["C5", 0.5],
+        ["B4", 0.5],
+        ["G#4", 2],
+      ],
+    ],
+    lead: "square",
+    leadGain: 0.09,
+    lowpass: 2600,
+    drums: {
+      pattern: ["k", "", "k", "", "s", "", "k", "", "k", "", "k", "", "s", "", "k", "k"],
+      gains: { kick: 0.6, snare: 0.24, hat: 0.1 },
+    },
+  });
+
+// Stacja Amic: jazda na całego, 126 BPM, D-dur (D–h–G–A), piłokształtny syntezator z filtrem, bas ósemkami.
+const stationTheme = () =>
+  stageTheme({
+    bpm: 126,
+    chords: [
+      ["D2", "D3", "F#3", "A3"],
+      ["B1", "B2", "D3", "F#3"],
+      ["G2", "G3", "B3", "D4"],
+      ["A2", "A3", "C#4", "E4"],
+      ["D2", "D3", "F#3", "A3"],
+      ["B1", "B2", "D3", "F#3"],
+      ["G2", "G3", "B3", "D4"],
+      ["A2", "A3", "C#4", "E4"],
+    ],
+    bars: [
+      [
+        ["D5", 0.5],
+        ["F#5", 0.5],
+        ["A5", 1],
+        ["F#5", 0.5],
+        ["A5", 0.5],
+        ["D6", 1],
+      ],
+      [
+        ["B4", 0.5],
+        ["D5", 0.5],
+        ["F#5", 1],
+        ["B5", 1],
+        ["A5", 1],
+      ],
+      [
+        ["G5", 0.5],
+        ["F#5", 0.5],
+        ["E5", 0.5],
+        ["D5", 0.5],
+        ["B4", 1],
+        ["D5", 1],
+      ],
+      [
+        ["E5", 1],
+        ["A5", 1],
+        ["C#6", 1],
+        ["A5", 1],
+      ],
+      [
+        ["D6", 0.5],
+        ["C#6", 0.5],
+        ["A5", 1],
+        ["F#5", 0.5],
+        ["A5", 0.5],
+        ["D6", 1],
+      ],
+      [
+        ["B5", 0.5],
+        ["A5", 0.5],
+        ["F#5", 1],
+        ["D5", 1],
+        ["F#5", 1],
+      ],
+      [
+        ["G5", 1],
+        ["B5", 1],
+        ["D6", 0.5],
+        ["B5", 0.5],
+        ["G5", 1],
+      ],
+      [
+        ["A5", 0.5],
+        ["G5", 0.5],
+        ["F#5", 0.5],
+        ["E5", 0.5],
+        ["D5", 2],
+      ],
+    ],
+    lead: "saw",
+    leadGain: 0.08,
+    lowpass: 2200,
+    drums: {
+      pattern: ["k", "", "", "", "s", "", "", "k", "k", "", "", "", "s", "", "", ""],
+      gains: { kick: 0.6, snare: 0.22, hat: 0.1 },
+    },
+  });
+
 // Motyw humbaka: ocean, wolno, 72 BPM, D-dur, 8 taktów (ok. 27 s): pady, pieśń wieloryba, krople.
 function whaleTheme() {
   const bpm = 72;
@@ -1273,6 +1674,11 @@ for (const [name, render, meta, kbps] of [
   ["menu", menuTheme, { label: "Motyw menu", bpm: 112, volume: 0.55 }, 96],
   ["humbak", whaleTheme, { label: "Pieśń humbaka (bonus)", bpm: 72, volume: 0.6 }, 64],
   ["ucieczka", runTheme, { label: "Sowia Ucieczka — bieg", bpm: 125, volume: 0.5 }, 80],
+  // Sowie Tory: motyw na każdą planszę, 48 kb/s (4 motywy + pieśń humbaka + efekty mieszczą się w 800 KB).
+  ["tory-biedronka", shopTheme, { label: "Sowie Tory — sklep Biedronka", bpm: 118, volume: 0.5 }, 48],
+  ["tory-festiwal", festivalTheme, { label: "Sowie Tory — festiwal roślin", bpm: 104, volume: 0.5 }, 48],
+  ["tory-prl", prlTheme, { label: "Sowie Tory — blokowisko PRL", bpm: 132, volume: 0.5 }, 48],
+  ["tory-amic", stationTheme, { label: "Sowie Tory — stacja Amic", bpm: 126, volume: 0.5 }, 48],
 ]) {
   random = mulberry32(name.length * 104729);
   const channels = render();

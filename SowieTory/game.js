@@ -182,6 +182,10 @@ export function createRun({
           passed: false,
           hit: false,
         });
+      } else if (item.type === "goat") {
+        // Kózka we wzorze (samouczek): skacze w miejscu na swoim torze.
+        goats.push({ kind: item.kind, at: start + item.z, lanes: [item.lane, item.lane], phase: 0, taken: false });
+        goats.sort((a, b) => a.at - b.at);
       } else {
         leaves.push({ lane: item.lane, at: start + item.z, y: item.y, kind: item.kind || "zielony", taken: false });
         state.stageLeafTotal += item.kind === "zloty" ? 5 : 1;
@@ -210,6 +214,7 @@ export function createRun({
 
   // Dodatki w odstępie po wzorze (`from`…`to`): kózka albo serduszko w środku odstępu; w oddechu tęczowy liść.
   function placeExtras(chosen, start, gapEnd) {
+    if (chosen.tags.includes("samouczek")) return;
     const middle = (start + chosen.length + gapEnd) / 2;
     const room = middle < TRACK.stageLength - GOATS.lastClear;
     if (room && middle >= state.nextGoatAt) {
