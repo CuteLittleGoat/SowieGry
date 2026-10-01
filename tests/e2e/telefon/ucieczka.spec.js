@@ -277,9 +277,10 @@ test("samouczek pierwszego biegu: gra czeka na pokazany ruch, 4 kroki bez trafie
   page,
 }, testInfo) => {
   // Długi scenariusz (4 kroki biegu): w WebKit w CI trwa dłużej niż domyślne 30 s, a między krokami gra biegnie
-  // kilka sekund — dlatego dłuższy limit testu i czekania na kolejną podpowiedź.
-  test.setTimeout(90_000);
-  const step = { timeout: 15_000 };
+  // kilka sekund czasu gry. Pętla robi najwyżej 12 kroków po 1/120 s na klatkę, więc przy wolnych klatkach (WebKit
+  // pod obciążeniem w CI) czas gry płynie wolniej niż rzeczywisty — stąd długi limit czekania na kolejną podpowiedź.
+  test.setTimeout(150_000);
+  const step = { timeout: 30_000 };
   const project = uniqueProject(testInfo);
   const errors = watchErrors(page);
   await openGame(page, cloudUrl("/SowiaUcieczka/", project));
@@ -351,7 +352,8 @@ test("„Jak grać?” na ekranie tytułowym uruchamia samouczek od nowa", async
   await guide.getByRole("button", { name: "Zagraj samouczek" }).click();
   await expect(guide).toBeHidden();
   expect(await page.evaluate(() => window.SowiaUcieczka.screen())).toBe("playing");
-  await expect(page.locator(".ucieczka-tutorial")).toContainText("krok 1 z 4");
+  // Pierwsze zatrzymanie po ok. 1–2 s biegu (czasu gry — w WebKit w CI bywa wolniejszy od rzeczywistego).
+  await expect(page.locator(".ucieczka-tutorial")).toContainText("krok 1 z 4", { timeout: 15_000 });
   expect(errors).toEqual([]);
 });
 

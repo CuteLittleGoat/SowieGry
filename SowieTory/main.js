@@ -864,6 +864,16 @@ window.SowieTory = Object.freeze({
   },
   end: () => game?.end("gracz"),
   warp: (meters) => game?.warp(meters),
+  // Testy: przewinięcie logiki gry o `seconds` (krok 1/120 s, bez czekania na klatki — np. 20 s rejsu humbaka
+  // w e2e; w WebKit w CI klatki bywają wolniejsze niż czas rzeczywisty). Zatrzymuje się na podsumowaniu planszy.
+  advance: (seconds) => {
+    if (!game || screen !== "playing") return;
+    for (let index = Math.round(seconds * 120); index > 0 && screen === "playing"; index -= 1) {
+      if (game.state.phase === "stageEnd" || game.state.phase === "over") break;
+      game.update(1 / 120);
+      handleEvents();
+    }
+  },
   goat: (kind) => game?.giveGoat(kind),
   fever: () => game?.giveFever(),
   extras: () =>

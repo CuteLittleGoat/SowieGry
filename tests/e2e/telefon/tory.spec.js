@@ -53,11 +53,11 @@ test("Sowie Tory: przesunięcia zmieniają tor, w górę — skok, w dół — �
   await page.keyboard.press("ArrowRight");
   await expect.poll(async () => (await state(page)).owl.lane).toBe(0);
 
+  // Bieg trwa: dystans rośnie (czekamy na stan gry, nie na zegar — w WebKit w CI klatki bywają wolniejsze, a pętla
+  // robi najwyżej 12 kroków po 1/120 s na klatkę, więc czas gry płynie wtedy wolniej niż rzeczywisty).
   const before = (await state(page)).stageDistance;
-  await page.waitForTimeout(1500);
-  const after = await state(page);
-  expect(after.stageDistance).toBeGreaterThan(before + 10);
-  expect(after.speed).toBeGreaterThan(12);
+  await expect.poll(async () => (await state(page)).stageDistance, { timeout: 10_000 }).toBeGreaterThan(before + 10);
+  expect((await state(page)).speed).toBeGreaterThan(12);
   expect(errors).toEqual([]);
 });
 
@@ -106,6 +106,8 @@ test("Sowie Tory: koniec biegu — wyniki z planszami i rekord „sowa3” zapis
 test("Sowie Tory: plansze w kolejności z obecnej gry, na blokowisku PRL szarżujący dzik ze strzałką (?plansza=)", async ({
   page,
 }) => {
+  // Dwa wejścia i ok. 20 m biegu do szarży — w WebKit w CI czas gry bywa wolniejszy od rzeczywistego.
+  test.setTimeout(60_000);
   const errors = watchErrors(page);
   await openGame(page, "/SowieTory/?seed=tory-plansze&plansza=4");
   await page.locator("[data-start]").click();
@@ -118,9 +120,9 @@ test("Sowie Tory: plansze w kolejności z obecnej gry, na blokowisku PRL szarżu
   await expect(page.locator(".tory-progress")).toContainText("3/4 · Blokowisko PRL");
   // Przeskok tuż przed pierwszą szarżą: strzałka i podpowiedź, potem dzik biegnie torem sowy.
   await page.evaluate(() => window.SowieTory.warp(125));
-  await expect(page.locator(".sowie-toast-chip", { hasText: "Dzik szarżuje!" })).toBeVisible({ timeout: 15_000 });
+  await expect(page.locator(".sowie-toast-chip", { hasText: "Dzik szarżuje!" })).toBeVisible({ timeout: 30_000 });
   await expect
-    .poll(async () => (await state(page)).boars.some((item) => item.phase === "charge"), { timeout: 5000 })
+    .poll(async () => (await state(page)).boars.some((item) => item.phase === "charge"), { timeout: 10_000 })
     .toBe(true);
   expect(errors).toEqual([]);
 });
@@ -128,8 +130,7 @@ test("Sowie Tory: plansze w kolejności z obecnej gry, na blokowisku PRL szarżu
 test("Sowie Tory: meta → finał z basenem → Humbacze Tory → podsumowanie z gwiazdkami → plansza 2 (emulator)", async ({
   page,
 }, testInfo) => {
-  // Rejs humbaka trwa 20 s w czasie rzeczywistym — dłuższy limit testu (WebKit w CI).
-  test.setTimeout(120_000);
+  test.setTimeout(90_000);
   const project = uniqueProject(testInfo);
   const errors = watchErrors(page);
   await openGame(page, cloudUrl("/SowieTory/", project));
@@ -153,9 +154,11 @@ test("Sowie Tory: meta → finał z basenem → Humbacze Tory → podsumowanie z
   await expect.poll(async () => (await state(page)).ride.lane).toBe(1);
   await swipe(page, 0, -90);
   await expect.poll(async () => (await state(page)).ride.airborne).toBe(true);
+  // Reszta 20-sekundowego rejsu (logika z testów jednostkowych) — przewinięta, bez renderowania każdej klatki.
+  await page.evaluate(() => window.SowieTory.advance(25));
 
   const summary = page.getByRole("dialog", { name: /1\/4 · Biedronka — ukończona!/ });
-  await expect(summary).toBeVisible({ timeout: 40_000 });
+  await expect(summary).toBeVisible({ timeout: 15_000 });
   await expect(summary).toContainText("Plansza ukończona");
   await expect(summary).toContainText("Liście z Humbaczych Torów");
   const stars = Number(await summary.locator("[data-stars]").getAttribute("data-stars"));
@@ -209,8 +212,7 @@ test("Sowie Tory: kózki (Kózia jazda, Tarcza) i Gorączka Monster — komunika
 test("Sowie Tory: ukończona kampania odblokowuje tryb Nieskończony — pętla plansz i osobny rekord (emulator)", async ({
   page,
 }, testInfo) => {
-  // Dwa rejsy humbaka po 20 s w czasie rzeczywistym — dłuższy limit (WebKit w CI).
-  test.setTimeout(180_000);
+  test.setTimeout(120_000);
   const project = uniqueProject(testInfo);
   await seedDoc(project, "sowiegry/profil/sowiegry_gry/sowa3", { finishSeen: true });
   const errors = watchErrors(page);
@@ -226,42 +228,53 @@ test("Sowie Tory: ukończona kampania odblokowuje tryb Nieskończony — pętla 
   await expect.poll(async () => (await state(page)).phase).toBe("finale");
   const box = await page.locator("[data-stage]").boundingBox();
   await page.mouse.click(box.x + box.width / 2, box.y + box.height * 0.55);
+  await expect.poll(async () => (await state(page)).phase, { timeout: 5000 }).toBe("whale");
+  // 20 s rejsu humbaka (logika z testów jednostkowych) — przewinięte.
+  await page.evaluate(() => window.SowieTory.advance(25));
   const summary = page.getByRole("dialog", { name: /4\/4 · Stacja Amic — ukończona!/ });
-  await expect(summary).toBeVisible({ timeout: 40_000 });
+  await expect(summary).toBeVisible({ timeout: 15_000 });
   await summary.getByRole("button", { name: "Zobacz wyniki" }).click();
   const results = page.getByRole("dialog", { name: "Kampania ukończona!" });
   await expect(results).toBeVisible();
   await expect(results).toContainText("Odblokowano tryb Nieskończony!");
   await page.evaluate(() => window.SowieCloud.flush());
   expect((await readDoc(project, "sowiegry/profil/sowiegry_gry/sowa3")).endlessUnlocked).toBe(true);
+  expect(errors).toEqual([]);
 
-  // Ponowne wejście: tryb Nieskończony dostępny; po 4. planszy znowu 1. (okrążenie 2).
-  await openGame(page, url);
-  await expect(endlessChip).toBeEnabled();
-  await expect(page.locator("[data-mode-note]")).toBeHidden();
-  await endlessChip.click();
-  await expect(endlessChip).toHaveAttribute("aria-pressed", "true");
-  await expect(page.locator("[data-record]")).toContainText("Nieskończony");
-  await page.locator("[data-start]").click();
-  expect((await state(page)).mode).toBe("nieskonczony");
-  await page.evaluate(() => window.SowieTory.warp(1200));
+  // Ponowne wejście (nowa karta tego samego telefonu): tryb Nieskończony dostępny; po 4. planszy znowu 1.
+  // Nowa karta zamiast przejścia w tej samej — WebKit zgłasza przerwane przejściem długie zapytania kanału
+  // Firestore jako błędy strony („…due to access control checks”).
+  const again = await page.context().newPage();
+  await page.close();
+  const errorsAgain = watchErrors(again);
+  await openGame(again, url);
+  const chip = again.locator('[data-mode="nieskonczony"]');
+  await expect(chip).toBeEnabled();
+  await expect(again.locator("[data-mode-note]")).toBeHidden();
+  await chip.click();
+  await expect(chip).toHaveAttribute("aria-pressed", "true");
+  await expect(again.locator("[data-record]")).toContainText("Nieskończony");
+  await again.locator("[data-start]").click();
+  expect((await state(again)).mode).toBe("nieskonczony");
+  await again.evaluate(() => window.SowieTory.warp(1200));
   // Obejrzany finał w trybie Nieskończonym skraca się sam.
-  await expect.poll(async () => (await state(page)).phase, { timeout: 5000 }).toBe("whale");
-  const next = page.getByRole("dialog", { name: /4\/4 · Stacja Amic — ukończona!/ });
-  await expect(next).toBeVisible({ timeout: 40_000 });
+  await expect.poll(async () => (await state(again)).phase, { timeout: 5000 }).toBe("whale");
+  await again.evaluate(() => window.SowieTory.advance(25));
+  const next = again.getByRole("dialog", { name: /4\/4 · Stacja Amic — ukończona!/ });
+  await expect(next).toBeVisible({ timeout: 15_000 });
   await next.getByRole("button", { name: "Dalej" }).click();
-  await expect(page.locator(".tory-progress")).toContainText("1/4 · Biedronka · okr. 2");
-  expect((await state(page)).loop).toBe(1);
-  await page.evaluate(() => window.SowieTory.end());
-  const endless = page.getByRole("dialog", { name: "Koniec trybu Nieskończonego!" });
+  await expect(again.locator(".tory-progress")).toContainText("1/4 · Biedronka · okr. 2");
+  expect((await state(again)).loop).toBe(1);
+  await again.evaluate(() => window.SowieTory.end());
+  const endless = again.getByRole("dialog", { name: "Koniec trybu Nieskończonego!" });
   await expect(endless).toBeVisible();
   await expect(endless).toContainText("Plansze (okrążenia)");
-  await page.evaluate(() => window.SowieCloud.flush());
+  await again.evaluate(() => window.SowieCloud.flush());
   const profile = await readDoc(project, "sowiegry/profil");
   expect(profile.records.sowa3["nieskonczony-arcade"].bestScore).toBeGreaterThan(0);
   const doc = await readDoc(project, "sowiegry/profil/sowiegry_gry/sowa3");
   expect(doc.top10["nieskonczony-arcade"][0].mode).toBe("nieskonczony");
-  expect(errors).toEqual([]);
+  expect(errorsAgain).toEqual([]);
 });
 
 test.describe("Sowie Tory — najmniejszy telefon (320 × 568)", () => {

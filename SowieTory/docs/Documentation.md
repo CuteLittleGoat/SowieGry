@@ -282,7 +282,7 @@ Lista obiektów sortowana po głębokości (dalsze najpierw): scenografia (`scen
 - Ekran tytułowy pokazuje planszę z sową (bieg „tytul” bez aktualizacji). Dźwięk: `createAudio` z `GAME_SOUNDS`, ustawienia z profilu, odblokowanie pierwszym dotknięciem (bez stuknięć w odnośniki); odliczanie — „odliczanie” / „odliczanie-start”; pauza ścisza muzykę.
 - `?plansza=1…4` — bieg zaczyna się od wybranej planszy kampanii (diagnostyka i zrzuty).
 - `?debug=1` — panel: kl./s, DPR, ekran, prędkość, plansza, dystans planszy, wzór, tor, liczba przeszkód i liści, combo, życia.
-- `window.SowieTory` (testy e2e): `screen()`, `ready()`, `atlasReady()`, `state()` (podsumowanie + `phase`, `speed`, `lives`, `stageDistance`, `stageIndex`, `mode`, `loop`, `boars` — tor, faza, z; `finishSeen`; `finale` — faza i czas; `ride` — tor, wysokość, w powietrzu, czas, zebrane; `powerups`, `riding`, `fever`, `goats`; `owl`), `start(poziom?, tryb?)`, `end()`, `warp(m)`, `goat(rodzaj)`, `fever()`, `extras()` (kózki: rodzaj, tory, głębokość; serduszka: tor, głębokość), `obstacles()` (rodzaj, tor, głębokość).
+- `window.SowieTory` (testy e2e): `screen()`, `ready()`, `atlasReady()`, `state()` (podsumowanie + `phase`, `speed`, `lives`, `stageDistance`, `stageIndex`, `mode`, `loop`, `boars` — tor, faza, z; `finishSeen`; `finale` — faza i czas; `ride` — tor, wysokość, w powietrzu, czas, zebrane; `powerups`, `riding`, `fever`, `goats`; `owl`), `start(poziom?, tryb?)`, `end()`, `warp(m)`, `advance(s)` (przewija logikę gry o `s` sekund krokiem 1/120 s bez czekania na klatki — np. 20 s rejsu humbaka w e2e; zatrzymuje się na podsumowaniu planszy), `goat(rodzaj)`, `fever()`, `extras()` (kózki: rodzaj, tory, głębokość; serduszka: tor, głębokość), `obstacles()` (rodzaj, tor, głębokość).
 
 ## Testy
 
