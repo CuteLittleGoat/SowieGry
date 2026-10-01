@@ -2,12 +2,14 @@
 // po bokach drogi (poza korytarzem trzech torów), droga z przesuwającą się teksturą, podświetlenie toru pod sową,
 // przeszkody i liście posortowane po głębokości, mgła w oddali, sowa, strzałki ostrzegawcze, napisy punktów;
 // na blokowisku PRL szarżujące dziki (strzałka przy dolnej krawędzi toru) i stado u dołu ekranu (wskaźnik żyć).
-// Po mecie: działka z basenem (finał) i morskie tory rejsu humbaka — finale-scene.js.
+// Po mecie: działka z basenem (finał) i morskie tory rejsu humbaka — finale-scene.js. Dodatki: skaczące kózki,
+// serduszka-doniczki, liście przyciągane Magnesem, sowa jadąca na kozie (Kózia jazda).
 import { drawShadow } from "../shared/engine/sprites.js";
 import { drawOwl } from "../shared/world/owl.js";
 import { COLORS, font } from "../shared/world/tokens.js";
 import { OWL } from "./config.js";
 import { createFinaleScene } from "./finale-scene.js";
+import { goatPose } from "./goats.js";
 import { OBSTACLES, obstacleShape, obstacleX } from "./obstacles.js";
 import { DECOR_PROPS, OBSTACLE_PROPS, drawBoar, drawOverhead } from "./props.js";
 import { ROAD_WIDTH, computeProjection, depthAtScreenY, fogAt, laneX, project } from "./projection.js";
@@ -274,7 +276,50 @@ export function createRenderer({ canvas, view, atlas }) {
     }
   }
 
-  function leaf(item, distance, time) {
+  // Skacząca kózka (chustka i ikona z atlasu; w skoku — rysunek skoku) z cieniem.
+  function goat(item, distance, time) {
+    if (item.taken) return;
+    const z = item.at - distance;
+    if (z > layout.farZ || z < nearZ()) return;
+    drawList.push({
+      z,
+      draw: () => {
+        const pose = goatPose(item, time);
+        const ground = project(layout, pose.x, 0, z, point2);
+        const base = project(layout, pose.x, pose.y, z, point);
+        if (!ground || !base) return;
+        context.globalAlpha = 1 - fogAt(layout, z);
+        drawShadow(context, ground.x, ground.y, 0.9 * ground.scale, { lift: Math.min(1, pose.y) });
+        atlas.draw(context, `kozka-${item.kind}${pose.hopping ? "-skok" : ""}`, base.x, base.y, {
+          width: 1.25 * base.scale,
+          height: 1.25 * base.scale,
+          flipX: pose.x > laneX(item.lanes[0]) + 0.01 && !pose.hopping,
+        });
+        context.globalAlpha = 1;
+      },
+    });
+  }
+
+  // Serduszko-doniczka (dodatkowe życie) unoszące się nad torem.
+  function heart(item, distance, time) {
+    if (item.taken) return;
+    const z = item.at - distance;
+    if (z > layout.farZ || z < nearZ()) return;
+    drawList.push({
+      z,
+      draw: () => {
+        const base = project(layout, laneX(item.lane), 0.9 + Math.sin(time * 3 + item.at) * 0.1, z, point);
+        if (!base) return;
+        context.globalAlpha = 1 - fogAt(layout, z);
+        const size = 0.85 * base.scale * (1 + Math.sin(time * 6) * 0.05);
+        atlas.draw(context, "zycie", base.x, base.y, { width: size, height: size });
+        context.globalAlpha = 1;
+      },
+    });
+  }
+
+  // Liść; przyciągany Magnesem (`pull` 0–1) leci do sowy.
+  function leaf(item, distance, time, owl) {
     if (item.taken) return;
     const z = item.at - distance;
     if (z > layout.farZ || z < nearZ()) return;
@@ -282,7 +327,10 @@ export function createRenderer({ canvas, view, atlas }) {
       z,
       draw: () => {
         const bob = Math.sin(time * 4 + item.at) * 0.08;
-        const base = project(layout, laneX(item.lane), item.y + bob, z, point);
+        const pull = item.pull || 0;
+        const x = laneX(item.lane) + (owl.x - laneX(item.lane)) * pull;
+        const y = item.y + bob + (owl.y + 0.6 - item.y) * pull * 0.8;
+        const base = project(layout, x, y, z, point);
         if (!base) return;
         context.globalAlpha = 1 - fogAt(layout, z);
         const size = 0.6 * base.scale;
@@ -305,8 +353,16 @@ export function createRenderer({ canvas, view, atlas }) {
         drawShadow(context, ground.x, ground.y, 1.0 * ground.scale, { lift: Math.min(1, owl.y / 1.5) });
         const base = project(layout, owl.x, owl.y, 0, point);
         const blink = state.invulnerable > 0 && Math.floor(state.time * 12) % 2 === 0;
+        // Kózia jazda: pod sową koza Turbo, sowa siedzi na jej grzbiecie.
+        const riding = state.riding > 0;
+        if (riding) {
+          atlas.draw(context, owl.grounded ? "kozka-turbo" : "kozka-turbo-skok", base.x, base.y, {
+            width: 1.45 * base.scale,
+            height: 1.45 * base.scale,
+          });
+        }
         context.save();
-        context.translate(base.x, base.y);
+        context.translate(base.x, base.y - (riding ? 0.62 * base.scale : 0));
         context.scale(base.scale, base.scale);
         if (owl.slide > 0) context.scale(1.15, OWL.slideHeight / OWL.height);
         drawOwl(context, atlas, 0, 0, {
@@ -403,7 +459,9 @@ export function createRenderer({ canvas, view, atlas }) {
       drawList.length = 0;
       scenery(stage, distance, state.time);
       for (const item of state.obstacles) obstacle(item, distance, state.time);
-      for (const item of state.leaves) leaf(item, distance, state.time);
+      for (const item of state.leaves) leaf(item, distance, state.time, state.owl);
+      for (const item of state.goats || []) goat(item, distance, state.time);
+      for (const item of state.hearts || []) heart(item, distance, state.time);
       for (const item of state.boars || []) boar(item, state.time);
       if (showOwl) owlSprite(state, animator, cosmetic);
       drawList.sort((a, b) => b.z - a.z);

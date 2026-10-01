@@ -175,6 +175,37 @@ test("Sowie Tory: meta → finał z basenem → Humbacze Tory → podsumowanie z
   expect(errors).toEqual([]);
 });
 
+test("Sowie Tory: kózki (Kózia jazda, Tarcza) i Gorączka Monster — komunikaty i chipy w HUD obok paska planszy", async ({
+  page,
+}) => {
+  const errors = watchErrors(page);
+  await openGame(page, "/SowieTory/?seed=tory-kozy&plansza=2");
+  await page.locator("[data-start]").click();
+  await expect(page.locator(".tory-progress")).toContainText("2/4 · Festiwal");
+  await page.waitForTimeout(600);
+
+  await page.evaluate(() => window.SowieTory.goat("turbo"));
+  await expect(page.locator(".sowie-toast-chip", { hasText: "Kózia jazda!" })).toBeVisible();
+  const ride = page.locator(".sowie-hud-powerup", { hasText: "Kózia jazda" });
+  await expect(ride).toBeVisible();
+  expect((await state(page)).riding).toBeGreaterThan(0);
+  expect((await state(page)).goats).toBe(1);
+
+  await page.evaluate(() => window.SowieTory.goat("tarcza"));
+  await expect(page.locator(".sowie-hud-powerup", { hasText: "Tarcza" })).toBeVisible();
+  await page.evaluate(() => window.SowieTory.fever());
+  await expect(page.locator(".sowie-hud-powerup", { hasText: "Gorączka" })).toBeVisible();
+  expect((await state(page)).fever).toBeGreaterThan(0);
+
+  // Chipy power-upów (prawa kolumna) nie zasłaniają paska planszy (lewa strona pod pauzą).
+  const progress = await page.locator(".tory-progress").boundingBox();
+  for (const chip of await page.locator(".sowie-hud-powerup").all()) {
+    const box = await chip.boundingBox();
+    expect(box.x).toBeGreaterThanOrEqual(progress.x + progress.width - 1);
+  }
+  expect(errors).toEqual([]);
+});
+
 test.describe("Sowie Tory — najmniejszy telefon (320 × 568)", () => {
   test.use({ viewport: { width: 320, height: 568 } });
 

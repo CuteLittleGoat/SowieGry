@@ -14,11 +14,32 @@ i dobiegnij do mety każdej planszy. Kampania ma cztery plansze (w tej kolejnoś
 3. **Sowa uciekająca przed dzikami na blokowisku z PRL**,
 4. **Sowa na stacji benzynowej Amic**.
 
-Każda plansza trwa około 75 sekund. Pasek pod wynikiem pokazuje numer i nazwę planszy oraz ile zostało do mety.
+Każda plansza trwa około 75 sekund. Pasek pod przyciskiem pauzy pokazuje numer i nazwę planszy oraz ile zostało do mety.
 Po mecie każdej planszy jest **finał z basenem**, potem **Humbacze Tory** i podsumowanie z gwiazdkami — a następna
 plansza jest trochę szybsza. Po ostatniej planszy kampania jest ukończona.
 
-> W kolejnych krokach etapu dochodzą: kózki, tryb Nieskończony, samouczek i muzyka plansz.
+> W kolejnych krokach etapu dochodzą: tryb Nieskończony, samouczek i muzyka plansz.
+
+## Kózki, Gorączka Monster i serduszka
+
+Między fragmentami trasy stoją **skaczące kózki** — przeskakują łukiem między dwoma sąsiednimi torami. Wbiegnij
+w kózkę (zmień tor tak, żeby na nią trafić), a dostaniesz **+50 pkt** i jej moc. Kózka nigdy nie zabiera życia.
+
+| Kózka (kolor chustki) | Co daje                                                                                          | Jak długo   |
+| --------------------- | ------------------------------------------------------------------------------------------------ | ----------- |
+| Sprężynka (żółta)     | od razu wysoki super-skok                                                                        | natychmiast |
+| Tarcza (niebieska)    | pierwsze trafienie nie zabiera życia („Tarcza pękła — nic się nie stało!”)                       | do 15 s     |
+| Magnes (fioletowa)    | liście z innych torów same lecą do sowy                                                          | 8 s         |
+| Turbo (pomarańczowa)  | **Kózia jazda** — sowa jedzie na kozie, która przeskakuje wszystko; trochę szybciej, bez trafień | 8 s         |
+| Podwajaczka (zielona) | podwójne liście                                                                                  | 10 s        |
+
+Aktywne moce widać w prawym górnym rogu, pod serduszkami (pasek pokazuje, ile zostało). Po zejściu z kozy sowa
+jeszcze przez chwilę miga i jest nietykalna.
+
+- **Tęczowy liść** (w spokojnych fragmentach trasy, najczęściej na festiwalu roślin): +100 pkt i **Gorączka
+  Monster** na 8 sekund — liście liczą się podwójnie, a na wszystkich torach pojawia się deszcz liści (nigdy
+  w przeszkodach i bez dodatkowych przeszkód).
+- **Serduszko-doniczka** nad torem: **dodatkowe życie**. Gdy masz już wszystkie życia — **+150 pkt**.
 
 ## Meta: basen i przemiana w humbaka
 
@@ -115,7 +136,7 @@ Amic) — sposób omijania się nie zmienia. Przeszkody pojawiają się z mgły 
 
 Wybrany poziom zapamiętuje się w chmurze. Rekord każdego poziomu widać na ekranie tytułowym, a po biegu —
 na ekranie wyników (z miejscem w top 10). Ekran wyników pokazuje też ukończone plansze, zdobyte gwiazdki (na 12),
-dystans, najlepsze combo, „O włos!”, uniki przed dzikami i liczbę trafień.
+dystans, najlepsze combo, „O włos!”, uniki przed dzikami, złapane kózki i liczbę trafień.
 
 ## Na telefonie
 

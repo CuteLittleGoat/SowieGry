@@ -93,21 +93,21 @@
   text-decoration: none;
 }
 
-/* Pasek planszy pod wynikiem: numer i nazwa planszy oraz postęp do mety (basen ogrodowy). */
+/* Pasek planszy pod przyciskiem pauzy: numer i nazwa planszy oraz postęp do mety (basen ogrodowy). Przy lewej
+   krawędzi, bo prawą kolumnę pod życiami zajmują chipy power-upów (kózki, Kózia jazda, Gorączka). */
 .tory-progress {
   position: absolute;
   top: calc(max(8px, env(safe-area-inset-top)) + 64px);
-  left: 50%;
+  left: max(12px, env(safe-area-inset-left));
   z-index: 31;
   display: grid;
   justify-items: center;
   gap: 4px;
-  width: min(60%, 260px);
+  width: min(calc(100% - 150px), 260px);
   padding: 4px 12px 6px;
   border-radius: 14px;
   background: rgba(255, 255, 255, 0.85);
   box-shadow: 0 2px 8px rgba(59, 47, 74, 0.15);
-  transform: translateX(-50%);
   font-size: 13px;
   font-weight: var(--czcionka-pogrubiona);
   pointer-events: none;
@@ -216,10 +216,8 @@
     display: none;
   }
 
-  /* Poziomo horyzont jest nisko nad HUD — pasek planszy przy lewej krawędzi, pod przyciskiem pauzy. */
+  /* Poziomo horyzont jest nisko nad HUD — węższy pasek planszy (nie zasłania nadjeżdżających przeszkód). */
   .tory-progress {
-    left: max(12px, env(safe-area-inset-left));
     width: 150px;
-    transform: none;
   }
 }

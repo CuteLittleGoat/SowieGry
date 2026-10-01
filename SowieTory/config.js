@@ -95,6 +95,43 @@ export const SCORE = Object.freeze({
   noHitBonus: 300,
 });
 
+// Skaczące kózki (Analiza 2, rozdz. 2.2 i 3.2): przeskakują między torami w odstępach między wzorami (nigdy we
+// wzorze — test przejścia wzorów bez zmian), co 220–360 m, nie w ostatnich 150 m planszy. Kózka nigdy nie rani.
+// Sprężynka — od razu super-skok; Tarcza — chroni przed 1 trafieniem (najwyżej 15 s); Magnes — przyciąga liście
+// z sąsiednich torów (8 s); Turbo → „Kózia jazda” (8 s: sowa na kozie przeskakuje wszystko, trochę szybciej);
+// Podwajaczka — podwójne liście (10 s).
+export const GOATS = Object.freeze({
+  every: Object.freeze([220, 360]),
+  lastClear: 150,
+  hopHeight: 0.7,
+  reachX: 0.9,
+  reachZ: 0.9,
+  bonus: 50,
+  weights: Object.freeze({ sprezynka: 1, tarcza: 1.2, magnes: 1, turbo: 0.8, podwajaczka: 1 }),
+  duration: Object.freeze({ tarcza: 15, magnes: 8, turbo: 8, podwajaczka: 10 }),
+  springVelocity: 10, // Sprężynka: szczyt 10² / (2 · 24) ≈ 2,1 m
+  rideSpeed: 1.15, // Kózia jazda: prędkość × 1,15
+  rideJump: 10.5, // Kózia jazda: automatyczny skok nad przeszkodą w torze
+  rideLook: 0.35, // … gdy przeszkoda jest bliżej niż 0,35 s biegu
+  afterRide: 1.5, // nietykalność po zejściu z kozy
+  magnetReachZ: 7, // Magnes: liście do 7 m przed sową lecą do niej
+});
+
+// Gorączka Monster (tęczowy liść, Analiza 2, rozdz. 2.2): 8 s, liście ×2, deszcz liści na wszystkich torach tam, gdzie
+// nie ma przeszkód — bez dodatkowych przeszkód. Tęczowy liść pojawia się w oddechach; najczęściej na festiwalu roślin.
+export const FEVER = Object.freeze({
+  duration: 8,
+  multiplier: 2,
+  points: 100,
+  chance: Object.freeze({ festiwal: 0.45, default: 0.15 }),
+  rainSpacing: 3,
+  rainClear: 2.5, // m wolne od przeszkody w torze
+});
+
+// Dodatkowe życie (smaczek obecnej Sowa3): serduszko-doniczka co 600–900 m w odstępie między wzorami; przy pełnych
+// życiach +150 pkt („Maks żyć”).
+export const EXTRA_LIFE = Object.freeze({ every: Object.freeze([600, 900]), fullBonus: 150, height: 0.9 });
+
 // Gwiazdki planszy (podsumowanie po rejsie humbaka), każda za osobne osiągnięcie: ★ ukończenie planszy,
 // ★ zebranie co najmniej `leafShare` liści wystawionych na planszy (złoty = 5), ★ plansza bez trafienia.
 export const STARS = Object.freeze({ leafShare: 0.6 });
@@ -121,4 +158,9 @@ export const GAME_SOUNDS = Object.freeze([
   "bonus-start",
   "humbak-plusk",
   "humbak-piesn",
+  "koza-meee",
+  "powerup-start",
+  "powerup-koniec",
+  "goraczka-start",
+  "lisc-teczowy",
 ]);

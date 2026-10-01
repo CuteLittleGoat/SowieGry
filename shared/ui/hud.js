@@ -97,25 +97,29 @@ export function createHud({ root, onPause = () => {}, maxLives = 3 } = {}) {
       );
       livesNode.setAttribute("aria-label", `Życia: ${lives[0]} z ${lives[1]}`);
     },
-    // list: [{ kind, remaining (s), total (s) }] — np. 10 razy na sekundę.
+    // list: [{ kind, remaining (s), total (s), label? }] — np. 10 razy na sekundę. `label` zastępuje nazwę z
+    // POWERUP_STYLE (np. Sowie Tory: Turbo to „Kózia jazda”).
     setPowerups(list = []) {
       const active = new Set();
-      for (const { kind, remaining, total } of list) {
+      for (const { kind, remaining, total, label: custom } of list) {
         const style = POWERUP_STYLE[kind];
         if (!style) continue;
+        const label = custom || style.label;
         active.add(kind);
         let chip = chips.get(kind);
         if (!chip) {
           chip = document.createElement("div");
           chip.className = "sowie-hud-powerup";
           chip.style.setProperty("--kolor", style.color);
-          chip.innerHTML = `<span class="sowie-hud-powerup-label">${style.label}</span><span class="sowie-hud-powerup-bar"><span></span></span>`;
+          chip.innerHTML = `<span class="sowie-hud-powerup-label"></span><span class="sowie-hud-powerup-bar"><span></span></span>`;
           chips.set(kind, chip);
           powerupsNode.appendChild(chip);
         }
+        const labelNode = chip.querySelector(".sowie-hud-powerup-label");
+        if (labelNode.textContent !== label) labelNode.textContent = label;
         const share = total > 0 ? Math.max(0, Math.min(1, remaining / total)) : 1;
         chip.querySelector(".sowie-hud-powerup-bar span").style.transform = `scaleX(${share})`;
-        chip.setAttribute("aria-label", `${style.label}: ${Math.ceil(Math.max(0, remaining))} s`);
+        chip.setAttribute("aria-label", `${label}: ${Math.ceil(Math.max(0, remaining))} s`);
         chip.classList.toggle("is-ending", remaining > 0 && remaining < 2);
       }
       for (const [kind, chip] of chips) {

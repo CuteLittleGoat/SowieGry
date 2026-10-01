@@ -15,10 +15,9 @@ import { createHud, createPauseMenu, createResults, createToasts, openModal, ren
 import { SPRITES, SVG_BASE } from "../shared/world/catalog.js";
 import { createOwlAnimator } from "../shared/world/owl.js";
 import { COLORS } from "../shared/world/tokens.js";
-import { DIFFICULTIES, DIFFICULTY_ORDER, GAME_ID, GAME_SOUNDS, TRACK } from "./config.js";
+import { DIFFICULTIES, DIFFICULTY_ORDER, FEVER, GAME_ID, GAME_SOUNDS, GOATS, TRACK } from "./config.js";
 import { GARDEN } from "./finale.js";
 import { createRun } from "./game.js";
-import { laneX } from "./projection.js";
 import { createRenderer } from "./render.js";
 import { STAGES } from "./stages.js";
 import { WHALE } from "./whale.js";
@@ -59,6 +58,7 @@ let difficulty = "arcade";
 let gameReady = false;
 let hitStop = 0;
 let summaryModal = null;
+let lastLeafPopup = -1;
 let previousCombo = 1;
 let lastFrame = 0;
 let boarHint = false;
@@ -281,6 +281,7 @@ function finishRun() {
       { label: "Najlepsze combo", value: `×${summary.bestCombo}` },
       { label: "O włos!", value: String(summary.nearMisses) },
       { label: "Uniki przed dzikami", value: String(summary.boarsDodged) },
+      { label: "Złapane kózki", value: String(summary.goats) },
       { label: "Trafienia", value: String(summary.hits) },
     ],
     messages: toasts.takeDeferred(),
@@ -354,6 +355,28 @@ function showStageSummary(event) {
 
 // Zdarzenia biegu → dźwięk, komunikaty, cząsteczki, SowieProgress.
 const point = { x: 0, y: 0, scale: 0 };
+const GOAT_LABELS = Object.freeze({
+  sprezynka: "Kózka Sprężynka — super-skok!",
+  tarcza: "Kózka Tarcza — jedno trafienie gratis!",
+  magnes: "Kózka Magnes — liście lecą do sowy!",
+  turbo: "Kózia jazda! Koza przeskakuje wszystko",
+  podwajaczka: "Kózka Podwajaczka — liście ×2!",
+});
+const GOAT_PITCH = Object.freeze({ sprezynka: 1.15, tarcza: 0.95, magnes: 1.05, turbo: 0.9, podwajaczka: 1.1 });
+
+// Chipy power-upów w HUD: kózki na czas, Kózia jazda i Gorączka Monster.
+function powerupList(state) {
+  const list = Object.entries(state.powerups).map(([kind, remaining]) => ({
+    kind,
+    remaining,
+    total: GOATS.duration[kind],
+  }));
+  if (state.riding > 0) {
+    list.push({ kind: "turbo", remaining: state.riding, total: GOATS.duration.turbo, label: "Kózia jazda" });
+  }
+  if (state.fever > 0) list.push({ kind: "goraczka", remaining: state.fever, total: FEVER.duration });
+  return list;
+}
 
 function burst(x, y, z, options) {
   const screenPoint = renderer.toScreen(x, y, z, point);
@@ -382,17 +405,21 @@ function handleEvents() {
         animator.land(0.6);
         break;
       case "leaf": {
-        play(event.kind === "zloty" ? "lisc-zloty" : "lisc", {
+        play(event.kind === "zloty" ? "lisc-zloty" : event.kind === "teczowy" ? "lisc-teczowy" : "lisc", {
           pitch: event.kind === "zielony" ? 1 + (game.state.streak % 10) * 0.04 : 1,
         });
-        burst(laneX(event.lane), 0.7, 0, {
+        // Cząsteczki i napis przy sowie (liść przyciągany Magnesem leci z innego toru).
+        burst(owl.x, 0.7, 0, {
           count: event.kind === "zielony" ? 4 : 10,
           speed: 2.2,
-          tint: event.kind === "zloty" ? COLORS.zloto : COLORS.monsteraJasna,
+          tint: event.kind === "zloty" ? COLORS.zloto : event.kind === "teczowy" ? COLORS.fiolet : COLORS.monsteraJasna,
           radius: 0.08,
         });
-        if (event.kind !== "zielony" || event.combo > 1) {
-          const at = renderer.toScreen(laneX(event.lane), 1.6, 0, point);
+        // Napis punktów: zawsze dla złotego i tęczowego, dla zwykłych przy combo / mnożniku — najwyżej co 0,25 s.
+        const special = event.kind !== "zielony";
+        if (special || ((event.combo > 1 || event.multiplier > 1) && game.state.time - lastLeafPopup >= 0.25)) {
+          if (!special) lastLeafPopup = game.state.time;
+          const at = renderer.toScreen(owl.x, 1.6, 0, point);
           if (at) renderer.popup(`+${event.points}`, at.x, at.y, event.kind === "zloty" ? COLORS.zloto : COLORS.bialy);
         }
         progress.emit(EVENTS.LEAF, { kind: event.kind, count: event.count, points: event.points });
@@ -434,6 +461,53 @@ function handleEvents() {
         break;
       case "boarCharge":
         play("ladowanie", { volume: 0.8, pitch: 0.7 });
+        break;
+      // Kózki: „meee”, +50 pkt i efekt; Turbo to tu Kózia jazda.
+      case "goat": {
+        const label = GOAT_LABELS[event.kind];
+        play("koza-meee", { pitch: GOAT_PITCH[event.kind] ?? 1 });
+        audio?.vibrate?.(20);
+        burst(owl.x, 1, 0.5, { count: 12, speed: 3, tint: COLORS.koza, radius: 0.09 });
+        const at = renderer.toScreen(owl.x, 2.2, 0, point);
+        if (at) renderer.popup(`+${event.bonus}`, at.x, at.y, COLORS.zloto, 24);
+        toasts.show(label, { kind: "reward", key: "kozka", priority: 1 });
+        progress.emit(EVENTS.GOAT, { kind: event.kind });
+        break;
+      }
+      case "spring":
+        play("skok", { pitch: 1.25 });
+        break;
+      case "powerupStart":
+      case "rideStart":
+        play("powerup-start");
+        break;
+      case "rideHop":
+        play("skok", { pitch: 0.85, volume: 0.6 });
+        break;
+      case "powerupEnd":
+      case "rideEnd":
+        play("powerup-koniec");
+        break;
+      case "shield":
+        play("polaczenie", { pitch: 1.2 });
+        burst(owl.x, 1, 0, { count: 14, speed: 3.5, tint: COLORS.niebieski, radius: 0.09 });
+        toasts.show("Tarcza pękła — nic się nie stało!", { kind: "success", key: "tarcza" });
+        break;
+      case "life":
+        play("zycie");
+        toasts.show("Dodatkowe życie!", { kind: "reward", key: "zycie" });
+        progress.emit(EVENTS.LIFE, {});
+        break;
+      case "lifeBonus": {
+        play("zycie", { pitch: 1.2 });
+        const at = renderer.toScreen(owl.x, 2.2, 0, point);
+        if (at) renderer.popup(`Maks żyć: +${event.bonus} pkt`, at.x, at.y, COLORS.zloto, 22);
+        break;
+      }
+      case "fever":
+        play("goraczka-start");
+        toasts.show(`Gorączka Monster! Liście ×${event.multiplier}`, { kind: "reward", key: "fever", priority: 1 });
+        progress.emit(EVENTS.FEVER, {});
         break;
       case "boarDodge": {
         play("polaczenie", { volume: 0.7, pitch: 0.9 });
@@ -605,6 +679,7 @@ function render() {
     hud.setScore(state.score);
     hud.setLeaves(state.leafCount);
     hud.setLives(state.lives, state.maxLives);
+    hud.setPowerups(powerupList(state));
     updateProgress(state);
   }
 }
@@ -719,6 +794,10 @@ window.SowieTory = Object.freeze({
           boars: game.state.boars.map((item) => ({ lane: item.lane, phase: item.phase, z: item.z })),
           finishSeen: game.state.finishSeen,
           finale: game.state.finale ? { phase: game.state.finale.phase, t: game.state.finale.t } : null,
+          powerups: { ...game.state.powerups },
+          riding: game.state.riding,
+          fever: game.state.fever,
+          goats: game.state.goatCount,
           ride: game.state.ride
             ? {
                 lane: game.state.ride.lane,
@@ -737,6 +816,19 @@ window.SowieTory = Object.freeze({
   },
   end: () => game?.end("gracz"),
   warp: (meters) => game?.warp(meters),
+  goat: (kind) => game?.giveGoat(kind),
+  fever: () => game?.giveFever(),
+  extras: () =>
+    game
+      ? {
+          goats: game.state.goats
+            .filter((item) => !item.taken)
+            .map((item) => ({ kind: item.kind, lanes: [...item.lanes], z: item.at - game.state.stageDistance })),
+          hearts: game.state.hearts
+            .filter((item) => !item.taken)
+            .map((item) => ({ lane: item.lane, z: item.at - game.state.stageDistance })),
+        }
+      : null,
   obstacles: () =>
     game
       ? game.state.obstacles.map((item) => ({
