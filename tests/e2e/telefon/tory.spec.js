@@ -1,7 +1,7 @@
 // Sowie Tory (wersja podglądowa nowej Sowa3, Analiza 3, E5) na telefonach: start, przesunięcia palcem (tor, skok,
 // ślizg), stuknięcia przy bokach, klawiatura, pauza, koniec biegu z wynikami i zapis rekordu „sowa3” w chmurze.
 const { test, expect, swipe: swipeFrom, waitForCloud, watchErrors } = require("../fixtures");
-const { cloudUrl, readDoc, uniqueProject } = require("../emulator");
+const { cloudUrl, readDoc, seedDoc, uniqueProject } = require("../emulator");
 
 async function openGame(page, url = "/SowieTory/?seed=tory-e2e") {
   await page.goto(url, { waitUntil: "load" });
@@ -203,6 +203,64 @@ test("Sowie Tory: kózki (Kózia jazda, Tarcza) i Gorączka Monster — komunika
     const box = await chip.boundingBox();
     expect(box.x).toBeGreaterThanOrEqual(progress.x + progress.width - 1);
   }
+  expect(errors).toEqual([]);
+});
+
+test("Sowie Tory: ukończona kampania odblokowuje tryb Nieskończony — pętla plansz i osobny rekord (emulator)", async ({
+  page,
+}, testInfo) => {
+  // Dwa rejsy humbaka po 20 s w czasie rzeczywistym — dłuższy limit (WebKit w CI).
+  test.setTimeout(180_000);
+  const project = uniqueProject(testInfo);
+  await seedDoc(project, "sowiegry/profil/sowiegry_gry/sowa3", { finishSeen: true });
+  const errors = watchErrors(page);
+  const url = cloudUrl("/SowieTory/?seed=tory-petla&plansza=4", project);
+  await openGame(page, url);
+  const endlessChip = page.locator('[data-mode="nieskonczony"]');
+  await expect(endlessChip).toBeDisabled();
+  await expect(page.locator("[data-mode-note]")).toContainText("Ukończ kampanię");
+
+  // Ostatnia plansza kampanii: meta → finał (obejrzany — stuknięcie skraca) → rejs → „Zobacz wyniki”.
+  await page.locator("[data-start]").click();
+  await page.evaluate(() => window.SowieTory.warp(1200));
+  await expect.poll(async () => (await state(page)).phase).toBe("finale");
+  const box = await page.locator("[data-stage]").boundingBox();
+  await page.mouse.click(box.x + box.width / 2, box.y + box.height * 0.55);
+  const summary = page.getByRole("dialog", { name: /4\/4 · Stacja Amic — ukończona!/ });
+  await expect(summary).toBeVisible({ timeout: 40_000 });
+  await summary.getByRole("button", { name: "Zobacz wyniki" }).click();
+  const results = page.getByRole("dialog", { name: "Kampania ukończona!" });
+  await expect(results).toBeVisible();
+  await expect(results).toContainText("Odblokowano tryb Nieskończony!");
+  await page.evaluate(() => window.SowieCloud.flush());
+  expect((await readDoc(project, "sowiegry/profil/sowiegry_gry/sowa3")).endlessUnlocked).toBe(true);
+
+  // Ponowne wejście: tryb Nieskończony dostępny; po 4. planszy znowu 1. (okrążenie 2).
+  await openGame(page, url);
+  await expect(endlessChip).toBeEnabled();
+  await expect(page.locator("[data-mode-note]")).toBeHidden();
+  await endlessChip.click();
+  await expect(endlessChip).toHaveAttribute("aria-pressed", "true");
+  await expect(page.locator("[data-record]")).toContainText("Nieskończony");
+  await page.locator("[data-start]").click();
+  expect((await state(page)).mode).toBe("nieskonczony");
+  await page.evaluate(() => window.SowieTory.warp(1200));
+  // Obejrzany finał w trybie Nieskończonym skraca się sam.
+  await expect.poll(async () => (await state(page)).phase, { timeout: 5000 }).toBe("whale");
+  const next = page.getByRole("dialog", { name: /4\/4 · Stacja Amic — ukończona!/ });
+  await expect(next).toBeVisible({ timeout: 40_000 });
+  await next.getByRole("button", { name: "Dalej" }).click();
+  await expect(page.locator(".tory-progress")).toContainText("1/4 · Biedronka · okr. 2");
+  expect((await state(page)).loop).toBe(1);
+  await page.evaluate(() => window.SowieTory.end());
+  const endless = page.getByRole("dialog", { name: "Koniec trybu Nieskończonego!" });
+  await expect(endless).toBeVisible();
+  await expect(endless).toContainText("Plansze (okrążenia)");
+  await page.evaluate(() => window.SowieCloud.flush());
+  const profile = await readDoc(project, "sowiegry/profil");
+  expect(profile.records.sowa3["nieskonczony-arcade"].bestScore).toBeGreaterThan(0);
+  const doc = await readDoc(project, "sowiegry/profil/sowiegry_gry/sowa3");
+  expect(doc.top10["nieskonczony-arcade"][0].mode).toBe("nieskonczony");
   expect(errors).toEqual([]);
 });
 

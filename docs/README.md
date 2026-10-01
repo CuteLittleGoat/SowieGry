@@ -23,7 +23,7 @@ Na dole ekranu jest pasek z czterema zakładkami: **Gry**, **Jak grać**, **Gale
   - **Ulubione** — serduszko przy zdjęciu w galerii,
   - **Tło menu** — zdjęcie staje się tłem menu (stuknij jeszcze raz, żeby wrócić do nieba),
   - pod zdjęciem autor i link do źródła (Pexels).
-- **Sowa** — Twój profil: poziom, punkty doświadczenia (XP) i piórka Sowiej Akademii; **Zadania** (trzy zadania dnia i jedno tygodnia — nagrody przychodzą same); **Garderoba** (dodatek, który sowa nosi we wszystkich grach; przy zablokowanym widać, co trzeba zrobić, np. „Zbierz 20 liści monster (12 / 20)”); **Rekordy** każdej gry (przycisk „Rekordy” — najlepszy wynik i 10 najlepszych gier na każdym poziomie trudności); **Ustawienia** (patrz niżej).
+- **Sowa** — Twój profil: poziom, punkty doświadczenia (XP) i piórka Sowiej Akademii; **Zadania** (trzy zadania dnia i jedno tygodnia — nagrody przychodzą same); **Garderoba** (dodatek, który sowa nosi we wszystkich grach; przy zablokowanym widać, co trzeba zrobić, np. „Zbierz 20 liści monster (12 / 20)”); **Rekordy** każdej gry (przycisk „Rekordy” — najlepszy wynik i 10 najlepszych gier na każdym poziomie trudności; w Sowich Torach osobno **Kampania** i tryb **Nieskończony**); **Ustawienia** (patrz niżej).
 
 Menu działa też z klawiatury: strzałki w lewo / w prawo przełączają zakładki, Tab przechodzi po przyciskach. Adres strony pamięta zakładkę (np. `…/#galeria`), a `…/#jak-grac-runner` otwiera od razu instrukcję Sowiej Ucieczki. Po pierwszym dotknięciu w menu gra cicha muzyka (można ją wyłączyć suwakiem „Muzyka”).
 

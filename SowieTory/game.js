@@ -9,6 +9,7 @@ import {
   BOARS,
   COZY_SPEED,
   DIFFICULTIES,
+  ENDLESS,
   EXTRA_LIFE,
   FEVER,
   GOATS,
@@ -61,7 +62,16 @@ export function createRun({
   safe = false,
   startStage = 0,
   finishSeen = false,
+  mode = "kampania",
 } = {}) {
+  // Tryb Nieskończony: po 4. planszy znowu 1. (kolejne okrążenie), każda plansza szybsza, do ENDLESS.maxSpeed.
+  const endless = mode === "nieskonczony";
+  // Numer planszy liczony przez okrążenia (prędkość, progi wzorów, generatory dodatków i rejsu).
+  const runIndex = () => state.stage + state.loop * STAGE_COUNT;
+  const stageSpeed = (progress) =>
+    Math.min(ENDLESS.maxSpeed, speedAt(progress, level, runIndex(), state.cozy)) *
+    (state.riding > 0 ? GOATS.rideSpeed : 1);
+  const lastStage = () => !endless && state.stage + 1 >= STAGE_COUNT;
   const rng = random || createRng(seed).next;
   const level = DIFFICULTIES[difficulty] ? difficulty : "arcade";
   const lives = DIFFICULTIES[level].lives;
@@ -80,7 +90,7 @@ export function createRun({
   const chaseOn = (stage) => Boolean(STAGES[stage % STAGE_COUNT].chase);
   const firstBoar = (stage) => (chaseOn(stage) ? BOARS.first + rng() * 30 : Infinity);
   // Osobny generator dodatków planszy (kózki, serduszka, tęczowy liść).
-  const extrasRng = (stage) => random || createRng(`${seed}|dodatki|${stage}`).next;
+  const extrasRng = (index) => random || createRng(`${seed}|dodatki|${index}`).next;
   let extras = extrasRng(startStage);
   let lastGoat = null;
   const between = ([min, max]) => min + extras() * (max - min);
@@ -90,6 +100,8 @@ export function createRun({
     cozy: Boolean(cozy),
     safe: Boolean(safe),
     phase: "run", // run | finale | whale | stageEnd | over
+    mode: endless ? "nieskonczony" : "kampania",
+    loop: 0, // okrążenie trybu Nieskończonego (od 0)
     time: 0,
     stage: startStage,
     stageTime: 0,
@@ -229,7 +241,7 @@ export function createRun({
     const limit = TRACK.stageLength - TRACK.finishClear;
     while (state.trackEnd < state.stageDistance + PROJECTION.farZ + 10) {
       const start = state.trackEnd;
-      const chosen = track.choose(state.stage * TRACK.stageLength + start, STAGES[state.stage % STAGE_COUNT].id);
+      const chosen = track.choose(runIndex() * TRACK.stageLength + start, STAGES[state.stage % STAGE_COUNT].id);
       if (start + chosen.length > limit) {
         state.trackEnd = Infinity;
         break;
@@ -526,11 +538,14 @@ export function createRun({
     state.finale = finale.state;
     emit("finish", {
       stage: state.stage,
+      loop: state.loop,
       bonus,
       seconds: state.stageTime,
       seen: state.finishSeen,
-      last: state.stage + 1 >= STAGE_COUNT,
+      last: lastStage(),
     });
+    // Tryb Nieskończony: obejrzany finał skraca się sam (od razu rejs humbaka).
+    if (endless && state.finishSeen) finaleEvents(finale.skip());
   }
 
   // Zdarzenia osi czasu finału; po końcu (także skróconym) — rejs humbaka.
@@ -543,7 +558,7 @@ export function createRun({
         emit("finishSeen");
       }
       // Osobny generator: kółka rejsu nie zmieniają trasy kolejnych plansz.
-      ride = createWhaleRide({ random: random || createRng(`${seed}|humbak|${state.stage}`).next, lane: 0 });
+      ride = createWhaleRide({ random: random || createRng(`${seed}|humbak|${runIndex()}`).next, lane: 0 });
       state.ride = ride.state;
       state.stageWhaleLeaves = 0;
       state.phase = "whale";
@@ -578,7 +593,7 @@ export function createRun({
       leafTotal: state.stageLeafTotal,
       whaleLeaves: state.stageWhaleLeaves,
       hits: state.stageHits,
-      last: state.stage + 1 >= STAGE_COUNT,
+      last: lastStage(),
     });
   }
 
@@ -601,9 +616,7 @@ export function createRun({
       if (state.phase !== "run") return;
       state.time += dt;
       state.stageTime += dt;
-      state.speed =
-        speedAt(state.stageDistance / TRACK.stageLength, level, state.stage, state.cozy) *
-        (state.riding > 0 ? GOATS.rideSpeed : 1);
+      state.speed = stageSpeed(state.stageDistance / TRACK.stageLength);
       const moved = state.speed * dt;
       state.stageDistance += moved;
       state.distance += moved;
@@ -637,14 +650,18 @@ export function createRun({
       state.finishSeen = Boolean(value);
       if (finale) finale.state.seen = state.finishSeen;
     },
-    // Następna plansza (po podsumowaniu); po ostatniej — koniec kampanii.
+    // Następna plansza (po podsumowaniu); po ostatniej — koniec kampanii, a w trybie Nieskończonym kolejne okrążenie.
     nextStage() {
       if (state.phase !== "stageEnd") return false;
-      if (state.stage + 1 >= STAGE_COUNT) {
+      if (lastStage()) {
         end("kampania");
         return false;
       }
-      state.stage += 1;
+      if (state.stage + 1 >= STAGE_COUNT) {
+        state.loop += 1;
+        state.stage = 0;
+        emit("loop", { loop: state.loop });
+      } else state.stage += 1;
       state.stageTime = 0;
       state.stageDistance = 0;
       state.stageHits = 0;
@@ -655,7 +672,7 @@ export function createRun({
       obstacles.length = 0;
       leaves.length = 0;
       boars.length = 0;
-      extras = extrasRng(state.stage);
+      extras = extrasRng(runIndex());
       resetExtras();
       state.nextBoarAt = firstBoar(state.stage);
       Object.assign(owl, createOwlBody(ride ? ride.state.lane : owl.lane));
@@ -665,7 +682,7 @@ export function createRun({
       state.ride = null;
       state.invulnerable = 1;
       state.phase = "run";
-      emit("stage", { stage: state.stage });
+      emit("stage", { stage: state.stage, loop: state.loop });
       return true;
     },
     end,
@@ -711,6 +728,8 @@ export function createRun({
         fevers: state.fevers,
         stage: state.stage,
         finished: state.endReason === "kampania",
+        mode: state.mode,
+        loop: state.loop,
       };
     },
   };

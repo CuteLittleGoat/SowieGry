@@ -62,15 +62,26 @@
   font-size: 16px;
 }
 
+.tory-mode {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+
 .tory-difficulty {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 8px;
 }
 
-.tory-difficulty .sowie-ui-chip {
+.tory-difficulty .sowie-ui-chip,
+.tory-mode .sowie-ui-chip {
   min-height: 48px;
   justify-content: center;
+}
+
+.tory-mode .sowie-ui-chip:disabled {
+  opacity: 0.55;
 }
 
 .tory-title-record {

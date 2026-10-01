@@ -39,6 +39,13 @@
           <p class="tory-title-lead">
             Trzy tory w głąb ekranu! Przesuń palcem: w bok — zmiana toru, w górę — skok, w dół — ślizg.
           </p>
+          <div class="tory-mode" role="group" aria-label="Tryb gry" data-modes>
+            <button type="button" class="sowie-ui-chip" data-mode="kampania" aria-pressed="true">Kampania</button>
+            <button type="button" class="sowie-ui-chip" data-mode="nieskonczony" aria-pressed="false" disabled>
+              Nieskończony
+            </button>
+          </div>
+          <p class="tory-title-note" data-mode-note>Ukończ kampanię, żeby odblokować tryb Nieskończony.</p>
           <div class="tory-difficulty" role="group" aria-label="Poziom trudności" data-difficulty>
             <button type="button" class="sowie-ui-chip" data-level="chill" aria-pressed="false">Chill</button>
             <button type="button" class="sowie-ui-chip" data-level="arcade" aria-pressed="true">Arcade</button>

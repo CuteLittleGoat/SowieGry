@@ -235,6 +235,40 @@ test("submitRun: rekordy per poziom, top 10, licznik rozgrywek, historia i rekor
   );
 });
 
+test("submitRun z trybem gry: osobny rekord i top 10 („nieskonczony-arcade”), kampania bez zmian", async () => {
+  const { recordKey } = cloudModule;
+  assert.equal(recordKey("arcade"), "arcade");
+  assert.equal(recordKey("arcade", "kampania"), "arcade", "tryb domyślny = sam poziom (stare rekordy)");
+  assert.equal(recordKey("chaos", "nieskonczony"), "nieskonczony-chaos");
+  const { cloud, backend } = makeCloud({ gameId: "sowa3" });
+  await cloud.ready;
+  cloud.submitRun("sowa3", { score: 4000, difficulty: "arcade" });
+  await tick();
+  const endless = cloud.submitRun("sowa3", { score: 9000, difficulty: "arcade", mode: "nieskonczony" });
+  await tick();
+  assert.equal(endless.newRecord, true);
+  assert.equal(endless.place, 1);
+  assert.equal(endless.best.bestScore, 9000);
+  assert.deepEqual(cloud.records("sowa3", "arcade"), { bestScore: 4000 });
+  assert.deepEqual(cloud.records("sowa3", "arcade", "nieskonczony"), { bestScore: 9000 });
+  assert.deepEqual(cloud.records("sowa3", "arcade", "kampania"), { bestScore: 4000 });
+  const profile = await backend.getDoc(PATHS.profile);
+  assert.equal(profile.records.sowa3["nieskonczony-arcade"].bestScore, 9000);
+  assert.equal(profile.records.sowa3.runs, 2);
+  const gameDoc = await backend.getDoc(PATHS.game("sowa3"));
+  assert.deepEqual(
+    gameDoc.top10.arcade.map((row) => row.score),
+    [4000],
+  );
+  assert.equal(gameDoc.top10["nieskonczony-arcade"][0].mode, "nieskonczony");
+  assert.equal(gameDoc.top10["nieskonczony-arcade"][0].difficulty, "arcade");
+  assert.equal("mode" in gameDoc.top10.arcade[0], false);
+  assert.deepEqual(
+    (await cloud.topRuns("sowa3", "arcade", "nieskonczony")).map((row) => row.score),
+    [9000],
+  );
+});
+
 test("historia jest przycinana do 50 wpisów", async () => {
   const { cloud, backend } = makeCloud({ gameId: "sowa3" });
   await cloud.ready;

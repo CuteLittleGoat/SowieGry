@@ -18,7 +18,16 @@ Każda plansza trwa około 75 sekund. Pasek pod przyciskiem pauzy pokazuje numer
 Po mecie każdej planszy jest **finał z basenem**, potem **Humbacze Tory** i podsumowanie z gwiazdkami — a następna
 plansza jest trochę szybsza. Po ostatniej planszy kampania jest ukończona.
 
-> W kolejnych krokach etapu dochodzą: tryb Nieskończony, samouczek i muzyka plansz.
+> W kolejnych krokach etapu dochodzą: samouczek i muzyka plansz.
+
+## Tryb Nieskończony
+
+Po **pierwszym ukończeniu kampanii** odblokowuje się tryb **Nieskończony** (komunikat na ekranie wyników). Wybierasz
+go na ekranie tytułowym przyciskiem **Nieskończony** (obok **Kampania**; wybór się zapamiętuje). Cztery plansze idą
+w pętli — po stacji Amic znowu Biedronka, a każde kolejne okrążenie jest szybsze (pasek planszy pokazuje np.
+„1/4 · Biedronka · okr. 2”). Finał z basenem, Humbacze Tory i gwiazdki są po każdej planszy; obejrzany finał
+skraca się sam. Bieg trwa, dopóki masz życia. Tryb Nieskończony ma **osobny rekord i top 10** — w menu głównym
+(zakładka Sowa → Rekordy → Sowa3) przełączasz **Kampania / Nieskończony**.
 
 ## Kózki, Gorączka Monster i serduszka
 

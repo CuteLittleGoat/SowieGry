@@ -5,7 +5,8 @@
   // Rejestr gier. Identyfikatory (id) są stałe — są wpisane w opublikowane reguły Firestore.
   // kind: "arcade" (rozgrywki z wynikiem) albo "idle" (pełny stan gry); dailyMetric: wartość rekordu wyzwania dnia;
   // rebuilt: gra przebudowana (karta w menu ma znaczek „Nowe!”);
-  // preview: nowa wersja gry w osobnym folderze przed podmianą (Analiza 3, „Podgląd przed podmianą”).
+  // preview: nowa wersja gry w osobnym folderze przed podmianą (Analiza 3, „Podgląd przed podmianą”);
+  // modes: tryby gry z osobnymi rekordami (pierwszy — domyślny, rekordy pod samym poziomem; SowieCloud.recordKey).
   const GAME_REGISTRY = Object.freeze([
     // Sowia Ucieczka (E4) zastąpiła SowaRunner: ten sam identyfikator i te same rekordy; SowaRunner/ przekierowuje.
     {
@@ -27,6 +28,11 @@
       dailyMetric: "score",
       // Nowa wersja w podglądzie (E5): ten sam identyfikator i te same rekordy.
       preview: Object.freeze({ path: "SowieTory/", name: "Sowie Tory" }),
+      // Sowie Tory: kampania i tryb Nieskończony (po kampanii) mają osobne rekordy i top 10.
+      modes: Object.freeze([
+        Object.freeze({ id: "kampania", label: "Kampania" }),
+        Object.freeze({ id: "nieskonczony", label: "Nieskończony" }),
+      ]),
     },
     { id: "ogrody", name: "Sowie Ogrody", path: "SowieOgrody/", icon: "🌿", kind: "idle", saveVersion: 2 },
     { id: "szklarnia", name: "Sowia Szklarnia", path: "SowiaSzklarnia/", icon: "🏡", kind: "idle", saveVersion: 1 },

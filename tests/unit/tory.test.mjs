@@ -469,6 +469,24 @@ test("autopilot przechodzi całą kampanię (4 plansze, w Arcade ok. 75 s każda
   }
 });
 
+test("tryb Nieskończony: autopilot przechodzi dwa okrążenia (8 plansz) bez trafienia", () => {
+  const run = createRun({ seed: 4, difficulty: "arcade", mode: "nieskonczony" });
+  const stages = [];
+  for (let time = 0; time < 1200 && run.state.phase !== "over" && stages.length < 8; time += STEP) {
+    autopilot(run);
+    run.update(STEP);
+    for (const event of run.takeEvents()) {
+      if (event.type === "stageEnd") {
+        stages.push(event.stage);
+        run.nextStage();
+      }
+    }
+  }
+  assert.deepEqual(stages, [0, 1, 2, 3, 0, 1, 2, 3]);
+  assert.equal(run.state.hits, 0);
+  assert.equal(run.state.loop, 2);
+});
+
 test("bieg: bez ruchu sowa traci życia i bieg się kończy; Tryb Przytulny i tryb bezpieczny nie kończą biegu", () => {
   const idle = createRun({ seed: 5, difficulty: "arcade" });
   for (let time = 0; time < 120 && idle.state.phase === "run"; time += STEP) idle.update(STEP);

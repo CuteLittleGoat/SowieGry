@@ -236,3 +236,35 @@ test("rejs: przesunięcia sterują humbakiem, liście z kółek podnoszą wynik 
   assert.equal(gained, run.state.stageWhaleLeaves);
   assert.ok(run.state.score >= before.score + gained * WHALE.points);
 });
+
+test("tryb Nieskończony: po 4. planszy znowu 1. (okrążenie 2), szybciej, najwyżej 24 m/s; obejrzany finał skraca się sam", () => {
+  const run = createRun({ seed: "pętla", difficulty: "chaos", safe: true, mode: "nieskonczony", finishSeen: true });
+  assert.equal(run.state.mode, "nieskonczony");
+  const speeds = [];
+  const seen = [];
+  for (let stage = 0; stage < 6; stage += 1) {
+    run.warp(TRACK.stageLength - 30);
+    for (let time = 0; time < 3 && run.state.phase === "run"; time += STEP) run.update(STEP);
+    speeds.push(run.state.speed);
+    assert.equal(run.state.phase, "whale", "finał skrócony od razu");
+    const events = run.takeEvents();
+    seen.push(...events);
+    assert.equal(events.find((event) => event.type === "finish").last, false);
+    for (let time = 0; time < 25 && run.state.phase === "whale"; time += STEP) run.update(STEP);
+    assert.equal(run.nextStage(), true);
+    seen.push(...run.takeEvents());
+  }
+  assert.equal(run.state.loop, 1);
+  assert.equal(run.state.stage, 2);
+  assert.ok(seen.some((event) => event.type === "loop" && event.loop === 1));
+  assert.ok(speeds[4] > speeds[0], "okrążenie 2 szybsze");
+  assert.ok(Math.max(...speeds) <= 24 + 1e-9, `prędkość ${Math.max(...speeds)}`);
+  assert.equal(run.summary().mode, "nieskonczony");
+  assert.equal(run.summary().finished, false);
+  // Kampania: po 4. planszy koniec, finał nie skraca się sam.
+  const campaign = createRun({ seed: "kampania", startStage: 3, safe: true, finishSeen: true });
+  campaign.warp(TRACK.stageLength);
+  for (let time = 0; time < 1 && campaign.state.phase === "run"; time += STEP) campaign.update(STEP);
+  assert.equal(campaign.state.phase, "finale");
+  assert.equal(campaign.takeEvents().find((event) => event.type === "finish").last, true);
+});

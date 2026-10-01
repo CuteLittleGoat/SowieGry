@@ -35,6 +35,8 @@ const titleNode = document.querySelector("[data-title]");
 const recordNode = document.querySelector("[data-record]");
 const cozyNode = document.querySelector("[data-cozy]");
 const difficultyGroup = document.querySelector("[data-difficulty]");
+const modeGroup = document.querySelector("[data-modes]");
+const modeNote = document.querySelector("[data-mode-note]");
 
 // Adaptacyjna rozdzielczość płótna jak w Sowiej Ucieczce: najwyżej DPR 2, przy < 50 kl./s przez 3 s — 1,5, potem 1.
 let dprCap = 2;
@@ -55,6 +57,11 @@ let audio = null;
 let game = null;
 let screen = "title"; // title | playing | results
 let difficulty = "arcade";
+// Tryb gry: „kampania” albo „nieskonczony” (odblokowany po pierwszym ukończeniu kampanii; osobne rekordy).
+let mode = "kampania";
+const MODE_LABELS = Object.freeze({ kampania: "Kampania", nieskonczony: "Nieskończony" });
+const endlessUnlocked = () => Boolean(cloud?.game?.(GAME_ID)?.endlessUnlocked);
+const recordMode = () => (mode === "nieskonczony" ? mode : undefined);
 let gameReady = false;
 let hitStop = 0;
 let summaryModal = null;
@@ -117,9 +124,10 @@ function updateProgress(state) {
   if (key === progressShown) return;
   progressShown = key;
   progressNode.classList.toggle("is-whale", Boolean(whale));
+  const loop = state.loop > 0 ? ` · okr. ${state.loop + 1}` : "";
   progressName.textContent = whale
     ? `Humbacze Tory · 0:${String(Math.ceil(left)).padStart(2, "0")}`
-    : `${state.stage + 1}/${STAGES.length} · ${STAGES[state.stage].short}`;
+    : `${state.stage + 1}/${STAGES.length} · ${STAGES[state.stage].short}${loop}`;
   progressFill.style.transform = `scaleX(${share})`;
 }
 
@@ -164,15 +172,28 @@ function selectDifficulty(level, { save = true } = {}) {
   if (save) cloud?.updateGame?.(GAME_ID, { difficulty }, { delayMs: 2000 });
 }
 
+// Tryb Nieskończony: przycisk aktywny po ukończeniu kampanii; wybór zapamiętany w dokumencie gry.
+function selectMode(next, { save = true } = {}) {
+  mode = next === "nieskonczony" && endlessUnlocked() ? "nieskonczony" : "kampania";
+  for (const button of modeGroup.querySelectorAll("[data-mode]")) {
+    button.setAttribute("aria-pressed", String(button.dataset.mode === mode));
+    if (button.dataset.mode === "nieskonczony") button.disabled = !endlessUnlocked();
+  }
+  modeNote.hidden = endlessUnlocked();
+  showRecord();
+  if (save) cloud?.updateGame?.(GAME_ID, { mode }, { delayMs: 2000 });
+}
+
 function showRecord() {
   if (!cloud?.isReady?.()) {
     recordNode.textContent = "Wczytuję rekordy…";
     return;
   }
-  const best = cloud.records(GAME_ID, difficulty);
+  const best = cloud.records(GAME_ID, difficulty, recordMode());
+  const where = mode === "nieskonczony" ? `${MODE_LABELS[mode]}, ` : "";
   recordNode.textContent = best.bestScore
-    ? `Rekord (${DIFFICULTIES[difficulty].label}): ${Math.floor(best.bestScore).toLocaleString("pl-PL")} pkt`
-    : `Jeszcze bez rekordu na poziomie ${DIFFICULTIES[difficulty].label}.`;
+    ? `Rekord (${where}${DIFFICULTIES[difficulty].label}): ${Math.floor(best.bestScore).toLocaleString("pl-PL")} pkt`
+    : `Jeszcze bez rekordu: ${where}${DIFFICULTIES[difficulty].label}.`;
 }
 
 function openGuide(trigger) {
@@ -189,6 +210,10 @@ function openGuide(trigger) {
 difficultyGroup.addEventListener("click", (event) => {
   const button = event.target.closest("[data-level]");
   if (button) selectDifficulty(button.dataset.level);
+});
+modeGroup.addEventListener("click", (event) => {
+  const button = event.target.closest("[data-mode]");
+  if (button && !button.disabled) selectMode(button.dataset.mode);
 });
 titleNode.querySelector("[data-start]").addEventListener("click", () => startRun());
 titleNode.querySelector("[data-guide]").addEventListener("click", (event) => openGuide(event.currentTarget));
@@ -215,6 +240,7 @@ function startRun() {
     cozy: cozyEnabled(),
     startStage: START_STAGE,
     finishSeen: Boolean(cloud?.game?.(GAME_ID)?.finishSeen),
+    mode,
   });
   previousCombo = 1;
   boarHint = false;
@@ -252,8 +278,14 @@ function finishRun() {
     distance: summary.distance,
     leaves: summary.leaves,
     difficulty,
+    mode: recordMode(),
     durationMs: Math.round(game.state.time * 1000),
   });
+  // Pierwsza ukończona kampania odblokowuje tryb Nieskończony.
+  if (summary.finished && !endlessUnlocked()) {
+    cloud?.updateGame?.(GAME_ID, { endlessUnlocked: true });
+    toasts.defer("Odblokowano tryb Nieskończony! Cztery plansze w pętli, coraz szybciej.");
+  }
   collectingResults = true;
   const run = progress.endRun({
     score: summary.score,
@@ -267,7 +299,11 @@ function finishRun() {
   animator.set(isRecord || summary.finished ? "radosc" : "oszolomienie");
   toasts.clear();
   results.show({
-    title: summary.finished ? "Kampania ukończona!" : "Koniec biegu!",
+    title: summary.finished
+      ? "Kampania ukończona!"
+      : summary.mode === "nieskonczony"
+        ? "Koniec trybu Nieskończonego!"
+        : "Koniec biegu!",
     score: summary.score,
     best: saved?.best?.bestScore ?? summary.score,
     isRecord,
@@ -275,8 +311,13 @@ function finishRun() {
     rank: saved?.place || 0,
     tasks: run.tasks || [],
     extra: [
-      { label: "Plansze", value: `${summary.stages} / ${STAGES.length}` },
-      { label: "Gwiazdki", value: `${summary.stars} / ${STAGES.length * 3}` },
+      summary.mode === "nieskonczony"
+        ? { label: "Plansze (okrążenia)", value: `${summary.stages} (${summary.loop + 1})` }
+        : { label: "Plansze", value: `${summary.stages} / ${STAGES.length}` },
+      {
+        label: "Gwiazdki",
+        value: summary.mode === "nieskonczony" ? String(summary.stars) : `${summary.stars} / ${STAGES.length * 3}`,
+      },
       { label: "Dystans", value: `${summary.distance.toLocaleString("pl-PL")} m` },
       { label: "Najlepsze combo", value: `×${summary.bestCombo}` },
       { label: "O włos!", value: String(summary.nearMisses) },
@@ -515,6 +556,9 @@ function handleEvents() {
         if (at) renderer.popup(`Unik przed dzikiem! +${event.bonus}`, at.x, at.y, COLORS.zloto, 22);
         break;
       }
+      case "loop":
+        toasts.show(`Okrążenie ${event.loop + 1} — szybciej!`, { kind: "reward", key: "okrazenie", priority: 1 });
+        break;
       case "stage":
         if (event.stage > 0 || screen === "playing") {
           toasts.show(`Plansza ${event.stage + 1}: ${STAGES[event.stage].name}`, {
@@ -771,6 +815,7 @@ cloud?.ready
     gameReady = true;
     const saved = cloud.game(GAME_ID)?.difficulty;
     selectDifficulty(DIFFICULTY_ORDER.includes(saved) ? saved : difficulty, { save: false });
+    selectMode(cloud.game(GAME_ID)?.mode, { save: false });
     document.documentElement.classList.toggle("sowie-reduced-effects", Boolean(settings().reducedEffects));
     particles.setDensity(shell.batterySaver() ? 0.4 : reducedMotion() ? 0.5 : 1);
     progress.emit(EVENTS.VISIT, { gameId: GAME_ID });
@@ -791,6 +836,8 @@ window.SowieTory = Object.freeze({
           lives: game.state.lives,
           stageDistance: game.state.stageDistance,
           stageIndex: game.state.stage,
+          mode: game.state.mode,
+          loop: game.state.loop,
           boars: game.state.boars.map((item) => ({ lane: item.lane, phase: item.phase, z: item.z })),
           finishSeen: game.state.finishSeen,
           finale: game.state.finale ? { phase: game.state.finale.phase, t: game.state.finale.t } : null,
@@ -810,8 +857,9 @@ window.SowieTory = Object.freeze({
           owl: { ...game.state.owl },
         }
       : null,
-  start: (level) => {
+  start: (level, chosenMode) => {
     if (level) selectDifficulty(level, { save: false });
+    if (chosenMode) selectMode(chosenMode, { save: false });
     startRun();
   },
   end: () => game?.end("gracz"),

@@ -132,6 +132,10 @@ export const FEVER = Object.freeze({
 // życiach +150 pkt („Maks żyć”).
 export const EXTRA_LIFE = Object.freeze({ every: Object.freeze([600, 900]), fullBonus: 150, height: 0.9 });
 
+// Tryb Nieskończony (po kampanii, Analiza 2, rozdz. 3.2): cztery plansze w pętli, każda kolejna szybsza (jak
+// kolejne plansze kampanii), ale najwyżej 24 m/s — największa prędkość sprawdzana testem przejścia wzorów.
+export const ENDLESS = Object.freeze({ maxSpeed: 24 });
+
 // Gwiazdki planszy (podsumowanie po rejsie humbaka), każda za osobne osiągnięcie: ★ ukończenie planszy,
 // ★ zebranie co najmniej `leafShare` liści wystawionych na planszy (złoty = 5), ★ plansza bez trafienia.
 export const STARS = Object.freeze({ leafShare: 0.6 });

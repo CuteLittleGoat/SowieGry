@@ -208,10 +208,13 @@ export function createOwlTab({ root, cloud, platform, academy, audio, atlas, onC
     const content = document.createElement("div");
     content.className = "menu-records";
     let difficulty = "arcade";
+    // Gra z trybami (np. Sowie Tory: Kampania / Nieskończony) — osobne rekordy i top 10 każdego trybu.
+    const modes = game.modes || [];
+    let mode = modes[0]?.id || null;
     let request = 0;
 
     async function renderArcade() {
-      const best = cloud.records(gameId, difficulty);
+      const best = cloud.records(gameId, difficulty, mode);
       const all = cloud.records(gameId);
       const metric =
         gameId === "runner"
@@ -219,7 +222,18 @@ export function createOwlTab({ root, cloud, platform, academy, audio, atlas, onC
           : gameId === "jumper"
             ? ["Wysokość", best.bestHeight]
             : null;
+      const modeLabel = modes.find((item) => item.id === mode)?.label;
       content.innerHTML = `
+        ${
+          modes.length
+            ? `<div class="menu-chips" role="group" aria-label="Tryb gry">${modes
+                .map(
+                  (item) =>
+                    `<button type="button" data-mode="${item.id}" aria-pressed="${item.id === mode}">${item.label}</button>`,
+                )
+                .join("")}</div>`
+            : ""
+        }
         <div class="menu-chips" role="group" aria-label="Poziom trudności">${DIFFICULTIES.map(
           ([key, label]) =>
             `<button type="button" data-difficulty="${key}" aria-pressed="${key === difficulty}">${label}</button>`,
@@ -229,12 +243,12 @@ export function createOwlTab({ root, cloud, platform, academy, audio, atlas, onC
           ${metric ? `<div><dt>${metric[0]}</dt><dd>${formatNumber(metric[1])} m</dd></div>` : ""}
           <div><dt>Rozgrywki</dt><dd>${formatNumber(all.runs)}</dd></div>
         </dl>
-        <h3>Top 10 — ${DIFFICULTIES.find(([key]) => key === difficulty)[1]}</h3>
+        <h3>Top 10 — ${modeLabel ? `${modeLabel}, ` : ""}${DIFFICULTIES.find(([key]) => key === difficulty)[1]}</h3>
         <div data-top><p>Wczytuję…</p></div>`;
       const current = (request += 1);
       let rows = [];
       try {
-        rows = await cloud.topRuns(gameId, difficulty);
+        rows = await cloud.topRuns(gameId, difficulty, mode);
       } catch (_error) {
         rows = null;
       }
@@ -269,6 +283,12 @@ export function createOwlTab({ root, cloud, platform, academy, audio, atlas, onC
     }
 
     content.addEventListener("click", (event) => {
+      const modeButton = event.target.closest("[data-mode]");
+      if (modeButton) {
+        mode = modeButton.dataset.mode;
+        renderArcade().then(() => content.querySelector(`[data-mode="${mode}"]`)?.focus({ preventScroll: true }));
+        return;
+      }
       const button = event.target.closest("[data-difficulty]");
       if (!button) return;
       difficulty = button.dataset.difficulty;

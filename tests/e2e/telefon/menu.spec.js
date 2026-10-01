@@ -87,6 +87,40 @@ test("rekord osobisty na karcie pochodzi z profilu w chmurze (emulator)", async 
   expect(errors).toEqual([]);
 });
 
+test("rekordy gry z trybami (Sowa3 / Sowie Tory): Kampania i Nieskończony osobno (emulator)", async ({
+  page,
+}, testInfo) => {
+  const project = uniqueProject(testInfo);
+  await seedDoc(project, "sowiegry/profil", {
+    schemaVersion: 1,
+    records: { sowa3: { runs: 3, arcade: { bestScore: 4100 }, "nieskonczony-arcade": { bestScore: 9900 } } },
+  });
+  await seedDoc(project, "sowiegry/profil/sowiegry_gry/sowa3", {
+    top10: {
+      arcade: [{ score: 4100, difficulty: "arcade", at: 1783656000000 }],
+      "nieskonczony-arcade": [{ score: 9900, difficulty: "arcade", mode: "nieskonczony", at: 1783656000000 }],
+    },
+  });
+  const errors = watchErrors(page);
+  await page.goto(cloudUrl("/?seed=menu-tryby", project), { waitUntil: "load" });
+  await waitForCloud(page);
+  // Karta gry pokazuje rekord kampanii.
+  await expect(page.locator('[data-game="sowa3"] [data-record]')).toHaveText(/Rekord: 4\s?100 pkt/);
+  await page.getByRole("tab", { name: "Sowa" }).click();
+  await page.locator('[data-records="sowa3"]').click();
+  const records = page.getByRole("dialog", { name: /Rekordy — Sowa3/ });
+  await expect(records.getByRole("button", { name: "Kampania" })).toHaveAttribute("aria-pressed", "true");
+  await expect(records.locator("[data-best]")).toHaveText(/4\s?100 pkt/);
+  await expect(records).toContainText("Top 10 — Kampania, Arcade");
+  await records.getByRole("button", { name: "Nieskończony" }).click();
+  await expect(records.getByRole("button", { name: "Nieskończony" })).toHaveAttribute("aria-pressed", "true");
+  await expect(records.locator("[data-best]")).toHaveText(/9\s?900 pkt/);
+  await expect(records).toContainText("Top 10 — Nieskończony, Arcade");
+  await expect(records.locator(".menu-top li")).toHaveCount(1);
+  await expect(records.locator(".menu-top li")).toContainText(/9\s?900 pkt/);
+  expect(errors).toEqual([]);
+});
+
 test("instrukcje: „Jak grać?” na karcie i zakładka z kartami wszystkich gier", async ({ page }) => {
   const errors = watchErrors(page);
   await openMenu(page);

@@ -179,6 +179,15 @@
     return result;
   }
 
+  // Klucz rekordów i top 10 w `records.<gra>` i `top10`: sam poziom (np. „arcade”) albo — dla trybu gry z osobnymi
+  // rekordami — „<tryb>-<poziom>” (np. „nieskonczony-arcade”). Tryb domyślny („kampania” albo brak) = sam poziom,
+  // więc wcześniejsze rekordy zostają tam, gdzie były.
+  function recordKey(difficulty = "arcade", mode = null) {
+    const level = String(difficulty || "arcade");
+    if (!mode || mode === "kampania") return level;
+    return `${String(mode)}-${level}`;
+  }
+
   // Wstawia wynik do listy top N (malejąco po score). Zwraca listę i miejsce (1..N) albo null.
   function insertTop(list, entry, limit = TOP_LIMIT) {
     const rows = Array.isArray(list) ? list.slice() : [];
@@ -862,14 +871,15 @@
       map.set(path, (map.get(path) || 0) + amount);
     }
 
-    function records(gameId, difficulty) {
+    // `mode` — tryb gry z osobnymi rekordami (np. Sowie Tory: „nieskonczony”); bez trybu — rekordy poziomu jak dotąd.
+    function records(gameId, difficulty, mode) {
       const entry = profile.records?.[gameId] || {};
       if (!difficulty) return entry;
-      return entry[difficulty] || {};
+      return entry[recordKey(difficulty, mode)] || {};
     }
 
-    function topRuns(gameId, difficulty = "arcade") {
-      return loadGame(gameId).then((doc) => clone(doc.top10?.[difficulty] || []));
+    function topRuns(gameId, difficulty = "arcade", mode) {
+      return loadGame(gameId).then((doc) => clone(doc.top10?.[recordKey(difficulty, mode)] || []));
     }
 
     async function history(gameId, limit = 10) {
@@ -885,7 +895,9 @@
         return null;
       }
       const difficulty = String(result.difficulty || "arcade");
+      const key = recordKey(difficulty, result.mode);
       const entry = { score: Math.floor(Number(result.score) || 0), difficulty, at: now() };
+      if (key !== difficulty) entry.mode = String(result.mode);
       for (const key of ["distance", "height", "leaves", "durationMs"]) {
         if (Number.isFinite(Number(result[key])) && result[key] !== null && result[key] !== undefined) {
           entry[key] = Math.floor(Number(result[key]));
@@ -896,7 +908,7 @@
 
       profile.records ||= {};
       const record = (profile.records[gameId] ||= {});
-      const best = (record[difficulty] ||= {});
+      const best = (record[key] ||= {});
       // Rekord (max) zapisujemy tylko przy poprawie — Firestore nie ma operacji „max”.
       const newRecord = entry.score > (Number(best.bestScore) || 0);
       for (const [key, field] of [
@@ -911,8 +923,8 @@
 
       const doc = ensureGameDoc(gameId);
       doc.top10 ||= {};
-      const top = insertTop(doc.top10[difficulty], entry, TOP_LIMIT);
-      doc.top10[difficulty] = top.list;
+      const top = insertTop(doc.top10[key], entry, TOP_LIMIT);
+      doc.top10[key] = top.list;
 
       if (entry.daily) {
         const metric = platform.GAME_REGISTRY?.find((item) => item.id === gameId)?.dailyMetric || "score";
@@ -1049,6 +1061,7 @@
     diff,
     applyPatch,
     insertTop,
+    recordKey,
     trimDaily,
     trimAwards,
     cleanupOldKeys,
@@ -1147,7 +1160,7 @@
       cloud.submitRun(gameId, { daily: urlParams.get("daily") === "1", seed: urlParams.get("seed"), ...result }),
     mode: () => mode,
     gameId: () => currentGame?.id || null,
-    helpers: Object.freeze({ trimAwards, trimDaily, dayKey }),
+    helpers: Object.freeze({ trimAwards, trimDaily, dayKey, recordKey }),
   });
 
   // Telefon: przejście do innej aplikacji / blokada ekranu — wysyłamy kolejkę od razu.
