@@ -5,7 +5,8 @@
 // przejście na drugą stronę), kózka w ratunku, cząsteczki, boki kolumny, napisy punktów.
 import { drawOwl } from "../shared/world/owl.js";
 import { COLORS, font } from "../shared/world/tokens.js";
-import { FADE, OWL, WORLD, ZONES } from "./config.js";
+import { FADE, HAZARDS, OWL, WORLD, ZONES } from "./config.js";
+import { hazardPose } from "./hazards.js";
 
 const LEAF_SPRITE = { zielony: "lisc-zielony", zloty: "lisc-zloty", teczowy: "lisc-teczowy" };
 
@@ -239,6 +240,81 @@ export function createRenderer({ canvas, view, atlas }) {
     context.restore();
   }
 
+  // Tablica cen Amic (rysowana kodem): dwie linki w górę, zielona tablica z czerwonym paskiem i białymi polami cen.
+  function priceBoard(x, y) {
+    const info = HAZARDS.kinds.tablica;
+    const top = -(y + info.halfH);
+    const width = info.halfW * 2;
+    const height = info.halfH * 2;
+    context.strokeStyle = COLORS.szaryCiemny;
+    context.lineWidth = 0.05;
+    context.beginPath();
+    for (const side of [-0.55, 0.55]) {
+      context.moveTo(x + side, top);
+      context.lineTo(x + side * 0.6, top - 2.6);
+    }
+    context.stroke();
+    context.fillStyle = COLORS.amicZielony;
+    roundRect(x - width / 2, top, width, height, 0.12);
+    context.fill();
+    context.fillStyle = COLORS.amicCzerwony;
+    context.fillRect(x - width / 2, top + 0.08, width, 0.18);
+    context.fillStyle = COLORS.bialy;
+    for (const row of [0.38, 0.72]) {
+      context.fillRect(x - width / 2 + 0.14, top + row, 0.4, 0.22);
+      context.fillRect(x + 0.02, top + row, width / 2 - 0.16, 0.22);
+    }
+  }
+
+  const HAZARD_SPRITES = {
+    dymek: ["pracu-dymek", 1.3],
+    mail: ["pracu-mail", 0.7],
+    telefon: ["pracu-telefon", 0.85],
+    sterowiec: ["amic-sterowiec", 2.9],
+    kanister: ["amic-kanister", 0.75],
+  };
+
+  function hazards(state, low, high) {
+    for (const item of state.hazards) {
+      if (item.gone || item.born === null) continue;
+      hazardPose(item, state.time, point);
+      if (point.y < low || point.y > high) continue;
+      if (item.kind === "tablica") {
+        priceBoard(point.x, point.y);
+        continue;
+      }
+      const [sprite, width] = HAZARD_SPRITES[item.kind];
+      // Telefon wibruje, kanister się obraca, dymek lekko się kołysze.
+      const shake = item.kind === "telefon" ? Math.sin(state.time * 45 + item.phase) * 0.03 : 0;
+      const rotation =
+        item.kind === "kanister"
+          ? state.time * 3
+          : item.kind === "dymek"
+            ? Math.sin(state.time * 3 + item.phase) * 0.06
+            : 0;
+      for (const shift of [0, -WORLD.width, WORLD.width]) {
+        const x = point.x + shift + shake;
+        if (x < -width || x > WORLD.width + width) continue;
+        atlas.draw(context, sprite, x, -point.y, { width, rotation, flipX: item.speed < 0 });
+      }
+    }
+  }
+
+  // Znaczniki kanistrów: pulsujące pomarańczowe kółko z wykrzyknikiem tuż pod HUD-em, nad miejscem spadania.
+  function warnings(state, layout) {
+    const y = state.cameraBottom + layout.worldHeight - 2.8;
+    for (const warning of state.warnings) {
+      const pulse = 1 + Math.sin(state.time * 16) * 0.12;
+      context.fillStyle = COLORS.pomaranczowy;
+      context.beginPath();
+      context.arc(warning.x, -y, 0.38 * pulse, 0, Math.PI * 2);
+      context.fill();
+      context.fillStyle = COLORS.bialy;
+      context.fillRect(warning.x - 0.05, -y - 0.24, 0.1, 0.3);
+      context.fillRect(warning.x - 0.05, -y + 0.12, 0.1, 0.1);
+    }
+  }
+
   function owlAt(x, y, animator, cosmetic, facing, alpha) {
     drawOwl(context, atlas, x, -y, {
       state: animator.state(),
@@ -313,6 +389,7 @@ export function createRenderer({ canvas, view, atlas }) {
           rotation: Math.sin(state.time * 2 + leaf.y) * 0.2,
         });
       }
+      hazards(state, low - 1, high + 2);
       const owl = state.owl;
       if (showOwl) {
         const blink = state.invulnerable > 0 && Math.floor(state.time * 12) % 2 === 0 ? 0.45 : 1;
@@ -328,6 +405,7 @@ export function createRenderer({ canvas, view, atlas }) {
         }
       }
       particles?.render(context);
+      warnings(state, layout);
       context.restore();
       // Boki kolumny (poziomo i na komputerze): przyciemnione niebo i krawędź.
       if (layout.worldWidth > WORLD.width + 0.05) {

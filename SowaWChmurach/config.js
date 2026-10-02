@@ -106,6 +106,97 @@ export const SCORE = Object.freeze({
 // Ratunek zamiast upadku: kózka łapie sowę i w 1,4 s odnosi ją na ostatnią pewną platformę (−1 życie).
 export const RESCUE = Object.freeze({ duration: 1.4, minAbove: 1, searchAbove: 10, fallbackY: 3 });
 
+// Przeszkody (E6b). Pracu Pracu da się zdeptać — sowa spada na niego z góry (stopy krok wcześniej najwyżej
+// `stompDepth` m pod jego wierzchem): punkty i wybicie; dotknięcie z boku lub od dołu to trafienie. Amic trzeba
+// ominąć. Pole trafień sowy: koło `owlRadius` m wokół punktu `owlCenter` m nad stopami. Trafienie: −1 życie,
+// nietykalność `invulnerable` s. Najwyżej jedna przeszkoda na `spacing` m (poziom). `order` — kolejność losowania.
+// Rój maili: 5 maili w kształcie litery V (`swarm`: przesunięcia w tył i w pionie). Kanister: od `from` m co
+// `every` s (Chaos częściej), znacznik u góry ekranu `warning` s wcześniej, spada z `startAbove` m nad dolną
+// krawędzią z prędkością `fall` m/s, celuje do ±`aim` m od sowy. Tablica cen wisi poza korytarzami skoków
+// (`corridorMargin` m z boku od platform ścieżki).
+export const HAZARDS = Object.freeze({
+  owlCenter: 0.55,
+  owlRadius: 0.36,
+  stompDepth: 0.15,
+  stompBounce: 1.1,
+  invulnerable: 1.5,
+  corridorMargin: 1.7,
+  viewAhead: 15,
+  spacing: Object.freeze({ chill: 14, arcade: 10, chaos: 8 }),
+  order: Object.freeze(["dymek", "telefon", "tablica", "mail", "sterowiec"]),
+  swarm: Object.freeze([
+    [0, 0],
+    [0.7, 0.4],
+    [0.7, -0.4],
+    [1.4, 0.8],
+    [1.4, -0.8],
+  ]),
+  canister: Object.freeze({ from: 350, every: Object.freeze([7, 11]), warning: 1, fall: 10, startAbove: 22, aim: 1.5 }),
+  kinds: Object.freeze({
+    dymek: Object.freeze({
+      label: "Dymek Pracu Pracu",
+      family: "pracu",
+      stompable: true,
+      points: 50,
+      halfW: 0.55,
+      halfH: 0.32,
+      from: 40,
+      chance: 0.22,
+      speedRange: Object.freeze([0.9, 1.5]),
+    }),
+    telefon: Object.freeze({
+      label: "Telefon Pracu Pracu",
+      family: "pracu",
+      stompable: true,
+      points: 50,
+      halfW: 0.2,
+      halfH: 0.38,
+      from: 80,
+      chance: 0.14,
+    }),
+    mail: Object.freeze({
+      label: "Rój maili",
+      family: "pracu",
+      stompable: true,
+      points: 20,
+      halfW: 0.3,
+      halfH: 0.22,
+      from: 200,
+      chance: 0.07,
+      speedRange: Object.freeze([2.4, 3]),
+    }),
+    tablica: Object.freeze({
+      label: "Tablica cen Amic",
+      family: "amic",
+      stompable: false,
+      points: 0,
+      halfW: 0.8,
+      halfH: 0.55,
+      from: 120,
+      chance: 0.12,
+    }),
+    sterowiec: Object.freeze({
+      label: "Sterowiec Amic",
+      family: "amic",
+      stompable: false,
+      points: 0,
+      halfW: 1.3,
+      halfH: 0.5,
+      from: 250,
+      chance: 0.06,
+      speedRange: Object.freeze([1.5, 2.1]),
+    }),
+    kanister: Object.freeze({
+      label: "Kanister Amic",
+      family: "amic",
+      stompable: false,
+      points: 0,
+      halfW: 0.28,
+      halfH: 0.32,
+    }),
+  }),
+});
+
 // Strefy wysokości (Analiza 2, rozdz. 3.3): kolory nieba (góra, dół) i nazwy.
 export const ZONES = Object.freeze([
   Object.freeze({ id: "ogrodek", name: "Ogródek", from: 0, sky: ["#bfe9ff", "#fff6e3"] }),
@@ -131,4 +222,6 @@ export const GAME_SOUNDS = Object.freeze([
   "odliczanie",
   "odliczanie-start",
   "hu-hu",
+  "trafienie-pracu",
+  "dzwonek",
 ]);

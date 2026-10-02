@@ -69,6 +69,35 @@ test("Sowa w Chmurach: strefa Blok po 150 m, upadek — kózka ratuje sowę (−
   expect(errors).toEqual([]);
 });
 
+test("Sowa w Chmurach: dymek Pracu zdeptany z góry (+50), sterowiec Amic trafia (−1 życie)", async ({ page }) => {
+  const errors = watchErrors(page);
+  await openGame(page);
+  await page.locator("[data-start]").click();
+  // Logika krokami po 1/120 s (bez czekania na klatki): sowa opada, pod jej stopami dymek.
+  const result = await page.evaluate(() => {
+    const game = window.SowaWChmurach;
+    game.warp(60);
+    for (let index = 0; index < 240 && game.state().owl.vy > -3; index += 1) game.advance(1 / 120);
+    const before = game.state();
+    game.hazard("dymek", 0, -0.36, { phase: -before.time * 2 });
+    for (let index = 0; index < 10 && game.state().stomps === 0; index += 1) game.advance(1 / 120);
+    const after = game.state();
+    return { stomps: after.stomps, gained: after.score - before.score, vy: after.owl.vy };
+  });
+  expect(result.stomps).toBe(1);
+  expect(result.gained).toBeGreaterThanOrEqual(50);
+  expect(result.vy).toBeGreaterThan(15);
+  await page.evaluate(() => {
+    window.SowaWChmurach.hazard("sterowiec", 0.3, 0.6);
+    window.SowaWChmurach.advance(1 / 60);
+  });
+  await expect(page.locator(".sowie-toast-chip", { hasText: "Sterowiec Amic!" })).toBeVisible();
+  const hit = await state(page);
+  expect(hit.hits).toBe(1);
+  expect(hit.lives).toBe(2);
+  expect(errors).toEqual([]);
+});
+
 test("Sowa w Chmurach: pauza z HUD i wznowienie przez odliczanie", async ({ page }) => {
   const errors = watchErrors(page);
   await openGame(page);

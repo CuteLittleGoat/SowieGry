@@ -43,6 +43,10 @@ export function createGenerator({ random, difficulty = "arcade" }) {
   const pick = (min, max) => min + (max - min) * random();
   let lastY = 0;
   let lastX = WORLD.width / 2;
+  // Ostatnia pewna platforma ścieżki (nie chmurka): chmurka znika po odbiciu, więc platforma za nią musi być
+  // osiągalna także z tej pewnej (odstęp i krok w bok liczone od niej).
+  let solidY = 0;
+  let solidX = WORLD.width / 2;
   let hardRun = 0;
   let nextBalcony = GENERATOR.balconyEvery;
   let pathCount = 0;
@@ -57,6 +61,7 @@ export function createGenerator({ random, difficulty = "arcade" }) {
     let edge = 0;
     for (const type of ["lisc", "chmurka", "hustawka"]) {
       if (type !== "lisc" && hardRun >= GENERATOR.hardStreak) continue;
+      if (type === "chmurka" && lastY !== solidY) continue;
       edge += hardChance(type, y, difficulty);
       if (roll < edge) return type;
     }
@@ -66,9 +71,11 @@ export function createGenerator({ random, difficulty = "arcade" }) {
   function chooseX(type) {
     const [min, max] = xRange(type);
     if (type === "balkon") return pick(min, max);
+    // Po chmurce krok w bok liczony od ostatniej pewnej platformy.
+    const from = lastY === solidY ? lastX : solidX;
     const step = pick(0.6, GENERATOR.maxStep) * (random() < 0.5 ? -1 : 1);
-    let x = lastX + step;
-    if (x < min || x > max) x = lastX - step;
+    let x = from + step;
+    if (x < min || x > max) x = from - step;
     return clamp(x, min, max);
   }
 
@@ -108,8 +115,12 @@ export function createGenerator({ random, difficulty = "arcade" }) {
   return {
     fill(untilY, platforms, leaves) {
       while (lastY < untilY) {
-        const y = pathCount === 0 ? GENERATOR.firstY : lastY + gapAt(lastY, difficulty, random);
+        let y = pathCount === 0 ? GENERATOR.firstY : lastY + gapAt(lastY, difficulty, random);
+        // Za chmurką: najwyżej MAX_GAP nad ostatnią pewną platformą (chmurka to skrót, nie jedyna droga).
+        if (lastY !== solidY) y = Math.max(lastY + 0.6, Math.min(y, solidY + MAX_GAP));
         const type = chooseType(y);
+        // Chmurka nisko nad pewną platformą — żeby platforma za nią była osiągalna i bez niej.
+        if (type === "chmurka") y = Math.min(y, solidY + MAX_GAP - 0.8);
         const x = chooseX(type);
         const platform = createPlatform(type, x, y, { phase: random() * Math.PI * 2 });
         if (pathCount > 0) extra(lastY, lastX, y, x, platforms);
@@ -118,6 +129,10 @@ export function createGenerator({ random, difficulty = "arcade" }) {
         hardRun = type === "chmurka" || type === "hustawka" ? hardRun + 1 : 0;
         lastY = y;
         lastX = x;
+        if (type !== "chmurka") {
+          solidY = y;
+          solidX = x;
+        }
         pathCount += 1;
       }
     },
@@ -125,6 +140,8 @@ export function createGenerator({ random, difficulty = "arcade" }) {
     skipTo(y, x = lastX) {
       lastY = y;
       lastX = x;
+      solidY = y;
+      solidX = x;
       pathCount = Math.max(1, pathCount);
       while (nextBalcony <= y) nextBalcony += GENERATOR.balconyEvery;
     },

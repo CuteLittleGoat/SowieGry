@@ -711,7 +711,7 @@ Zależności deweloperskie są przypięte tam, gdzie wersja wpływa na przegląd
 
 `tory.spec.js` (E5 — Sowie Tory, podgląd): opis w `SowieTory/docs/Documentation.md`, rozdział „Testy”.
 
-`chmury.spec.js` (E6 — Sowa w Chmurach, podgląd): opis w `SowaWChmurach/docs/Documentation.md`, rozdział „Testy” (tam też testy jednostkowe `tests/unit/chmury.test.mjs`).
+`chmury.spec.js` (E6 — Sowa w Chmurach, podgląd): opis w `SowaWChmurach/docs/Documentation.md`, rozdział „Testy” (tam też testy jednostkowe `tests/unit/chmury.test.mjs` i `tests/unit/chmury-przeszkody.test.mjs`).
 
 `menu.spec.js` (E3 — „Gotowe, gdy” z Analizy 3):
 

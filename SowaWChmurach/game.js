@@ -1,9 +1,22 @@
 // Sowa w Chmurach — logika biegu (bez DOM): sowa sama odbija się od platform, gracz steruje w bok; kamera
 // jedzie tylko w górę; upadek pod ekran = ratunek (kózka odnosi sowę na ostatnią pewną platformę, −1 życie);
-// wynik = wysokość + liście × combo + premie. Zdarzenia dla strony gry (dźwięk, komunikaty, SowieProgress).
+// przeszkody Pracu (do zdeptania) i Amic (do ominięcia) — trafienie: −1 życie; wynik = wysokość + liście × combo
+// + premie. Zdarzenia dla strony gry (dźwięk, komunikaty, SowieProgress).
 import { createRng } from "../shared/engine/rng.js";
-import { CAMERA, COZY_TIME, DIFFICULTIES, OWL, PLATFORM_TYPES, RESCUE, SCORE, WORLD, ZONES } from "./config.js";
+import {
+  CAMERA,
+  COZY_TIME,
+  DIFFICULTIES,
+  HAZARDS,
+  OWL,
+  PLATFORM_TYPES,
+  RESCUE,
+  SCORE,
+  WORLD,
+  ZONES,
+} from "./config.js";
 import { createGenerator } from "./generator.js";
+import { canisterX, contact, createHazard, createHazardPlanner, hazardPose, nextCanisterDelay } from "./hazards.js";
 import { createOwlBody, steerBy, stepOwl, wrapDelta, wrapX } from "./physics.js";
 import { createPlatform, isPerfect, land, landsOn, updatePlatforms } from "./platforms.js";
 
@@ -20,14 +33,26 @@ export function zoneAt(height) {
 export const perfectBonus = (streak) => SCORE.perfect * Math.min(streak, SCORE.perfectMax);
 
 /**
- * createRun({ difficulty, seed, cozy, random, safe }) — `random` zastępuje generator z ziarnem (testy),
- * `safe` — ratunek bez utraty życia (samouczek).
+ * createRun({ difficulty, seed, cozy, random, safe, hazards }) — `random` zastępuje generatory z ziarnem (testy),
+ * `safe` — ratunek i trafienia bez utraty życia (samouczek), `hazards: false` — bez przeszkód (testy rdzenia).
  */
-export function createRun({ difficulty = "arcade", seed = "sowa", cozy = false, random = null, safe = false } = {}) {
+export function createRun({
+  difficulty = "arcade",
+  seed = "sowa",
+  cozy = false,
+  random = null,
+  safe = false,
+  hazards = true,
+} = {}) {
   const info = DIFFICULTIES[difficulty];
   if (!info) throw new Error(`Nieznany poziom trudności: ${difficulty}`);
   const rng = random ? { next: random } : createRng(`${seed}|trasa`);
   const generator = createGenerator({ random: rng.next, difficulty });
+  // Przeszkody mają osobny generator losowy — trasa platform nie zależy od nich.
+  const hazardRng = random ? { next: random } : createRng(`${seed}|przeszkody`);
+  const planner = hazards ? createHazardPlanner({ random: hazardRng.next, difficulty }) : null;
+  let lastPath = null;
+  const pose = { x: 0, y: 0 };
   const events = [];
   const emit = (type, detail = {}) => events.push({ type, ...detail });
 
@@ -47,6 +72,10 @@ export function createRun({ difficulty = "arcade", seed = "sowa", cozy = false, 
     zone: 0,
     platforms: [],
     leaves: [],
+    hazards: [],
+    // Znaczniki kanistrów: { x, at (czas spadania) }.
+    warnings: [],
+    canisterIn: hazards ? nextCanisterDelay(hazardRng.next, difficulty) : Infinity,
     lastSafe: null,
     rescue: null,
     invulnerable: 0,
@@ -61,6 +90,8 @@ export function createRun({ difficulty = "arcade", seed = "sowa", cozy = false, 
     perfects: 0,
     bounces: 0,
     rescues: 0,
+    hits: 0,
+    stomps: 0,
     score: 0,
     endReason: null,
   };
@@ -68,7 +99,16 @@ export function createRun({ difficulty = "arcade", seed = "sowa", cozy = false, 
   state.owl.vy = OWL.jumpVelocity;
 
   function spawn() {
+    const before = state.platforms.length;
     generator.fill(state.cameraBottom + CAMERA.ahead, state.platforms, state.leaves);
+    if (!planner) return;
+    // Planista przeszkód dla każdej nowej pary kolejnych platform ścieżki.
+    for (let index = before; index < state.platforms.length; index += 1) {
+      const platform = state.platforms[index];
+      if (!platform.path) continue;
+      if (lastPath) planner.plan(lastPath, platform, state.hazards);
+      lastPath = platform;
+    }
   }
 
   function cleanup() {
@@ -77,6 +117,79 @@ export function createRun({ difficulty = "arcade", seed = "sowa", cozy = false, 
       (item) => !item.gone && (item.y >= limit || item === state.lastSafe || item === state.rescue?.target),
     );
     state.leaves = state.leaves.filter((item) => !item.taken && item.y >= limit);
+    state.hazards = state.hazards.filter((item) => {
+      if (item.gone) return false;
+      const at = hazardPose(item, state.time, pose);
+      const half = HAZARDS.kinds[item.kind].halfW;
+      // Wlatujące z boku znikają po przelocie przez kolumnę; kanister — pod dolną krawędzią.
+      if (item.born !== null && item.speed && (at.x < -half - 1 || at.x > WORLD.width + half + 1)) return false;
+      return at.y >= (item.kind === "kanister" ? state.cameraBottom - 2 : limit);
+    });
+  }
+
+  function loseLife() {
+    if (state.safe) return;
+    state.lives = state.cozy ? Math.max(1, state.lives - 1) : state.lives - 1;
+  }
+
+  // Combo spada o jeden poziom, seria idealnych lądowań się kończy.
+  function breakChain() {
+    state.perfectStreak = 0;
+    state.chain = Math.max(0, (state.combo - 2) * SCORE.comboStep);
+    state.combo = comboLevel(state.chain);
+  }
+
+  // Przeszkody: wejście w widok (rój maili, sterowiec), kanistry ze znacznikiem, zdeptania i trafienia.
+  function updateHazards(previousY, dt) {
+    const owl = state.owl;
+    for (const item of state.hazards) {
+      if (item.born === null && item.y0 - HAZARDS.kinds[item.kind].halfH <= state.cameraBottom + HAZARDS.viewAhead) {
+        item.born = state.time;
+      }
+    }
+    if (planner && state.height >= HAZARDS.canister.from) {
+      state.canisterIn -= dt;
+      if (state.canisterIn <= 0) {
+        const x = canisterX(owl.x, hazardRng.next);
+        state.warnings.push({ x, at: state.time + HAZARDS.canister.warning });
+        state.canisterIn = nextCanisterDelay(hazardRng.next, state.difficulty);
+        emit("warning", { kind: "kanister", x });
+      }
+    }
+    for (let index = state.warnings.length - 1; index >= 0; index -= 1) {
+      const warning = state.warnings[index];
+      if (state.time < warning.at) continue;
+      state.warnings.splice(index, 1);
+      state.hazards.push(
+        createHazard("kanister", warning.x, state.cameraBottom + HAZARDS.canister.startAbove, { born: state.time }),
+      );
+    }
+    for (const item of state.hazards) {
+      if (item.gone || item.born === null) continue;
+      hazardPose(item, state.time, pose);
+      const result = contact(owl, previousY, item, state.time, pose);
+      if (result === "stomp") {
+        const kind = HAZARDS.kinds[item.kind];
+        item.gone = true;
+        owl.vy = OWL.jumpVelocity * HAZARDS.stompBounce;
+        owl.y = Math.max(owl.y, pose.y + kind.halfH);
+        state.stomps += 1;
+        state.bonusPoints += kind.points;
+        addChain();
+        emit("stomp", { kind: item.kind, family: item.family, x: pose.x, y: pose.y, points: kind.points });
+      } else if (result === "hit" && state.invulnerable <= 0) {
+        state.hits += 1;
+        state.invulnerable = HAZARDS.invulnerable;
+        breakChain();
+        loseLife();
+        emit("hit", { kind: item.kind, family: item.family, x: pose.x, y: pose.y, lives: state.lives });
+        if (state.lives <= 0) {
+          state.lives = 0;
+          finish("trafienie");
+          return;
+        }
+      }
+    }
   }
 
   function addChain(amount = 1) {
@@ -178,11 +291,8 @@ export function createRun({ difficulty = "arcade", seed = "sowa", cozy = false, 
   function startRescue() {
     const owl = state.owl;
     state.rescues += 1;
-    state.perfectStreak = 0;
-    // Combo spada o jeden poziom.
-    state.chain = Math.max(0, (state.combo - 2) * SCORE.comboStep);
-    state.combo = comboLevel(state.chain);
-    if (!state.safe) state.lives = state.cozy ? Math.max(1, state.lives - 1) : state.lives - 1;
+    breakChain();
+    loseLife();
     if (state.lives <= 0) {
       state.lives = 0;
       finish("upadek");
@@ -238,6 +348,9 @@ export function createRun({ difficulty = "arcade", seed = "sowa", cozy = false, 
     const owl = state.owl;
     const previousY = owl.y;
     stepOwl(owl, state.keys, dt);
+    // Najpierw przeszkody (zdeptanie odbija sowę, zanim wyląduje na platformie pod przeszkodą).
+    updateHazards(previousY, dt);
+    if (state.phase === "over") return;
     landings(previousY);
     collectLeaves();
     if (owl.y > state.height) {
@@ -275,6 +388,12 @@ export function createRun({ difficulty = "arcade", seed = "sowa", cozy = false, 
     end(reason = "gracz") {
       finish(reason);
     },
+    // Testy i diagnostyka: przeszkoda `kind` w miejscu (x, y) — od razu w ruchu.
+    addHazard(kind, x, y, extra = {}) {
+      const item = createHazard(kind, x, y, { born: state.time, ...extra });
+      state.hazards.push(item);
+      return item;
+    },
     // Testy i diagnostyka: sowa `meters` wyżej, na świeżej trasie, z balkonem pod stopami.
     warp(meters) {
       if (state.phase !== "run") return;
@@ -282,9 +401,12 @@ export function createRun({ difficulty = "arcade", seed = "sowa", cozy = false, 
       const y = owl.y + Math.max(0, meters);
       state.platforms = [];
       state.leaves = [];
+      state.hazards = [];
+      state.warnings = [];
       const base = createPlatform("balkon", Math.min(Math.max(owl.x, 2), WORLD.width - 2), y - 0.5, { path: false });
       generator.skipTo(base.y, base.x);
       state.platforms.push(base);
+      lastPath = base;
       owl.x = base.x;
       owl.y = y;
       owl.vy = 0;
@@ -309,6 +431,8 @@ export function createRun({ difficulty = "arcade", seed = "sowa", cozy = false, 
         perfects: state.perfects,
         bounces: state.bounces,
         rescues: state.rescues,
+        hits: state.hits,
+        stomps: state.stomps,
         zone: ZONES[state.zone].id,
         difficulty: state.difficulty,
       };

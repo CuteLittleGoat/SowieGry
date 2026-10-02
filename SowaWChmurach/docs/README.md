@@ -18,8 +18,8 @@ Zaczynasz w ogródku, a potem lecisz przez kolejne strefy:
 
 Pasek pod przyciskiem pauzy pokazuje wysokość, nazwę strefy i ile zostało do następnej.
 
-> W kolejnych krokach etapu dochodzą: Pracu Pracu i Amic jako przeszkody, kózki z mocami (Rakietka, Sprężynka…),
-> bonus „Niebiański Ocean” z humbakami, pełna oprawa stref, sterowanie przechylaniem telefonu, samouczek i muzyka.
+> W kolejnych krokach etapu dochodzą: kózki z mocami (Rakietka, Sprężynka…), bonus „Niebiański Ocean” z humbakami,
+> pełna oprawa stref, sterowanie przechylaniem telefonu, samouczek i muzyka.
 
 ## Sterowanie
 
@@ -49,6 +49,23 @@ Pasek pod przyciskiem pauzy pokazuje wysokość, nazwę strefy i ile zostało do
 
 Gałązki są zawsze w zasięgu skoku — od każdej pewnej platformy da się dolecieć do następnej.
 
+## Przeszkody: Pracu Pracu i Amic
+
+Zasada jest prosta: **Pracu Pracu da się zdeptać, Amic trzeba ominąć.**
+
+| Przeszkoda                      | Od wysokości | Co robić                                                                                                                  |
+| ------------------------------- | ------------ | ------------------------------------------------------------------------------------------------------------------------- |
+| **Dymek Pracu Pracu**           | 40 m         | lata w poprzek ekranu — **spadnij na niego z góry**: +50 pkt i wybicie; z boku lub od dołu boli                           |
+| **Wibrujący telefon**           | 80 m         | stoi na krawędzi gałązki — zdepcz go z góry (+50) albo ląduj na drugim końcu gałązki                                      |
+| **Rój maili** (5 w kształcie V) | 200 m        | wlatuje z boku — każdy mail można zdeptać (+20)                                                                           |
+| **Tablica cen Amic**            | 120 m        | wisi na linkach z boku drogi — omiń ją                                                                                    |
+| **Sterowiec Amic**              | 250 m        | duży, przelatuje powoli przez ekran — przeczekaj niżej albo przeleć obok                                                  |
+| **Kanister Amic**               | 350 m        | najpierw u góry ekranu miga **pomarańczowy znacznik z wykrzyknikiem** — po sekundzie z góry spada kanister; uciekaj w bok |
+
+Trafienie zabiera **jedno życie** („Pracu Pracu zbiło rytm!”, „Sterowiec Amic! Omijaj go z daleka.”…), a sowa
+przez chwilę miga i jest nietykalna. Tablica i telefon nigdy nie zagradzają jedynej drogi — zawsze da się je ominąć.
+Przeszkód przybywa z wysokością, a na Chaos jest ich najwięcej.
+
 ## Upadek i ratunek kózki
 
 Jeśli sowa spadnie pod ekran, **kózka łapie ją** i odnosi na ostatnią pewną platformę („Ojej! Kózka łapie sowę —
@@ -60,6 +77,7 @@ Gra kończy się, gdy skończą się życia.
 - **1 pkt za każdy metr** wysokości (najwyższy punkt lotu).
 - **Liść Monstery** nad gałązką: **10 pkt × combo**; **złoty liść** — 50 pkt × combo i liczy się jak 5 liści.
 - **Combo** rośnie o 1 co 8 w serii (liście i idealne lądowania), najwyżej **×5**. Upadek obniża je o jeden poziom.
+- **Zdeptany Pracu**: dymek i telefon +50 pkt, mail +20 pkt (i seria combo).
 - **Idealne lądowanie** — na środku platformy (środkowe 30%): „Idealnie! +N”. Premia rośnie z serią idealnych
   lądowań (2, 4, 6… najwyżej 20 pkt); lądowanie poza środkiem przerywa serię.
 - Liść Monstery jako platforma: +10 pkt za każde odbicie.
@@ -75,7 +93,7 @@ Gra kończy się, gdy skończą się życia.
 Z wysokością gałązki są coraz dalej od siebie, a trudnych platform (chmurek, huśtawek, kruchych gałązek) jest
 więcej. Wybrany poziom zapamiętuje się w chmurze. Rekord każdego poziomu (wysokość i punkty) widać na ekranie
 tytułowym, a po locie — na ekranie wyników (z miejscem w top 10). Wyniki pokazują też wysokość, strefę, najlepsze
-combo, idealne lądowania i liczbę ratunków kózki.
+combo, idealne lądowania, przebite Pracu, trafienia i liczbę ratunków kózki.
 
 **Tryb Przytulny** (ustawienie w menu głównym, zakładka Sowa; działa na poziomie Chill): gra płynie wolniej
 i nie kończy się — ostatnie serduszko zostaje. Lot kończysz w menu pauzy („Zakończ lot”).

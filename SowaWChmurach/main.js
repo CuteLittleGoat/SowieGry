@@ -15,7 +15,7 @@ import { createHud, createPauseMenu, createResults, createToasts, openModal, ren
 import { SPRITES, SVG_BASE } from "../shared/world/catalog.js";
 import { createOwlAnimator } from "../shared/world/owl.js";
 import { COLORS } from "../shared/world/tokens.js";
-import { DIFFICULTIES, GAME_ID, GAME_SOUNDS, WORLD, ZONES } from "./config.js";
+import { DIFFICULTIES, GAME_ID, GAME_SOUNDS, HAZARDS, WORLD, ZONES } from "./config.js";
 import { createRun } from "./game.js";
 import { createRenderer } from "./render.js";
 
@@ -189,6 +189,7 @@ function startRun() {
   renderer.clearPopups();
   particles.clear();
   game = createRun({ difficulty, seed: seedFor(), cozy: cozyEnabled() });
+  canisterHint = false;
   screen = "playing";
   titleNode.hidden = true;
   hud.show();
@@ -252,11 +253,24 @@ function finishRun() {
       { label: "Strefa", value: ZONES.find((zone) => zone.id === summary.zone)?.name || "" },
       { label: "Najlepsze combo", value: `×${summary.bestCombo}` },
       { label: "Idealne lądowania", value: `${summary.perfects} (seria ${summary.bestStreak})` },
+      { label: "Przebite Pracu", value: String(summary.stomps) },
+      { label: "Trafienia", value: String(summary.hits) },
       { label: "Ratunki kózki", value: String(summary.rescues) },
     ],
     messages: toasts.takeDeferred(),
   });
 }
+
+// Komunikaty trafień (Pracu — tekst z obecnej gry).
+const HIT_TEXT = Object.freeze({
+  dymek: "Pracu Pracu zbiło rytm!",
+  mail: "Rój maili! Pracu Pracu zbiło rytm!",
+  telefon: "Telefon od Pracu Pracu! Zbiło rytm!",
+  sterowiec: "Sterowiec Amic! Omijaj go z daleka.",
+  kanister: "Kanister Amic spadł na sowę!",
+  tablica: "Tablica cen Amic na drodze!",
+});
+let canisterHint = false;
 
 // Cząsteczki w świecie (oś y w dół w rysowaniu: y ekranu = −wysokość).
 function burst(x, y, options = {}) {
@@ -318,6 +332,34 @@ function handleEvents() {
       case "zone":
         play("hu-hu");
         toasts.show(`Strefa: ${event.name}!`, { kind: "reward", key: `strefa-${event.id}`, priority: 1 });
+        break;
+      // Pracu zdeptany z góry: punkty i wybicie.
+      case "stomp": {
+        play("podwojny-skok");
+        play("polaczenie", { volume: 0.5, pitch: 0.8 });
+        const text =
+          event.kind === "telefon"
+            ? "Telefon wyciszony!"
+            : event.kind === "mail"
+              ? "Mail usunięty!"
+              : "Pracu przebity!";
+        renderer.popup(`${text} +${event.points}`, event.x, event.y + 0.8, COLORS.zloto, 20);
+        burst(event.x, event.y, { count: 12, tint: COLORS.pracu, radius: 0.1 });
+        break;
+      }
+      case "hit":
+        play(event.family === "pracu" ? "trafienie-pracu" : "trafienie-amic");
+        audio?.vibrate?.(30);
+        burst(game.state.owl.x, game.state.owl.y + 0.6, { count: 10, tint: COLORS.policzki });
+        toasts.show(HIT_TEXT[event.kind] || "Auć!", { kind: "warn", key: "trafienie", priority: 2 });
+        progress.emit(EVENTS.HIT, { by: event.family, variant: event.kind });
+        break;
+      case "warning":
+        play("dzwonek", { volume: 0.6 });
+        if (!canisterHint) {
+          canisterHint = true;
+          toasts.show("Kanister Amic! Uciekaj spod pomarańczowego znacznika.", { kind: "warn", key: "kanister" });
+        }
         break;
       case "rescue":
         play("koza-meee");
@@ -403,7 +445,7 @@ function updateDebug(dt) {
     `kl./s ${fps.toFixed(0)} · DPR ${view.layout().pixelRatio} · ${screen}`,
     `wys. ${state.owl.y.toFixed(1)} m · kamera ${state.cameraBottom.toFixed(1)} · ${ZONES[state.zone].name}`,
     `x ${state.owl.x.toFixed(2)} · vx ${state.owl.vx.toFixed(1)} · vy ${state.owl.vy.toFixed(1)}`,
-    `platformy ${state.platforms.length} · liście ${state.leaves.length}`,
+    `platformy ${state.platforms.length} · liście ${state.leaves.length} · przeszkody ${state.hazards.length}`,
     `combo ×${state.combo} · seria ${state.perfectStreak} · życia ${state.lives}`,
   ].join("\n");
 }
@@ -506,6 +548,7 @@ window.SowaWChmurach = Object.freeze({
           phase: game.state.phase,
           lives: game.state.lives,
           cameraBottom: game.state.cameraBottom,
+          time: game.state.time,
           zoneIndex: game.state.zone,
           owl: { ...game.state.owl },
         }
@@ -528,6 +571,14 @@ window.SowaWChmurach = Object.freeze({
   warp: (meters) => game?.warp(meters),
   steer: (meters) => game?.steer(meters),
   metersPerPixel: () => renderer.metersPerPixel(),
+  // Testy: przeszkoda `kind` (dymek, mail, telefon, sterowiec, kanister, tablica) `dx`, `dy` m od sowy, od razu w ruchu.
+  hazard: (kind, dx = 0, dy = 2, extra = {}) => {
+    if (!game || !HAZARDS.kinds[kind]) return;
+    const owl = game.state.owl;
+    game.addHazard(kind, owl.x + dx, owl.y + dy, extra);
+  },
+  hazards: () =>
+    game ? game.state.hazards.filter((item) => !item.gone).map((item) => ({ kind: item.kind, born: item.born })) : [],
   // Testy: sowa pod dolną krawędzią ekranu (upadek → ratunek kózki).
   fall: () => {
     if (game?.state.phase === "run") game.state.owl.y = game.state.cameraBottom - 3;
