@@ -237,6 +237,33 @@ export const EXTRAS = Object.freeze({
 // platformą ścieżki w zasięgu (do `ahead` m nad sową).
 export const FEVER = Object.freeze({ duration: 8, multiplier: 2, column: 3, ahead: 24 });
 
+// Niebiański Ocean (E6c2): humbak-gejzer na gałązce lub balkonie ścieżki od `first` m co `every` m; fontanna:
+// ±`fountainHalf` m w bok, od `fountainFrom` do `fountainTo` m nad platformą (środek sowy). Bonus `duration` s:
+// humbaki płyną poziomo (`speed` m/s, przez krawędź) na wysokościach `levels` m nad bazą; grzbiet (±`back` m) wybija
+// z prędkością `bounce`, morze chmur na bazie — `floorBounce` (upadek niemożliwy); liście w rzędach `leafRows` m nad
+// bazą, po `leavesPerRow` w rzędzie, `points` pkt za liść (złoty × 5). Po bonusie sowa wraca nad gejzer z wybiciem
+// × `exitBounce` i nietykalnością `exitInvulnerable` s. Baza `baseAbove` m nad dolną krawędzią widoku; cały ocean
+// (z najwyższym skokiem) mieści się w ok. 12 m — pod HUD-em także w poziomie (widok 14,5 m).
+export const OCEAN = Object.freeze({
+  first: 300,
+  every: Object.freeze([260, 340]),
+  fountainHalf: 0.6,
+  fountainFrom: 0.6,
+  fountainTo: 4,
+  duration: 20,
+  baseAbove: 0.7,
+  levels: Object.freeze([1.2, 3.9, 6.6]),
+  speed: Object.freeze([1.2, 2.2]),
+  back: 1.1,
+  bounce: 14.5,
+  floorBounce: 12,
+  leafRows: Object.freeze([2.6, 5.3, 8, 9.6]),
+  leavesPerRow: 6,
+  points: 10,
+  exitBounce: 1.3,
+  exitInvulnerable: 2,
+});
+
 // Strefy wysokości (Analiza 2, rozdz. 3.3): kolory nieba (góra, dół) i nazwy.
 export const ZONES = Object.freeze([
   Object.freeze({ id: "ogrodek", name: "Ogródek", from: 0, sky: ["#bfe9ff", "#fff6e3"] }),
@@ -269,4 +296,6 @@ export const GAME_SOUNDS = Object.freeze([
   "goraczka-start",
   "lisc-teczowy",
   "bonus-start",
+  "humbak-plusk",
+  "humbak-piesn",
 ]);

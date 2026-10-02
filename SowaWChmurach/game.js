@@ -11,6 +11,7 @@ import {
   FEVER,
   GOATS,
   HAZARDS,
+  OCEAN,
   OWL,
   PLATFORM_TYPES,
   RESCUE,
@@ -20,6 +21,7 @@ import {
 } from "./config.js";
 import { catchesGoat, createExtrasPlanner, goatPose } from "./extras.js";
 import { createGenerator } from "./generator.js";
+import { createGeyserPlanner, createOcean, inFountain } from "./ocean.js";
 import { canisterX, contact, createHazard, createHazardPlanner, hazardPose, nextCanisterDelay } from "./hazards.js";
 import { createOwlBody, steerBy, stepOwl, wrapDelta, wrapX } from "./physics.js";
 import { createPlatform, isPerfect, land, landsOn, updatePlatforms } from "./platforms.js";
@@ -60,6 +62,9 @@ export function createRun({
   // Dodatki (kózki, serduszka, tęczowe liście) — też z osobnego generatora.
   const extrasRng = random ? { next: random } : createRng(`${seed}|dodatki`);
   const extrasPlanner = extras ? createExtrasPlanner({ random: extrasRng.next }) : null;
+  // Gejzery Niebiańskiego Oceanu (razem z dodatkami) — własny generator.
+  const oceanRng = random ? { next: random } : createRng(`${seed}|ocean`);
+  const geyserPlanner = extras ? createGeyserPlanner({ random: oceanRng.next }) : null;
   let lastPath = null;
   const pose = { x: 0, y: 0 };
   const goatAt = { x: 0, y: 0, hopping: false };
@@ -70,7 +75,7 @@ export function createRun({
     difficulty,
     cozy: Boolean(cozy) && difficulty === "chill",
     safe: Boolean(safe),
-    phase: "run", // run | rescue | over
+    phase: "run", // run | rescue | ocean | over
     time: 0,
     owl: createOwlBody(WORLD.width / 2, 0),
     keys: { left: false, right: false },
@@ -85,6 +90,9 @@ export function createRun({
     hazards: [],
     goats: [],
     hearts: [],
+    geysers: [],
+    // Niebiański Ocean: { bonus (createOcean), geyser } w czasie bonusu.
+    ocean: null,
     // Moce kózek na czas: { tarcza, magnes, podwajaczka } → pozostałe sekundy.
     powerups: {},
     // Rakietka (kózka Turbo): pozostały czas lotu w górę; Sprężynka: lot w górę po wystrzale.
@@ -110,6 +118,7 @@ export function createRun({
     rescues: 0,
     hits: 0,
     goatCount: 0,
+    oceans: 0,
     fevers: 0,
     livesGained: 0,
     stomps: 0,
@@ -129,6 +138,7 @@ export function createRun({
       if (lastPath) {
         planner?.plan(lastPath, platform, state.hazards);
         extrasPlanner?.plan(lastPath, platform, state.goats, state.hearts, state.leaves);
+        geyserPlanner?.plan(lastPath, platform, state.geysers);
       }
       lastPath = platform;
     }
@@ -142,6 +152,7 @@ export function createRun({
     state.leaves = state.leaves.filter((item) => !item.taken && item.y >= limit);
     state.goats = state.goats.filter((item) => !item.taken && Math.max(item.from.y, item.to.y) >= limit);
     state.hearts = state.hearts.filter((item) => !item.taken && item.y >= limit);
+    state.geysers = state.geysers.filter((item) => !item.taken && item.y >= limit);
     state.hazards = state.hazards.filter((item) => {
       if (item.gone) return false;
       const at = hazardPose(item, state.time, pose);
@@ -480,6 +491,45 @@ export function createRun({
     emit("over", { reason });
   }
 
+  // Niebiański Ocean: start w fontannie gejzeru, 20 s na grzbietach humbaków, powrót nad gejzer.
+  function startOcean(geyser) {
+    const owl = state.owl;
+    geyser.taken = true;
+    state.oceans += 1;
+    const base = state.cameraBottom + OCEAN.baseAbove;
+    state.ocean = { bonus: createOcean({ random: oceanRng.next, base, x: owl.x }), geyser };
+    state.phase = "ocean";
+    state.rocket = 0;
+    state.spring = false;
+    owl.y = base;
+    owl.vy = OCEAN.bounce;
+    owl.pending = 0;
+    emit("oceanStart", { duration: OCEAN.duration, x: geyser.x, y: geyser.y });
+  }
+
+  function updateOcean(dt) {
+    const owl = state.owl;
+    const { bonus, geyser } = state.ocean;
+    const previousY = owl.y;
+    stepOwl(owl, state.keys, dt);
+    for (const event of bonus.update(owl, previousY, dt)) {
+      if (event.type === "oceanLeaf") {
+        state.leafCount += event.count;
+        state.leafPoints += event.points;
+      }
+      emit(event.type, event);
+    }
+    if (!bonus.done()) return;
+    state.ocean = null;
+    state.phase = "run";
+    owl.x = geyser.x;
+    owl.y = geyser.y + 0.5;
+    owl.vy = OWL.jumpVelocity * OCEAN.exitBounce;
+    owl.pending = 0;
+    state.invulnerable = Math.max(state.invulnerable, OCEAN.exitInvulnerable);
+    emit("oceanEnd", { leaves: bonus.state.collected, points: bonus.state.points });
+  }
+
   function update(rawDt) {
     if (state.phase === "over") return;
     const dt = rawDt * (state.cozy ? COZY_TIME : 1);
@@ -488,6 +538,10 @@ export function createRun({
     updatePlatforms(state.platforms, state.time, dt);
     if (state.phase === "rescue") {
       updateRescue(dt);
+      return;
+    }
+    if (state.phase === "ocean") {
+      updateOcean(dt);
       return;
     }
     const owl = state.owl;
@@ -499,6 +553,12 @@ export function createRun({
     if (state.phase === "over") return;
     landings(previousY);
     collectLeaves();
+    for (const geyser of state.geysers) {
+      if (!geyser.taken && inFountain(owl, geyser)) {
+        startOcean(geyser);
+        return;
+      }
+    }
     if (owl.y > state.height) {
       state.height = owl.y;
       const zone = zoneAt(state.height);
@@ -543,6 +603,11 @@ export function createRun({
     giveFever() {
       if (state.phase === "run") startFever();
     },
+    // Testy: Niebiański Ocean od razu (gejzer pod sową).
+    giveOcean() {
+      if (state.phase !== "run") return;
+      startOcean({ x: state.owl.x, y: state.owl.y, taken: false });
+    },
     // Testy i diagnostyka: przeszkoda `kind` w miejscu (x, y) — od razu w ruchu.
     addHazard(kind, x, y, extra = {}) {
       const item = createHazard(kind, x, y, { born: state.time, ...extra });
@@ -560,6 +625,7 @@ export function createRun({
       state.warnings = [];
       state.goats = [];
       state.hearts = [];
+      state.geysers = [];
       const base = createPlatform("balkon", Math.min(Math.max(owl.x, 2), WORLD.width - 2), y - 0.5, { path: false });
       generator.skipTo(base.y, base.x);
       state.platforms.push(base);
@@ -591,6 +657,7 @@ export function createRun({
         hits: state.hits,
         stomps: state.stomps,
         goats: state.goatCount,
+        oceans: state.oceans,
         fevers: state.fevers,
         livesGained: state.livesGained,
         zone: ZONES[state.zone].id,

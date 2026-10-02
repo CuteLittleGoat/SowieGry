@@ -18,8 +18,8 @@ Zaczynasz w ogródku, a potem lecisz przez kolejne strefy:
 
 Pasek pod przyciskiem pauzy pokazuje wysokość, nazwę strefy i ile zostało do następnej.
 
-> W kolejnych krokach etapu dochodzą: bonus „Niebiański Ocean” z humbakami, pełna oprawa stref, sterowanie
-> przechylaniem telefonu, samouczek i muzyka.
+> W kolejnych krokach etapu dochodzą: pełna oprawa stref, sterowanie przechylaniem telefonu, samouczek i muzyka
+> lotu.
 
 ## Sterowanie
 
@@ -85,6 +85,22 @@ Aktywne moce widać w prawym górnym rogu, pod serduszkami (pasek pokazuje, ile 
   podwójnie, a nad gałązkami przed sową pojawia się deszcz liści.
 - **Serduszko-doniczka** nad gałązką: **dodatkowe życie**; gdy masz już wszystkie życia — **+100 pkt**.
 
+## Niebiański Ocean
+
+Mniej więcej co 300 m (pierwszy raz między 300 a 340 m) na gałązce leży **humbak-gejzer** — wypuszcza w górę
+niebieską **fontannę**. Wleć w nią, a zaczyna się **Niebiański Ocean** („Niebiański Ocean! Odbijaj się od humbaków
+i zbieraj liście”):
+
+- przez **20 sekund** sowa skacze po **grzbietach trzech humbaków**, które płyną w chmurach w lewo i w prawo —
+  steruj jak zwykle, a humbak wybije sowę w górę;
+- w powietrzu wiszą **cztery rzędy liści** (10 pkt za liść; w najwyższym rzędzie są złote — 50 pkt);
+- na dole jest miękkie **morze chmur** — **nie da się spaść** ani stracić życia;
+- gra **pieśń humbaka**, a pasek pod pauzą pokazuje „Niebiański Ocean · 0:14” i ile czasu zostało;
+- moce kózek czekają (nie ubywa im czasu), a wysokość lotu się nie zmienia.
+
+Po 20 sekundach sowa wraca nad gejzer z mocnym wybiciem i przez 2 sekundy jest nietykalna („Koniec oceanu ·
+liście: N”). Wyniki pokazują, ile razy byłeś w Niebiańskim Oceanie.
+
 ## Upadek i ratunek kózki
 
 Jeśli sowa spadnie pod ekran, **kózka łapie ją** i odnosi na ostatnią pewną platformę („Ojej! Kózka łapie sowę —
@@ -98,6 +114,7 @@ Gra kończy się, gdy skończą się życia.
 - **Combo** rośnie o 1 co 8 w serii (liście i idealne lądowania), najwyżej **×5**. Upadek obniża je o jeden poziom.
 - **Zdeptany Pracu**: dymek i telefon +50 pkt, mail +20 pkt (i seria combo).
 - **Złapana kózka**: +50 pkt; Podwajaczka i Gorączka podwajają liście (razem — poczwórnie).
+- **Niebiański Ocean**: 10 pkt za liść, 50 pkt za złoty (bez combo).
 - **Idealne lądowanie** — na środku platformy (środkowe 30%): „Idealnie! +N”. Premia rośnie z serią idealnych
   lądowań (2, 4, 6… najwyżej 20 pkt); lądowanie poza środkiem przerywa serię.
 - Liść Monstery jako platforma: +10 pkt za każde odbicie.
@@ -113,7 +130,7 @@ Gra kończy się, gdy skończą się życia.
 Z wysokością gałązki są coraz dalej od siebie, a trudnych platform (chmurek, huśtawek, kruchych gałązek) jest
 więcej. Wybrany poziom zapamiętuje się w chmurze. Rekord każdego poziomu (wysokość i punkty) widać na ekranie
 tytułowym, a po locie — na ekranie wyników (z miejscem w top 10). Wyniki pokazują też wysokość, strefę, najlepsze
-combo, idealne lądowania, przebite Pracu, złapane kózki, trafienia i liczbę ratunków kózki.
+combo, idealne lądowania, przebite Pracu, złapane kózki, Niebiański Ocean, trafienia i liczbę ratunków kózki.
 
 **Tryb Przytulny** (ustawienie w menu głównym, zakładka Sowa; działa na poziomie Chill): gra płynie wolniej
 i nie kończy się — ostatnie serduszko zostaje. Lot kończysz w menu pauzy („Zakończ lot”).

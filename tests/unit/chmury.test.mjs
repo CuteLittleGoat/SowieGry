@@ -424,6 +424,7 @@ test("warp (testy): sowa wyżej na balkonie, trasa dalej osiągalna", () => {
     "hits",
     "leaves",
     "livesGained",
+    "oceans",
     "perfects",
     "rescues",
     "score",

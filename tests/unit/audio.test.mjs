@@ -17,6 +17,7 @@ import {
   volumesFromSettings,
   volumeToGain,
 } from "../../shared/engine/audio.js";
+import { GAME_SOUNDS as CHMURY_SOUNDS } from "../../SowaWChmurach/config.js";
 import { GAME_SOUNDS as TORY_SOUNDS } from "../../SowieTory/config.js";
 import { STAGES as TORY_STAGES } from "../../SowieTory/stages.js";
 
@@ -94,6 +95,13 @@ test("Sowie Tory: motyw każdej planszy (8 taktów, pętla, 48 kb/s) i budżet d
     TORY_SOUNDS.reduce((sum, name) => sum + manifest.sfx[name].bytes, 0) +
     [...themes, "humbak"].reduce((sum, name) => sum + manifest.music[name].bytes, 0);
   assert.ok(total < 800 * 1024, `Sowie Tory: ${total} B`);
+});
+
+test("Sowa w Chmurach: efekty gry w manifeście i budżet dźwięku (z pieśnią humbaka) poniżej 800 KB", () => {
+  for (const name of CHMURY_SOUNDS) assert.ok(manifest.sfx[name], name);
+  assert.ok(CHMURY_SOUNDS.includes("humbak-plusk") && CHMURY_SOUNDS.includes("humbak-piesn"));
+  const total = CHMURY_SOUNDS.reduce((sum, name) => sum + manifest.sfx[name].bytes, 0) + manifest.music.humbak.bytes;
+  assert.ok(total < 800 * 1024, `Sowa w Chmurach: ${total} B`);
 });
 
 test("głośność: suwak 0–100 → wzmocnienie, ustawienia profilu i stare przełączniki", () => {

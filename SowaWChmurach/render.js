@@ -7,6 +7,7 @@ import { drawOwl } from "../shared/world/owl.js";
 import { COLORS, font } from "../shared/world/tokens.js";
 import { FADE, HAZARDS, OWL, WORLD, ZONES } from "./config.js";
 import { goatPose } from "./extras.js";
+import { whaleX } from "./ocean.js";
 import { hazardPose } from "./hazards.js";
 
 const LEAF_SPRITE = { zielony: "lisc-zielony", zloty: "lisc-zloty", teczowy: "lisc-teczowy" };
@@ -333,6 +334,94 @@ export function createRenderer({ canvas, view, atlas }) {
     }
   }
 
+  // Humbak-gejzer na gałązce: humbak 1,8 m, pulsujący słup wody (zwęża się ku górze) i krople z konturem
+  // (wznoszą się i bledną) — widoczne na jasnym niebie każdej strefy.
+  function geysers(state, low, high) {
+    context.lineWidth = 0.035;
+    context.strokeStyle = COLORS.kontur;
+    for (const geyser of state.geysers || []) {
+      if (geyser.taken || geyser.y < low || geyser.y > high) continue;
+      atlas.draw(context, "humbak", geyser.x, -(geyser.y + 0.45), { width: 1.8 });
+      const bottom = geyser.y + 0.9;
+      const top = bottom + 2.6 + Math.sin(state.time * 6) * 0.15;
+      context.globalAlpha = 0.55;
+      context.fillStyle = COLORS.woda;
+      context.beginPath();
+      context.moveTo(geyser.x - 0.22, -bottom);
+      context.lineTo(geyser.x + 0.22, -bottom);
+      context.lineTo(geyser.x + 0.08, -top);
+      context.lineTo(geyser.x - 0.08, -top);
+      context.closePath();
+      context.fill();
+      for (let index = 0; index < 6; index += 1) {
+        const rise = (state.time * 3 + index * 0.6) % 3.4;
+        context.globalAlpha = 0.9 * (1 - rise / 3.4);
+        const size = 0.14 + rise * 0.06;
+        context.beginPath();
+        context.ellipse(
+          geyser.x + Math.sin(index * 2.1 + state.time * 4) * 0.18,
+          -(bottom + rise),
+          size,
+          size * 1.3,
+          0,
+          0,
+          Math.PI * 2,
+        );
+        context.fill();
+        context.stroke();
+      }
+      context.globalAlpha = 1;
+    }
+  }
+
+  // Niebiański Ocean: niebo morskie, morze chmur na bazie, humbaki płynące w chmurach, liście i sowa.
+  function oceanScene(state, layout, animator, cosmetic, particles) {
+    const bonus = state.ocean.bonus.state;
+    const base = bonus.base;
+    view.applyScreen(context);
+    const gradient = context.createLinearGradient(0, 0, 0, layout.cssHeight);
+    gradient.addColorStop(0, COLORS.wodaCiemna);
+    gradient.addColorStop(1, COLORS.wodaJasna);
+    context.fillStyle = gradient;
+    context.fillRect(0, 0, layout.cssWidth, layout.cssHeight);
+    view.apply(context, camera);
+    context.save();
+    context.beginPath();
+    context.rect(0, -state.cameraBottom - layout.worldHeight - 1, WORLD.width, layout.worldHeight + 2);
+    context.clip();
+    // Morze chmur (falujące) — upadek niemożliwy.
+    context.fillStyle = COLORS.bialy;
+    context.fillRect(-1, -base + 0.1, WORLD.width + 2, 4);
+    for (let x = -0.5; x < WORLD.width + 1; x += 1.1) {
+      const wave = Math.sin(bonus.time * 2 + x) * 0.12;
+      context.beginPath();
+      context.ellipse(x, -(base + 0.1 + wave), 0.75, 0.45, 0, 0, Math.PI * 2);
+      context.fill();
+    }
+    for (const whale of state.ocean.bonus.state.whales) {
+      const x = whaleX(whale, bonus.time);
+      const y = base + whale.level;
+      for (const shift of [0, -WORLD.width, WORLD.width]) {
+        if (x + shift < -2 || x + shift > WORLD.width + 2) continue;
+        atlas.draw(context, "humbak", x + shift, -(y - 0.55), { width: 2.6, flipX: whale.speed < 0 });
+      }
+    }
+    for (const leaf of bonus.leaves) {
+      if (leaf.taken) continue;
+      atlas.draw(context, LEAF_SPRITE[leaf.kind], leaf.x, -(leaf.y + Math.sin(bonus.time * 3 + leaf.x) * 0.08), {
+        width: leaf.kind === "zloty" ? 0.7 : 0.6,
+      });
+    }
+    const owl = state.owl;
+    for (const shift of [0, -WORLD.width, WORLD.width]) {
+      const x = owl.x + shift;
+      if (x < -OWL.drawSize || x > WORLD.width + OWL.drawSize) continue;
+      owlAt(x, owl.y, animator, cosmetic, owl.facing, 1);
+    }
+    particles?.render(context);
+    context.restore();
+  }
+
   function owlAt(x, y, animator, cosmetic, facing, alpha) {
     drawOwl(context, atlas, x, -y, {
       state: animator.state(),
@@ -387,6 +476,11 @@ export function createRenderer({ canvas, view, atlas }) {
     draw({ state, animator, cosmetic = "none", particles, dt = 0, showOwl = true }) {
       const layout = view.layout();
       placeCamera(state, layout);
+      if (state.phase === "ocean" && state.ocean) {
+        oceanScene(state, layout, animator, cosmetic, particles);
+        popupsDraw(layout, dt);
+        return;
+      }
       sky(layout, Math.max(0, state.cameraBottom + WORLD.height / 2));
       backdrop(layout, state);
       view.apply(context, camera);
@@ -409,6 +503,7 @@ export function createRenderer({ canvas, view, atlas }) {
       }
       hazards(state, low - 1, high + 2);
       extrasDraw(state, low - 1, high + 2);
+      geysers(state, low - 1, high + 2);
       const owl = state.owl;
       if (showOwl) {
         const blink = state.invulnerable > 0 && Math.floor(state.time * 12) % 2 === 0 ? 0.45 : 1;

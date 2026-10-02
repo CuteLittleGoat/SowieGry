@@ -15,7 +15,7 @@ import { createHud, createPauseMenu, createResults, createToasts, openModal, ren
 import { SPRITES, SVG_BASE } from "../shared/world/catalog.js";
 import { createOwlAnimator } from "../shared/world/owl.js";
 import { COLORS } from "../shared/world/tokens.js";
-import { DIFFICULTIES, FEVER, GAME_ID, GAME_SOUNDS, GOATS, HAZARDS, WORLD, ZONES } from "./config.js";
+import { DIFFICULTIES, FEVER, GAME_ID, GAME_SOUNDS, GOATS, HAZARDS, OCEAN, WORLD, ZONES } from "./config.js";
 import { createRun } from "./game.js";
 import { createRenderer } from "./render.js";
 
@@ -101,15 +101,23 @@ const heightText = heightNode.querySelector("[data-height]");
 const heightFill = heightNode.querySelector(".chmury-height-bar span");
 let heightShown = "";
 
+// W Niebiańskim Oceanie pasek pokazuje „Niebiański Ocean · 0:14” i pozostały czas (klasa `is-ocean`).
 function updateHeight(state) {
+  const ocean = state.phase === "ocean" && state.ocean;
+  const left = ocean ? Math.max(0, OCEAN.duration - state.ocean.bonus.state.time) : 0;
   const meters = Math.floor(state.height);
   const zone = ZONES[state.zone];
   const next = ZONES[state.zone + 1];
-  const share = next ? (state.height - zone.from) / (next.from - zone.from) : 1;
-  const key = `${meters}|${state.zone}|${Math.round(share * 100)}`;
+  const share = ocean ? left / OCEAN.duration : next ? (state.height - zone.from) / (next.from - zone.from) : 1;
+  const key = ocean
+    ? `o${Math.ceil(left)}|${Math.round(share * 100)}`
+    : `${meters}|${state.zone}|${Math.round(share * 100)}`;
   if (key === heightShown) return;
   heightShown = key;
-  heightText.textContent = `${meters.toLocaleString("pl-PL")} m · ${zone.name}`;
+  heightNode.classList.toggle("is-ocean", Boolean(ocean));
+  heightText.textContent = ocean
+    ? `Niebiański Ocean · 0:${String(Math.ceil(left)).padStart(2, "0")}`
+    : `${meters.toLocaleString("pl-PL")} m · ${zone.name}`;
   heightFill.style.transform = `scaleX(${Math.min(1, Math.max(0, share))})`;
 }
 
@@ -129,6 +137,13 @@ function play(name, options) {
   } catch (_error) {
     return null;
   }
+}
+
+// Muzyka: pieśń humbaka w Niebiańskim Oceanie; przy wyłączonej muzyce pliku nie pobieramy.
+const musicOn = () => settings().music !== false;
+function playMusic(name) {
+  if (!musicOn()) return;
+  audio?.playMusic?.(name)?.catch?.(() => {});
 }
 
 // ---------- Ekran tytułowy ----------
@@ -188,6 +203,7 @@ function startRun() {
   toasts.clear();
   renderer.clearPopups();
   particles.clear();
+  audio?.stopMusic?.();
   game = createRun({ difficulty, seed: seedFor(), cozy: cozyEnabled() });
   canisterHint = false;
   screen = "playing";
@@ -212,6 +228,7 @@ function startRun() {
 function finishRun() {
   if (screen !== "playing") return;
   screen = "results";
+  audio?.stopMusic?.();
   shell.setActive(false);
   view.lockScale(false);
   hud.hide();
@@ -255,6 +272,7 @@ function finishRun() {
       { label: "Idealne lądowania", value: `${summary.perfects} (seria ${summary.bestStreak})` },
       { label: "Przebite Pracu", value: String(summary.stomps) },
       { label: "Złapane kózki", value: String(summary.goats) },
+      { label: "Niebiański Ocean", value: String(summary.oceans) },
       { label: "Trafienia", value: String(summary.hits) },
       { label: "Ratunki kózki", value: String(summary.rescues) },
     ],
@@ -428,6 +446,41 @@ function handleEvents() {
         });
         progress.emit(EVENTS.FEVER, {});
         break;
+      // Niebiański Ocean: 20 s na grzbietach humbaków w chmurach.
+      case "oceanStart":
+        play("bonus-start");
+        play("humbak-piesn", { volume: 0.8 });
+        playMusic("humbak");
+        toasts.show("Niebiański Ocean! Odbijaj się od humbaków i zbieraj liście", {
+          kind: "reward",
+          key: "ocean",
+          priority: 2,
+        });
+        break;
+      case "oceanBounce":
+        play("humbak-plusk", { volume: 0.5 });
+        burst(event.x, event.y, { count: 8, tint: COLORS.wodaJasna, radius: 0.1 });
+        break;
+      case "oceanFloor":
+        play("ladowanie", { volume: 0.4, pitch: 1.3 });
+        break;
+      case "oceanLeaf":
+        play(event.kind === "zloty" ? "lisc-zloty" : "lisc");
+        burst(event.x, event.y, { count: 5, tint: event.kind === "zloty" ? COLORS.zloto : COLORS.monsteraJasna });
+        renderer.popup(
+          `+${event.points}`,
+          event.x,
+          event.y + 0.5,
+          event.kind === "zloty" ? COLORS.zloto : COLORS.bialy,
+        );
+        progress.emit(EVENTS.LEAF, { kind: event.kind, count: event.count, points: event.points });
+        break;
+      case "oceanEnd":
+        audio?.stopMusic?.();
+        play("humbak-plusk");
+        toasts.show(`Koniec oceanu · liście: ${event.leaves}`, { kind: "success", key: "ocean-koniec" });
+        progress.emit(EVENTS.WHALE, { leaves: event.leaves });
+        break;
       case "rescue":
         play("koza-meee");
         audio?.vibrate?.(30);
@@ -460,6 +513,7 @@ function update(step) {
     }
     const owl = game.state.owl;
     if (game.state.phase === "rescue") animator.set("oszolomienie");
+    else if (game.state.phase === "ocean") animator.set(owl.vy > 0 ? "radosc" : "szybowanie");
     else animator.set(owl.vy > 0 ? "skok" : "szybowanie");
     animator.update(step, { vy: owl.vy });
   } else {
@@ -647,11 +701,14 @@ window.SowaWChmurach = Object.freeze({
   },
   goat: (kind) => game?.giveGoat(kind),
   fever: () => game?.giveFever(),
+  ocean: () => game?.giveOcean(),
+  music: () => audio?.currentMusic?.() ?? null,
   extras: () =>
     game
       ? {
           goats: game.state.goats.filter((item) => !item.taken).map((item) => ({ kind: item.kind, from: item.from })),
           hearts: game.state.hearts.filter((item) => !item.taken).length,
+          geysers: game.state.geysers.filter((item) => !item.taken).map((item) => ({ x: item.x, y: item.y })),
           rocket: game.state.rocket,
           fever: game.state.fever,
           powerups: { ...game.state.powerups },

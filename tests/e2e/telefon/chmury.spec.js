@@ -124,6 +124,33 @@ test("Sowa w Chmurach: kózki — Rakietka, Tarcza i Gorączka Monster w komunik
   expect(errors).toEqual([]);
 });
 
+test("Sowa w Chmurach: Niebiański Ocean — 20 s na humbakach z pieśnią, pasek czasu, powrót do lotu", async ({
+  page,
+}) => {
+  const errors = watchErrors(page);
+  await openGame(page);
+  await page.locator("[data-start]").click();
+  const music = () => page.evaluate(() => window.SowaWChmurach.music());
+  const height = (await state(page)).height;
+  await page.evaluate(() => window.SowaWChmurach.ocean());
+  await expect(page.locator(".sowie-toast-chip", { hasText: "Niebiański Ocean!" })).toBeVisible();
+  await expect(page.locator(".chmury-height")).toContainText("Niebiański Ocean · 0:");
+  await expect(page.locator(".chmury-height")).toHaveClass(/is-ocean/);
+  await expect.poll(music, { timeout: 10_000 }).toBe("humbak");
+  expect((await state(page)).phase).toBe("ocean");
+  // Logika przewinięta krokami: 20 s oceanu (sowa nie spada), potem znowu lot z tej samej wysokości.
+  await page.evaluate(() => window.SowaWChmurach.advance(21));
+  expect((await state(page)).phase).toBe("run");
+  await expect(page.locator(".sowie-toast-chip", { hasText: "Koniec oceanu" })).toBeVisible();
+  await expect(page.locator(".chmury-height")).toContainText("m · Ogródek");
+  expect(await music()).toBe(null);
+  const after = await state(page);
+  expect(after.lives).toBe(3);
+  expect(after.rescues).toBe(0);
+  expect(after.height).toBeGreaterThanOrEqual(height);
+  expect(errors).toEqual([]);
+});
+
 test("Sowa w Chmurach: pauza z HUD i wznowienie przez odliczanie", async ({ page }) => {
   const errors = watchErrors(page);
   await openGame(page);

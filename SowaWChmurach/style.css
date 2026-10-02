@@ -136,6 +136,11 @@
   transform-origin: left;
 }
 
+/* Niebiański Ocean: pasek pozostałego czasu w kolorze wody. */
+.chmury-height.is-ocean .chmury-height-bar span {
+  background: var(--woda-ciemna);
+}
+
 /* Tryb diagnostyczny (?debug=1): panel w prawym dolnym rogu, nie łapie dotyku. */
 .chmury-debug {
   position: absolute;
