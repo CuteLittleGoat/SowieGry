@@ -18,6 +18,7 @@ import { COLORS } from "../shared/world/tokens.js";
 import { DIFFICULTIES, FEVER, GAME_ID, GAME_SOUNDS, GOATS, HAZARDS, OCEAN, WORLD, ZONES } from "./config.js";
 import { createRun } from "./game.js";
 import { createRenderer } from "./render.js";
+import { sideAngle, tiltSpeed } from "./tilt.js";
 
 const cloud = window.SowieCloud;
 const params = new URLSearchParams(location.search);
@@ -31,6 +32,8 @@ const titleNode = document.querySelector("[data-title]");
 const recordNode = document.querySelector("[data-record]");
 const cozyNode = document.querySelector("[data-cozy]");
 const difficultyGroup = document.querySelector("[data-difficulty]");
+const tiltButton = document.querySelector("[data-tilt]");
+const tiltNote = document.querySelector("[data-tilt-note]");
 
 // Adaptacyjna rozdzielczość płótna: najwyżej DPR 2, przy < 50 kl./s przez 3 s — 1,5, potem 1.
 let dprCap = 2;
@@ -146,6 +149,61 @@ function playMusic(name) {
   audio?.playMusic?.(name)?.catch?.(() => {});
 }
 
+// ---------- Przechylanie telefonu ----------
+
+// Opcja gry (zapis `sowiegry_gry/jumper.tilt`), tylko na telefonach z czujnikiem orientacji. iPhone wymaga zgody
+// (`DeviceOrientationEvent.requestPermission`) — o nią pytamy wyłącznie po stuknięciu (przełącznik albo Start).
+const tiltSupported =
+  typeof window.DeviceOrientationEvent !== "undefined" && Boolean(window.matchMedia?.("(pointer: coarse)")?.matches);
+const tiltNeedsPermission = tiltSupported && typeof window.DeviceOrientationEvent.requestPermission === "function";
+let tiltOn = false;
+let tiltGranted = !tiltNeedsPermission;
+// Ostatni kąt przechyłu w bok (°); null — czujnik jeszcze nic nie przysłał.
+let tiltAngle = null;
+
+function onOrientation(event) {
+  if (event.gamma == null && event.beta == null) return;
+  const angle = window.screen?.orientation?.angle ?? (Number(window.orientation) || 0);
+  tiltAngle = sideAngle(event, angle);
+}
+
+async function requestTilt() {
+  if (!tiltNeedsPermission) return true;
+  try {
+    tiltGranted = (await window.DeviceOrientationEvent.requestPermission()) === "granted";
+  } catch {
+    tiltGranted = false;
+  }
+  return tiltGranted;
+}
+
+function setTiltOn(value, { save = true } = {}) {
+  tiltOn = value;
+  if (value) window.addEventListener("deviceorientation", onOrientation);
+  else {
+    window.removeEventListener("deviceorientation", onOrientation);
+    tiltAngle = null;
+  }
+  tiltButton.setAttribute("aria-pressed", String(value));
+  tiltButton.textContent = value ? "Przechylanie: włączone" : "Przechylanie: wyłączone";
+  if (save) cloud?.updateGame?.(GAME_ID, { tilt: value }, { delayMs: 2000 });
+}
+
+tiltButton.hidden = !tiltSupported;
+tiltButton.addEventListener("click", async () => {
+  if (tiltOn) {
+    setTiltOn(false);
+    return;
+  }
+  if (!(await requestTilt())) {
+    tiltNote.textContent = "Bez zgody na czujnik ruchu — steruj palcem.";
+    tiltNote.hidden = false;
+    return;
+  }
+  tiltNote.hidden = true;
+  setTiltOn(true);
+});
+
 // ---------- Ekran tytułowy ----------
 
 function selectDifficulty(level, { save = true } = {}) {
@@ -186,7 +244,11 @@ difficultyGroup.addEventListener("click", (event) => {
   const button = event.target.closest("[data-level]");
   if (button) selectDifficulty(button.dataset.level);
 });
-titleNode.querySelector("[data-start]").addEventListener("click", () => startRun());
+titleNode.querySelector("[data-start]").addEventListener("click", () => {
+  // Zapisane przechylanie na iPhonie: zgoda w geście Startu (po przeładowaniu strony trzeba zapytać ponownie).
+  if (tiltOn && !tiltGranted) requestTilt();
+  startRun();
+});
 titleNode.querySelector("[data-guide]").addEventListener("click", (event) => openGuide(event.currentTarget));
 
 // ---------- Lot ----------
@@ -508,6 +570,7 @@ function update(step) {
   if (screen === "playing" && game) {
     if (shell.state() === "running") {
       game.setKeys(input.isKeyDown("left"), input.isKeyDown("right"));
+      game.setTilt(tiltOn && tiltAngle !== null ? tiltSpeed(tiltAngle) : null);
       game.update(step);
       handleEvents();
     }
@@ -655,6 +718,7 @@ cloud?.ready
     gameReady = true;
     const saved = cloud.game(GAME_ID)?.difficulty;
     selectDifficulty(DIFFICULTIES[saved] ? saved : difficulty, { save: false });
+    if (tiltSupported && cloud.game(GAME_ID)?.tilt === true) setTiltOn(true, { save: false });
   })
   .catch((error) => console.warn("SowaWChmurach: chmura", error));
 
@@ -702,6 +766,7 @@ window.SowaWChmurach = Object.freeze({
   goat: (kind) => game?.giveGoat(kind),
   fever: () => game?.giveFever(),
   ocean: () => game?.giveOcean(),
+  tilt: () => ({ supported: tiltSupported, on: tiltOn, granted: tiltGranted, angle: tiltAngle }),
   music: () => audio?.currentMusic?.() ?? null,
   extras: () =>
     game

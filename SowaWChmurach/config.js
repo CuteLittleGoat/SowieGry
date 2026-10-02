@@ -264,6 +264,10 @@ export const OCEAN = Object.freeze({
   exitInvulnerable: 2,
 });
 
+// Przechylanie telefonu (E6d, opcja): martwa strefa `dead`°, pełna prędkość `speed` m/s od `full`°; sowa dochodzi
+// do prędkości z przechyłu z szybkością `response` (1/s).
+export const TILT = Object.freeze({ dead: 3, full: 25, speed: 9, response: 10 });
+
 // Strefy wysokości (Analiza 2, rozdz. 3.3): kolory nieba (góra, dół) i nazwy.
 export const ZONES = Object.freeze([
   Object.freeze({ id: "ogrodek", name: "Ogródek", from: 0, sky: ["#bfe9ff", "#fff6e3"] }),

@@ -1,8 +1,9 @@
 // Sowa w Chmurach — ruch sowy (czysta logika: testy jednostkowe i autopilot w Node).
 // Sterowanie: przeciąganie palcem przesuwa sowę w bok o tyle, o ile przesunął się palec (× OWL.drag) — ruch
-// względny, więc palec w dolnej części ekranu nie zasłania sowy; klawisze ←/→ przyspieszają. Sowa sama
-// odbija się od platform; przez krawędź kolumny przechodzi na drugą stronę.
-import { OWL, WORLD } from "./config.js";
+// względny, więc palec w dolnej części ekranu nie zasłania sowy; klawisze ←/→ przyspieszają; opcjonalnie
+// przechylanie telefonu (docelowa prędkość w bok). Sowa sama odbija się od platform; przez krawędź kolumny
+// przechodzi na drugą stronę.
+import { OWL, TILT, WORLD } from "./config.js";
 
 const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
 
@@ -25,8 +26,9 @@ export function steerBy(body, meters) {
 }
 
 /**
- * Jeden krok ruchu. keys: { left, right } — trzymane klawisze. Najpierw przeciąganie (najwyżej dragSpeed m/s;
- * po nim sowa nie dryfuje), potem klawiatura (przyspieszenie, wygaszanie), na końcu grawitacja.
+ * Jeden krok ruchu. keys: { left, right, tilt } — trzymane klawisze i docelowa prędkość z przechylania (m/s;
+ * `null` — przechylanie wyłączone). Najpierw przeciąganie (najwyżej dragSpeed m/s; po nim sowa nie dryfuje), potem
+ * klawiatura (przyspieszenie, wygaszanie), potem przechylanie (płynne dojście do prędkości), na końcu grawitacja.
  */
 export function stepOwl(body, keys, dt) {
   if (Math.abs(body.pending) > 1e-6) {
@@ -39,6 +41,13 @@ export function stepOwl(body, keys, dt) {
   } else if (Boolean(keys.left) !== Boolean(keys.right)) {
     const direction = keys.right ? 1 : -1;
     body.vx = clamp(body.vx + direction * OWL.keyAccel * dt, -OWL.keySpeed, OWL.keySpeed);
+    body.x += body.vx * dt;
+    body.dragged = false;
+  } else if (Number.isFinite(keys.tilt)) {
+    // Po przeciąganiu bez dryfu — przechylanie rusza od zera.
+    if (body.dragged) body.vx = 0;
+    body.vx += (keys.tilt - body.vx) * Math.min(1, TILT.response * dt);
+    if (Math.abs(body.vx) < 0.05 && keys.tilt === 0) body.vx = 0;
     body.x += body.vx * dt;
     body.dragged = false;
   } else {

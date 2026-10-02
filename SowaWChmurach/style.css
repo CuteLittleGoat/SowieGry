@@ -74,6 +74,15 @@
   justify-content: center;
 }
 
+.chmury-tilt {
+  justify-content: center;
+  min-height: 44px;
+}
+
+.chmury-tilt[hidden] {
+  display: none;
+}
+
 .chmury-title-record {
   font-weight: var(--czcionka-pogrubiona);
   font-variant-numeric: tabular-nums;

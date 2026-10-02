@@ -10,22 +10,22 @@ w chmurze).
 Sowa wspina się **jak najwyżej**: sama odbija się od gałązek, a Ty przesuwasz ją w bok, żeby trafiała na kolejne.
 Zaczynasz w ogródku, a potem lecisz przez kolejne strefy:
 
-1. **Ogródek** (0–150 m),
-2. **Blok** (150–400 m),
-3. **Chmury** (400–800 m),
-4. **Zorza** (800–1500 m),
-5. **Kosmos** (od 1500 m).
+1. **Ogródek** (0–150 m) — płotek, grządki, drzewa i pnącza z liśćmi Monstery,
+2. **Blok** (150–400 m) — ściany bloku z oknami i balkonami,
+3. **Chmury** (400–800 m) — wielkie, miękkie chmury,
+4. **Zorza** (800–1500 m) — kolorowe wstęgi zorzy na nocnym niebie,
+5. **Kosmos** (od 1500 m) — planety i gwiazdozbiory w kształcie humbaków.
 
 Pasek pod przyciskiem pauzy pokazuje wysokość, nazwę strefy i ile zostało do następnej.
 
-> W kolejnych krokach etapu dochodzą: pełna oprawa stref, sterowanie przechylaniem telefonu, samouczek i muzyka
-> lotu.
+> W kolejnym kroku etapu dochodzą: samouczek pierwszego lotu, własna instrukcja i muzyka lotu.
 
 ## Sterowanie
 
 | Ruch                  | Telefon                                                             | Klawiatura       |
 | --------------------- | ------------------------------------------------------------------- | ---------------- |
 | sowa w lewo / w prawo | przeciągnij palcem w lewo / w prawo — **w dowolnym miejscu ekranu** | ← / → albo A / D |
+| (opcja) przechylanie  | przechyl telefon w lewo / w prawo                                   | —                |
 | skok                  | sam — sowa odbija się od każdej gałązki, na którą spadnie           | —                |
 | pauza                 | przycisk ⏸ w lewym górnym rogu                                      | P albo Esc       |
 
@@ -33,6 +33,12 @@ Pasek pod przyciskiem pauzy pokazuje wysokość, nazwę strefy i ile zostało do
   kciuk **w dolnej części ekranu** — wtedy palec nie zasłania sowy ani gałązek nad nią.
 - Za lewą krawędzią ekranu sowa wychodzi z prawej strony (i odwrotnie) — to często najkrótsza droga.
 - Sowa odbija się tylko wtedy, gdy **spada** na platformę z góry. Lecąc w górę, przelatuje przez gałązki.
+- **Przechylanie telefonu** włączasz na ekranie tytułowym przyciskiem **„Przechylanie: wyłączone”** (zmieni się na
+  „włączone”; ustawienie zapamiętuje się w chmurze). Lekkie przechylenie (do ok. 3°) nic nie robi, im mocniej
+  przechylisz, tym szybciej sowa leci w bok (najszybciej od ok. 25°). Przeciąganie palcem i klawisze działają dalej
+  i mają pierwszeństwo. Na iPhonie telefon zapyta o zgodę na **czujnik ruchu** — bez zgody zostaje sterowanie
+  palcem („Bez zgody na czujnik ruchu — steruj palcem.”). Po ponownym otwarciu gry iPhone może zapytać jeszcze raz
+  (przy stuknięciu Start). Na komputerze tego przycisku nie ma.
 - Gesty zaczęte tuż przy lewej lub prawej krawędzi ekranu są ignorowane (systemowy gest „cofnij” w Safari).
   Najwygodniej grać po zainstalowaniu SowieGry jako aplikacji.
 
@@ -137,7 +143,8 @@ i nie kończy się — ostatnie serduszko zostaje. Lot kończysz w menu pauzy (�
 
 ## Na telefonie
 
-- Gra działa w pionie i w poziomie; w poziomie (i na komputerze) kolumna gry jest na środku ekranu.
+- Gra działa w pionie i w poziomie; w poziomie (i na komputerze) kolumna gry jest na środku ekranu, a po bokach
+  widać oprawę strefy (ogródek, ściany bloku, chmury, zorzę, kosmos).
 - Obrót telefonu, przejście do innej aplikacji albo zablokowanie ekranu **wstrzymuje** lot (bez utraty postępu);
   po powrocie gra wznawia się odliczaniem 3-2-1.
 - Na słabszym telefonie gra sama obniża rozdzielczość, żeby działała płynnie.

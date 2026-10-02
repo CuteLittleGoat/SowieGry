@@ -78,7 +78,7 @@ export function createRun({
     phase: "run", // run | rescue | ocean | over
     time: 0,
     owl: createOwlBody(WORLD.width / 2, 0),
-    keys: { left: false, right: false },
+    keys: { left: false, right: false, tilt: null },
     lives: info.lives,
     maxLives: info.lives,
     // Dolna krawędź widoku (m); na starcie 1 m ziemi ogródka pod sową.
@@ -587,6 +587,10 @@ export function createRun({
     setKeys(left, right) {
       state.keys.left = Boolean(left);
       state.keys.right = Boolean(right);
+    },
+    // Przechylanie telefonu: docelowa prędkość w bok (m/s) albo `null` (wyłączone).
+    setTilt(speed) {
+      state.keys.tilt = Number.isFinite(speed) ? speed : null;
     },
     setSafe(value) {
       state.safe = Boolean(value);

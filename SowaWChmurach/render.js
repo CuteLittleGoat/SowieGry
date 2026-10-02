@@ -9,6 +9,7 @@ import { FADE, HAZARDS, OWL, WORLD, ZONES } from "./config.js";
 import { goatPose } from "./extras.js";
 import { whaleX } from "./ocean.js";
 import { hazardPose } from "./hazards.js";
+import { createScenery } from "./scenery.js";
 
 const LEAF_SPRITE = { zielony: "lisc-zielony", zloty: "lisc-zloty", teczowy: "lisc-teczowy" };
 
@@ -48,6 +49,7 @@ export function createRenderer({ canvas, view, atlas }) {
   const popups = [];
   const camera = { x: WORLD.width / 2, y: 0, zoom: 1, shakeX: 0, shakeY: 0 };
   const point = { x: 0, y: 0 };
+  const scenery = createScenery({ context });
   let skyCache = null;
   // Kolor nieba w połowie wysokości ekranu (wycięcia liścia monstery).
   let skyMiddle = COLORS.nieboGora;
@@ -106,7 +108,7 @@ export function createRenderer({ canvas, view, atlas }) {
     context.globalAlpha = 1;
   }
 
-  // Ziemia ogródka pod y = 0: trawa, ziemia, płotek i doniczka z monsterą.
+  // Ziemia ogródka pod y = 0: trawa, ziemia, płotek, doniczka z monsterą i grządki.
   function ground(state, layout) {
     if (state.cameraBottom > 0.5) return;
     const left = -layout.worldWidth;
@@ -131,6 +133,37 @@ export function createRenderer({ canvas, view, atlas }) {
     context.fillStyle = COLORS.doniczka;
     context.fillRect(7.2, -0.7, 0.9, 0.7);
     atlas.draw(context, "lisc-zielony", 7.65, -1.15, { width: 0.9, rotation: -0.3 });
+    // Grządki przed płotkiem: kopczyki ziemi z kiełkami, na środkowej truskawki.
+    for (const [x, berries] of [
+      [1.4, false],
+      [3.4, true],
+      [5.4, false],
+    ]) {
+      context.fillStyle = COLORS.sowaCiemna;
+      context.beginPath();
+      context.ellipse(x, 0.02, 0.75, 0.2, 0, Math.PI, Math.PI * 2);
+      context.fill();
+      for (const dx of [-0.4, 0, 0.4]) {
+        context.strokeStyle = COLORS.monsteraCiemna;
+        context.lineWidth = 0.04;
+        context.beginPath();
+        context.moveTo(x + dx, -0.12);
+        context.lineTo(x + dx, -0.3);
+        context.stroke();
+        context.fillStyle = COLORS.monstera;
+        for (const side of [-1, 1]) {
+          context.beginPath();
+          context.ellipse(x + dx + side * 0.09, -0.32, 0.1, 0.05, side * -0.5, 0, Math.PI * 2);
+          context.fill();
+        }
+        if (berries && dx !== 0) {
+          context.fillStyle = COLORS.serce;
+          context.beginPath();
+          context.arc(x + dx + 0.12, -0.16, 0.06, 0, Math.PI * 2);
+          context.fill();
+        }
+      }
+    }
   }
 
   function roundRect(x, y, width, height, radius) {
@@ -482,6 +515,7 @@ export function createRenderer({ canvas, view, atlas }) {
         return;
       }
       sky(layout, Math.max(0, state.cameraBottom + WORLD.height / 2));
+      scenery.draw(layout, state.cameraBottom, state.time);
       backdrop(layout, state);
       view.apply(context, camera);
       // Świat przycięty do kolumny (przejście przez krawędź wygląda naturalnie).
@@ -541,11 +575,11 @@ export function createRenderer({ canvas, view, atlas }) {
       particles?.render(context);
       warnings(state, layout);
       context.restore();
-      // Boki kolumny (poziomo i na komputerze): przyciemnione niebo i krawędź.
+      // Boki kolumny (poziomo i na komputerze): lekko przyciemniona oprawa strefy i białe krawędzie kolumny.
       if (layout.worldWidth > WORLD.width + 0.05) {
         const top = -state.cameraBottom - layout.worldHeight - 1;
         const side = (layout.worldWidth - WORLD.width) / 2 + 1;
-        context.fillStyle = "rgba(59, 47, 74, 0.22)";
+        context.fillStyle = "rgba(59, 47, 74, 0.12)";
         context.fillRect(-side, top, side, layout.worldHeight + 2);
         context.fillRect(WORLD.width, top, side, layout.worldHeight + 2);
         context.fillStyle = "rgba(255, 255, 255, 0.5)";

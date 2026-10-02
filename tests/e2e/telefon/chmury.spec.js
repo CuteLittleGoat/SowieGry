@@ -151,6 +151,84 @@ test("Sowa w Chmurach: Niebiański Ocean — 20 s na humbakach z pieśnią, pase
   expect(errors).toEqual([]);
 });
 
+// Przechył w prawo o 20° (oś zależna od obrotu ekranu: pion — gamma, poziom — beta) jako zdarzenie czujnika.
+async function tiltRight(page) {
+  await page.evaluate(() => {
+    const angle = window.screen.orientation?.angle ?? 0;
+    const event = new Event("deviceorientation");
+    Object.defineProperties(event, {
+      beta: { value: angle === 90 ? 20 : angle === 270 ? -20 : 0 },
+      gamma: { value: angle === 0 ? 20 : angle === 180 ? -20 : 0 },
+    });
+    window.dispatchEvent(event);
+  });
+}
+
+test("Sowa w Chmurach: przechylanie telefonu — przełącznik, zapis w dokumencie gry (emulator), przechył przesuwa sowę", async ({
+  page,
+}, testInfo) => {
+  const project = uniqueProject(testInfo);
+  const errors = watchErrors(page);
+  const url = cloudUrl("/SowaWChmurach/?seed=chmury-przechyl", project);
+  await openGame(page, url);
+  const toggle = page.locator("[data-tilt]");
+  if (!(await page.evaluate(() => window.SowaWChmurach.tilt().supported))) {
+    // Bez czujnika orientacji przełącznika nie ma (przeciąganie i klawiatura zostają).
+    await expect(toggle).toBeHidden();
+    expect(errors).toEqual([]);
+    return;
+  }
+  await expect(toggle).toHaveAttribute("aria-pressed", "false");
+  await expect(toggle).toHaveText("Przechylanie: wyłączone");
+  await toggle.click();
+  await expect(toggle).toHaveAttribute("aria-pressed", "true");
+  await expect(toggle).toHaveText("Przechylanie: włączone");
+  expect(await page.evaluate(() => window.SowieCloud.game("jumper").tilt)).toBe(true);
+  await page.evaluate(() => window.SowieCloud.flush());
+  expect((await readDoc(project, "sowiegry/profil/sowiegry_gry/jumper")).tilt).toBe(true);
+
+  // Po przeładowaniu przełącznik pamięta ustawienie.
+  await openGame(page, url);
+  await expect(toggle).toHaveAttribute("aria-pressed", "true");
+  await page.locator("[data-start]").click();
+  const x0 = (await state(page)).owl.x;
+  await tiltRight(page);
+  expect((await page.evaluate(() => window.SowaWChmurach.tilt())).angle).toBe(20);
+  // Sowa jedzie w prawo (przesunięcie liczone z przejściem przez krawędź kolumny).
+  await expect
+    .poll(async () => (((((await state(page)).owl.x - x0 + 13.5) % 9) + 9) % 9) - 4.5, { timeout: 8000 })
+    .toBeGreaterThan(1);
+  expect(errors).toEqual([]);
+});
+
+test("Sowa w Chmurach: przechylanie na iPhonie — odmowa zgody zostawia sterowanie palcem, zgoda włącza", async ({
+  page,
+}) => {
+  const errors = watchErrors(page);
+  // Atrapa zgody z iOS: `DeviceOrientationEvent.requestPermission` zwraca odpowiedź ustawioną w teście.
+  await page.addInitScript(() => {
+    window.__zgoda = "denied";
+    if (window.DeviceOrientationEvent) window.DeviceOrientationEvent.requestPermission = async () => window.__zgoda;
+  });
+  await openGame(page);
+  const toggle = page.locator("[data-tilt]");
+  if (!(await page.evaluate(() => window.SowaWChmurach.tilt().supported))) {
+    await expect(toggle).toBeHidden();
+    expect(errors).toEqual([]);
+    return;
+  }
+  expect((await page.evaluate(() => window.SowaWChmurach.tilt())).granted).toBe(false);
+  await toggle.click();
+  await expect(page.locator("[data-tilt-note]")).toHaveText("Bez zgody na czujnik ruchu — steruj palcem.");
+  await expect(toggle).toHaveAttribute("aria-pressed", "false");
+  await page.evaluate(() => (window.__zgoda = "granted"));
+  await toggle.click();
+  await expect(toggle).toHaveAttribute("aria-pressed", "true");
+  await expect(page.locator("[data-tilt-note]")).toBeHidden();
+  expect((await page.evaluate(() => window.SowaWChmurach.tilt())).granted).toBe(true);
+  expect(errors).toEqual([]);
+});
+
 test("Sowa w Chmurach: pauza z HUD i wznowienie przez odliczanie", async ({ page }) => {
   const errors = watchErrors(page);
   await openGame(page);
