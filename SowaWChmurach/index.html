@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="pl" class="sowie-shell">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#bfe9ff" />
+    <meta
+      name="description"
+      content="Sowa w Chmurach — wspinaczka w górę: od ogródka przez blok i chmury aż do zorzy i kosmosu."
+    />
+    <title>Sowa w Chmurach — SowieGry</title>
+    <link rel="manifest" href="../manifest.webmanifest" />
+    <link rel="icon" href="../assets/icons/icon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="../assets/icons/apple-touch-icon.png" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="SowieGry" />
+    <script src="../config/firebase-config.js"></script>
+    <script src="../shared/sowie-platform.js"></script>
+    <script src="../shared/sowie-cloud.js"></script>
+    <script src="../shared/password-gate.js"></script>
+    <script src="../shared/pwa.js"></script>
+    <link rel="preload" href="../assets/fonts/fredoka-700.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="stylesheet" href="../shared/cute-ui.css" />
+    <link rel="stylesheet" href="../shared/world/tokens.css" />
+    <link rel="stylesheet" href="../shared/engine/shell.css" />
+    <link rel="stylesheet" href="../shared/ui/ui.css" />
+    <link rel="stylesheet" href="style.css" />
+    <script src="../shared/sowie-academy.js" defer></script>
+    <script src="../shared/owl-gallery.js" defer></script>
+    <script type="module" src="main.js"></script>
+  </head>
+  <body data-sowie-game="jumper">
+    <main class="sowie-stage chmury-stage" data-stage aria-label="Sowa w Chmurach">
+      <canvas data-canvas aria-hidden="true"></canvas>
+      <section class="chmury-title" data-title aria-labelledby="chmury-title-heading">
+        <div class="chmury-title-card">
+          <h1 id="chmury-title-heading">Sowa w Chmurach</h1>
+          <p class="chmury-title-lead">
+            Wspinaj się coraz wyżej! Przeciągnij palcem w bok (najlepiej w dolnej części ekranu) — sowa sama odbija się
+            od gałązek.
+          </p>
+          <div class="chmury-difficulty" role="group" aria-label="Poziom trudności" data-difficulty>
+            <button type="button" class="sowie-ui-chip" data-level="chill" aria-pressed="false">Chill</button>
+            <button type="button" class="sowie-ui-chip" data-level="arcade" aria-pressed="true">Arcade</button>
+            <button type="button" class="sowie-ui-chip" data-level="chaos" aria-pressed="false">Chaos</button>
+          </div>
+          <p class="chmury-title-record" data-record>…</p>
+          <p class="chmury-title-note" data-cozy hidden>Tryb Przytulny: wolniej i bez końca gry.</p>
+          <button type="button" class="sowie-ui-button is-primary is-big" data-start>Start</button>
+          <div class="chmury-title-actions">
+            <button type="button" class="sowie-ui-button" data-guide>Jak grać?</button>
+            <a class="sowie-ui-button is-quiet" href="../">Menu</a>
+          </div>
+          <p class="chmury-title-note" data-preview>Wersja podglądowa nowej gry. Rekordy liczą się jak w SowaJumper.</p>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

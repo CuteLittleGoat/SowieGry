@@ -47,9 +47,13 @@ test("zakładka „Gry”: pięć kart z rejestru, „Graj” otwiera grę", asy
   await expect(page.locator('[data-game="runner"] .game-card-new')).toHaveText("Nowe!");
   // Sowie Tory (E5) w podglądzie: karta Sowa3 prowadzi do obecnej gry i ma przycisk nowej wersji.
   await expect(page.locator('[data-play="sowa3"]')).toHaveAttribute("href", "Sowa3/");
-  await expect(page.locator("[data-preview]")).toHaveCount(1);
+  await expect(page.locator("[data-preview]")).toHaveCount(2);
   await expect(page.locator('[data-preview="sowa3"]')).toHaveAttribute("href", "SowieTory/");
   await expect(page.locator('[data-preview="sowa3"]')).toContainText("Wypróbuj nową wersję: Sowie Tory");
+  // Sowa w Chmurach (E6) w podglądzie: karta SowaJumper prowadzi do obecnej gry i ma przycisk nowej wersji.
+  await expect(page.locator('[data-play="jumper"]')).toHaveAttribute("href", "SowaJumper/");
+  await expect(page.locator('[data-preview="jumper"]')).toHaveAttribute("href", "SowaWChmurach/");
+  await expect(page.locator('[data-preview="jumper"]')).toContainText("Wypróbuj nową wersję: Sowa w Chmurach");
   // Ilustracje rysują postacie z atlasu.
   await page.waitForFunction(() => window.SowieMenu.atlas.ready() && window.SowieMenu.frames() > 3);
 

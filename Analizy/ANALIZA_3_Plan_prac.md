@@ -280,7 +280,7 @@ Czytelne moduły zamiast obecnego `script.js`; nowy format stanu z migracją ze 
 
 ## 8. Stan realizacji i wznowienie pracy (aktualizowane na bieżąco)
 
-> Ostatnia aktualizacja: **2026-09-29**. Ten rozdział pozwala podjąć pracę w nowym oknie / nowej sesji bez znajomości wcześniejszej rozmowy. Po każdym zamkniętym kroku aktualizuj tabelę 8.2 i rozdział 8.5.
+> Ostatnia aktualizacja: **2026-10-02**. Ten rozdział pozwala podjąć pracę w nowym oknie / nowej sesji bez znajomości wcześniejszej rozmowy. Po każdym zamkniętym kroku aktualizuj tabelę 8.2 oraz rozdział bieżącego etapu (8.5 — E5, 8.7 — E6).
 
 ### 8.1. Zasady obowiązujące przy każdej zmianie (wymagania właściciela)
 
@@ -309,8 +309,8 @@ Czytelne moduły zamiast obecnego `script.js`; nowy format stanu z migracją ze 
 | E2 Fundament | ✅ | 2a silnik `shared/engine/`, powłoka telefonu, PWA (`sw.js`), Laboratorium `lab/`; 2b Sowi Świat `shared/world/`, Fredoka, SVG postaci, atlas; 2c dźwięk (`scripts/make-audio.mjs`, `assets/audio/`); 2d wspólny interfejs `shared/ui/`, `shared/meta/` (SowieProgress, `guides-data.js`) — właściciel zaakceptował wygląd |
 | E3 Menu główne | ✅ | `index.html` + `shared/menu/` (Gry, Jak grać, Galeria, Sowa), stare `main-menu.*` usunięte — właściciel zaakceptował |
 | E4 Sowia Ucieczka | ✅ | 4a–4e w `SowiaUcieczka/` (a83d4d4 E4d, fa4e97c i 5054766 E4e, 09c2660); **4f podmiana** 48fa386 (SowaRunner/ → tylko przekierowanie; misje garderoby `shared/meta/missions.js`); poprawka CI WebKit **2258a79** (CI zielone 2026-09-29, patrz 8.4). Właściciel: „Wstępnie mi się podoba… zielone światło na dalsze prace” |
-| E5 Sowie Tory | 🔧 w toku | E5a 18ba03b ✅; E5b 6e9bf5c ✅ (oprawa 4 plansz, skórki przeszkód, dziki); E5c 51f188b ✅ (finał z basenem, Humbacze Tory, gwiazdki); E5d1 82d09b5 ✅ (kózki, Gorączka, serduszka); E5d2 0471ed1 ✅ (tryb Nieskończony, rekordy według trybu; poprawka CI 89b079d); E5e ✅ (samouczek, instrukcja `sowietory`, muzyka plansz); następny **E5f — dopiero po akceptacji właściciela** — patrz 8.5 |
-| E6 Sowa w Chmurach | ⏳ | — |
+| E5 Sowie Tory | 🔧 w toku | E5a 18ba03b ✅; E5b 6e9bf5c ✅ (oprawa 4 plansz, skórki przeszkód, dziki); E5c 51f188b ✅ (finał z basenem, Humbacze Tory, gwiazdki); E5d1 82d09b5 ✅ (kózki, Gorączka, serduszka); E5d2 0471ed1 ✅ (tryb Nieskończony, rekordy według trybu; poprawka CI 89b079d); E5e 2982a0b ✅, CI zielone (samouczek, instrukcja `sowietory`, muzyka plansz); **E5f — dopiero po akceptacji właściciela** — patrz 8.5 |
+| E6 Sowa w Chmurach | 🔧 w toku (równolegle z oczekiwaniem na akceptację E5) | E6a ✅ (checklista smaczków SowaJumper, rdzeń w `SowaWChmurach/`, podgląd w menu); następny **E6b** — patrz 8.7 |
 | E7 Sowie Ogrody | ⏳ | — |
 | E8 Łącz i Hoduj | ⏳ | — |
 | E9 Meta i sprzątanie | ⏳ | — |
@@ -388,3 +388,19 @@ Jeżeli plików E5b (`props.js`, `scenery.js`) nie ma w repo (sesja sklonowana p
 | E2, E3 | ✅ zaakceptowane (Fredoka, syntezowane dźwięki, postacie, menu; „Kasuj wszystko co stare i zbędne”) |
 | E4 | ✅ podgląd zaakceptowany wstępnie, podmiana wykonana (E4f) |
 | E5 | czeka: test podglądu Sowich Torów na telefonie (4 plansze, dziki, finał z basenem, Humbacze Tory, kózki, Gorączka, Nieskończony, samouczek, muzyka) i zielone światło na podmianę (E5f) |
+| E6 | w toku (E6a): rdzeń Sowy w Chmurach do obejrzenia w menu („Wypróbuj nową wersję: Sowa w Chmurach”); akceptacja całości po E6e |
+
+### 8.7. E6 — Sowa w Chmurach: plan kroków i miejsce wznowienia
+
+Gra powstaje w `SowaWChmurach/` (podgląd; identyfikator `jumper`, wpis `preview` w rejestrze → przycisk „Wypróbuj nową wersję: Sowa w Chmurach” na karcie SowaJumper). Dokładny opis kodu: `SowaWChmurach/docs/Documentation.md`. Każdy krok osobnym commitem na `main`, z testami i dokumentacją.
+
+| Krok | Zakres (Analiza 2, rozdz. 3.3) | Stan |
+|---|---|---|
+| E6a | 6.0 checklista smaczków obecnego SowaJumper + rdzeń: kolumna 9 m z przejściem przez krawędź, automatyczne odbicia (wybicie 15,5 m/s, g = 30 — szczyt 4 m), przeciąganie palca w dowolnym miejscu (ruch względny × 1,25, `bindInput` z `swipeMs: −1`) i klawiatura, 6 typów platform (gałązka, liść Monstery ×1,45 +10, chmurka znika, huśtawka ±1,4 m, balkon co 150 m, krucha gałązka-pułapka), generator z gwarancją przejścia (odstęp ≤ 82% szczytu, krok ≤ 3,6 m; pułapki poza ścieżką), liście zielone/złote, combo, seria idealnych lądowań (2 pkt × seria), ratunek kózki zamiast upadku (−1 życie, ostatnia pewna platforma), 5 stref (kolory nieba, chmury, gwiazdy, „Strefa: …!”), Chill/Arcade/Chaos (4/3/3 życia), Tryb Przytulny, wyniki i `submitRun("jumper", { score, height })` | ✅ commit „E6a: …” |
+| **E6b** | Przeszkody: **Pracu** — dymki latające poziomo (skok z góry przebija: +50 pkt i wybicie; bok/dół = trafienie), rój maili (V), wibrujący telefon na platformie; **Amic** — sterowiec przelatujący przez ekran (nie do zniszczenia), spadające kanistry ze znacznikiem u góry ekranu 1 s wcześniej, wisząca tablica cen (blokuje przejście). Zasada: Pracu da się zdeptać, Amic trzeba ominąć. Trafienie: −1 życie, nietykalność 1,5 s (`state.invulnerable` już jest), combo o poziom niżej. Generator: przeszkody tylko tam, gdzie ścieżka zostaje osiągalna (autopilot w testach omija je bez trafień). Grafiki z atlasu: `pracu-dymek`, `pracu-mail`, `pracu-telefon`, `amic-sterowiec`, `amic-kanister`, `amic-znak-cen` | 🔧 **następny krok** |
+| E6c | Kózki skaczące z platformy na platformę jako power-upy (Sprężynka — wystrzał ok. 40 m, **Rakietka** = Turbo: szybki lot w górę z nietykalnością 3 s, Tarcza, Magnes, Podwajaczka), tęczowy liść i Gorączka Monster, serduszka (dodatkowe życie, przy pełnych +100 pkt — jak w starej grze), **Niebiański Ocean** (co ok. 300 m humbak-gejzer na chmurze; wskoczenie w fontannę — 20 s odbijania od grzbietów humbaków w chmurach, liście, bez upadku), chipy power-upów w HUD | ⏳ |
+| E6d | Oprawa 5 stref (Ogródek: płot, grządki; Blok: okna, balkony w tle; Chmury: duże chmury; Zorza: pasy zorzy; Kosmos: planety, humbaki-gwiazdozbiory), boki kolumny w poziomie z paralaksą; **przechylanie telefonu** (opcja w ustawieniach gry; iPhone — przycisk z prośbą o zgodę `DeviceOrientationEvent.requestPermission`) | ⏳ |
+| E6e | Samouczek pierwszego lotu (przeciągnij w bok, platformy, ratunek), instrukcja (osobny klucz w `guides-data.js`, jak `sowietory`), muzyka (motyw gry, budżet < 800 KB), dokumentacja, **podgląd do akceptacji właściciela** | ⏳ |
+| E6f | Po akceptacji: rejestr `jumper` → „Sowa w Chmurach”, `SowaWChmurach/`, `rebuilt: true`; usunięcie 11 plików JS z `SowaJumper/` (+ `styles.css`), `SowaJumper/index.html` → przekierowanie z parametrami adresu, aktualizacja odwołań (testy, `package.json`, `eslint.config.js`, `guides-data.js`, menu z ilustracją karty, dokumentacja) | ⏳ |
+
+**Miejsce wznowienia — E6b:** najpierw sprawdzić CI commita E6a (Chromium + WebKit). Potem przeszkody w `SowaWChmurach/hazards.js` (czysta logika: ruch, kolizje „z góry” / „z boku”, znacznik kanistra) + `game.js` (trafienia, nietykalność, zdarzenia `stomp`, `hit`, `warning`), rysowanie w `render.js` (atlas), dźwięki (`trafienie-pracu`, `trafienie-amic`, `dzwonek` przy znaczniku), testy jednostkowe (stomp z góry, trafienie z boku, kanister ze znacznikiem 1 s, sterowiec, autopilot bez trafień na 3 poziomach) i e2e (trafienie zmniejsza życia, zdeptanie dymka +50), dokumentacja.

@@ -9,6 +9,7 @@ const pages = [
   "index.html",
   "SowiaUcieczka/index.html",
   "SowieTory/index.html",
+  "SowaWChmurach/index.html",
   "SowaJumper/index.html",
   "Sowa3/index.html",
   "SowieOgrody/index.html",

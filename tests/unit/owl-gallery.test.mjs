@@ -80,7 +80,13 @@ test("katalog galerii ma trzydzieści trwałych nagród i warunki z pięciu gier
 });
 
 test("menu i wszystkie gry ładują skrypt galerii; gry także jej okno (style)", () => {
-  for (const file of ["index.html", "SowiaUcieczka/index.html", "SowieTory/index.html", ...gameIndexes]) {
+  for (const file of [
+    "index.html",
+    "SowiaUcieczka/index.html",
+    "SowieTory/index.html",
+    "SowaWChmurach/index.html",
+    ...gameIndexes,
+  ]) {
     assert.match(read(file), /owl-gallery\.js/, file);
   }
   for (const file of gameIndexes) assert.match(read(file), /owl-gallery\.css/, file);

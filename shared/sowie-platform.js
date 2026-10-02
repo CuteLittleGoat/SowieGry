@@ -18,7 +18,16 @@
       dailyMetric: "distance",
       rebuilt: true,
     },
-    { id: "jumper", name: "SowaJumper", path: "SowaJumper/", icon: "🪶", kind: "arcade", dailyMetric: "height" },
+    {
+      id: "jumper",
+      name: "SowaJumper",
+      path: "SowaJumper/",
+      icon: "🪶",
+      kind: "arcade",
+      dailyMetric: "height",
+      // Nowa wersja w podglądzie (E6): ten sam identyfikator i te same rekordy.
+      preview: Object.freeze({ path: "SowaWChmurach/", name: "Sowa w Chmurach" }),
+    },
     {
       id: "sowa3",
       name: "Sowa3",

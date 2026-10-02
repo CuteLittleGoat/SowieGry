@@ -12,9 +12,10 @@ const legacyGamePages = [
   "SowieOgrody/index.html",
   "SowiaSzklarnia/index.html",
 ];
-// Wszystkie gry z rejestru: Sowia Ucieczka (E4, moduły ES na Sowim Silniku; zastąpiła SowaRunner), podgląd
-// Sowich Torów (E5, nowa wersja Sowa3) i obecne gry.
-const gamePages = ["SowiaUcieczka/index.html", "SowieTory/index.html", ...legacyGamePages];
+// Wszystkie gry z rejestru: Sowia Ucieczka (E4, moduły ES na Sowim Silniku; zastąpiła SowaRunner), podglądy
+// Sowich Torów (E5, nowa wersja Sowa3) i Sowy w Chmurach (E6, nowa wersja SowaJumper) oraz obecne gry.
+const newGamePages = ["SowiaUcieczka/index.html", "SowieTory/index.html", "SowaWChmurach/index.html"];
+const gamePages = [...newGamePages, ...legacyGamePages];
 
 test("centralny rejestr zawiera dokładnie pięć gier", async () => {
   const platform = await read("shared/sowie-platform.js");
@@ -45,7 +46,7 @@ test("wszystkie gry ładują platformę; obecne gry — wspólny menedżer powia
     assert.match(await read(path), /shared\/sowie-platform\.js/, `${path} nie ładuje SowiePlatform`);
   }
   // Sowia Ucieczka: komunikaty z shared/ui (toasts.js), moduł ES main.js.
-  for (const path of ["SowiaUcieczka/index.html", "SowieTory/index.html"]) {
+  for (const path of newGamePages) {
     assert.match(await read(path), /<script type="module" src="main\.js"><\/script>/, path);
   }
   for (const path of legacyGamePages) {
@@ -69,6 +70,7 @@ async function projectScripts() {
     "lab",
     "SowiaUcieczka",
     "SowieTory",
+    "SowaWChmurach",
     "SowaJumper",
     "Sowa3",
     "SowieOgrody",

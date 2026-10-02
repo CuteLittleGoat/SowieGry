@@ -34,6 +34,7 @@ module.exports = [
       "lab/**/*.js",
       "SowiaUcieczka/**/*.js",
       "SowieTory/**/*.js",
+      "SowaWChmurach/**/*.js",
     ],
     languageOptions: {
       sourceType: "module",
