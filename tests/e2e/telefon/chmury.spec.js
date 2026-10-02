@@ -98,6 +98,32 @@ test("Sowa w Chmurach: dymek Pracu zdeptany z góry (+50), sterowiec Amic trafia
   expect(errors).toEqual([]);
 });
 
+test("Sowa w Chmurach: kózki — Rakietka, Tarcza i Gorączka Monster w komunikatach i chipach HUD", async ({ page }) => {
+  const errors = watchErrors(page);
+  await openGame(page);
+  await page.locator("[data-start]").click();
+  const before = (await state(page)).owl.y;
+  await page.evaluate(() => window.SowaWChmurach.goat("turbo"));
+  await expect(page.locator(".sowie-toast-chip", { hasText: "Rakietka!" })).toBeVisible();
+  await expect(page.locator(".sowie-hud-powerup", { hasText: "Rakietka" })).toBeVisible();
+  // Rakietka: 3 s lotu w górę (logika przewinięta krokami — w WebKit w CI klatki bywają wolne).
+  await page.evaluate(() => window.SowaWChmurach.advance(1.5));
+  expect((await state(page)).owl.y).toBeGreaterThan(before + 20);
+  await page.evaluate(() => window.SowaWChmurach.advance(2));
+  await expect(page.locator(".sowie-hud-powerup", { hasText: "Rakietka" })).toBeHidden();
+  await page.evaluate(() => {
+    window.SowaWChmurach.goat("tarcza");
+    window.SowaWChmurach.fever();
+  });
+  await expect(page.locator(".sowie-hud-powerup", { hasText: "Tarcza" })).toBeVisible();
+  await expect(page.locator(".sowie-hud-powerup", { hasText: "Gorączka" })).toBeVisible();
+  const extras = await page.evaluate(() => window.SowaWChmurach.extras());
+  expect(extras.fever).toBeGreaterThan(7);
+  expect(extras.powerups.tarcza).toBeGreaterThan(14);
+  expect((await state(page)).goats).toBe(2);
+  expect(errors).toEqual([]);
+});
+
 test("Sowa w Chmurach: pauza z HUD i wznowienie przez odliczanie", async ({ page }) => {
   const errors = watchErrors(page);
   await openGame(page);

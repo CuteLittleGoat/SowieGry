@@ -7,6 +7,9 @@ import {
   CAMERA,
   COZY_TIME,
   DIFFICULTIES,
+  EXTRAS,
+  FEVER,
+  GOATS,
   HAZARDS,
   OWL,
   PLATFORM_TYPES,
@@ -15,6 +18,7 @@ import {
   WORLD,
   ZONES,
 } from "./config.js";
+import { catchesGoat, createExtrasPlanner, goatPose } from "./extras.js";
 import { createGenerator } from "./generator.js";
 import { canisterX, contact, createHazard, createHazardPlanner, hazardPose, nextCanisterDelay } from "./hazards.js";
 import { createOwlBody, steerBy, stepOwl, wrapDelta, wrapX } from "./physics.js";
@@ -33,8 +37,9 @@ export function zoneAt(height) {
 export const perfectBonus = (streak) => SCORE.perfect * Math.min(streak, SCORE.perfectMax);
 
 /**
- * createRun({ difficulty, seed, cozy, random, safe, hazards }) — `random` zastępuje generatory z ziarnem (testy),
- * `safe` — ratunek i trafienia bez utraty życia (samouczek), `hazards: false` — bez przeszkód (testy rdzenia).
+ * createRun({ difficulty, seed, cozy, random, safe, hazards, extras }) — `random` zastępuje generatory z ziarnem
+ * (testy), `safe` — ratunek i trafienia bez utraty życia (samouczek), `hazards: false` — bez przeszkód, `extras:
+ * false` — bez kózek, serduszek i tęczowych liści (testy rdzenia).
  */
 export function createRun({
   difficulty = "arcade",
@@ -43,6 +48,7 @@ export function createRun({
   random = null,
   safe = false,
   hazards = true,
+  extras = true,
 } = {}) {
   const info = DIFFICULTIES[difficulty];
   if (!info) throw new Error(`Nieznany poziom trudności: ${difficulty}`);
@@ -51,8 +57,12 @@ export function createRun({
   // Przeszkody mają osobny generator losowy — trasa platform nie zależy od nich.
   const hazardRng = random ? { next: random } : createRng(`${seed}|przeszkody`);
   const planner = hazards ? createHazardPlanner({ random: hazardRng.next, difficulty }) : null;
+  // Dodatki (kózki, serduszka, tęczowe liście) — też z osobnego generatora.
+  const extrasRng = random ? { next: random } : createRng(`${seed}|dodatki`);
+  const extrasPlanner = extras ? createExtrasPlanner({ random: extrasRng.next }) : null;
   let lastPath = null;
   const pose = { x: 0, y: 0 };
+  const goatAt = { x: 0, y: 0, hopping: false };
   const events = [];
   const emit = (type, detail = {}) => events.push({ type, ...detail });
 
@@ -73,6 +83,14 @@ export function createRun({
     platforms: [],
     leaves: [],
     hazards: [],
+    goats: [],
+    hearts: [],
+    // Moce kózek na czas: { tarcza, magnes, podwajaczka } → pozostałe sekundy.
+    powerups: {},
+    // Rakietka (kózka Turbo): pozostały czas lotu w górę; Sprężynka: lot w górę po wystrzale.
+    rocket: 0,
+    spring: false,
+    fever: 0,
     // Znaczniki kanistrów: { x, at (czas spadania) }.
     warnings: [],
     canisterIn: hazards ? nextCanisterDelay(hazardRng.next, difficulty) : Infinity,
@@ -91,6 +109,9 @@ export function createRun({
     bounces: 0,
     rescues: 0,
     hits: 0,
+    goatCount: 0,
+    fevers: 0,
+    livesGained: 0,
     stomps: 0,
     score: 0,
     endReason: null,
@@ -101,12 +122,14 @@ export function createRun({
   function spawn() {
     const before = state.platforms.length;
     generator.fill(state.cameraBottom + CAMERA.ahead, state.platforms, state.leaves);
-    if (!planner) return;
-    // Planista przeszkód dla każdej nowej pary kolejnych platform ścieżki.
+    // Planiści przeszkód i dodatków dla każdej nowej pary kolejnych platform ścieżki.
     for (let index = before; index < state.platforms.length; index += 1) {
       const platform = state.platforms[index];
       if (!platform.path) continue;
-      if (lastPath) planner.plan(lastPath, platform, state.hazards);
+      if (lastPath) {
+        planner?.plan(lastPath, platform, state.hazards);
+        extrasPlanner?.plan(lastPath, platform, state.goats, state.hearts, state.leaves);
+      }
       lastPath = platform;
     }
   }
@@ -117,6 +140,8 @@ export function createRun({
       (item) => !item.gone && (item.y >= limit || item === state.lastSafe || item === state.rescue?.target),
     );
     state.leaves = state.leaves.filter((item) => !item.taken && item.y >= limit);
+    state.goats = state.goats.filter((item) => !item.taken && Math.max(item.from.y, item.to.y) >= limit);
+    state.hearts = state.hearts.filter((item) => !item.taken && item.y >= limit);
     state.hazards = state.hazards.filter((item) => {
       if (item.gone) return false;
       const at = hazardPose(item, state.time, pose);
@@ -177,7 +202,14 @@ export function createRun({
         state.bonusPoints += kind.points;
         addChain();
         emit("stomp", { kind: item.kind, family: item.family, x: pose.x, y: pose.y, points: kind.points });
-      } else if (result === "hit" && state.invulnerable <= 0) {
+      } else if (result === "hit" && state.invulnerable <= 0 && state.rocket <= 0 && !state.spring) {
+        if (state.powerups.tarcza > 0) {
+          // Tarcza przyjmuje trafienie.
+          delete state.powerups.tarcza;
+          state.invulnerable = 1;
+          emit("shield", { kind: item.kind, family: item.family });
+          continue;
+        }
         state.hits += 1;
         state.invulnerable = HAZARDS.invulnerable;
         breakChain();
@@ -254,6 +286,9 @@ export function createRun({
     }
   }
 
+  // Mnożnik liści: Podwajaczka × Gorączka Monster.
+  const leafMultiplier = () => (state.powerups.podwajaczka > 0 ? 2 : 1) * (state.fever > 0 ? FEVER.multiplier : 1);
+
   function collectLeaves() {
     const owl = state.owl;
     const centerY = owl.y + OWL.center;
@@ -261,14 +296,122 @@ export function createRun({
       if (leaf.taken) continue;
       if (Math.hypot(wrapDelta(owl.x, leaf.x), centerY - leaf.y) > OWL.reach) continue;
       leaf.taken = true;
-      const gold = leaf.kind === "zloty";
-      const count = gold ? 5 : 1;
       const combo = state.combo;
-      const points = (gold ? SCORE.goldLeaf : SCORE.leaf) * combo;
+      const multiplier = leafMultiplier();
+      const base = leaf.kind === "zloty" ? SCORE.goldLeaf : leaf.kind === "teczowy" ? EXTRAS.rainbowPoints : SCORE.leaf;
+      const count = (leaf.kind === "zloty" ? 5 : 1) * multiplier;
+      const points = base * combo * multiplier;
       state.leafCount += count;
       state.leafPoints += points;
-      emit("leaf", { kind: leaf.kind, x: leaf.x, y: leaf.y, count, points, combo });
+      emit("leaf", { kind: leaf.kind, x: leaf.x, y: leaf.y, count, points, combo, multiplier });
       addChain();
+      if (leaf.kind === "teczowy") startFever();
+    }
+  }
+
+  // Gorączka Monster (tęczowy liść): liście × 2 i deszcz liści nad platformami ścieżki przed sową.
+  function startFever() {
+    state.fever = FEVER.duration;
+    state.fevers += 1;
+    emit("fever", { duration: FEVER.duration });
+  }
+
+  function feverRain() {
+    const owl = state.owl;
+    for (const platform of state.platforms) {
+      if (!platform.path || platform.feverRain || platform.type === "hustawka") continue;
+      if (platform.y < owl.y - 1 || platform.y > owl.y + FEVER.ahead) continue;
+      platform.feverRain = true;
+      for (let index = 0; index < FEVER.column; index += 1) {
+        state.leaves.push({
+          x: platform.baseX,
+          y: platform.y + 1.2 + index,
+          kind: "zielony",
+          taken: false,
+          extra: true,
+        });
+      }
+    }
+  }
+
+  // Złapana kózka: +50 pkt i moc.
+  function catchGoat(goat) {
+    const owl = state.owl;
+    goat.taken = true;
+    state.goatCount += 1;
+    state.bonusPoints += GOATS.bonus;
+    addChain();
+    emit("goat", { kind: goat.kind, bonus: GOATS.bonus, x: owl.x, y: owl.y });
+    if (goat.kind === "sprezynka") {
+      owl.vy = Math.sqrt(2 * OWL.gravity * GOATS.springHeight);
+      state.spring = true;
+      emit("spring", { height: GOATS.springHeight });
+    } else if (goat.kind === "turbo") {
+      state.rocket = GOATS.duration.turbo;
+      owl.vy = GOATS.rocketSpeed;
+      emit("rocketStart", { duration: GOATS.duration.turbo });
+    } else {
+      state.powerups[goat.kind] = GOATS.duration[goat.kind];
+      emit("powerupStart", { kind: goat.kind, duration: GOATS.duration[goat.kind] });
+    }
+  }
+
+  // Moce na czas, Rakietka, Sprężynka, Gorączka; kózki, serduszka i Magnes.
+  function updateExtras(dt) {
+    const owl = state.owl;
+    for (const [kind, left] of Object.entries(state.powerups)) {
+      if (left - dt > 0) state.powerups[kind] = left - dt;
+      else {
+        delete state.powerups[kind];
+        emit("powerupEnd", { kind });
+      }
+    }
+    if (state.rocket > 0) {
+      state.rocket = Math.max(0, state.rocket - dt);
+      owl.vy = GOATS.rocketSpeed;
+      if (state.rocket === 0) {
+        state.invulnerable = Math.max(state.invulnerable, GOATS.afterRocket);
+        emit("rocketEnd", {});
+      }
+    }
+    if (state.spring && owl.vy <= 0) {
+      state.spring = false;
+      state.invulnerable = Math.max(state.invulnerable, 0.5);
+    }
+    if (state.fever > 0) {
+      state.fever = Math.max(0, state.fever - dt);
+      if (state.fever === 0) emit("feverEnd", {});
+      else feverRain();
+    }
+    for (const goat of state.goats) {
+      if (!goat.taken && catchesGoat(owl, goat, state.time, goatPose(goat, state.time, goatAt))) catchGoat(goat);
+    }
+    const centerY = owl.y + HAZARDS.owlCenter;
+    for (const heart of state.hearts) {
+      if (heart.taken || Math.hypot(wrapDelta(heart.x, owl.x), centerY - heart.y) > HAZARDS.owlRadius + 0.4) continue;
+      heart.taken = true;
+      if (state.lives < state.maxLives) {
+        state.lives += 1;
+        state.livesGained += 1;
+        emit("life", { lives: state.lives, x: heart.x, y: heart.y });
+      } else {
+        state.bonusPoints += EXTRAS.heartBonus;
+        emit("lifeBonus", { bonus: EXTRAS.heartBonus, x: heart.x, y: heart.y });
+      }
+    }
+    if (state.powerups.magnes > 0) {
+      const step = GOATS.magnetSpeed * dt;
+      for (const leaf of state.leaves) {
+        if (leaf.taken) continue;
+        const dx = wrapDelta(leaf.x, owl.x);
+        const dy = centerY - leaf.y;
+        const distance = Math.hypot(dx, dy);
+        if (distance > GOATS.magnetReach || distance < 1e-6) continue;
+        const move = Math.min(1, step / distance);
+        leaf.x = wrapX(leaf.x + dx * move);
+        leaf.y += dy * move;
+        leaf.pulled = true;
+      }
     }
   }
 
@@ -291,6 +434,8 @@ export function createRun({
   function startRescue() {
     const owl = state.owl;
     state.rescues += 1;
+    state.rocket = 0;
+    state.spring = false;
     breakChain();
     loseLife();
     if (state.lives <= 0) {
@@ -348,6 +493,7 @@ export function createRun({
     const owl = state.owl;
     const previousY = owl.y;
     stepOwl(owl, state.keys, dt);
+    updateExtras(dt);
     // Najpierw przeszkody (zdeptanie odbija sowę, zanim wyląduje na platformie pod przeszkodą).
     updateHazards(previousY, dt);
     if (state.phase === "over") return;
@@ -388,6 +534,15 @@ export function createRun({
     end(reason = "gracz") {
       finish(reason);
     },
+    // Testy i diagnostyka: kózka `kind` złapana od razu; Gorączka Monster od razu.
+    giveGoat(kind) {
+      if (state.phase !== "run" || !GOATS.weights[kind]) return;
+      const at = { x: state.owl.x, y: state.owl.y };
+      catchGoat({ kind, from: at, to: at, phase: 0, taken: false });
+    },
+    giveFever() {
+      if (state.phase === "run") startFever();
+    },
     // Testy i diagnostyka: przeszkoda `kind` w miejscu (x, y) — od razu w ruchu.
     addHazard(kind, x, y, extra = {}) {
       const item = createHazard(kind, x, y, { born: state.time, ...extra });
@@ -403,6 +558,8 @@ export function createRun({
       state.leaves = [];
       state.hazards = [];
       state.warnings = [];
+      state.goats = [];
+      state.hearts = [];
       const base = createPlatform("balkon", Math.min(Math.max(owl.x, 2), WORLD.width - 2), y - 0.5, { path: false });
       generator.skipTo(base.y, base.x);
       state.platforms.push(base);
@@ -433,6 +590,9 @@ export function createRun({
         rescues: state.rescues,
         hits: state.hits,
         stomps: state.stomps,
+        goats: state.goatCount,
+        fevers: state.fevers,
+        livesGained: state.livesGained,
         zone: ZONES[state.zone].id,
         difficulty: state.difficulty,
       };

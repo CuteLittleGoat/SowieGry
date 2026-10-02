@@ -15,7 +15,7 @@ import { createHud, createPauseMenu, createResults, createToasts, openModal, ren
 import { SPRITES, SVG_BASE } from "../shared/world/catalog.js";
 import { createOwlAnimator } from "../shared/world/owl.js";
 import { COLORS } from "../shared/world/tokens.js";
-import { DIFFICULTIES, GAME_ID, GAME_SOUNDS, HAZARDS, WORLD, ZONES } from "./config.js";
+import { DIFFICULTIES, FEVER, GAME_ID, GAME_SOUNDS, GOATS, HAZARDS, WORLD, ZONES } from "./config.js";
 import { createRun } from "./game.js";
 import { createRenderer } from "./render.js";
 
@@ -254,6 +254,7 @@ function finishRun() {
       { label: "Najlepsze combo", value: `×${summary.bestCombo}` },
       { label: "Idealne lądowania", value: `${summary.perfects} (seria ${summary.bestStreak})` },
       { label: "Przebite Pracu", value: String(summary.stomps) },
+      { label: "Złapane kózki", value: String(summary.goats) },
       { label: "Trafienia", value: String(summary.hits) },
       { label: "Ratunki kózki", value: String(summary.rescues) },
     ],
@@ -271,6 +272,29 @@ const HIT_TEXT = Object.freeze({
   tablica: "Tablica cen Amic na drodze!",
 });
 let canisterHint = false;
+
+// Komunikaty kózek (złapanie = moc).
+const GOAT_TEXT = Object.freeze({
+  sprezynka: "Kózka Sprężynka — wystrzał w górę!",
+  tarcza: "Kózka Tarcza — jedno trafienie gratis!",
+  magnes: "Kózka Magnes — liście lecą do sowy!",
+  turbo: "Rakietka! Kózka niesie sowę w górę",
+  podwajaczka: "Kózka Podwajaczka — liście ×2!",
+});
+
+// Chipy mocy w HUD: moce na czas, Rakietka (rodzaj „turbo” z etykietą) i Gorączka.
+function powerupList(state) {
+  const list = Object.entries(state.powerups).map(([kind, remaining]) => ({
+    kind,
+    remaining,
+    total: GOATS.duration[kind],
+  }));
+  if (state.rocket > 0) {
+    list.push({ kind: "turbo", remaining: state.rocket, total: GOATS.duration.turbo, label: "Rakietka" });
+  }
+  if (state.fever > 0) list.push({ kind: "goraczka", remaining: state.fever, total: FEVER.duration });
+  return list;
+}
 
 // Cząsteczki w świecie (oś y w dół w rysowaniu: y ekranu = −wysokość).
 function burst(x, y, options = {}) {
@@ -307,13 +331,14 @@ function handleEvents() {
         toasts.show("Balkon — chwila oddechu ☕", { kind: "success", key: "balkon" });
         break;
       case "leaf": {
-        play(event.kind === "zloty" ? "lisc-zloty" : "lisc", { pitch: 1 + Math.min(4, event.combo - 1) * 0.05 });
+        if (event.kind === "teczowy") play("lisc-teczowy");
+        else play(event.kind === "zloty" ? "lisc-zloty" : "lisc", { pitch: 1 + Math.min(4, event.combo - 1) * 0.05 });
         burst(event.x, event.y, {
           count: event.kind === "zloty" ? 10 : 5,
           tint: event.kind === "zloty" ? COLORS.zloto : COLORS.monsteraJasna,
         });
         const now = game.state.time;
-        if (event.kind !== "zielony" || event.combo > 1 || now - lastLeafPopup > 0.25) {
+        if (event.kind !== "zielony" || now - lastLeafPopup > 0.25) {
           lastLeafPopup = now;
           renderer.popup(
             `+${event.points}`,
@@ -360,6 +385,48 @@ function handleEvents() {
           canisterHint = true;
           toasts.show("Kanister Amic! Uciekaj spod pomarańczowego znacznika.", { kind: "warn", key: "kanister" });
         }
+        break;
+      case "goat":
+        play("koza-meee", { pitch: event.kind === "turbo" ? 0.9 : 1.1 });
+        audio?.vibrate?.(20);
+        burst(event.x, event.y + 0.6, { count: 12, tint: COLORS.zloto, radius: 0.1 });
+        renderer.popup(`+${event.bonus}`, event.x, event.y + 1.6, COLORS.zloto);
+        toasts.show(GOAT_TEXT[event.kind], { kind: "reward", key: "kozka", priority: 1 });
+        progress.emit(EVENTS.GOAT, { kind: event.kind });
+        break;
+      case "spring":
+        play("podwojny-skok", { pitch: 1.2 });
+        break;
+      case "rocketStart":
+      case "powerupStart":
+        play(event.type === "rocketStart" ? "bonus-start" : "powerup-start");
+        break;
+      case "rocketEnd":
+      case "powerupEnd":
+        play("powerup-koniec");
+        break;
+      case "shield":
+        play("polaczenie");
+        burst(game.state.owl.x, game.state.owl.y + 0.6, { count: 14, tint: COLORS.niebieski, radius: 0.1 });
+        toasts.show("Tarcza pękła — nic się nie stało!", { kind: "success", key: "tarcza", priority: 2 });
+        break;
+      case "life":
+        play("zycie");
+        toasts.show("Dodatkowe życie!", { kind: "success", key: "zycie" });
+        progress.emit(EVENTS.LIFE, {});
+        break;
+      case "lifeBonus":
+        play("zycie", { pitch: 1.2 });
+        renderer.popup(`Maks żyć: +${event.bonus} pkt`, event.x, event.y + 0.6, COLORS.serce, 20);
+        break;
+      case "fever":
+        play("goraczka-start");
+        toasts.show("Tęczowa monstera! Gorączka Monster — liście ×2 🌿", {
+          kind: "reward",
+          key: "goraczka",
+          priority: 2,
+        });
+        progress.emit(EVENTS.FEVER, {});
         break;
       case "rescue":
         play("koza-meee");
@@ -463,6 +530,7 @@ function render() {
     hud.setScore(state.score);
     hud.setLeaves(state.leafCount);
     hud.setLives(state.lives, state.maxLives);
+    hud.setPowerups(powerupList(state));
     updateHeight(state);
   }
 }
@@ -577,6 +645,18 @@ window.SowaWChmurach = Object.freeze({
     const owl = game.state.owl;
     game.addHazard(kind, owl.x + dx, owl.y + dy, extra);
   },
+  goat: (kind) => game?.giveGoat(kind),
+  fever: () => game?.giveFever(),
+  extras: () =>
+    game
+      ? {
+          goats: game.state.goats.filter((item) => !item.taken).map((item) => ({ kind: item.kind, from: item.from })),
+          hearts: game.state.hearts.filter((item) => !item.taken).length,
+          rocket: game.state.rocket,
+          fever: game.state.fever,
+          powerups: { ...game.state.powerups },
+        }
+      : null,
   hazards: () =>
     game ? game.state.hazards.filter((item) => !item.gone).map((item) => ({ kind: item.kind, born: item.born })) : [],
   // Testy: sowa pod dolną krawędzią ekranu (upadek → ratunek kózki).

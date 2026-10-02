@@ -6,6 +6,7 @@
 import { drawOwl } from "../shared/world/owl.js";
 import { COLORS, font } from "../shared/world/tokens.js";
 import { FADE, HAZARDS, OWL, WORLD, ZONES } from "./config.js";
+import { goatPose } from "./extras.js";
 import { hazardPose } from "./hazards.js";
 
 const LEAF_SPRITE = { zielony: "lisc-zielony", zloty: "lisc-zloty", teczowy: "lisc-teczowy" };
@@ -315,6 +316,23 @@ export function createRenderer({ canvas, view, atlas }) {
     }
   }
 
+  // Kózki (atlas: stoją albo w skoku, zwrócone w stronę skoku) i serduszka-doniczki (pulsują).
+  const goatPoint = { x: 0, y: 0, hopping: false };
+  function extrasDraw(state, low, high) {
+    for (const goat of state.goats || []) {
+      if (goat.taken) continue;
+      goatPose(goat, state.time, goatPoint);
+      if (goatPoint.y < low || goatPoint.y > high) continue;
+      const sprite = goatPoint.hopping ? `kozka-${goat.kind}-skok` : `kozka-${goat.kind}`;
+      atlas.draw(context, sprite, goatPoint.x, -goatPoint.y, { width: 1.1, flipX: goat.to.x < goat.from.x });
+    }
+    for (const heart of state.hearts || []) {
+      if (heart.taken || heart.y < low || heart.y > high) continue;
+      const pulse = 1 + Math.sin(state.time * 5) * 0.08;
+      atlas.draw(context, "zycie", heart.x, -heart.y, { width: 0.8 * pulse });
+    }
+  }
+
   function owlAt(x, y, animator, cosmetic, facing, alpha) {
     drawOwl(context, atlas, x, -y, {
       state: animator.state(),
@@ -385,14 +403,35 @@ export function createRenderer({ canvas, view, atlas }) {
         if (leaf.taken || leaf.y < low || leaf.y > high) continue;
         const bob = Math.sin(state.time * 3 + leaf.x * 2) * 0.08;
         atlas.draw(context, LEAF_SPRITE[leaf.kind], leaf.x, -(leaf.y + bob), {
-          width: leaf.kind === "zloty" ? 0.7 : 0.6,
+          width: leaf.kind === "zloty" ? 0.7 : leaf.kind === "teczowy" ? 0.75 : 0.6,
           rotation: Math.sin(state.time * 2 + leaf.y) * 0.2,
         });
       }
       hazards(state, low - 1, high + 2);
+      extrasDraw(state, low - 1, high + 2);
       const owl = state.owl;
       if (showOwl) {
         const blink = state.invulnerable > 0 && Math.floor(state.time * 12) % 2 === 0 ? 0.45 : 1;
+        // Moce wokół sowy: Tarcza — niebieska bańka, Magnes — fioletowy pierścień.
+        const aura = (color, radius, alpha) => {
+          context.globalAlpha = alpha;
+          context.strokeStyle = color;
+          context.lineWidth = 0.08;
+          context.beginPath();
+          context.arc(owl.x, -(owl.y + 0.6), radius, 0, Math.PI * 2);
+          context.stroke();
+          context.globalAlpha = 1;
+        };
+        if (state.powerups?.tarcza > 0) aura(COLORS.niebieski, 0.85, 0.7);
+        if (state.powerups?.magnes > 0) aura(COLORS.fiolet, 1 + Math.sin(state.time * 6) * 0.08, 0.5);
+        if (state.rocket > 0) {
+          // Rakietka: sowa na kózce Turbo, ogień spod kopyt.
+          atlas.draw(context, "kozka-turbo-skok", owl.x, -(owl.y - 0.2), { width: 1.3 });
+          context.fillStyle = COLORS.pomaranczowy;
+          context.beginPath();
+          context.ellipse(owl.x, -(owl.y - 0.55), 0.18, 0.35 + Math.sin(state.time * 30) * 0.1, 0, 0, Math.PI * 2);
+          context.fill();
+        }
         if (state.rescue) {
           // Kózka niesie sowę na platformę.
           const lift = Math.sin(state.time * 18) * 0.05;
@@ -401,7 +440,7 @@ export function createRenderer({ canvas, view, atlas }) {
         for (const shift of [0, -WORLD.width, WORLD.width]) {
           const x = owl.x + shift;
           if (x < -OWL.drawSize || x > WORLD.width + OWL.drawSize) continue;
-          owlAt(x, owl.y + (state.rescue ? 0.55 : 0), animator, cosmetic, owl.facing, blink);
+          owlAt(x, owl.y + (state.rescue ? 0.55 : state.rocket > 0 ? 0.45 : 0), animator, cosmetic, owl.facing, blink);
         }
       }
       particles?.render(context);
@@ -417,6 +456,16 @@ export function createRenderer({ canvas, view, atlas }) {
         context.fillStyle = "rgba(255, 255, 255, 0.5)";
         context.fillRect(-0.04, top, 0.04, layout.worldHeight + 2);
         context.fillRect(WORLD.width, top, 0.04, layout.worldHeight + 2);
+      }
+      // Gorączka Monster: tęczowa poświata przy krawędziach ekranu.
+      if (state.fever > 0) {
+        view.applyScreen(context);
+        const glow = context.createLinearGradient(0, 0, layout.cssWidth, layout.cssHeight);
+        glow.addColorStop(0, "rgba(255, 111, 145, 0.16)");
+        glow.addColorStop(0.5, "rgba(244, 197, 66, 0.08)");
+        glow.addColorStop(1, "rgba(63, 174, 106, 0.16)");
+        context.fillStyle = glow;
+        context.fillRect(0, 0, layout.cssWidth, layout.cssHeight);
       }
       popupsDraw(layout, dt);
     },

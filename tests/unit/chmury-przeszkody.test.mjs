@@ -288,7 +288,7 @@ test("trasa platform nie zależy od przeszkód (osobny generator losowy)", () =>
 });
 
 test("zdeptanie dymka: +50 pkt, wybicie i seria combo; trafienie z boku: −1 życie, nietykalność, bez drugiego trafienia", () => {
-  const run = createRun({ seed: "kontakt", hazards: false });
+  const run = createRun({ seed: "kontakt", hazards: false, extras: false });
   run.warp(50);
   const state = run.state;
   const owl = state.owl;
@@ -322,7 +322,7 @@ test("zdeptanie dymka: +50 pkt, wybicie i seria combo; trafienie z boku: −1 ż
 
 test("trafienia: po ostatnim życiu koniec („trafienie”); Tryb Przytulny zostawia 1 życie; samouczek bez strat", () => {
   const hitMany = (options, times) => {
-    const run = createRun({ seed: "zycia", hazards: false, ...options });
+    const run = createRun({ seed: "zycia", hazards: false, extras: false, ...options });
     run.warp(30);
     for (let index = 0; index < times && run.state.phase !== "over"; index += 1) {
       run.state.invulnerable = 0;
@@ -353,7 +353,7 @@ test("kanistry: od 350 m co 7–11 s (Chaos częściej), znacznik 1 s wcześniej
     assert.ok(Math.abs(x - 4.5) <= HAZARDS.canister.aim + 1e-9);
     assert.ok(canisterX(0.1, random) >= HAZARDS.kinds.kanister.halfW);
   }
-  const run = createRun({ seed: "kanister" });
+  const run = createRun({ seed: "kanister", extras: false });
   run.warp(400);
   const state = run.state;
   let warning = null;
@@ -375,7 +375,7 @@ test("kanistry: od 350 m co 7–11 s (Chaos częściej), znacznik 1 s wcześniej
 });
 
 test("rój maili i sterowiec ruszają, gdy wejdą w widok", () => {
-  const run = createRun({ seed: "przelot", hazards: false });
+  const run = createRun({ seed: "przelot", hazards: false, extras: false });
   run.warp(300);
   const state = run.state;
   const ship = run.addHazard("sterowiec", -2, state.cameraBottom + 40, { speed: 2, born: null });
@@ -400,7 +400,10 @@ test("autopilot z przewidywaniem przeszkód: 1000 m na każdym poziomie, najwyż
   for (const [difficulty, list] of Object.entries(seeds)) {
     for (const seed of list) {
       const events = [];
-      const run = autopilot(createRun({ seed, difficulty }), { goal: 1000, onEvent: (event) => events.push(event) });
+      const run = autopilot(createRun({ seed, difficulty, extras: false }), {
+        goal: 1000,
+        onEvent: (event) => events.push(event),
+      });
       const state = run.state;
       const count = (type) => events.filter((event) => event.type === type).length;
       assert.ok(state.height >= 1000, `${difficulty}/${seed}: ${Math.floor(state.height)} m`);

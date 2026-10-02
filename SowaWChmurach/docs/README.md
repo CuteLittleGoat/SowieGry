@@ -18,8 +18,8 @@ Zaczynasz w ogródku, a potem lecisz przez kolejne strefy:
 
 Pasek pod przyciskiem pauzy pokazuje wysokość, nazwę strefy i ile zostało do następnej.
 
-> W kolejnych krokach etapu dochodzą: kózki z mocami (Rakietka, Sprężynka…), bonus „Niebiański Ocean” z humbakami,
-> pełna oprawa stref, sterowanie przechylaniem telefonu, samouczek i muzyka.
+> W kolejnych krokach etapu dochodzą: bonus „Niebiański Ocean” z humbakami, pełna oprawa stref, sterowanie
+> przechylaniem telefonu, samouczek i muzyka.
 
 ## Sterowanie
 
@@ -66,6 +66,25 @@ Trafienie zabiera **jedno życie** („Pracu Pracu zbiło rytm!”, „Sterowiec
 przez chwilę miga i jest nietykalna. Tablica i telefon nigdy nie zagradzają jedynej drogi — zawsze da się je ominąć.
 Przeszkód przybywa z wysokością, a na Chaos jest ich najwięcej.
 
+## Kózki, Gorączka Monster i serduszka
+
+Na gałązkach stoją **skaczące kózki** — przeskakują łukiem z jednej gałązki na następną i z powrotem. Wleć
+w kózkę, a dostaniesz **+50 pkt** i jej moc (kózka nigdy nie rani):
+
+| Kózka       | Co daje                                                                    | Jak długo |
+| ----------- | -------------------------------------------------------------------------- | --------- |
+| Sprężynka   | wystrzał w górę na około **40 m**                                          | od razu   |
+| Rakietka    | sowa leci na kózce prosto w górę — przeszkody nic jej nie robią            | 3 s       |
+| Tarcza      | pierwsze trafienie nie zabiera życia („Tarcza pękła — nic się nie stało!”) | do 15 s   |
+| Magnes      | liście z okolicy same lecą do sowy                                         | 8 s       |
+| Podwajaczka | podwójne liście                                                            | 10 s      |
+
+Aktywne moce widać w prawym górnym rogu, pod serduszkami (pasek pokazuje, ile zostało).
+
+- **Tęczowy liść** (od 100 m, nad gałązką): +100 pkt × combo i **Gorączka Monster** na 8 sekund — liście liczą się
+  podwójnie, a nad gałązkami przed sową pojawia się deszcz liści.
+- **Serduszko-doniczka** nad gałązką: **dodatkowe życie**; gdy masz już wszystkie życia — **+100 pkt**.
+
 ## Upadek i ratunek kózki
 
 Jeśli sowa spadnie pod ekran, **kózka łapie ją** i odnosi na ostatnią pewną platformę („Ojej! Kózka łapie sowę —
@@ -78,6 +97,7 @@ Gra kończy się, gdy skończą się życia.
 - **Liść Monstery** nad gałązką: **10 pkt × combo**; **złoty liść** — 50 pkt × combo i liczy się jak 5 liści.
 - **Combo** rośnie o 1 co 8 w serii (liście i idealne lądowania), najwyżej **×5**. Upadek obniża je o jeden poziom.
 - **Zdeptany Pracu**: dymek i telefon +50 pkt, mail +20 pkt (i seria combo).
+- **Złapana kózka**: +50 pkt; Podwajaczka i Gorączka podwajają liście (razem — poczwórnie).
 - **Idealne lądowanie** — na środku platformy (środkowe 30%): „Idealnie! +N”. Premia rośnie z serią idealnych
   lądowań (2, 4, 6… najwyżej 20 pkt); lądowanie poza środkiem przerywa serię.
 - Liść Monstery jako platforma: +10 pkt za każde odbicie.
@@ -93,7 +113,7 @@ Gra kończy się, gdy skończą się życia.
 Z wysokością gałązki są coraz dalej od siebie, a trudnych platform (chmurek, huśtawek, kruchych gałązek) jest
 więcej. Wybrany poziom zapamiętuje się w chmurze. Rekord każdego poziomu (wysokość i punkty) widać na ekranie
 tytułowym, a po locie — na ekranie wyników (z miejscem w top 10). Wyniki pokazują też wysokość, strefę, najlepsze
-combo, idealne lądowania, przebite Pracu, trafienia i liczbę ratunków kózki.
+combo, idealne lądowania, przebite Pracu, złapane kózki, trafienia i liczbę ratunków kózki.
 
 **Tryb Przytulny** (ustawienie w menu głównym, zakładka Sowa; działa na poziomie Chill): gra płynie wolniej
 i nie kończy się — ostatnie serduszko zostaje. Lot kończysz w menu pauzy („Zakończ lot”).

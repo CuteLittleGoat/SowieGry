@@ -197,6 +197,46 @@ export const HAZARDS = Object.freeze({
   }),
 });
 
+// Kózki (E6c): stoją na platformie ścieżki (`rest` s) i przeskakują łukiem (`hop` s, `arc` m ponad prostą) na
+// następną i z powrotem; pierwsza od `first` m, potem co `every` m. Złapanie (koło `radius` m wokół punktu
+// `center` m nad jej stopami): +`bonus` pkt i moc. Sprężynka: wybicie na `springHeight` m (nietykalność w locie
+// w górę); Turbo = **Rakietka**: `duration.turbo` s lotu w górę z prędkością `rocketSpeed` m/s z nietykalnością
+// (potem `afterRocket` s); Tarcza — jedno trafienie gratis; Magnes — liście z `magnetReach` m lecą do sowy
+// (`magnetSpeed` m/s); Podwajaczka — liście ×2.
+export const GOATS = Object.freeze({
+  first: 60,
+  every: Object.freeze([120, 200]),
+  rest: 1,
+  hop: 0.7,
+  arc: 1.2,
+  center: 0.5,
+  radius: 0.5,
+  bonus: 50,
+  weights: Object.freeze({ sprezynka: 1, tarcza: 1.1, magnes: 1, turbo: 0.8, podwajaczka: 1 }),
+  duration: Object.freeze({ tarcza: 15, magnes: 8, turbo: 3, podwajaczka: 10 }),
+  springHeight: 40,
+  rocketSpeed: 18,
+  afterRocket: 1,
+  magnetReach: 4,
+  magnetSpeed: 10,
+});
+
+// Serduszko-doniczka (+1 życie, przy pełnych życiach +`heartBonus` pkt) co `heartEvery` m, `heartHeight` m nad
+// platformą; tęczowy liść (`rainbowPoints` pkt × combo i Gorączka Monster) od `rainbowFrom` m co `rainbowEvery` m.
+export const EXTRAS = Object.freeze({
+  heartEvery: Object.freeze([300, 450]),
+  heartHeight: 1.6,
+  heartBonus: 100,
+  rainbowFrom: 100,
+  rainbowEvery: Object.freeze([250, 400]),
+  rainbowHeight: 2.2,
+  rainbowPoints: 100,
+});
+
+// Gorączka Monster: `duration` s, liście × `multiplier`; deszcz liści — kolumna `column` liści nad każdą
+// platformą ścieżki w zasięgu (do `ahead` m nad sową).
+export const FEVER = Object.freeze({ duration: 8, multiplier: 2, column: 3, ahead: 24 });
+
 // Strefy wysokości (Analiza 2, rozdz. 3.3): kolory nieba (góra, dół) i nazwy.
 export const ZONES = Object.freeze([
   Object.freeze({ id: "ogrodek", name: "Ogródek", from: 0, sky: ["#bfe9ff", "#fff6e3"] }),
@@ -224,4 +264,9 @@ export const GAME_SOUNDS = Object.freeze([
   "hu-hu",
   "trafienie-pracu",
   "dzwonek",
+  "powerup-start",
+  "powerup-koniec",
+  "goraczka-start",
+  "lisc-teczowy",
+  "bonus-start",
 ]);

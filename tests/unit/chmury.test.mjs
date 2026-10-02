@@ -1,7 +1,7 @@
 // Sowa w Chmurach (Analiza 3, E6a): fizyka sowy (wybicie, przejście przez krawędź, przeciąganie względne,
 // klawiatura), sześć typów platform, generator z gwarancją przejścia, ratunek zamiast upadku, punktacja, strefy
 // i autopilot, który wspina się na każdym poziomie bez ratunku. Testy rdzenia biegną bez przeszkód
-// (`hazards: false`); przeszkody Pracu i Amic — tests/unit/chmury-przeszkody.test.mjs.
+// (`hazards: false, extras: false`); przeszkody Pracu i Amic — tests/unit/chmury-przeszkody.test.mjs.
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
@@ -248,7 +248,7 @@ test("generator: odstępy rosną z wysokością, Chill bliżej niż Chaos; powta
 });
 
 test("bieg: start z ziemi ogródka, kamera tylko w górę, wynik = wysokość + liście + premie", () => {
-  const run = createRun({ seed: "start", hazards: false });
+  const run = createRun({ seed: "start", hazards: false, extras: false });
   assert.equal(run.state.owl.y, 0);
   assert.equal(run.state.owl.vy, OWL.jumpVelocity);
   assert.equal(run.state.lives, DIFFICULTIES.arcade.lives);
@@ -268,7 +268,7 @@ test("bieg: liście (złoty = 5 liści, 50 pkt) i combo co 8 w serii; idealne l�
   assert.equal(perfectBonus(1), 2);
   assert.equal(perfectBonus(4), 8);
   assert.equal(perfectBonus(30), 20);
-  const run = createRun({ seed: "liscie", hazards: false });
+  const run = createRun({ seed: "liscie", hazards: false, extras: false });
   const events = [];
   autopilot(run, { goal: 400, onEvent: (event) => events.push(event) });
   const leaves = events.filter((event) => event.type === "leaf");
@@ -289,7 +289,7 @@ test("bieg: liście (złoty = 5 liści, 50 pkt) i combo co 8 w serii; idealne l�
 });
 
 test("ratunek: upadek pod ekran — kózka odnosi sowę na ostatnią pewną platformę (−1 życie), po ostatnim życiu koniec", () => {
-  const run = createRun({ seed: "upadek", hazards: false });
+  const run = createRun({ seed: "upadek", hazards: false, extras: false });
   autopilot(run, { goal: 60 });
   const events = [];
   for (let fall = 1; fall <= 3; fall += 1) {
@@ -321,7 +321,7 @@ test("ratunek: upadek pod ekran — kózka odnosi sowę na ostatnią pewną plat
 });
 
 test("ratunek: Tryb Przytulny zostawia ostatnie życie, tryb bezpieczny nie zabiera życia; koniec na życzenie", () => {
-  const cozy = createRun({ seed: "przytulny", difficulty: "chill", cozy: true, hazards: false });
+  const cozy = createRun({ seed: "przytulny", difficulty: "chill", cozy: true, hazards: false, extras: false });
   assert.equal(cozy.state.cozy, true);
   for (let fall = 0; fall < 6; fall += 1) {
     cozy.state.owl.y = cozy.state.cameraBottom - 3;
@@ -331,7 +331,7 @@ test("ratunek: Tryb Przytulny zostawia ostatnie życie, tryb bezpieczny nie zabi
   assert.equal(cozy.state.lives, 1);
   assert.notEqual(cozy.state.phase, "over");
   assert.equal(createRun({ difficulty: "arcade", cozy: true }).state.cozy, false, "tylko na Chill");
-  const safe = createRun({ seed: "bezpieczny", safe: true, hazards: false });
+  const safe = createRun({ seed: "bezpieczny", safe: true, hazards: false, extras: false });
   safe.state.owl.y = safe.state.cameraBottom - 3;
   safe.update(STEP);
   assert.equal(safe.state.lives, DIFFICULTIES.arcade.lives);
@@ -341,7 +341,7 @@ test("ratunek: Tryb Przytulny zostawia ostatnie życie, tryb bezpieczny nie zabi
 });
 
 test("bieg: krucha gałązka łamie się pod sową, chmurka znika po odbiciu", () => {
-  const run = createRun({ seed: "pulapki", hazards: false });
+  const run = createRun({ seed: "pulapki", hazards: false, extras: false });
   const owl = run.state.owl;
   run.state.platforms = [createPlatform("krucha", 4.5, 5, { path: false }), createPlatform("chmurka", 4.5, 3)];
   owl.x = 4.5;
@@ -381,7 +381,7 @@ test("autopilot wspina się na 1600 m bez ratunku na każdym poziomie: strefy, b
   for (const difficulty of Object.keys(DIFFICULTIES)) {
     for (const seed of ["auto-1", "auto-2"]) {
       const events = [];
-      const run = autopilot(createRun({ seed, difficulty, hazards: false }), {
+      const run = autopilot(createRun({ seed, difficulty, hazards: false, extras: false }), {
         goal: 1600,
         onEvent: (event) => events.push(event),
       });
@@ -403,7 +403,7 @@ test("autopilot wspina się na 1600 m bez ratunku na każdym poziomie: strefy, b
 });
 
 test("warp (testy): sowa wyżej na balkonie, trasa dalej osiągalna", () => {
-  const run = createRun({ seed: "warp", hazards: false });
+  const run = createRun({ seed: "warp", hazards: false, extras: false });
   run.warp(500);
   const state = run.state;
   assert.ok(state.owl.y >= 500);
@@ -418,9 +418,12 @@ test("warp (testy): sowa wyżej na balkonie, trasa dalej osiągalna", () => {
     "bestStreak",
     "bounces",
     "difficulty",
+    "fevers",
+    "goats",
     "height",
     "hits",
     "leaves",
+    "livesGained",
     "perfects",
     "rescues",
     "score",
