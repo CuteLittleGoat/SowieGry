@@ -1,5 +1,10 @@
 # Sowie Ogrody — instrukcja gry
 
+> **W przygotowaniu nowa odsłona** (etap E7 przebudowy SowieGry): rozdziały z celami (Parapet → Balkon → Działka →
+> Basen → Szklarnia → Arboretum), widoczny ogród, telefon Pracu Pracu, ciężarówka Amic, złota kózka i Zatoka
+> Humbaka. Obecny postęp przejdzie do niej bez strat (rośliny i ulepszenia zostaną, a to, czego nie ma w nowej
+> wersji, wróci jako liście i nasiona). Do czasu udostępnienia podglądu poniższa instrukcja dotyczy obecnej gry.
+
 ## Cel gry
 
 `Sowie Ogrody` to rozbudowany clicker / idle incremental. Sowa zaczyna od małego parapetu i stopniowo rozwija balkon, działkę, basen z humbakiem, szklarnię, centrum ogrodnicze oraz prestiżowe arboretum.
