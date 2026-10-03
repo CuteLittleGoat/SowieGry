@@ -73,9 +73,11 @@ test("Sowa w Chmurach: dymek Pracu zdeptany z góry (+50), sterowiec Amic trafia
   const errors = watchErrors(page);
   await openGame(page);
   await page.locator("[data-start]").click();
-  // Logika krokami po 1/120 s (bez czekania na klatki): sowa opada, pod jej stopami dymek.
+  // Logika krokami po 1/120 s (bez czekania na klatki): sowa opada, pod jej stopami dymek. Klatki nie ruszają logiki
+  // (hold) — między krokami testu sowa nie złapie żadnej kózki z trasy.
   const result = await page.evaluate(() => {
     const game = window.SowaWChmurach;
+    game.hold(true);
     game.warp(60);
     for (let index = 0; index < 240 && game.state().owl.vy > -3; index += 1) game.advance(1 / 120);
     const before = game.state();
@@ -102,11 +104,16 @@ test("Sowa w Chmurach: kózki — Rakietka, Tarcza i Gorączka Monster w komunik
   const errors = watchErrors(page);
   await openGame(page);
   await page.locator("[data-start]").click();
+  // Rakietka trwa 3 s czasu gry — logikę przesuwa tylko `advance` (wolne klatki WebKit w CI nie skrócą sprawdzania).
+  await page.evaluate(() => window.SowaWChmurach.hold(true));
   const before = (await state(page)).owl.y;
-  await page.evaluate(() => window.SowaWChmurach.goat("turbo"));
+  await page.evaluate(() => {
+    window.SowaWChmurach.goat("turbo");
+    window.SowaWChmurach.advance(1 / 120);
+  });
   await expect(page.locator(".sowie-toast-chip", { hasText: "Rakietka!" })).toBeVisible();
   await expect(page.locator(".sowie-hud-powerup", { hasText: "Rakietka" })).toBeVisible();
-  // Rakietka: 3 s lotu w górę (logika przewinięta krokami — w WebKit w CI klatki bywają wolne).
+  // Rakietka: 3 s lotu w górę (logika przewinięta krokami).
   await page.evaluate(() => window.SowaWChmurach.advance(1.5));
   expect((await state(page)).owl.y).toBeGreaterThan(before + 20);
   await page.evaluate(() => window.SowaWChmurach.advance(2));
@@ -114,6 +121,7 @@ test("Sowa w Chmurach: kózki — Rakietka, Tarcza i Gorączka Monster w komunik
   await page.evaluate(() => {
     window.SowaWChmurach.goat("tarcza");
     window.SowaWChmurach.fever();
+    window.SowaWChmurach.advance(1 / 120);
   });
   await expect(page.locator(".sowie-hud-powerup", { hasText: "Tarcza" })).toBeVisible();
   await expect(page.locator(".sowie-hud-powerup", { hasText: "Gorączka" })).toBeVisible();
@@ -138,8 +146,12 @@ test("Sowa w Chmurach: Niebiański Ocean — 20 s na humbakach z pieśnią, pase
   await expect(page.locator(".chmury-height")).toHaveClass(/is-ocean/);
   await expect.poll(music, { timeout: 10_000 }).toBe("humbak");
   expect((await state(page)).phase).toBe("ocean");
-  // Logika przewinięta krokami: 20 s oceanu (sowa nie spada), potem znowu lot z tej samej wysokości.
-  await page.evaluate(() => window.SowaWChmurach.advance(21));
+  // Logika przewinięta krokami: 20 s oceanu (sowa nie spada), potem znowu lot z tej samej wysokości; klatki logiki
+  // nie ruszają (hold), więc po oceanie sowa nie zdąży spaść przed sprawdzeniem żyć.
+  await page.evaluate(() => {
+    window.SowaWChmurach.hold(true);
+    window.SowaWChmurach.advance(21);
+  });
   expect((await state(page)).phase).toBe("run");
   await expect(page.locator(".sowie-toast-chip", { hasText: "Koniec oceanu" })).toBeVisible();
   await expect(page.locator(".chmury-height")).toContainText("m · Ogródek");
@@ -187,18 +199,24 @@ test("Sowa w Chmurach: przechylanie telefonu — przełącznik, zapis w dokumenc
   await page.evaluate(() => window.SowieCloud.flush());
   expect((await readDoc(project, "sowiegry/profil/sowiegry_gry/jumper")).tilt).toBe(true);
 
-  // Po przeładowaniu przełącznik pamięta ustawienie.
-  await openGame(page, url);
-  await expect(toggle).toHaveAttribute("aria-pressed", "true");
-  await page.locator("[data-start]").click();
-  const x0 = (await state(page)).owl.x;
-  await tiltRight(page);
-  expect((await page.evaluate(() => window.SowaWChmurach.tilt())).angle).toBe(20);
+  expect(errors).toEqual([]);
+
+  // Ponowne wejście (nowa karta tego samego telefonu — WebKit zgłasza przerwane przejściem długie zapytania kanału
+  // Firestore jako błędy strony): przełącznik pamięta ustawienie.
+  const again = await page.context().newPage();
+  await page.close();
+  const errorsAgain = watchErrors(again);
+  await openGame(again, url);
+  await expect(again.locator("[data-tilt]")).toHaveAttribute("aria-pressed", "true");
+  await again.locator("[data-start]").click();
+  const x0 = (await state(again)).owl.x;
+  await tiltRight(again);
+  expect((await again.evaluate(() => window.SowaWChmurach.tilt())).angle).toBe(20);
   // Sowa jedzie w prawo (przesunięcie liczone z przejściem przez krawędź kolumny).
   await expect
-    .poll(async () => (((((await state(page)).owl.x - x0 + 13.5) % 9) + 9) % 9) - 4.5, { timeout: 8000 })
+    .poll(async () => (((((await state(again)).owl.x - x0 + 13.5) % 9) + 9) % 9) - 4.5, { timeout: 8000 })
     .toBeGreaterThan(1);
-  expect(errors).toEqual([]);
+  expect(errorsAgain).toEqual([]);
 });
 
 test("Sowa w Chmurach: przechylanie na iPhonie — odmowa zgody zostawia sterowanie palcem, zgoda włącza", async ({

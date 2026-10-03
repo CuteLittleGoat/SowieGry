@@ -59,6 +59,8 @@ let gameReady = false;
 let lastFrame = 0;
 let lastDragX = 0;
 let lastLeafPopup = -1;
+// Testy e2e: logika wstrzymana w klatkach (hak `hold`) — przesuwa ją tylko `advance`; rysowanie i HUD działają.
+let testHold = false;
 
 const settings = () => cloud?.profile?.()?.settings || {};
 const cosmetic = () => cloud?.profile?.()?.cosmetics?.selected || "none";
@@ -568,7 +570,7 @@ function handleEvents() {
 
 function update(step) {
   if (screen === "playing" && game) {
-    if (shell.state() === "running") {
+    if (shell.state() === "running" && !testHold) {
       game.setKeys(input.isKeyDown("left"), input.isKeyDown("right"));
       game.setTilt(tiltOn && tiltAngle !== null ? tiltSpeed(tiltAngle) : null);
       game.update(step);
@@ -784,6 +786,11 @@ window.SowaWChmurach = Object.freeze({
   // Testy: sowa pod dolną krawędzią ekranu (upadek → ratunek kózki).
   fall: () => {
     if (game?.state.phase === "run") game.state.owl.y = game.state.cameraBottom - 3;
+  },
+  // Testy: wstrzymanie logiki w klatkach (sprawdzanie stanów zależnych od czasu gry bez wyścigu z wolnymi klatkami
+  // przeglądarki — np. WebKit w CI); rysowanie, HUD i komunikaty działają dalej.
+  hold: (on = true) => {
+    testHold = Boolean(on);
   },
   // Testy: przewinięcie logiki gry o `seconds` (krok 1/120 s, bez czekania na klatki — WebKit w CI bywa wolny).
   advance: (seconds) => {
