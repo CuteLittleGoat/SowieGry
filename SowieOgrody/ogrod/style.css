@@ -1,0 +1,369 @@
+/* Sowie Ogrody — nowa odsłona (nowa.html). Telefon: u góry HUD i cel rozdziału, potem ogród, na dole panel
+   z zakładkami (przewijany). Komputer (≥ 900 px): ogród po lewej, panel po prawej. */
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background: var(--niebo-dol);
+  font-family: var(--czcionka-sowia);
+  color: var(--kontur);
+}
+
+.ogrod {
+  position: relative;
+  display: grid;
+  grid-template-rows: auto auto minmax(170px, 34vh) minmax(0, 1fr);
+  height: 100dvh;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: max(8px, env(safe-area-inset-top)) max(10px, env(safe-area-inset-right)) 0
+    max(10px, env(safe-area-inset-left));
+  box-sizing: border-box;
+  gap: 8px;
+}
+
+.ogrod-top {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+}
+
+.ogrod-back {
+  min-height: 44px;
+  text-decoration: none;
+}
+
+.ogrod-leaves {
+  display: grid;
+  justify-items: center;
+  line-height: 1.1;
+}
+
+.ogrod-leaves strong {
+  font-size: 26px;
+  font-variant-numeric: tabular-nums;
+  color: var(--bialy);
+  -webkit-text-stroke: 5px var(--kontur);
+  paint-order: stroke fill;
+}
+
+.ogrod-leaves span {
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+
+.ogrod-water {
+  display: grid;
+  min-height: 44px;
+  justify-items: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.ogrod-water[hidden] {
+  display: none;
+}
+
+.ogrod-water.is-active {
+  background: var(--woda-jasna);
+  box-shadow: 0 0 0 3px var(--woda);
+}
+
+/* Cel rozdziału: nazwa i lista celów z postępem. */
+.ogrod-goal {
+  padding: 8px 12px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.85);
+  box-shadow: 0 2px 8px rgba(59, 47, 74, 0.12);
+}
+
+.ogrod-goal h2 {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 0 0 4px;
+  font-size: 15px;
+}
+
+.ogrod-goal h2 span:last-child {
+  font-size: 13px;
+  color: var(--monstera-ciemna);
+}
+
+.ogrod-goal ul {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 13px;
+}
+
+.ogrod-goal li {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-variant-numeric: tabular-nums;
+}
+
+.ogrod-goal li.is-done {
+  color: var(--monstera-ciemna);
+  text-decoration: line-through;
+}
+
+.ogrod-garden {
+  position: relative;
+  min-height: 0;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 4px 14px rgba(59, 47, 74, 0.15);
+}
+
+.ogrod-garden canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  touch-action: manipulation;
+  cursor: pointer;
+}
+
+/* Dolny panel: zakładki i przewijana lista. */
+.ogrod-sheet {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  min-height: 0;
+  border-radius: 20px 20px 0 0;
+  background: rgba(255, 246, 227, 0.97);
+  box-shadow: 0 -4px 16px rgba(59, 47, 74, 0.15);
+}
+
+.ogrod-tabs {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 4px;
+  padding: 6px 6px 0;
+}
+
+.ogrod-tab {
+  min-height: 44px;
+  border: 0;
+  border-radius: 14px 14px 0 0;
+  background: transparent;
+  font: inherit;
+  font-size: 14px;
+  color: inherit;
+  cursor: pointer;
+}
+
+.ogrod-tab[aria-selected="true"] {
+  background: var(--bialy);
+  box-shadow: 0 -2px 0 var(--monstera) inset;
+}
+
+.ogrod-panel {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+  min-height: 0;
+  padding: 8px 8px calc(8px + env(safe-area-inset-bottom));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.ogrod-card {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 6px 10px;
+  padding: 8px 10px;
+  border-radius: 14px;
+  background: var(--bialy);
+}
+
+/* Karta ulepszenia / węzła drzewka: opis po lewej, przycisk po prawej w tym samym wierszu. */
+.ogrod-card.is-row {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.ogrod-card > .sowie-ui-button,
+.ogrod-card > .ogrod-done {
+  justify-self: end;
+}
+
+.ogrod-card.is-done {
+  opacity: 0.7;
+}
+
+.ogrod-card h3 {
+  margin: 0;
+  font-size: 15px;
+}
+
+.ogrod-card p {
+  margin: 2px 0 0;
+  font-size: 12px;
+  opacity: 0.85;
+}
+
+.ogrod-card-text {
+  min-width: 0;
+}
+
+.ogrod-swatch {
+  width: 28px;
+  height: 28px;
+  border-radius: 50% 50% 8px 8px;
+  background: var(--kolor);
+}
+
+.ogrod-owned {
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  opacity: 0.8;
+}
+
+.ogrod-buy {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr);
+  gap: 6px;
+}
+
+.ogrod-buy .sowie-ui-button,
+.ogrod-card > .sowie-ui-button {
+  min-height: 44px;
+  font-variant-numeric: tabular-nums;
+}
+
+.ogrod-buy .is-primary,
+.ogrod-card > .is-primary {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.ogrod-done {
+  font-size: 13px;
+  color: var(--monstera-ciemna);
+}
+
+.ogrod-subtitle {
+  margin: 6px 2px 0;
+  font-size: 14px;
+}
+
+.ogrod-note,
+.ogrod-empty {
+  margin: 0;
+  font-size: 13px;
+  opacity: 0.85;
+}
+
+.ogrod-prestige {
+  display: grid;
+  gap: 6px;
+  font-size: 13px;
+}
+
+.ogrod-prestige p {
+  margin: 0;
+}
+
+.ogrod-chapters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ogrod-chapters li {
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--szary);
+  font-size: 13px;
+}
+
+.ogrod-chapters li.is-done {
+  background: var(--monstera-jasna);
+}
+
+.ogrod-chapters li.is-current {
+  background: var(--zloto);
+}
+
+.ogrod-stats {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  font-size: 13px;
+}
+
+.ogrod-stats div {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.ogrod-stats dd {
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.ogrod-preview {
+  margin: 0;
+  padding: 4px 12px calc(6px + env(safe-area-inset-bottom));
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+/* Telefon poziomo: ogród po lewej, panel po prawej (mało wysokości). */
+@media (orientation: landscape) and (max-height: 500px) {
+  .ogrod {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-rows: auto auto minmax(0, 1fr);
+  }
+
+  .ogrod-top,
+  .ogrod-goal {
+    grid-column: 1;
+  }
+
+  .ogrod-garden {
+    grid-column: 1;
+    grid-row: 3;
+    margin-bottom: max(6px, env(safe-area-inset-bottom));
+  }
+
+  .ogrod-sheet {
+    grid-column: 2;
+    grid-row: 1 / span 3;
+    border-radius: 20px 20px 0 0;
+  }
+}
+
+/* Komputer: dwie kolumny. */
+@media (min-width: 900px) and (min-height: 501px) {
+  .ogrod {
+    grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+    grid-template-rows: auto auto minmax(0, 1fr);
+    padding-bottom: 16px;
+  }
+
+  .ogrod-top,
+  .ogrod-goal,
+  .ogrod-garden {
+    grid-column: 1;
+  }
+
+  .ogrod-sheet {
+    grid-column: 2;
+    grid-row: 1 / span 3;
+    border-radius: 20px;
+  }
+}

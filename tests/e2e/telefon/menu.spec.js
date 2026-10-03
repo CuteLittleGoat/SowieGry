@@ -47,13 +47,17 @@ test("zakładka „Gry”: pięć kart z rejestru, „Graj” otwiera grę", asy
   await expect(page.locator('[data-game="runner"] .game-card-new')).toHaveText("Nowe!");
   // Sowie Tory (E5) w podglądzie: karta Sowa3 prowadzi do obecnej gry i ma przycisk nowej wersji.
   await expect(page.locator('[data-play="sowa3"]')).toHaveAttribute("href", "Sowa3/");
-  await expect(page.locator("[data-preview]")).toHaveCount(2);
+  await expect(page.locator("[data-preview]")).toHaveCount(3);
   await expect(page.locator('[data-preview="sowa3"]')).toHaveAttribute("href", "SowieTory/");
   await expect(page.locator('[data-preview="sowa3"]')).toContainText("Wypróbuj nową wersję: Sowie Tory");
   // Sowa w Chmurach (E6) w podglądzie: karta SowaJumper prowadzi do obecnej gry i ma przycisk nowej wersji.
   await expect(page.locator('[data-play="jumper"]')).toHaveAttribute("href", "SowaJumper/");
   await expect(page.locator('[data-preview="jumper"]')).toHaveAttribute("href", "SowaWChmurach/");
   await expect(page.locator('[data-preview="jumper"]')).toContainText("Wypróbuj nową wersję: Sowa w Chmurach");
+  // Nowe Sowie Ogrody (E7) w podglądzie: ten sam folder, strona nowa.html.
+  await expect(page.locator('[data-play="ogrody"]')).toHaveAttribute("href", "SowieOgrody/");
+  await expect(page.locator('[data-preview="ogrody"]')).toHaveAttribute("href", "SowieOgrody/nowa.html");
+  await expect(page.locator('[data-preview="ogrody"]')).toContainText("Wypróbuj nową wersję: nowe Sowie Ogrody");
   // Ilustracje rysują postacie z atlasu.
   await page.waitForFunction(() => window.SowieMenu.atlas.ready() && window.SowieMenu.frames() > 3);
 

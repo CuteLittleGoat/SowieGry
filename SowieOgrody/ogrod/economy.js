@@ -153,12 +153,12 @@ export function formatNumber(value) {
   return sign + text + SUFFIXES[index];
 }
 
-/** Czas po polsku: „2 h 05 min”, „4 min 10 s”, „35 s”. */
+/** Czas po polsku: „2 h 05 min”, „4 min 10 s”, „10 min” (pełne minuty), „35 s”. */
 export function formatTime(seconds) {
   const value = Math.max(0, Math.floor(seconds));
   const hours = Math.floor(value / 3600);
   const minutes = Math.floor((value % 3600) / 60);
   if (hours) return `${hours} h ${String(minutes).padStart(2, "0")} min`;
-  if (minutes) return `${minutes} min ${value % 60} s`;
+  if (minutes) return value % 60 ? `${minutes} min ${value % 60} s` : `${minutes} min`;
   return `${value} s`;
 }

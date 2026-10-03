@@ -15,7 +15,9 @@ const legacyGamePages = [
 // Wszystkie gry z rejestru: Sowia Ucieczka (E4, moduły ES na Sowim Silniku; zastąpiła SowaRunner), podglądy
 // Sowich Torów (E5, nowa wersja Sowa3) i Sowy w Chmurach (E6, nowa wersja SowaJumper) oraz obecne gry.
 const newGamePages = ["SowiaUcieczka/index.html", "SowieTory/index.html", "SowaWChmurach/index.html"];
-const gamePages = [...newGamePages, ...legacyGamePages];
+// Podgląd nowej odsłony Sowich Ogrodów (E7) w tym samym folderze: moduł ogrod/main.js.
+const previewPages = ["SowieOgrody/nowa.html"];
+const gamePages = [...newGamePages, ...previewPages, ...legacyGamePages];
 
 test("centralny rejestr zawiera dokładnie pięć gier", async () => {
   const platform = await read("shared/sowie-platform.js");
@@ -48,6 +50,9 @@ test("wszystkie gry ładują platformę; obecne gry — wspólny menedżer powia
   // Sowia Ucieczka: komunikaty z shared/ui (toasts.js), moduł ES main.js.
   for (const path of newGamePages) {
     assert.match(await read(path), /<script type="module" src="main\.js"><\/script>/, path);
+  }
+  for (const path of previewPages) {
+    assert.match(await read(path), /<script type="module" src="ogrod\/main\.js"><\/script>/, path);
   }
   for (const path of legacyGamePages) {
     const html = await read(path);

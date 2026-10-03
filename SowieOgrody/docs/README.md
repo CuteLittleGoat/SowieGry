@@ -3,7 +3,33 @@
 > **W przygotowaniu nowa odsłona** (etap E7 przebudowy SowieGry): rozdziały z celami (Parapet → Balkon → Działka →
 > Basen → Szklarnia → Arboretum), widoczny ogród, telefon Pracu Pracu, ciężarówka Amic, złota kózka i Zatoka
 > Humbaka. Obecny postęp przejdzie do niej bez strat (rośliny i ulepszenia zostaną, a to, czego nie ma w nowej
-> wersji, wróci jako liście i nasiona). Do czasu udostępnienia podglądu poniższa instrukcja dotyczy obecnej gry.
+> wersji, wróci jako liście i nasiona). Poniższa instrukcja (od „Cel gry”) dotyczy obecnej gry.
+
+## Nowa odsłona — wersja podglądowa
+
+Na karcie Sowich Ogrodów w menu stuknij **„Wypróbuj nową wersję: nowe Sowie Ogrody”** (strona `SowieOgrody/nowa.html`).
+Podgląd zapisuje postęp osobno — obecna gra zostaje bez zmian i można do niej wrócić w każdej chwili.
+
+- **Pierwsze wejście:** Twój dotychczasowy ogród przenosi się do nowej odsłony. Okno **„Witaj w nowym ogrodzie!”**
+  mówi, co zostało, i ile liści (oraz nasion) dostajesz za ulepszenia, których w nowej wersji nie ma.
+- **Liście:** stukaj w ogród — każde stuknięcie daje liście (napis „+N” w miejscu palca). U góry widać liczbę liści
+  i ile przybywa na sekundę.
+- **Cel rozdziału:** pod licznikiem jest bieżący rozdział (np. „Rozdział 1/6: Parapet”) i jego cele z postępem.
+  Po wykonaniu wszystkich otwiera się kolejny rozdział z nowymi roślinami i ulepszeniami.
+- **Panel na dole** (na komputerze i telefonie poziomo — po prawej) ma cztery zakładki:
+  - **Rośliny** — kup ×1 (cena na przycisku), ×10 albo **max** (ile Cię stać). Przy 10, 25, 50 i 100 sztukach
+    roślina zmienia wygląd, a przy 25 i 100 produkuje dwa razy więcej;
+  - **Ulepszenia** — od najtańszych; m.in. **Konewka sowy**, po której zakupie u góry pojawia się przycisk
+    **„Podlej”** (ładunki, np. 3/3): podlanie podwaja produkcję na chwilę, a ładunki same się odnawiają;
+  - **Prestiż** — **Wielkie Przesadzanie** (po Szklarni): ogród zaczyna od nowa, ale dostajesz nasiona na stałe
+    ulepszenia w drzewku (Korzenie, Woda, Sen). Przed przesadzeniem gra zapyta, czy na pewno;
+  - **Kolekcja** — rozdziały, gatunki w ogrodzie i statystyki.
+- **Gdy Cię nie ma:** ogród rośnie dalej (połowa zwykłej produkcji, najwyżej 4 godziny). Po powrocie okno
+  **„Witaj z powrotem!”** pokaże, jak długo sowa doglądała ogrodu i ile urosło.
+- Przycisk **Menu** (lewy górny róg) wraca do menu głównego.
+
+Wersja podglądowa jest jeszcze w budowie: wydarzenia (telefon Pracu Pracu, ciężarówka Amic, złota kózka, Zatoka
+Humbaka), samouczek i muzyka dojdą w kolejnych krokach.
 
 ## Cel gry
 

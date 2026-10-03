@@ -301,7 +301,7 @@ test("liczby i czas po polsku", () => {
     "3,2 mld",
     "4 bln",
   ]);
-  assert.deepEqual([35, 250, 3 * 3600 + 5 * 60].map(formatTime), ["35 s", "4 min 10 s", "3 h 05 min"]);
+  assert.deepEqual([35, 250, 600, 3 * 3600 + 5 * 60].map(formatTime), ["35 s", "4 min 10 s", "10 min", "3 h 05 min"]);
 });
 
 // Symulator tempa: bot jak aktywny gracz — `taps` stuknięć/s, podlewa, kupuje ulepszenia (najtańsze), rośliny
