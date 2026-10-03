@@ -328,7 +328,8 @@ async function start() {
   }
   if (!raw) raw = (await cloud?.loadGameState?.(GAME_ID)) ?? null;
   const { state, report } = loadState(raw, now());
-  garden = createGarden({ state, now });
+  // Zdarzenia aktywnej gry (telefon, ciężarówka, kózka, Zatoka) — na ekranie od E7c2; do tego czasu wyłączone.
+  garden = createGarden({ state, now, events: false });
   // Czas nieobecności: od ostatniego zapisu dokumentu (znacznik serwera `updatedAt`), inaczej z zapisu stanu.
   const last = Number(doc.updatedAt) || Number(state.savedAt) || now();
   const offline = garden.applyOffline((now() - last) / 1000);

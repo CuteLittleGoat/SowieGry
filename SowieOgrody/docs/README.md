@@ -29,7 +29,8 @@ Podgląd zapisuje postęp osobno — obecna gra zostaje bez zmian i można do ni
 - Przycisk **Menu** (lewy górny róg) wraca do menu głównego.
 
 Wersja podglądowa jest jeszcze w budowie: wydarzenia (telefon Pracu Pracu, ciężarówka Amic, złota kózka, Zatoka
-Humbaka), samouczek i muzyka dojdą w kolejnych krokach.
+Humbaka) są już przygotowane w logice gry i pojawią się na ekranie w następnej wersji podglądu; samouczek i muzyka
+dojdą w kolejnych krokach.
 
 ## Cel gry
 

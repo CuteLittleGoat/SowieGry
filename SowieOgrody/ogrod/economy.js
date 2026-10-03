@@ -1,6 +1,7 @@
 // Sowie Ogrody — ekonomia (czysta logika, bez DOM): ceny roślin, kamienie milowe, produkcja liści z ulepszeniami,
 // prestiżem i premiami na czas, siła stuknięcia, nasiona Wielkiego Przesadzania, formatowanie liczb.
 import {
+  GARDEN_EVENTS,
   MILESTONE_BOOST,
   MILESTONES,
   OFFLINE,
@@ -79,7 +80,7 @@ export function offlineStats(state) {
 /**
  * Produkcja w chwili `now` (ms): { lps, base (bez premii na czas), perPlant, global, tap, boost (mnożnik premii),
  * blocked (gatunek zastawiony ciężarówką) }. Premie na czas (`state.effects`): `watered` (do kiedy, mnożnik
- * konewki), `boost` (złota kózka: ×3), `pracu` (dzwoniący telefon: ×0,7); `state.blocked` — gatunek pod ciężarówką
+ * konewki), `boost` (złota kózka: ×3), `pracu` (dzwoniący telefon: ×0,7), `frenzy` (kozi szał — w events.js); `state.blocked` — gatunek pod ciężarówką
  * Amic nie produkuje.
  */
 export function production(state, now = 0) {
@@ -100,8 +101,8 @@ export function production(state, now = 0) {
   const effects = state.effects || {};
   let boost = 1;
   if ((effects.watered || 0) > now) boost *= waterStats(state).multiplier;
-  if ((effects.boost || 0) > now) boost *= 3;
-  if ((effects.pracu || 0) > now) boost *= 0.7;
+  if ((effects.boost || 0) > now) boost *= GARDEN_EVENTS.boost.multiplier;
+  if ((effects.pracu || 0) > now) boost *= GARDEN_EVENTS.pracu.penalty;
   const perPlant = {};
   let base = 0;
   for (const plant of PLANTS) {

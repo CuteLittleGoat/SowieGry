@@ -1,5 +1,6 @@
 // Sowie Ogrody — nowa odsłona (Analiza 3, E7a): ekonomia, silnik ogrodu (stuknięcia, zakupy, konewka, rozdziały,
-// Wielkie Przesadzanie, drzewko prestiżu, offline), migracja stanu v2 → v3 i symulator tempa progresji.
+// Wielkie Przesadzanie, drzewko prestiżu, offline), migracja stanu v2 → v3 i symulator tempa progresji (od E7c
+// ze zdarzeniami; same zdarzenia — tests/unit/ogrody-zdarzenia.test.mjs).
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
@@ -304,16 +305,34 @@ test("liczby i czas po polsku", () => {
   assert.deepEqual([35, 250, 600, 3 * 3600 + 5 * 60].map(formatTime), ["35 s", "4 min 10 s", "10 min", "3 h 05 min"]);
 });
 
+// Generator liczb z ziarnem (powtarzalny symulator): mulberry32.
+function seeded(seed) {
+  let value = seed >>> 0;
+  return () => {
+    value = (value + 0x6d2b79f5) >>> 0;
+    let t = value;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
 // Symulator tempa: bot jak aktywny gracz — `taps` stuknięć/s, podlewa, kupuje ulepszenia (najtańsze), rośliny
-// z celów rozdziału, potem najopłacalniejsze; po przesadzaniu inwestuje nasiona. Zwraca czasy (min).
-function simulate({ taps = 2, cycles = 1, hours = 8 } = {}) {
-  const { clock, garden: g } = garden();
+// z celów rozdziału, potem najopłacalniejsze; reaguje na zdarzenia (telefon odrzuca po 2 s, ciężarówkę przegania
+// po 3 s, złotą kózkę łapie w 80% po 1,5 s, Zatokę Humbaka zaczyna od razu i łapie `bay` liści); po przesadzaniu
+// inwestuje nasiona. Zwraca czasy (min) i liczniki zdarzeń.
+function simulate({ taps = 2, cycles = 1, hours = 8, bay = 0.7, seed = 7 } = {}) {
+  const random = seeded(seed);
+  const clock = { now: 0 };
+  const g = createGarden({ state: defaultState(0), now: () => clock.now, random: seeded(seed + 1) });
   const state = g.state;
   const chapters = {};
   const prestiges = [];
   let tapCredit = 0;
+  let truckSince = null;
+  let goatDecided = false;
+  const decided = new Set();
   for (let second = 0; second < hours * 3600; second += 1) {
-    clock.now = second * 1000;
     tapCredit += taps;
     while (tapCredit >= 1) {
       g.tap();
@@ -329,10 +348,33 @@ function simulate({ taps = 2, cycles = 1, hours = 8 } = {}) {
       if (!best || best.cost > state.leaves) break;
       g.buyPlant(best.plant.id, 1);
     }
-    g.update(1);
-    for (const event of g.takeEvents()) if (event.type === "chapter") chapters[event.id] ??= second / 60;
+    // Zdarzenia.
+    if (state.phone && state.phone.time >= 2) g.hangUp();
+    if (state.truck) {
+      truckSince ??= second;
+      if (second - truckSince >= 3) while (state.truck) g.shooTruck();
+    } else truckSince = null;
+    if (state.goat && state.goat.time >= 1.5 && !goatDecided) {
+      goatDecided = true;
+      if (random() < 0.8) g.catchGoat();
+    }
+    if (!state.goat) goatDecided = false;
+    if (state.splash >= 1 && !state.bay) g.startBay();
+    // Krok sekundy (w Zatoce — po 0,1 s, łapanie liści na szczycie lotu).
+    const substeps = state.bay ? 10 : 1;
+    for (let index = 0; index < substeps; index += 1) {
+      clock.now += 1000 / substeps;
+      g.update(1 / substeps);
+      for (const leaf of state.bay?.leaves || []) {
+        if (decided.has(leaf.id) || leaf.vy < 0) continue;
+        decided.add(leaf.id);
+        if (random() < bay) g.catchLeaf(leaf.x, leaf.y);
+      }
+      if (!state.bay) decided.clear();
+    }
+    for (const event of g.takeEvents()) if (event.type === "chapter") chapters[event.id] ??= (second + 1) / 60;
     if (prestigeSeeds(state) > 0) {
-      prestiges.push(second / 60);
+      prestiges.push((second + 1) / 60);
       g.prestige();
       for (let round = 0; round < 20; round += 1) {
         for (const node of ["korzenie", "szybkiStart", "pamiecPlusku", "senni", "studnia", "pamiecNasion"]) {
@@ -342,11 +384,17 @@ function simulate({ taps = 2, cycles = 1, hours = 8 } = {}) {
       if (prestiges.length >= cycles) break;
     }
   }
-  return { chapters, prestiges };
+  return { chapters, prestiges, stats: { ...state.stats } };
 }
 
-test("symulator: aktywna gra — rozdziały po kolei, pierwsze Wielkie Przesadzanie po 2–3 h, kolejne cykle krótsze", () => {
+test("symulator: aktywna gra ze zdarzeniami — rozdziały po kolei, pierwsze Wielkie Przesadzanie po 2–3 h, kolejne cykle krótsze", () => {
   const active = simulate({ taps: 2, cycles: 3 });
+  // Zdarzenia naprawdę się dzieją: kózka co ok. 2 min, Zatoka Humbaka co 5–10 min, telefon i ciężarówka co kilka min.
+  const minutes = active.prestiges[2];
+  const { goats, bays, calls, trucks } = active.stats;
+  assert.ok(goats > minutes / 3 && goats < minutes, `kózki: ${goats} w ${minutes} min`);
+  assert.ok(bays > minutes / 10 && bays < minutes / 5, `Zatoki: ${bays} w ${minutes} min`);
+  assert.ok(calls > minutes / 5 && trucks > minutes / 8, `telefony ${calls}, ciężarówki ${trucks}`);
   const times = CHAPTERS.slice(0, 5).map((chapter) => active.chapters[chapter.id]);
   for (let index = 1; index < times.length; index += 1) assert.ok(times[index] > times[index - 1], `${times}`);
   assert.ok(times[0] < 3, `Parapet po ${times[0]} min`);
@@ -356,6 +404,6 @@ test("symulator: aktywna gra — rozdziały po kolei, pierwsze Wielkie Przesadza
   assert.ok(second - first < first * 0.75, `drugi cykl ${second - first} min`);
   assert.ok(third - second <= second - first, `trzeci cykl ${third - second} min`);
   // Spokojniejsza gra (stuknięcie co 2 s) — wolniej, ale też w kilka godzin.
-  const calm = simulate({ taps: 0.5 });
+  const calm = simulate({ taps: 0.5, bay: 0.4 });
   assert.ok(calm.prestiges[0] > first && calm.prestiges[0] < 240, `spokojnie: ${calm.prestiges[0]} min`);
 });

@@ -1,6 +1,6 @@
 // Sowie Ogrody — silnik ogrodu (czysta logika, bez DOM; ten sam kod w grze i w symulatorze ekonomii).
 // Czas: `now()` w ms (gra — Date.now, symulator — własny zegar); premie na czas trzymamy jako „do kiedy”.
-import { CHAPTERS, PLANTS, PRESTIGE_TREE, UPGRADES } from "./config.js";
+import { CHAPTERS, GARDEN_EVENTS, PLANTS, PRESTIGE_TREE, UPGRADES } from "./config.js";
 import {
   hasUpgrade,
   maxAffordable,
@@ -17,6 +17,7 @@ import {
   waterStats,
 } from "./economy.js";
 import { defaultState } from "./state.js";
+import { createEvents } from "./events.js";
 
 /** Indeks bieżącego rozdziału: pierwszy nieukończony (po ostatnim — ostatni). */
 export function chapterIndex(state) {
@@ -51,12 +52,21 @@ export function goalProgress(state, goal, lps = production(state).base) {
 }
 
 /**
- * createGarden({ state, now }) → silnik: `update(dt)`, `tap()`, `buyPlant(id, ile | "max")`, `buyUpgrade(id)`,
- * `water()`, `prestige()`, `buyPrestige(id)`, `applyOffline(s)`, `goals()`, `bestPlant()`, `takeEvents()`.
- * Zdarzenia: tap { gain }, plant { id, amount, cost, owned, stage? }, milestone { id, owned }, upgrade { id },
- * water { until }, chapter { id, next }, prestige { seeds }, prestigeNode { id, level }, offline { seconds, leaves }.
+ * createGarden({ state, now, random, events = true }) → silnik (`events: false` — bez zdarzeń aktywnej gry): `update(dt)`, `tap()`, `buyPlant(id, ile | "max")`, `buyUpgrade(id)`,
+ * `water()`, `prestige()`, `buyPrestige(id)`, `applyOffline(s)`, `goals()`, `bestPlant()`, `takeEvents()`; zdarzenia
+ * aktywnej gry (events.js): `hangUp()`, `shooTruck()`, `catchGoat()`, `startBay()`, `catchLeaf(x, y, rx, ry)`.
+ * Zdarzenia: tap { gain }, harvest { gain } (kozi szał), plant { id, amount, cost, owned, stage? }, milestone { id,
+ * owned }, upgrade { id }, water { until }, chapter { id, next }, prestige { seeds }, prestigeNode { id, level },
+ * offline { seconds, leaves }; pracu, pracuEnd { auto }, truck { plant }, truckTap { taps, need }, truckEnd { plant },
+ * goat { reward }, goatGone, goatCaught { reward, leaves }, bayReady, bay, bayCatch { gain, combo, x, y },
+ * bayEnd { caught, missed, reward, bestCombo }.
  */
-export function createGarden({ state = defaultState(), now = () => Date.now() } = {}) {
+export function createGarden({
+  state = defaultState(),
+  now = () => Date.now(),
+  random = Math.random,
+  events: withEvents = true,
+} = {}) {
   const events = [];
   const emit = (type, data = {}) => events.push({ type, ...data });
   let autobuyTimer = 0;
@@ -66,6 +76,23 @@ export function createGarden({ state = defaultState(), now = () => Date.now() } 
     state.runLeaves += amount;
     state.lifetimeLeaves += amount;
   }
+
+  // Zbiór jak stuknięcie, ale bez licznika stuknięć (kozi szał).
+  function harvest() {
+    const gain = production(state, now()).tap;
+    addLeaves(gain);
+    emit("harvest", { gain });
+  }
+
+  const happenings = createEvents({
+    state,
+    now,
+    random,
+    emit,
+    isOpen: (id) => chapterOpen(state, id),
+    addLeaves,
+    harvest,
+  });
 
   // Rozdziały: kolejno, dopóki cele bieżącego są wykonane.
   function checkChapters() {
@@ -135,6 +162,7 @@ export function createGarden({ state = defaultState(), now = () => Date.now() } 
     state.effects.watered = start + stats.duration * 1000;
     state.stats.waterings += 1;
     emit("water", { until: state.effects.watered });
+    happenings.addSplash(GARDEN_EVENTS.splash.water);
     checkChapters();
     return true;
   }
@@ -184,11 +212,15 @@ export function createGarden({ state = defaultState(), now = () => Date.now() } 
     return true;
   }
 
-  /** Postęp offline za `seconds` s nieobecności (bez premii na czas): liście = produkcja × czas × skuteczność. */
+  /**
+   * Postęp offline za `seconds` s nieobecności (bez premii na czas): liście = produkcja × czas × skuteczność.
+   * Nieobecność nie jest karana: telefon i ciężarówka znikają, zanim policzymy produkcję.
+   */
   function applyOffline(seconds) {
     const stats = offlineStats(state);
     const used = Math.min(Math.max(0, seconds), stats.cap);
     if (used < 60) return { seconds: 0, leaves: 0 };
+    happenings.clear();
     const leaves = production(state, 0).base * used * stats.efficiency;
     addLeaves(leaves);
     state.stats.offlineLeaves += leaves;
@@ -205,6 +237,7 @@ export function createGarden({ state = defaultState(), now = () => Date.now() } 
   function update(dt) {
     const prod = production(state, now());
     addLeaves(prod.lps * dt);
+    if (withEvents) happenings.update(dt);
     state.stats.bestLps = Math.max(state.stats.bestLps, prod.lps);
     if (hasUpgrade(state, "konewka")) {
       const water = waterStats(state);
@@ -238,6 +271,11 @@ export function createGarden({ state = defaultState(), now = () => Date.now() } 
     buyPrestige,
     applyOffline,
     bestPlant,
+    hangUp: () => happenings.hangUp(),
+    shooTruck: () => happenings.shooTruck(),
+    catchGoat: () => happenings.catchGoat(),
+    startBay: () => happenings.startBay(),
+    catchLeaf: (x, y, rx, ry) => happenings.catchLeaf(x, y, rx, ry),
     goals: () => {
       const chapter = CHAPTERS[chapterIndex(state)];
       const lps = production(state, now()).base;

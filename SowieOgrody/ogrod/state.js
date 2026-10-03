@@ -2,7 +2,7 @@
 // Zasada migracji: nic nie ginie — rośliny przechodzą 1:1 (nowe nazwy), ulepszenia z odpowiednikiem przechodzą,
 // pozostałe są zwracane w liściach (koszt), drzewko prestiżu zwracane w nasionach (do ponownego wydania), woda
 // zamienia się w Plusk-o-metr, ukończone rozdziały wynikają z odblokowanych dawniej stref.
-import { CHAPTERS, SAVE_VERSION, UPGRADES } from "./config.js";
+import { CHAPTERS, GARDEN_EVENTS, SAVE_VERSION, UPGRADES } from "./config.js";
 
 export function defaultState(now = Date.now()) {
   return {
@@ -19,12 +19,20 @@ export function defaultState(now = Date.now()) {
     // Ukończone rozdziały (zostają po Wielkim Przesadzaniu): { parapet: true, … }.
     chapters: {},
     can: { charges: 0, progress: 0 },
-    // Premie na czas (ms, do kiedy): watered — podlanie, boost — złota kózka, pracu — dzwoniący telefon.
-    effects: { watered: 0, boost: 0, pracu: 0 },
+    // Premie na czas (ms, do kiedy): watered — podlanie, boost — złota kózka, pracu — dzwoniący telefon,
+    // frenzy — kozi szał.
+    effects: { watered: 0, boost: 0, pracu: 0, frenzy: 0 },
     // Plusk-o-metr 0–1 (Zatoka Humbaka przy 1).
     splash: 0,
     // Gatunek zastawiony ciężarówką Amic (nie produkuje) albo null.
     blocked: null,
+    // Zdarzenia (events.js): odliczanie do następnych (s gry), dzwoniący telefon { time } i ciężarówka { taps }
+    // (zostają w zapisie), złota kózka { time, reward, dir } i trwająca Zatoka Humbaka (nie przetrwają wczytania).
+    timers: { pracu: GARDEN_EVENTS.pracu.first, truck: GARDEN_EVENTS.truck.first, goat: GARDEN_EVENTS.goat.first },
+    phone: null,
+    truck: null,
+    goat: null,
+    bay: null,
     stats: {
       taps: 0,
       waterings: 0,
@@ -171,10 +179,17 @@ export function loadState(raw, now = Date.now()) {
     chapters: { ...(raw.chapters || {}) },
     can: { ...base.can, ...(raw.can || {}) },
     effects: { ...base.effects, ...(raw.effects || {}) },
+    timers: { ...base.timers, ...(raw.timers || {}) },
     stats: { ...base.stats, ...(raw.stats || {}) },
     achievements: { ...(raw.achievements || {}) },
+    goat: null,
+    bay: null,
   };
   for (const key of ["leaves", "runLeaves", "lifetimeLeaves", "seeds", "splash"]) state[key] = number(state[key]);
+  // Zatoka przerwana zamknięciem gry — Plusk-o-metr wraca pełny (można zagrać jeszcze raz).
+  if (raw.bay) state.splash = 1;
+  if (!state.truck) state.blocked = null;
+  if (!state.phone) state.effects.pracu = 0;
   state.version = SAVE_VERSION;
   return { state, report: null };
 }

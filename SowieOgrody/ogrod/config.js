@@ -80,12 +80,12 @@ export const PLANTS = Object.freeze([
   { id: "slonecznik", name: "Słonecznik", chapter: "dzialka", cost: 1.2e6, prod: 620, growth: 1.15, color: "#f4c542" },
   { id: "storczyk", name: "Storczyk", chapter: "basen", cost: 1.1e7, prod: 3_100, growth: 1.154, color: "#d96faf" },
   { id: "lotos", name: "Lotos", chapter: "basen", cost: 1e8, prod: 16_000, growth: 1.158, color: "#ff9fb2" },
-  { id: "bonsai", name: "Bonsai", chapter: "szklarnia", cost: 1e9, prod: 78_000, growth: 1.162, color: "#3f8b5b" },
+  { id: "bonsai", name: "Bonsai", chapter: "szklarnia", cost: 1.3e9, prod: 78_000, growth: 1.162, color: "#3f8b5b" },
   {
     id: "mutant",
     name: "Mutant monstery",
     chapter: "szklarnia",
-    cost: 9.5e9,
+    cost: 1.25e10,
     prod: 390_000,
     growth: 1.166,
     color: "#2e8b57",
@@ -115,6 +115,46 @@ export const WATER = Object.freeze({ charges: 3, regen: 60, multiplier: 2, durat
 
 // Postęp offline (gdy gra jest zamknięta albo w tle): `efficiency` produkcji, najwyżej `cap` s.
 export const OFFLINE = Object.freeze({ efficiency: 0.5, cap: 4 * 3600, min: 60 });
+
+// Zdarzenia aktywnej gry (Analiza 2, rozdz. 3.4; E7c) — czasy w s gry (nieobecność się nie liczy), `first` — pierwsze
+// po tylu s, potem co `every` [od, do]; `chapter` — od którego rozdziału zdarzenie się pojawia.
+// - pracu: dzwoniący telefon (produkcja × `penalty`, dopóki go nie odrzucisz; Tryb samolotowy — sam po `airplane` s);
+// - truck: ciężarówka Amic zastawia gatunek (nie produkuje) — `taps` stuknięć ją przegania (Kozi kurier — 1);
+// - goat: złota kózka widoczna `visible` s; Kozie szczęście skraca odstępy o `luck` za poziom; premie (GOAT_REWARDS):
+//   `boost` (× `multiplier` na `duration` s), `instant` (tyle s produkcji), `frenzy` (`taps` zbiorów/s przez
+//   `duration` s), `splash.reward` (Plusk-o-metr); każda złapana kózka dodaje też `splash.goat`, podlanie `splash.water`;
+// - bay: Zatoka Humbaka (pełny Plusk-o-metr) — `duration` s, liść z fontanny (`fountain`, ułamki płótna) co `every` s,
+//   prędkość w górę `speed` [od, do], na boki ± `spread`, grawitacja `gravity` (ułamki płótna/s); złapany liść =
+//   `leafSeconds` s produkcji × (1 + `comboStep` × combo, combo do `comboMax`) × (1 + `echo` × Echo humbaka).
+export const GARDEN_EVENTS = Object.freeze({
+  pracu: { chapter: "balkon", first: 150, every: [120, 240], penalty: 0.7, airplane: 10 },
+  truck: { chapter: "dzialka", first: 120, every: [180, 300], taps: 3 },
+  goat: { first: 75, every: [60, 120], visible: 7, luck: 0.15 },
+  boost: { duration: 30, multiplier: 3 },
+  instant: 60,
+  frenzy: { duration: 15, taps: 8 },
+  splash: { water: 0.05, goat: 0.1, reward: 0.4 },
+  bay: {
+    duration: 20,
+    every: 0.45,
+    fountain: [0.5, 0.78],
+    speed: [1, 1.35],
+    spread: 0.18,
+    gravity: 1.15,
+    leafSeconds: 3,
+    comboStep: 0.1,
+    comboMax: 10,
+    echo: 0.25,
+  },
+});
+
+// Premie złotej kózki (losowane po równo); `text` — komunikat po złapaniu.
+export const GOAT_REWARDS = Object.freeze([
+  { id: "boost", text: "Złota kózka: produkcja ×3 przez 30 s!" },
+  { id: "instant", text: "Złota kózka: liście z minuty produkcji!" },
+  { id: "frenzy", text: "Kozi szał! Kózka zbiera liście przez 15 s" },
+  { id: "splash", text: "Złota kózka: Plusk-o-metr +50%!" },
+]);
 
 // Ulepszenia (jednorazowe, na cykl): efekt `{ global?, tap?, tapLps?, chapter?: { id: mnożnik }, plant?: { id:
 // mnożnik }, water?: { multiplier?, regen?, charges? }, autobuy?, airplane? }`.
