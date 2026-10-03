@@ -27,7 +27,7 @@ export function bayMultiplier(state, combo) {
 /**
  * createEvents({ state, now, random, emit, isOpen(chapterId), addLeaves(n), harvest() }) — silnik zdarzeń
  * podpinany w garden.js. Zwraca { update(dt), hangUp(), shooTruck(), catchGoat(), addSplash(n), startBay(),
- * catchLeaf(x, y, rx, ry), clear() }.
+ * catchLeaf(x, y, rx, ry), trigger(rodzaj, opcja), clear() }.
  */
 export function createEvents({ state, now, random = Math.random, emit, isOpen, addLeaves, harvest }) {
   let frenzyCredit = 0;
@@ -74,8 +74,10 @@ export function createEvents({ state, now, random = Math.random, emit, isOpen, a
     return true;
   }
 
-  function spawnGoat() {
-    const reward = GOAT_REWARDS[Math.floor(random() * GOAT_REWARDS.length)].id;
+  function spawnGoat(chosen) {
+    const reward = GOAT_REWARDS.some((item) => item.id === chosen)
+      ? chosen
+      : GOAT_REWARDS[Math.floor(random() * GOAT_REWARDS.length)].id;
     state.goat = { time: 0, reward, dir: random() < 0.5 ? 1 : -1 };
     emit("goat", { reward });
   }
@@ -228,6 +230,15 @@ export function createEvents({ state, now, random = Math.random, emit, isOpen, a
     }
   }
 
+  /** Zdarzenie od razu (testy e2e): "pracu", "truck" albo "goat" (z premią `option`); false, gdy już trwa. */
+  function trigger(type, option) {
+    if (type === "pracu" && !state.phone) ring();
+    else if (type === "truck" && !state.truck) arriveTruck();
+    else if (type === "goat" && !state.goat && !state.bay) spawnGoat(option);
+    else return false;
+    return true;
+  }
+
   /** Nieobecność: telefon milknie, ciężarówka odjeżdża, kózka znika (bez kar i bez komunikatów). */
   function clear() {
     state.phone = null;
@@ -237,5 +248,5 @@ export function createEvents({ state, now, random = Math.random, emit, isOpen, a
     state.goat = null;
   }
 
-  return { update, hangUp, shooTruck, catchGoat, addSplash, startBay, catchLeaf, clear };
+  return { update, hangUp, shooTruck, catchGoat, addSplash, startBay, catchLeaf, trigger, clear };
 }

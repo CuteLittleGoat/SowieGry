@@ -54,7 +54,8 @@ export function goalProgress(state, goal, lps = production(state).base) {
 /**
  * createGarden({ state, now, random, events = true }) → silnik (`events: false` — bez zdarzeń aktywnej gry): `update(dt)`, `tap()`, `buyPlant(id, ile | "max")`, `buyUpgrade(id)`,
  * `water()`, `prestige()`, `buyPrestige(id)`, `applyOffline(s)`, `goals()`, `bestPlant()`, `takeEvents()`; zdarzenia
- * aktywnej gry (events.js): `hangUp()`, `shooTruck()`, `catchGoat()`, `startBay()`, `catchLeaf(x, y, rx, ry)`.
+ * aktywnej gry (events.js): `hangUp()`, `shooTruck()`, `catchGoat()`, `startBay()`, `catchLeaf(x, y, rx, ry)`,
+ * `trigger(rodzaj, opcja)` (zdarzenie od razu — testy e2e).
  * Zdarzenia: tap { gain }, harvest { gain } (kozi szał), plant { id, amount, cost, owned, stage? }, milestone { id,
  * owned }, upgrade { id }, water { until }, chapter { id, next }, prestige { seeds }, prestigeNode { id, level },
  * offline { seconds, leaves }; pracu, pracuEnd { auto }, truck { plant }, truckTap { taps, need }, truckEnd { plant },
@@ -276,6 +277,7 @@ export function createGarden({
     catchGoat: () => happenings.catchGoat(),
     startBay: () => happenings.startBay(),
     catchLeaf: (x, y, rx, ry) => happenings.catchLeaf(x, y, rx, ry),
+    trigger: (type, option) => happenings.trigger(type, option),
     goals: () => {
       const chapter = CHAPTERS[chapterIndex(state)];
       const lps = production(state, now()).base;

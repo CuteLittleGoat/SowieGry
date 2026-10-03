@@ -24,13 +24,23 @@ Podgląd zapisuje postęp osobno — obecna gra zostaje bez zmian i można do ni
   - **Prestiż** — **Wielkie Przesadzanie** (po Szklarni): ogród zaczyna od nowa, ale dostajesz nasiona na stałe
     ulepszenia w drzewku (Korzenie, Woda, Sen). Przed przesadzeniem gra zapyta, czy na pewno;
   - **Kolekcja** — rozdziały, gatunki w ogrodzie i statystyki.
+- **Wydarzenia w ogrodzie** (przycisk pojawia się przy dolnej krawędzi ogrodu; możesz też stuknąć w samą postać):
+  - **telefon Pracu Pracu** (od Balkonu, co kilka minut) — dopóki dzwoni, ogród rośnie o 30% wolniej. Stuknij
+    **„Odrzuć”** albo telefon w lewym górnym rogu. Ulepszenie **Tryb samolotowy** wycisza go samo po 10 s;
+  - **ciężarówka Amic** (od Działki) — zastawia jedną roślinę, która wtedy nic nie daje. Stuknij ją 3 razy
+    (albo przycisk **„Przegoń”**); z ulepszeniem **Kozi kurier** wystarczy raz;
+  - **złota kózka** (co 1–2 minuty) — przebiega przez ogród przez 7 sekund. Złap ją (**„Złap kózkę!”**), a dostaniesz
+    premię: produkcja ×3 na 30 s, liście z minuty produkcji, kozi szał (kózka sama zbiera liście przez 15 s) albo
+    porcję Plusk-o-metru;
+  - **Plusk-o-metr** (prawy górny róg ogrodu) napełnia się przy podlewaniu i łapaniu kózek. Pełny otwiera
+    **Zatokę Humbaka**: przez 20 sekund humbak wyrzuca liście z fontanny — stukaj w nie, zanim spadną. Każdy złapany
+    liść to kilka sekund produkcji, a łapanie pod rząd (combo) daje więcej.
+  Gdy zamkniesz grę, wydarzenia nie przeszkadzają — po powrocie telefonu i ciężarówki już nie ma.
 - **Gdy Cię nie ma:** ogród rośnie dalej (połowa zwykłej produkcji, najwyżej 4 godziny). Po powrocie okno
   **„Witaj z powrotem!”** pokaże, jak długo sowa doglądała ogrodu i ile urosło.
 - Przycisk **Menu** (lewy górny róg) wraca do menu głównego.
 
-Wersja podglądowa jest jeszcze w budowie: wydarzenia (telefon Pracu Pracu, ciężarówka Amic, złota kózka, Zatoka
-Humbaka) są już przygotowane w logice gry i pojawią się na ekranie w następnej wersji podglądu; samouczek i muzyka
-dojdą w kolejnych krokach.
+Wersja podglądowa jest jeszcze w budowie: samouczek, instrukcja w „Jak grać?” i muzyka dojdą w kolejnych krokach.
 
 ## Cel gry
 

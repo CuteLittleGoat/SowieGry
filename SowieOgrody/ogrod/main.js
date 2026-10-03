@@ -11,7 +11,7 @@ import { createToasts, openModal } from "../../shared/ui/index.js";
 import { SPRITES, SVG_BASE } from "../../shared/world/catalog.js";
 import { createOwlAnimator } from "../../shared/world/owl.js";
 import { COLORS } from "../../shared/world/tokens.js";
-import { CHAPTERS, GAME_ID, PLANTS, UPGRADES } from "./config.js";
+import { CHAPTERS, GAME_ID, GARDEN_EVENTS, GOAT_REWARDS, PLANTS, UPGRADES } from "./config.js";
 import { formatNumber, formatTime, hasUpgrade, plantById, prestigeSeeds, production, waterStats } from "./economy.js";
 import { chapterIndex, createGarden } from "./garden.js";
 import { createPanel } from "./panel.js";
@@ -32,6 +32,14 @@ const leavesNode = root.querySelector("[data-leaves]");
 const lpsNode = root.querySelector("[data-lps]");
 const waterButton = root.querySelector("[data-water]");
 const goalNode = root.querySelector("[data-goal]");
+const alertsNode = root.querySelector("[data-alerts]");
+const alertButtons = Object.fromEntries(
+  [...alertsNode.querySelectorAll("[data-alert]")].map((node) => [node.dataset.alert, node]),
+);
+const truckTapsNode = root.querySelector("[data-truck-taps]");
+const splashNode = root.querySelector("[data-splash]");
+const splashFill = root.querySelector("[data-splash-fill]");
+const bayHud = root.querySelector("[data-bay-hud]");
 
 const atlas = createAtlas({ catalog: SPRITES, baseUrl: SVG_BASE });
 const animator = createOwlAnimator();
@@ -50,6 +58,11 @@ let hudTimer = 0;
 let hiddenAt = 0;
 let happyTime = 0;
 let progressTimer = 0;
+// Kozi szał: zbiory sumowane i pokazywane napisem co 0,4 s (8 zbiorów/s to za dużo napisów).
+let harvestGain = 0;
+let harvestTimer = 0;
+// Testy e2e: logika wstrzymana w klatkach (hak `hold`) — przesuwa ją tylko `advance`; rysowanie i HUD działają.
+let testHold = false;
 
 const now = () => Date.now();
 const cosmetic = () => cloud?.profile?.()?.cosmetics?.selected || "none";
@@ -108,6 +121,28 @@ function updateHud() {
     `Podlej rośliny — ładunki ${Math.floor(state.can.charges)} z ${stats.charges}${watered > 0 ? `, podlane jeszcze ${Math.ceil(watered / 1000)} s` : ""}`,
   );
   renderGoals();
+  updateEvents();
+}
+
+// Zdarzenia: przyciski reakcji, Plusk-o-metr, licznik Zatoki Humbaka.
+function updateEvents() {
+  const state = garden.state;
+  alertButtons.pracu.hidden = !state.phone;
+  alertButtons.truck.hidden = !state.truck;
+  if (state.truck) {
+    const need = hasUpgrade(state, "kurier") ? 1 : GARDEN_EVENTS.truck.taps;
+    truckTapsNode.textContent = `${state.truck.taps}/${need}`;
+  }
+  alertButtons.goat.hidden = !state.goat;
+  alertButtons.bay.hidden = !(state.splash >= 1) || Boolean(state.bay);
+  bayHud.hidden = !state.bay;
+  if (state.bay) {
+    bayHud.querySelector("[data-bay-time]").textContent = `${Math.max(0, Math.ceil(state.bay.time))} s`;
+    bayHud.querySelector("[data-bay-combo]").textContent = `combo ×${state.bay.combo}`;
+  }
+  splashNode.hidden = Boolean(state.bay) || (state.splash <= 0 && !hasUpgrade(state, "konewka"));
+  splashFill.style.transform = `scaleX(${Math.min(1, state.splash)})`;
+  splashNode.setAttribute("aria-label", `Plusk-o-metr: ${Math.round(Math.min(1, state.splash) * 100)}%`);
 }
 
 let goalKey = "";
@@ -170,6 +205,77 @@ function handleEvents() {
         save({ immediate: true, flush: true });
         break;
       case "prestigeNode":
+        save({ immediate: true });
+        break;
+      case "pracu":
+        toasts.show("Dzwoni Pracu Pracu! Odrzuć telefon — do tego czasu produkcja −30%", {
+          kind: "warn",
+          key: "pracu",
+          priority: 1,
+        });
+        break;
+      case "pracuEnd":
+        if (event.auto) toasts.show("Tryb samolotowy wyciszył telefon Pracu Pracu", { kind: "info", key: "samolot" });
+        else {
+          const target = renderer.hits().phone;
+          renderer.popup("Cisza!", target?.x ?? 40, target?.y ?? 40, COLORS.bialy, 18);
+        }
+        break;
+      case "truck":
+        toasts.show(`Ciężarówka Amic zastawiła: ${plantById(event.plant).name}! Stuknij ją, żeby odjechała`, {
+          kind: "warn",
+          key: "ciezarowka",
+          priority: 1,
+        });
+        break;
+      case "truckTap": {
+        const target = renderer.hits().truck;
+        if (target)
+          renderer.popup(`${event.taps}/${event.need}`, target.x, target.y - target.r * 0.6, COLORS.bialy, 18);
+        break;
+      }
+      case "truckEnd":
+        toasts.show("Ciężarówka Amic odjechała — grządka wolna!", { kind: "success", key: "ciezarowka-koniec" });
+        break;
+      case "goatCaught": {
+        const reward = GOAT_REWARDS.find((item) => item.id === event.reward);
+        toasts.show(reward.text, { kind: "reward", key: `kozka-${event.reward}`, priority: 2 });
+        const size = renderer.size();
+        if (event.leaves)
+          renderer.popup(`+${formatNumber(event.leaves)}`, size.width / 2, size.height * 0.4, COLORS.zloto, 24);
+        renderer.burst(size.width / 2, size.height * 0.5, 12, COLORS.zloto);
+        happyTime = 1;
+        break;
+      }
+      case "harvest":
+        harvestGain += event.gain;
+        break;
+      case "bayReady":
+        toasts.show("Plusk-o-metr pełny! Zatoka Humbaka czeka", { kind: "reward", key: "zatoka-gotowa", priority: 2 });
+        break;
+      case "bay":
+        toasts.show("Zatoka Humbaka! Łap liście z fontanny", { kind: "info", key: "zatoka" });
+        break;
+      case "bayCatch": {
+        const size = renderer.size();
+        const x = event.x * size.width;
+        const y = event.y * size.height;
+        renderer.popup(
+          `+${formatNumber(event.gain)}${event.combo > 1 ? ` ×${event.combo}` : ""}`,
+          x,
+          y,
+          COLORS.bialy,
+          18,
+        );
+        renderer.burst(x, y, 5);
+        break;
+      }
+      case "bayEnd":
+        toasts.show(`Zatoka Humbaka: złapane liście — ${event.caught}, razem +${formatNumber(event.reward)}`, {
+          kind: "reward",
+          key: "zatoka-koniec",
+          priority: 2,
+        });
         save({ immediate: true });
         break;
       default:
@@ -241,9 +347,42 @@ function tapAt(x, y) {
   happyTime = 0.4;
 }
 
+// Stuknięcie w płótno: w Zatoce Humbaka — łapanie liścia; inaczej najpierw zdarzenie pod palcem (kózka, telefon,
+// ciężarówka), a na pustym miejscu — zbiór liści.
+function pointAt(x, y) {
+  if (!ready) return;
+  const state = garden.state;
+  if (state.bay) {
+    const size = renderer.size();
+    garden.catchLeaf(x / size.width, y / size.height, 40 / size.width, 40 / size.height);
+  } else {
+    const target = renderer.hit(x, y);
+    if (target === "goat") garden.catchGoat();
+    else if (target === "phone") garden.hangUp();
+    else if (target === "truck") garden.shooTruck();
+    else {
+      tapAt(x, y);
+      return;
+    }
+  }
+  handleEvents();
+  updateEvents();
+}
+
 canvas.addEventListener("pointerdown", (event) => {
   const rect = canvas.getBoundingClientRect();
-  tapAt(event.clientX - rect.left, event.clientY - rect.top);
+  pointAt(event.clientX - rect.left, event.clientY - rect.top);
+});
+alertsNode.addEventListener("click", (event) => {
+  const button = event.target.closest("[data-alert]");
+  if (!button || !ready) return;
+  const type = button.dataset.alert;
+  if (type === "pracu") garden.hangUp();
+  else if (type === "truck") garden.shooTruck();
+  else if (type === "goat") garden.catchGoat();
+  else if (type === "bay") garden.startBay();
+  handleEvents();
+  updateEvents();
 });
 canvas.addEventListener("keydown", (event) => {
   if (event.key !== " " && event.key !== "Enter") return;
@@ -258,7 +397,7 @@ waterButton.addEventListener("click", () => garden.water());
 function frame(time) {
   const dt = lastFrame ? Math.min(0.25, (time - lastFrame) / 1000) : 0;
   lastFrame = time;
-  if (ready) {
+  if (ready && !testHold) {
     garden.update(dt);
     handleEvents();
     saveTimer += dt;
@@ -271,6 +410,19 @@ function frame(time) {
       progressTimer = 0;
       reportProgress();
     }
+  }
+  harvestTimer += dt;
+  if (harvestGain > 0 && harvestTimer >= 0.4) {
+    const size = renderer.size();
+    renderer.popup(
+      `+${formatNumber(harvestGain)}`,
+      size.width * (0.3 + Math.random() * 0.4),
+      size.height * 0.55,
+      COLORS.zloto,
+      16,
+    );
+    harvestGain = 0;
+    harvestTimer = 0;
   }
   happyTime = Math.max(0, happyTime - dt);
   animator.set(happyTime > 0 ? "radosc" : "stoi");
@@ -328,8 +480,7 @@ async function start() {
   }
   if (!raw) raw = (await cloud?.loadGameState?.(GAME_ID)) ?? null;
   const { state, report } = loadState(raw, now());
-  // Zdarzenia aktywnej gry (telefon, ciężarówka, kózka, Zatoka) — na ekranie od E7c2; do tego czasu wyłączone.
-  garden = createGarden({ state, now, events: false });
+  garden = createGarden({ state, now });
   // Czas nieobecności: od ostatniego zapisu dokumentu (znacznik serwera `updatedAt`), inaczej z zapisu stanu.
   const last = Number(doc.updatedAt) || Number(state.savedAt) || now();
   const offline = garden.applyOffline((now() - last) / 1000);
@@ -386,4 +537,35 @@ window.SowieOgrody = Object.freeze({
   tab: (id) => panel.setTab(id),
   plants: () => PLANTS.map((plant) => plant.id),
   save: () => save({ flush: true }),
+  // Zdarzenia (E7c2): stan, wywołanie od razu, pełny Plusk-o-metr, miejsca do stuknięcia na płótnie.
+  events: () => {
+    const state = garden.state;
+    return JSON.parse(
+      JSON.stringify({
+        phone: state.phone,
+        truck: state.truck,
+        blocked: state.blocked,
+        goat: state.goat,
+        bay: state.bay,
+        splash: state.splash,
+        timers: state.timers,
+        effects: state.effects,
+      }),
+    );
+  },
+  trigger: (type, option) => {
+    const done = garden.trigger(type, option);
+    handleEvents();
+    updateHud();
+    return done;
+  },
+  fillSplash: () => {
+    garden.state.splash = 1;
+    updateHud();
+  },
+  hit: (name) => renderer.hits()[name] ?? null,
+  // Testy: wstrzymanie logiki w klatkach (np. liście Zatoki stoją w miejscu do stuknięcia); `advance` działa dalej.
+  hold: (on = true) => {
+    testHold = Boolean(on);
+  },
 });

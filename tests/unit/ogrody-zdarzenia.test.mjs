@@ -254,3 +254,21 @@ test("silnik bez zdarzeń (`events: false`): ani telefonu, ani ciężarówki, an
   assert.equal(g.state.goat, null);
   assert.deepEqual(g.state.timers, defaultState(0).timers);
 });
+
+test("trigger (testy e2e): telefon, ciężarówka i kózka z wybraną premią od razu; drugi raz — nie", () => {
+  const { g, state } = garden({ state: open(defaultState(0), "parapet") });
+  state.plants.monstera = 20;
+  assert.equal(g.trigger("pracu"), true);
+  assert.ok(state.phone);
+  assert.equal(g.trigger("pracu"), false);
+  assert.equal(g.trigger("truck"), true);
+  assert.equal(state.blocked, "monstera");
+  assert.equal(g.trigger("goat", "instant"), true);
+  assert.equal(state.goat.reward, "instant");
+  assert.equal(g.trigger("goat", "boost"), false);
+  assert.equal(g.trigger("burza"), false);
+  assert.deepEqual(
+    g.takeEvents().map((event) => event.type),
+    ["pracu", "truck", "goat"],
+  );
+});

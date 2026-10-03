@@ -725,7 +725,7 @@ Zależności deweloperskie są przypięte tam, gdzie wersja wpływa na przegląd
 - odnośnik `#jak-grac-sowa3` otwiera zakładkę i sekcję Sowa3 w widoku; klawiatura na pasku zakładek (→, End, Home) z adresem `#galeria` i bez `#` dla „Gry”;
 - galeria: dwa cele Akademii (1500 m, 300 m) odblokowują zdjęcia → „3 / 30”, 3 „Nowe!”, 27 zablokowanych z kłódką i paskiem; przeglądarka: przesunięcie w lewo → „2 / 3”, w prawo → „1 / 3”, podwójne stuknięcie → powiększenie 2,5×, kolejne → 1×, przesunięcie w dół zamyka; zostaje 1 „Nowe!” (gesty jako zdarzenia `PointerEvent` na scenie — tak samo w Chromium i WebKit);
 - zakładka „Sowa”: przycisk ustawień w nagłówku otwiera zakładkę z fokusem na `#ustawienia`; „Kokardka” wybrana, „Okulary” zablokowane z podpowiedzią „Zbierz 20 liści monster (0 / 20)”; Tryb Przytulny, Efekty (klasa `sowie-reduced-effects`), suwak muzyki 0 → profil `{ cosmetics.selected: "bow", cozy: true, reducedEffects: true, volumeMusic: 0, music: false }`; okno „Rekordy — SowaRunner” z chipem Chaos; „Wyloguj to urządzenie” → „Anuluj” zostawia, „Wyloguj” przeładowuje stronę z ekranem hasła (`unlocked: false`);
-- 320 × 568: w każdej zakładce brak przewijania w bok i żadnego przycisku, odnośnika, suwaka ani zakładki mniejszego niż 48 × 48 px.
+- 320 × 568: w każdej zakładce brak przewijania w bok i żadnego przycisku, odnośnika, suwaka ani zakładki mniejszego niż 48 × 48 px (mierzone po zakończeniu animacji o skończonej długości — np. obrót nowego zdjęcia w Galerii trwa 0,9 s i w trakcie kafelek jest wizualnie wąski; nieskończone animacje tła są pomijane).
 
 `start.spec.js`:
 
@@ -793,7 +793,7 @@ Zależności deweloperskie są przypięte tam, gdzie wersja wpływa na przegląd
 
 ### Testy nowej odsłony Sowich Ogrodów (`tests/unit/ogrody-ekonomia.test.mjs`, `tests/unit/ogrody-zdarzenia.test.mjs`, `tests/e2e/telefon/ogrody-nowe.spec.js`, E7)
 
-Opis w `SowieOgrody/docs/Documentation.md`, rozdział „Nowa odsłona” → „Testy (E7a, E7b, E7c1)”: ekonomia, silnik ogrodu, migracja stanu v2 → v3, zdarzenia aktywnej gry (telefon Pracu, ciężarówka Amic, złota kózka, Plusk-o-metr, Zatoka Humbaka) i symulator tempa ze zdarzeniami (pierwsze Wielkie Przesadzanie po 2–3 h aktywnej gry); e2e strony podglądu `SowieOgrody/nowa.html` — stuknięcia, zakupy, cele, zakładki, konewka, przeniesienie stanu v2 z zapisem w polu `preview` (emulator), powrót z tła, najmniejszy telefon.
+Opis w `SowieOgrody/docs/Documentation.md`, rozdział „Nowa odsłona” → „Testy (E7a, E7b, E7c1)”: ekonomia, silnik ogrodu, migracja stanu v2 → v3, zdarzenia aktywnej gry (telefon Pracu, ciężarówka Amic, złota kózka, Plusk-o-metr, Zatoka Humbaka) i symulator tempa ze zdarzeniami (pierwsze Wielkie Przesadzanie po 2–3 h aktywnej gry); e2e strony podglądu `SowieOgrody/nowa.html` — stuknięcia, zakupy, cele, zakładki, konewka, przeniesienie stanu v2 z zapisem w polu `preview` (emulator), powrót z tła, najmniejszy telefon, zdarzenia na ekranie (telefon, ciężarówka, złota kózka, Zatoka Humbaka).
 
 ### Testy Sowiej Ucieczki (`tests/unit/ucieczka.test.mjs`, E4)
 

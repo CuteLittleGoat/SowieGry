@@ -131,6 +131,108 @@ body {
   cursor: pointer;
 }
 
+/* Zdarzenia nad ogrodem: przyciski reakcji przy dolnej krawędzi, Plusk-o-metr w prawym górnym rogu, licznik
+   Zatoki Humbaka u góry na środku. */
+.ogrod-alerts {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  left: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+  pointer-events: none;
+}
+
+.ogrod-alert {
+  min-height: 44px;
+  padding: 6px 10px;
+  font-size: 13px;
+  white-space: nowrap;
+  pointer-events: auto;
+  box-shadow: 0 3px 10px rgba(59, 47, 74, 0.25);
+}
+
+.ogrod-alert[hidden],
+.ogrod-splash[hidden],
+.ogrod-bay-hud[hidden] {
+  display: none;
+}
+
+.ogrod-alert.is-pracu {
+  background: var(--pracu);
+  color: var(--bialy);
+}
+
+.ogrod-alert.is-truck {
+  background: var(--amic-czerwony);
+  color: var(--bialy);
+}
+
+.ogrod-alert.is-goat {
+  background: var(--zloto);
+  animation: ogrod-pulse 0.7s ease-in-out infinite alternate;
+}
+
+/* Pulsuje poświata, a nie rozmiar — przycisk stoi w miejscu (łatwiej trafić palcem). */
+@keyframes ogrod-pulse {
+  to {
+    box-shadow:
+      0 0 0 6px rgba(255, 210, 74, 0.55),
+      0 3px 10px rgba(59, 47, 74, 0.25);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ogrod-alert.is-goat {
+    animation: none;
+  }
+}
+
+.ogrod-splash {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: grid;
+  gap: 3px;
+  width: 112px;
+  padding: 4px 10px 6px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.85);
+  font-size: 11px;
+  pointer-events: none;
+}
+
+.ogrod-splash-bar {
+  height: 6px;
+  overflow: hidden;
+  border-radius: 3px;
+  background: var(--woda-jasna);
+}
+
+.ogrod-splash-bar i {
+  display: block;
+  height: 100%;
+  background: var(--woda);
+  transform-origin: left;
+}
+
+.ogrod-bay-hud {
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  display: flex;
+  gap: 12px;
+  padding: 4px 14px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.9);
+  font-size: 15px;
+  font-variant-numeric: tabular-nums;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
 /* Dolny panel: zakładki i przewijana lista. */
 .ogrod-sheet {
   display: grid;

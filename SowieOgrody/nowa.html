@@ -44,6 +44,51 @@
       <section class="ogrod-goal" data-goal aria-live="polite"></section>
       <div class="ogrod-garden">
         <canvas data-canvas tabindex="0" aria-label="Ogród — stuknij, żeby zebrać liście"></canvas>
+        <div class="ogrod-splash" data-splash hidden>
+          <span>Plusk-o-metr</span>
+          <span class="ogrod-splash-bar"><i data-splash-fill></i></span>
+        </div>
+        <div class="ogrod-bay-hud" data-bay-hud hidden aria-live="polite">
+          <span data-bay-time>20 s</span><span data-bay-combo>combo ×0</span>
+        </div>
+        <div class="ogrod-alerts" data-alerts>
+          <button
+            type="button"
+            class="sowie-ui-button ogrod-alert is-pracu"
+            data-alert="pracu"
+            aria-label="Odrzuć telefon Pracu Pracu"
+            hidden
+          >
+            📵 Odrzuć
+          </button>
+          <button
+            type="button"
+            class="sowie-ui-button ogrod-alert is-truck"
+            data-alert="truck"
+            aria-label="Przegoń ciężarówkę Amic"
+            hidden
+          >
+            🚚 Przegoń <span data-truck-taps>0/3</span>
+          </button>
+          <button
+            type="button"
+            class="sowie-ui-button ogrod-alert is-goat"
+            data-alert="goat"
+            aria-label="Złap kózkę — złotą, zanim ucieknie"
+            hidden
+          >
+            🐐 Złap kózkę!
+          </button>
+          <button
+            type="button"
+            class="sowie-ui-button is-primary ogrod-alert is-bay"
+            data-alert="bay"
+            aria-label="Zatoka Humbaka — zagraj"
+            hidden
+          >
+            🐋 Zatoka Humbaka!
+          </button>
+        </div>
       </div>
       <section class="ogrod-sheet" aria-label="Panel ogrodu">
         <nav class="ogrod-tabs" data-tabs role="tablist" aria-label="Zakładki"></nav>

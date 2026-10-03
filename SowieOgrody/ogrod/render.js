@@ -3,7 +3,7 @@
 // krople po podlaniu, napisy „+N” po stuknięciu i cząsteczki liści.
 import { drawOwl } from "../../shared/world/owl.js";
 import { COLORS, font } from "../../shared/world/tokens.js";
-import { CHAPTERS, PLANTS } from "./config.js";
+import { CHAPTERS, GARDEN_EVENTS, PLANTS } from "./config.js";
 import { formatNumber, plantStage } from "./economy.js";
 import { chapterIndex } from "./garden.js";
 
@@ -198,6 +198,122 @@ export function createGardenRenderer({ canvas, atlas }) {
     });
   }
 
+  // ---------- Zdarzenia (E7c) ----------
+  // Miejsca do stuknięcia (piksele CSS): telefon, ciężarówka, kózka — `hit(x, y)` w main.js.
+  const hits = { phone: null, truck: null, goat: null };
+
+  // Telefon Pracu Pracu dzwoni w lewym górnym rogu ogrodu: drży, rozchodzą się fale dzwonka.
+  function phone(state, time) {
+    hits.phone = null;
+    if (!state.phone) return;
+    const unit = gardenUnit(size.width, size.height);
+    const box = 44 * unit;
+    const x = 12 + box / 2;
+    const y = 12 + box / 2;
+    context.strokeStyle = COLORS.pracu;
+    context.lineWidth = 3;
+    for (let ring = 0; ring < 2; ring += 1) {
+      const phase = (time * 1.5 + ring * 0.5) % 1;
+      context.globalAlpha = 1 - phase;
+      context.beginPath();
+      context.arc(x, y, box * (0.55 + phase * 0.5), -0.9, 0.9);
+      context.stroke();
+    }
+    context.globalAlpha = 1;
+    const rotation = Math.sin(time * 38) * 0.14;
+    if (!(atlas?.ready?.() && atlas.draw(context, "pracu-telefon", x, y, { width: box, height: box, rotation }))) {
+      context.fillStyle = COLORS.pracu;
+      roundRect(x - box * 0.3, y - box * 0.45, box * 0.6, box * 0.9, 8);
+    }
+    hits.phone = { x, y, r: box * 0.75 };
+  }
+
+  // Ciężarówka Amic (cysterna) stoi na zastawionej grządce; nad nią licznik stuknięć.
+  function truck(state) {
+    hits.truck = null;
+    if (!state.truck || !state.blocked) return;
+    const spot = spots.get(state.blocked);
+    if (!spot) return;
+    const unit = gardenUnit(size.width, size.height);
+    const width = Math.min(size.width * 0.34, 120 * unit);
+    const height = width / 2;
+    if (!(atlas?.ready?.() && atlas.draw(context, "amic-cysterna", spot.x, spot.y, { width, height }))) {
+      context.fillStyle = COLORS.amicCzerwony;
+      roundRect(spot.x - width / 2, spot.y - height, width, height * 0.8, 8);
+    }
+    hits.truck = { x: spot.x, y: spot.y - height / 2, r: width / 2 };
+  }
+
+  // Złota kózka przebiega przez ogród (7 s), podskakując; złota poświata.
+  function goat(state, visible) {
+    hits.goat = null;
+    if (!state.goat) return;
+    const unit = gardenUnit(size.width, size.height);
+    const box = 54 * unit;
+    const share = Math.min(1, state.goat.time / visible);
+    const span = size.width + box * 2;
+    const x = state.goat.dir > 0 ? -box + share * span : size.width + box - share * span;
+    const hop = Math.abs(Math.sin(share * Math.PI * 7));
+    const y = size.height * 0.64 - hop * 26 * unit;
+    const glow = context.createRadialGradient(x, y - box * 0.45, 4, x, y - box * 0.45, box * 0.9);
+    glow.addColorStop(0, "rgba(255, 210, 74, 0.7)");
+    glow.addColorStop(1, "rgba(255, 210, 74, 0)");
+    context.fillStyle = glow;
+    context.beginPath();
+    context.arc(x, y - box * 0.45, box * 0.9, 0, Math.PI * 2);
+    context.fill();
+    const name = hop > 0.3 ? "kozka-sprezynka-skok" : "kozka-sprezynka";
+    if (!(
+      atlas?.ready?.() && atlas.draw(context, name, x, y, { width: box, height: box, flipX: state.goat.dir < 0 })
+    )) {
+      context.fillStyle = COLORS.zloto;
+      roundRect(x - box * 0.4, y - box * 0.7, box * 0.8, box * 0.6, 10);
+    }
+    hits.goat = { x, y: y - box * 0.45, r: box * 0.8 };
+  }
+
+  // Zatoka Humbaka: woda zasłania ogród, humbak w fontannie u dołu, liście lecą (współrzędne 0–1).
+  function bay(state, time, fountain) {
+    if (!state.bay) return;
+    const { width, height } = size;
+    const water = context.createLinearGradient(0, 0, 0, height);
+    water.addColorStop(0, "rgba(191, 233, 255, 0.92)");
+    water.addColorStop(1, "rgba(92, 200, 232, 0.95)");
+    context.fillStyle = water;
+    context.fillRect(0, 0, width, height);
+    context.fillStyle = "rgba(255, 255, 255, 0.5)";
+    for (let wave = 0; wave < 3; wave += 1) {
+      const y = height * (0.3 + wave * 0.2);
+      context.beginPath();
+      for (let x = 0; x <= width; x += 12) context.lineTo(x, y + Math.sin(x / 30 + time * 2 + wave) * 4);
+      context.lineTo(width, y + 6);
+      context.lineTo(0, y + 6);
+      context.fill();
+    }
+    // Humbak tuż pod fontanną (plusk wychodzi z grzbietu w punkcie `fountain`), cały w kadrze.
+    const whaleWidth = Math.min(width * 0.46, height * (1 - fountain[1]) * 2.4, 220);
+    const [fx, fy] = fountain;
+    if (atlas?.ready?.()) {
+      atlas.draw(context, "humbak", fx * width, fy * height + whaleWidth * 0.18, {
+        width: whaleWidth,
+        height: whaleWidth / 2,
+      });
+      atlas.draw(context, "plusk", fx * width, fy * height, { width: whaleWidth * 0.42, height: whaleWidth * 0.42 });
+    }
+    context.fillStyle = COLORS.monstera;
+    for (const leaf of state.bay.leaves) {
+      const x = leaf.x * width;
+      const y = leaf.y * height;
+      if (!(
+        atlas?.ready?.() && atlas.draw(context, "lisc-zielony", x, y, { width: 30, height: 30, rotation: leaf.vx * 3 })
+      )) {
+        context.beginPath();
+        context.ellipse(x, y, 12, 8, leaf.vx * 3, 0, Math.PI * 2);
+        context.fill();
+      }
+    }
+  }
+
   function water(state, now, time) {
     if ((state.effects?.watered || 0) <= now) return;
     const { width, height } = size;
@@ -246,6 +362,16 @@ export function createGardenRenderer({ canvas, atlas }) {
     resize,
     spots,
     size: () => size,
+    /** Miejsca zdarzeń do stuknięcia (piksele CSS): { phone, truck, goat } — { x, y, r } albo null. */
+    hits: () => ({ ...hits }),
+    /** Co jest pod palcem: "goat" | "phone" | "truck" | null (kózka pierwsza — ucieka). */
+    hit(x, y) {
+      for (const name of ["goat", "phone", "truck"]) {
+        const target = hits[name];
+        if (target && Math.hypot(x - target.x, y - target.y) <= target.r) return name;
+      }
+      return null;
+    },
     popup(text, x, y, color = COLORS.bialy, textSize = 20) {
       popups.push({ text, x, y, color, size: textSize, age: 0 });
       if (popups.length > 12) popups.shift();
@@ -271,7 +397,11 @@ export function createGardenRenderer({ canvas, atlas }) {
       background(chapter.id, time);
       owl(animator, cosmetic);
       shelf(state, time);
+      truck(state);
+      goat(state, GARDEN_EVENTS.goat.visible);
+      phone(state, time);
       water(state, now, time);
+      bay(state, time, GARDEN_EVENTS.bay.fountain);
       effects(dt);
     },
   };

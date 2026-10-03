@@ -175,3 +175,100 @@ test.describe("nowe Sowie Ogrody — najmniejszy telefon (320 × 568)", () => {
     expect(errors).toEqual([]);
   });
 });
+
+// Zdarzenia aktywnej gry (E7c2): wywoływane od razu hakiem `trigger`, obsługiwane przyciskami i stuknięciem w płótno.
+const ogrod = (page, call, ...args) => page.evaluate(([name, rest]) => window.SowieOgrody[name](...rest), [call, args]);
+
+async function grownGarden(page) {
+  await openGarden(page);
+  await page.evaluate(() => {
+    window.SowieOgrody.give(1e6);
+    window.SowieOgrody.buy("monstera", 30);
+    window.SowieOgrody.buy("pilea", 10);
+  });
+}
+
+async function clickCanvas(page, point) {
+  const box = await page.locator("[data-canvas]").boundingBox();
+  await page.mouse.click(box.x + point.x, box.y + point.y);
+}
+
+test("nowe Sowie Ogrody: telefon Pracu (produkcja −30% do odrzucenia) i ciężarówka Amic (3 stuknięcia)", async ({
+  page,
+}) => {
+  const errors = watchErrors(page);
+  await grownGarden(page);
+  const full = await ogrod(page, "production");
+  expect(await ogrod(page, "trigger", "pracu")).toBe(true);
+  const phone = page.locator('[data-alert="pracu"]');
+  await expect(phone).toBeVisible();
+  await expect(page.locator(".sowie-toast-chip", { hasText: "Dzwoni Pracu Pracu!" })).toBeVisible();
+  expect((await ogrod(page, "production")) / full).toBeCloseTo(0.7, 5);
+  await phone.click();
+  await expect(phone).toBeHidden();
+  expect((await ogrod(page, "production")) / full).toBeCloseTo(1, 5);
+
+  // Ciężarówka: dwa stuknięcia w cysternę na płótnie, trzecie przyciskiem.
+  expect(await ogrod(page, "trigger", "truck")).toBe(true);
+  const truck = page.locator('[data-alert="truck"]');
+  await expect(truck).toContainText("0/3");
+  const blocked = (await ogrod(page, "events")).blocked;
+  expect(["monstera", "pilea"]).toContain(blocked);
+  await expect.poll(() => ogrod(page, "hit", "truck")).not.toBeNull();
+  const spot = await ogrod(page, "hit", "truck");
+  await clickCanvas(page, spot);
+  await clickCanvas(page, spot);
+  await expect(truck).toContainText("2/3");
+  expect((await ogrod(page, "state")).stats.taps).toBe(0);
+  await truck.click();
+  await expect(truck).toBeHidden();
+  // Komunikat o odjeździe ma najniższy priorytet (w pełnej kolejce może ustąpić) — sprawdzamy stan ogrodu.
+  const after = await ogrod(page, "events");
+  expect(after.blocked).toBeNull();
+  expect(after.truck).toBeNull();
+  expect((await ogrod(page, "production")) / full).toBeCloseTo(1, 5);
+  expect(errors).toEqual([]);
+});
+
+test("nowe Sowie Ogrody: złota kózka (×3 na 30 s), Plusk-o-metr i Zatoka Humbaka z łapaniem liści", async ({
+  page,
+}) => {
+  const errors = watchErrors(page);
+  await grownGarden(page);
+  const full = await ogrod(page, "production");
+  expect(await ogrod(page, "trigger", "goat", "boost")).toBe(true);
+  const goat = page.locator('[data-alert="goat"]');
+  await expect(goat).toBeVisible();
+  await goat.click();
+  await expect(goat).toBeHidden();
+  await expect(page.locator(".sowie-toast-chip", { hasText: "Złota kózka: produkcja ×3 przez 30 s!" })).toBeVisible();
+  expect((await ogrod(page, "production")) / full).toBeCloseTo(3, 5);
+  expect((await ogrod(page, "events")).splash).toBeCloseTo(0.1, 5);
+
+  // Plusk-o-metr pełny → przycisk Zatoki; liście z fontanny (logika wstrzymana — liść stoi w miejscu stuknięcia).
+  await ogrod(page, "fillSplash");
+  const bayButton = page.locator('[data-alert="bay"]');
+  await expect(bayButton).toBeVisible();
+  await bayButton.click();
+  await expect(bayButton).toBeHidden();
+  const hud = page.locator("[data-bay-hud]");
+  await expect(hud).toBeVisible();
+  await ogrod(page, "hold", true);
+  await ogrod(page, "advance", 0.5);
+  const { bay } = await ogrod(page, "events");
+  expect(bay.leaves.length).toBeGreaterThan(0);
+  const box = await page.locator("[data-canvas]").boundingBox();
+  const leaf = bay.leaves[0];
+  const before = (await ogrod(page, "state")).leaves;
+  await clickCanvas(page, { x: leaf.x * box.width, y: leaf.y * box.height });
+  await expect(hud).toContainText("combo ×1");
+  expect((await ogrod(page, "state")).leaves).toBeGreaterThan(before);
+  // Koniec po 20 s: komunikat z liczbą złapanych liści.
+  await ogrod(page, "advance", 21);
+  await expect(hud).toBeHidden();
+  await expect(page.locator(".sowie-toast-chip", { hasText: "Zatoka Humbaka: złapane liście — 1" })).toBeVisible({
+    timeout: 10_000,
+  });
+  expect((await ogrod(page, "state")).stats.bays).toBe(1);
+  expect(errors).toEqual([]);
+});
