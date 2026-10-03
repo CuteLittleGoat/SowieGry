@@ -139,6 +139,8 @@ test("Sowa w Chmurach: Niebiański Ocean — 20 s na humbakach z pieśnią, pase
   await openGame(page);
   await page.locator("[data-start]").click();
   const music = () => page.evaluate(() => window.SowaWChmurach.music());
+  // Muzyka: motyw lotu, w oceanie pieśń humbaka, po oceanie znowu motyw lotu.
+  await expect.poll(music, { timeout: 10_000 }).toBe("chmury");
   const height = (await state(page)).height;
   await page.evaluate(() => window.SowaWChmurach.ocean());
   await expect(page.locator(".sowie-toast-chip", { hasText: "Niebiański Ocean!" })).toBeVisible();
@@ -155,7 +157,7 @@ test("Sowa w Chmurach: Niebiański Ocean — 20 s na humbakach z pieśnią, pase
   expect((await state(page)).phase).toBe("run");
   await expect(page.locator(".sowie-toast-chip", { hasText: "Koniec oceanu" })).toBeVisible();
   await expect(page.locator(".chmury-height")).toContainText("m · Ogródek");
-  expect(await music()).toBe(null);
+  await expect.poll(music).toBe("chmury");
   const after = await state(page);
   expect(after.lives).toBe(3);
   expect(after.rescues).toBe(0);
@@ -244,6 +246,81 @@ test("Sowa w Chmurach: przechylanie na iPhonie — odmowa zgody zostawia sterowa
   await expect(toggle).toHaveAttribute("aria-pressed", "true");
   await expect(page.locator("[data-tilt-note]")).toBeHidden();
   expect((await page.evaluate(() => window.SowaWChmurach.tilt())).granted).toBe(true);
+  expect(errors).toEqual([]);
+});
+
+test("Sowa w Chmurach: samouczek pierwszego lotu — 5 kroków z podpowiedzią, bez utraty serduszek, zapis w dokumencie gry (emulator)", async ({
+  page,
+}, testInfo) => {
+  test.setTimeout(60_000);
+  const project = uniqueProject(testInfo);
+  const errors = watchErrors(page);
+  await openGame(page, cloudUrl("/SowaWChmurach/?samouczek=1&seed=chmury-samouczek", project));
+  await page.locator("[data-start]").click();
+  const prompt = page.locator(".chmury-tutorial");
+  const tutorial = () => page.evaluate(() => window.SowaWChmurach.tutorial());
+  // Logika porcjami po 0,05 s, aż samouczek dojdzie do kroku `step` (najwyżej `seconds` s czasu gry).
+  const advanceUntil = (step, seconds) =>
+    page.evaluate(
+      ([target, limit]) => {
+        const game = window.SowaWChmurach;
+        for (let time = 0; time < limit && (game.tutorial()?.step ?? 99) < target; time += 0.05) game.advance(0.05);
+        return game.tutorial();
+      },
+      [step, seconds],
+    );
+  // Logika tylko krokami (hold) — kroki samouczka zależą od czasu gry.
+  await page.evaluate(() => window.SowaWChmurach.hold(true));
+  await page.evaluate(() => window.SowaWChmurach.advance(1 / 120));
+  await expect(prompt).toBeVisible();
+  await expect(prompt).toContainText("Samouczek · krok 1 z 5");
+  await expect(prompt).toContainText("Przeciągnij palcem w bok");
+  await expect(prompt.locator(".sowie-gesture-demo")).toHaveAttribute("data-gesture", "drag");
+  // 1) Przeciągnięcie w bok.
+  await page.evaluate(() => {
+    window.SowaWChmurach.steer(2);
+    window.SowaWChmurach.advance(0.5);
+  });
+  await expect(prompt).toContainText("krok 2 z 5");
+  // 2) Wyżej: 12 m.
+  await page.evaluate(() => {
+    window.SowaWChmurach.warp(14);
+    window.SowaWChmurach.advance(1 / 120);
+  });
+  await expect(prompt).toContainText("krok 3 z 5");
+  // 3) Liść albo 15 s; 4) Pracu — dymek obok gałązki, zdeptanie / trafienie albo 14 s.
+  expect((await advanceUntil(4, 15.5)).id).toBe("pracu");
+  await expect(prompt).toContainText("krok 4 z 5");
+  expect((await page.evaluate(() => window.SowaWChmurach.hazards())).some((item) => item.kind === "dymek")).toBe(true);
+  expect((await advanceUntil(5, 14.5)).id).toBe("ratunek");
+  await expect(prompt).toContainText("krok 5 z 5");
+  // W samouczku serduszka zostają (tryb bezpieczny), także po upadku.
+  await page.evaluate(() => {
+    window.SowaWChmurach.fall();
+    window.SowaWChmurach.advance(2);
+  });
+  expect((await state(page)).lives).toBe(3);
+  await advanceUntil(6, 6);
+  await expect(prompt).toBeHidden();
+  expect(await tutorial()).toBeNull();
+  await expect(page.locator(".sowie-toast-chip", { hasText: "Świetnie! Teraz sama wspinaczka" })).toBeVisible({
+    timeout: 10_000,
+  });
+  await page.evaluate(() => window.SowieCloud.flush());
+  expect((await readDoc(project, "sowiegry/profil/sowiegry_gry/jumper")).tutorialDone).toBe(true);
+  expect(errors).toEqual([]);
+});
+
+test("Sowa w Chmurach: „Jak grać?” — instrukcja Sowy w Chmurach i „Zagraj samouczek”", async ({ page }) => {
+  const errors = watchErrors(page);
+  await openGame(page);
+  await page.locator("[data-guide]").click();
+  const dialog = page.getByRole("dialog", { name: "Jak grać — Sowa w Chmurach" });
+  await expect(dialog).toBeVisible();
+  await expect(dialog).toContainText("Niebiański Ocean");
+  await dialog.getByRole("button", { name: "Zagraj samouczek" }).click();
+  await expect(dialog).toBeHidden();
+  await expect(page.locator(".chmury-tutorial")).toContainText("Samouczek · krok 1 z 5");
   expect(errors).toEqual([]);
 });
 

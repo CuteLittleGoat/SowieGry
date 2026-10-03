@@ -45,6 +45,7 @@ test("manifest dźwięków: ok. 25 efektów, muzyka menu i humbaka, pliki MP3, r
     assert.ok(manifest.sfx[name], name);
   }
   assert.deepEqual(Object.keys(manifest.music).sort(), [
+    "chmury",
     "humbak",
     "menu",
     "tory-amic",
@@ -97,10 +98,16 @@ test("Sowie Tory: motyw każdej planszy (8 taktów, pętla, 48 kb/s) i budżet d
   assert.ok(total < 800 * 1024, `Sowie Tory: ${total} B`);
 });
 
-test("Sowa w Chmurach: efekty gry w manifeście i budżet dźwięku (z pieśnią humbaka) poniżej 800 KB", () => {
+test("Sowa w Chmurach: motyw lotu (8 taktów, pętla, 48 kb/s), efekty w manifeście i budżet dźwięku poniżej 800 KB", () => {
+  const theme = manifest.music.chmury;
+  assert.ok(theme?.loop && theme.bpm === 100);
+  assert.ok(Math.abs(theme.duration - (8 * 4 * 60) / theme.bpm) < 0.01, "8 taktów");
+  assert.ok(theme.bytes < 120 * 1024, `${theme.bytes} B`);
+  assert.ok(readFileSync(join(audioRoot, "LICENSES.md"), "utf8").includes(theme.file), "licencja");
   for (const name of CHMURY_SOUNDS) assert.ok(manifest.sfx[name], name);
   assert.ok(CHMURY_SOUNDS.includes("humbak-plusk") && CHMURY_SOUNDS.includes("humbak-piesn"));
-  const total = CHMURY_SOUNDS.reduce((sum, name) => sum + manifest.sfx[name].bytes, 0) + manifest.music.humbak.bytes;
+  const total =
+    CHMURY_SOUNDS.reduce((sum, name) => sum + manifest.sfx[name].bytes, 0) + manifest.music.humbak.bytes + theme.bytes;
   assert.ok(total < 800 * 1024, `Sowa w Chmurach: ${total} B`);
 });
 

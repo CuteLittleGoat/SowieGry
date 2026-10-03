@@ -1129,6 +1129,91 @@ function stageTheme({ bpm, chords, bars, lead, leadGain = 0.1, lowpass = 3000, b
   });
 }
 
+// Sowa w Chmurach (E6e): motyw lotu — 100 BPM, G-dur (G–e–C–D ×2), lekki flet (sinus bez filtra) w górę po
+// akordach, bas półnutami, delikatna perkusja — spokojna wspinaczka.
+const cloudTheme = () =>
+  stageTheme({
+    bpm: 100,
+    chords: [
+      ["G2", "G3", "B3", "D4"],
+      ["E2", "E3", "G3", "B3"],
+      ["C3", "C4", "E4", "G4"],
+      ["D3", "D4", "F#4", "A4"],
+      ["G2", "G3", "B3", "D4"],
+      ["E2", "E3", "G3", "B3"],
+      ["C3", "C4", "E4", "G4"],
+      ["D3", "D4", "F#4", "A4"],
+    ],
+    bars: [
+      [
+        ["D5", 0.5],
+        ["G5", 0.5],
+        ["B5", 1],
+        ["A5", 0.5],
+        ["G5", 0.5],
+        ["D5", 1],
+      ],
+      [
+        ["E5", 0.5],
+        ["G5", 0.5],
+        ["B5", 1],
+        ["D6", 1],
+        ["B5", 1],
+      ],
+      [
+        ["C5", 0.5],
+        ["E5", 0.5],
+        ["G5", 1],
+        ["A5", 0.5],
+        ["G5", 0.5],
+        ["E5", 1],
+      ],
+      [
+        ["D5", 1],
+        ["F#5", 0.5],
+        ["A5", 0.5],
+        ["D6", 2],
+      ],
+      [
+        ["B5", 0.5],
+        ["A5", 0.5],
+        ["G5", 1],
+        ["D5", 1],
+        ["G5", 1],
+      ],
+      [
+        ["G5", 0.5],
+        ["B5", 0.5],
+        ["E6", 1],
+        ["D6", 0.5],
+        ["B5", 0.5],
+        ["G5", 1],
+      ],
+      [
+        ["E5", 0.5],
+        ["G5", 0.5],
+        ["C6", 1],
+        ["B5", 0.5],
+        ["A5", 0.5],
+        ["G5", 1],
+      ],
+      [
+        ["A5", 1],
+        ["F#5", 0.5],
+        ["A5", 0.5],
+        ["G5", 2],
+      ],
+    ],
+    lead: "sine",
+    leadGain: 0.18,
+    lowpass: null,
+    bass: "half",
+    drums: {
+      pattern: ["k", "", "", "", "", "", "s", "", "", "", "k", "", "", "", "s", ""],
+      gains: { kick: 0.4, snare: 0.1, hat: 0.05 },
+    },
+  });
+
 // Biedronka: sklepowy dżingiel, 118 BPM, F-dur (F–d–B–C), marimba w melodii, równy rytm „zakupów”.
 const shopTheme = () =>
   stageTheme({
@@ -1679,6 +1764,8 @@ for (const [name, render, meta, kbps] of [
   ["tory-festiwal", festivalTheme, { label: "Sowie Tory — festiwal roślin", bpm: 104, volume: 0.5 }, 48],
   ["tory-prl", prlTheme, { label: "Sowie Tory — blokowisko PRL", bpm: 132, volume: 0.5 }, 48],
   ["tory-amic", stationTheme, { label: "Sowie Tory — stacja Amic", bpm: 126, volume: 0.5 }, 48],
+  // Sowa w Chmurach: motyw lotu, 48 kb/s (z efektami i pieśnią humbaka w budżecie 800 KB).
+  ["chmury", cloudTheme, { label: "Sowa w Chmurach — lot", bpm: 100, volume: 0.5 }, 48],
 ]) {
   random = mulberry32(name.length * 104729);
   const channels = render();

@@ -18,7 +18,27 @@ Zaczynasz w ogródku, a potem lecisz przez kolejne strefy:
 
 Pasek pod przyciskiem pauzy pokazuje wysokość, nazwę strefy i ile zostało do następnej.
 
-> W kolejnym kroku etapu dochodzą: samouczek pierwszego lotu, własna instrukcja i muzyka lotu.
+## Samouczek i instrukcja
+
+Przy **pierwszym locie** włącza się krótki **samouczek** (5 kroków). Podpowiedź w górnej części ekranu (telefon
+poziomo — z lewej strony) pokazuje, co zrobić, a mała animacja palca — jaki gest:
+
+1. przeciągnij palcem w bok — sowa leci za palcem,
+2. prowadź sowę po gałązkach coraz wyżej,
+3. złap liść monstery,
+4. obok gałązki pojawia się **dymek Pracu Pracu** — przeleć nad nim i spadnij na niego z góry,
+5. informacja o ratunku kózki — i lot trwa dalej już bez podpowiedzi („Świetnie! Teraz sama wspinaczka —
+   powodzenia!”).
+
+Gra się przy tym nie zatrzymuje, a w samouczku **nie tracisz serduszek** (ani przy upadku, ani przy trafieniu).
+Samouczek pojawia się tylko raz — możesz go powtórzyć przyciskiem **„Zagraj samouczek”** w oknie **„Jak grać?”**
+(na ekranie tytułowym albo w menu pauzy). To okno opisuje sterowanie, platformy, Pracu i Amic, kózki,
+Niebiański Ocean i upadek.
+
+## Muzyka
+
+W czasie lotu gra spokojny **motyw lotu**, w Niebiańskim Oceanie — **pieśń humbaka**, a po oceanie znowu motyw
+lotu. Głośność muzyki i efektów ustawisz w menu głównym (zakładka Sowa) albo w menu pauzy.
 
 ## Sterowanie
 

@@ -19,12 +19,13 @@ import { DIFFICULTIES, FEVER, GAME_ID, GAME_SOUNDS, GOATS, HAZARDS, OCEAN, WORLD
 import { createRun } from "./game.js";
 import { createRenderer } from "./render.js";
 import { sideAngle, tiltSpeed } from "./tilt.js";
+import { createTutorial } from "./tutorial.js";
 
 const cloud = window.SowieCloud;
 const params = new URLSearchParams(location.search);
 const AUDIO_BASE = new URL("../assets/audio/", import.meta.url).href;
-// Instrukcja: na razie przewodnik obecnej gry (shared/meta/guides-data.js, klucz „jumper”).
-const GUIDE_ID = GAME_ID;
+// Instrukcja: własny przewodnik (shared/meta/guides-data.js, klucz „chmury”); po podmianie (E6f) zastąpi „jumper”.
+const GUIDE_ID = "chmury";
 
 const stage = document.querySelector("[data-stage]");
 const canvas = document.querySelector("[data-canvas]");
@@ -59,6 +60,10 @@ let gameReady = false;
 let lastFrame = 0;
 let lastDragX = 0;
 let lastLeafPopup = -1;
+// Samouczek: przy pierwszym locie (brak `tutorialDone` w dokumencie gry), z „Jak grać?” albo z ?samouczek=1;
+// nie przy locie z ziarnem (?seed= — testy).
+let tutorial = null;
+let forceTutorial = params.get("samouczek") === "1";
 // Testy e2e: logika wstrzymana w klatkach (hak `hold`) — przesuwa ją tylko `advance`; rysowanie i HUD działają.
 let testHold = false;
 
@@ -144,11 +149,17 @@ function play(name, options) {
   }
 }
 
-// Muzyka: pieśń humbaka w Niebiańskim Oceanie; przy wyłączonej muzyce pliku nie pobieramy.
+// Muzyka: motyw lotu „chmury”, w Niebiańskim Oceanie pieśń humbaka; przy wyłączonej muzyce pliku nie pobieramy.
 const musicOn = () => settings().music !== false;
 function playMusic(name) {
-  if (!musicOn()) return;
+  if (!musicOn() || !name) return;
   audio?.playMusic?.(name)?.catch?.(() => {});
+}
+
+// Muzyka bieżącej chwili gry (null — cisza: ekran tytułowy i wyniki).
+function flightMusic() {
+  if (screen !== "playing" || !game) return null;
+  return game.state.phase === "ocean" ? "humbak" : "chmury";
 }
 
 // ---------- Przechylanie telefonu ----------
@@ -237,9 +248,62 @@ function openGuide(trigger) {
     content: renderGuide(guideFor(GUIDE_ID), { atlas, sprites: SPRITES }),
     root: stage,
     className: "is-guide",
-    actions: [{ label: "Rozumiem", primary: true, onClick: (close) => close() }],
+    actions: [
+      {
+        label: "Zagraj samouczek",
+        onClick: (close) => {
+          close();
+          forceTutorial = true;
+          startRun();
+        },
+      },
+      { label: "Rozumiem", primary: true, onClick: (close) => close() },
+    ],
     onClose: () => trigger?.focus?.({ preventScroll: true }),
   });
+}
+
+// ---------- Samouczek ----------
+
+// Podpowiedź pod komunikatami (w poziomie z boku kolumny): krok, pokaz gestu, tekst. Nie łapie dotyku.
+const tutorialNode = document.createElement("div");
+tutorialNode.className = "chmury-tutorial";
+tutorialNode.hidden = true;
+tutorialNode.setAttribute("role", "status");
+tutorialNode.setAttribute("aria-live", "assertive");
+tutorialNode.innerHTML =
+  '<span class="chmury-tutorial-step" data-tutorial-step></span><span class="sowie-gesture-demo" aria-hidden="true"><span class="sowie-gesture-finger"></span></span><p data-tutorial-text></p>';
+stage.appendChild(tutorialNode);
+let tutorialShown = "";
+
+function showTutorialPrompt(item) {
+  const key = item ? `${item.step}|${item.gesture}` : "";
+  if (key === tutorialShown) return;
+  tutorialShown = key;
+  tutorialNode.hidden = !item;
+  if (!item) return;
+  tutorialNode.querySelector("[data-tutorial-step]").textContent = `Samouczek · krok ${item.step} z ${item.steps}`;
+  const demo = tutorialNode.querySelector(".sowie-gesture-demo");
+  demo.hidden = !item.gesture;
+  demo.dataset.gesture = item.gesture || "";
+  tutorialNode.querySelector("[data-tutorial-text]").textContent = item.text;
+}
+
+function wantsTutorial() {
+  if (forceTutorial) return true;
+  return !params.get("seed") && !cloud?.game?.(GAME_ID)?.tutorialDone;
+}
+
+function tutorialFinished() {
+  game?.setSafe(false);
+  tutorial = null;
+  play("zycie", { pitch: 1.2 });
+  toasts.show("Świetnie! Teraz sama wspinaczka — powodzenia!", {
+    kind: "success",
+    key: "samouczek-koniec",
+    priority: 3,
+  });
+  cloud?.updateGame?.(GAME_ID, { tutorialDone: true });
 }
 
 difficultyGroup.addEventListener("click", (event) => {
@@ -268,7 +332,18 @@ function startRun() {
   renderer.clearPopups();
   particles.clear();
   audio?.stopMusic?.();
-  game = createRun({ difficulty, seed: seedFor(), cozy: cozyEnabled() });
+  const withTutorial = wantsTutorial();
+  forceTutorial = false;
+  // W samouczku upadki i trafienia nie zabierają serduszek.
+  game = createRun({ difficulty, seed: seedFor(), cozy: cozyEnabled(), safe: withTutorial });
+  tutorial = withTutorial
+    ? createTutorial({
+        onPrompt: showTutorialPrompt,
+        onDone: tutorialFinished,
+        addHazard: (kind, x, y, extra) => game.addHazard(kind, x, y, extra),
+      })
+    : null;
+  showTutorialPrompt(null);
   canisterHint = false;
   screen = "playing";
   titleNode.hidden = true;
@@ -285,13 +360,18 @@ function startRun() {
   progress.beginRun(GAME_ID, { difficulty });
   cloud?.updateGame?.(GAME_ID, { difficulty }, { delayMs: 2000 });
   toasts.refresh();
-  toasts.show(game.state.cozy ? "Tryb Przytulny — bez końca gry" : "Leć wysoko!", { kind: "success" });
+  playMusic(flightMusic());
+  if (tutorial)
+    toasts.show("Samouczek: 5 krótkich kroków — leć za podpowiedziami!", { kind: "info", key: "samouczek" });
+  else toasts.show(game.state.cozy ? "Tryb Przytulny — bez końca gry" : "Leć wysoko!", { kind: "success" });
   audio?.unduck?.();
 }
 
 function finishRun() {
   if (screen !== "playing") return;
   screen = "results";
+  tutorial = null;
+  showTutorialPrompt(null);
   audio?.stopMusic?.();
   shell.setActive(false);
   view.lockScale(false);
@@ -385,6 +465,7 @@ function burst(x, y, options = {}) {
 
 function handleEvents() {
   for (const event of game.takeEvents()) {
+    tutorial?.handleEvent(event);
     switch (event.type) {
       case "bounce":
         if (event.platform === "lisc") {
@@ -540,7 +621,7 @@ function handleEvents() {
         progress.emit(EVENTS.LEAF, { kind: event.kind, count: event.count, points: event.points });
         break;
       case "oceanEnd":
-        audio?.stopMusic?.();
+        playMusic("chmury");
         play("humbak-plusk");
         toasts.show(`Koniec oceanu · liście: ${event.leaves}`, { kind: "success", key: "ocean-koniec" });
         progress.emit(EVENTS.WHALE, { leaves: event.leaves });
@@ -575,6 +656,7 @@ function update(step) {
       game.setTilt(tiltOn && tiltAngle !== null ? tiltSpeed(tiltAngle) : null);
       game.update(step);
       handleEvents();
+      if (screen === "playing") tutorial?.update(game.state, step);
     }
     const owl = game.state.owl;
     if (game.state.phase === "rescue") animator.set("oszolomienie");
@@ -704,6 +786,8 @@ fetch(new URL("audio.json", AUDIO_BASE))
     audio = createAudio({ manifest, baseUrl: AUDIO_BASE, preloadOnUnlock: GAME_SOUNDS });
     connectAudioSettings(audio, cloud);
     audio.bindUnlock(window, { ignore: (event) => Boolean(event.target?.closest?.("a[href]")) });
+    // Lot zaczęty, zanim wczytał się dźwięk: muzyka od razu.
+    playMusic(flightMusic());
   })
   .catch((error) => console.warn("SowaWChmurach: bez dźwięku", error));
 
@@ -768,6 +852,7 @@ window.SowaWChmurach = Object.freeze({
   goat: (kind) => game?.giveGoat(kind),
   fever: () => game?.giveFever(),
   ocean: () => game?.giveOcean(),
+  tutorial: () => tutorial?.progress() ?? null,
   tilt: () => ({ supported: tiltSupported, on: tiltOn, granted: tiltGranted, angle: tiltAngle }),
   music: () => audio?.currentMusic?.() ?? null,
   extras: () =>
@@ -798,6 +883,7 @@ window.SowaWChmurach = Object.freeze({
     for (let index = Math.round(seconds * 120); index > 0 && screen === "playing"; index -= 1) {
       game.update(1 / 120);
       handleEvents();
+      if (screen === "playing") tutorial?.update(game.state, 1 / 120);
     }
   },
 });

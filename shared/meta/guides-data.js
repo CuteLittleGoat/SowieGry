@@ -275,6 +275,66 @@ export const GUIDES = Object.freeze({
       },
     ],
   },
+  // Sowa w Chmurach — nowa wersja SowaJumper w podglądzie (SowaWChmurach/, Analiza 3 E6); po podmianie (E6f) zastąpi
+  // klucz `jumper`.
+  chmury: {
+    id: "chmury",
+    title: "Sowa w Chmurach",
+    summary:
+      "Sowa wspina się coraz wyżej — sama odbija się od gałązek, a Ty prowadzisz ją w bok. Od ogródka przez blok i chmury aż do zorzy i kosmosu.",
+    cards: [
+      {
+        id: "cel",
+        title: "Cel gry",
+        text: "Leć jak najwyżej: 1 pkt za każdy metr. Liście monstery i idealne lądowania podbijają combo (do ×5).",
+        sprite: "sowa-skok",
+        tip: "Pięć stref: Ogródek, Blok (150 m), Chmury (400 m), Zorza (800 m), Kosmos (1500 m).",
+      },
+      {
+        id: "sterowanie",
+        title: "Sterowanie",
+        text: "Przeciągnij palcem w lewo lub w prawo w dowolnym miejscu ekranu — sowa przesuwa się o tyle, o ile palec. Za krawędzią ekranu wychodzi z drugiej strony.",
+        gesture: "swipe-right",
+        sprite: "sowa-szybuje",
+        tip: "Trzymaj kciuk nisko — nie zasłoni sowy. Możesz też włączyć przechylanie telefonu na ekranie tytułowym.",
+      },
+      {
+        id: "platformy",
+        title: "Platformy",
+        text: "Gałązka — zwykła; liść Monstery — sprężysty (+10); chmurka znika po odbiciu; huśtawka się kołysze; balkon co 150 m; krucha gałązka łamie się pod sową.",
+        sprite: "lisc-zielony",
+        tip: "Od każdej pewnej platformy zawsze da się dolecieć do następnej.",
+      },
+      {
+        id: "pracu-amic",
+        title: "Pracu Pracu i Amic",
+        text: "Pracu Pracu (dymki, maile, telefon) zdepcz z góry: +50 pkt i wybicie. Amic (sterowiec, kanistry, tablica cen) omijaj — trafienie zabiera serduszko.",
+        sprite: "pracu-dymek",
+        tip: "Pomarańczowy znacznik u góry ekranu: za sekundę spadnie kanister.",
+      },
+      {
+        id: "kozki",
+        title: "Kózki i Gorączka",
+        text: "Złap skaczącą kózkę: Sprężynka (wystrzał na 40 m), Rakietka, Tarcza, Magnes albo Podwajaczka. Tęczowy liść uruchamia Gorączkę Monster.",
+        sprite: "kozka-turbo-skok",
+        tip: "Serduszko-doniczka daje dodatkowe życie.",
+      },
+      {
+        id: "ocean",
+        title: "Niebiański Ocean",
+        text: "Co ok. 300 m na gałązce leży humbak z fontanną. Wleć w fontannę: 20 s skakania po humbakach w chmurach — bez upadku, z rzędami liści.",
+        sprite: "humbak",
+        tip: "Po oceanie sowa wraca nad gejzer z mocnym wybiciem.",
+      },
+      {
+        id: "ratunek",
+        title: "Upadek",
+        text: "Gdy sowa spadnie, kózka łapie ją i odnosi na ostatnią pewną platformę — kosztuje to jedno serduszko.",
+        sprite: "kozka-sprezynka-skok",
+        tip: "Chill: 4 serduszka i bliższe gałązki; Chaos: dalsze gałązki i więcej przeszkód.",
+      },
+    ],
+  },
   ogrody: {
     id: "ogrody",
     title: "Sowie Ogrody",
