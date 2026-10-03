@@ -289,6 +289,16 @@ test.describe("najmniejszy telefon (320 × 568)", () => {
     for (const tab of ["Gry", "Jak grać", "Galeria", "Sowa"]) {
       await page.getByRole("tab", { name: tab }).click();
       await page.waitForTimeout(200);
+      // Mierzymy po zakończeniu animacji (np. obrót nowego zdjęcia w Galerii trwa 0,9 s — w trakcie kafelek jest
+      // wizualnie wąski); nieskończone animacje tła (chmury) pomijamy.
+      await page.evaluate(() =>
+        Promise.all(
+          document
+            .getAnimations()
+            .filter((animation) => animation.effect?.getComputedTiming?.().iterations !== Infinity)
+            .map((animation) => animation.finished.catch(() => null)),
+        ),
+      );
       const report = await page.evaluate(() => {
         const small = [...document.querySelectorAll("button, a[href], input, [role=tab]")]
           .filter((node) => node.offsetParent !== null && !node.closest(".sowie-guide-cards"))
