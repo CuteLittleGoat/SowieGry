@@ -75,6 +75,8 @@ let startQuip = false;
 // Samouczek: przy pierwszym biegu (brak `tutorialDone` w dokumencie gry), z „Jak grać?” albo z ?samouczek=1.
 let tutorial = null;
 let forceTutorial = params.get("samouczek") === "1";
+// Testy e2e: logika wstrzymana w klatkach (hak `hold`) — przesuwa ją tylko `advance`; rysowanie i HUD działają.
+let testHold = false;
 
 const settings = () => cloud?.profile?.()?.settings || {};
 const cosmetic = () => cloud?.profile?.()?.cosmetics?.selected || "none";
@@ -165,7 +167,8 @@ function tutorialFinished() {
   game?.setSafe(false);
   tutorial = null;
   play("zakup");
-  toasts.show("Świetnie! Teraz uciekaj przed Chmurą Pracu!", { kind: "success", key: "samouczek", priority: 2 });
+  // Własny klucz i najwyższy priorytet: nie łączy się z komunikatem startu samouczka i nie ginie w pełnej kolejce.
+  toasts.show("Świetnie! Teraz uciekaj przed Chmurą Pracu!", { kind: "success", key: "samouczek-koniec", priority: 3 });
   cloud?.updateGame?.(GAME_ID, { tutorialDone: true });
 }
 
@@ -679,7 +682,7 @@ function update(step) {
   const layout = view.layout();
   if (screen === "playing" && game) {
     if (hitStop > 0) hitStop -= step;
-    else if (shell.state() === "running") {
+    else if (shell.state() === "running" && !testHold) {
       // Samouczek zatrzymuje grę przed przeszkodą, dopóki gracz nie wykona pokazanego ruchu.
       if (!tutorial?.frozen()) {
         game.update(step);
@@ -905,6 +908,25 @@ window.SowiaUcieczka = Object.freeze({
   tasks: () => ({ ...tasksData, list: tracker && screen === "playing" ? tracker.list() : describeTasks(tasksData) }),
   seed: () => baseSeed(),
   tutorial: () => (tutorial ? tutorial.progress() : null),
+  // Testy: wstrzymanie logiki w klatkach (stany zależne od czasu gry bez wyścigu z wolnymi klatkami WebKit w CI);
+  // rysowanie, HUD, komunikaty i gesty działają dalej.
+  hold: (on = true) => {
+    testHold = Boolean(on);
+  },
+  // Testy: przewinięcie logiki o `seconds` (krok 1/120 s jak w pętli, bez czekania na klatki); samouczek dostaje każdy
+  // krok, a przewijanie staje, gdy zatrzyma grę przed przeszkodą (czeka na ruch gracza).
+  advance: (seconds) => {
+    if (!game || screen !== "playing") return;
+    for (let index = Math.round(seconds * 120); index > 0 && screen === "playing"; index -= 1) {
+      if (!tutorial?.frozen()) {
+        game.update(1 / 120);
+        handleEvents();
+        if (tracker && screen === "playing") tasksDone(tracker.tick(game.state, 1 / 120));
+      }
+      if (screen === "playing") tutorial?.update(game.state);
+      if (tutorial?.frozen()) break;
+    }
+  },
   powerups: () => (game ? { ...game.state.powerups, fever: game.state.fever } : null),
   camera: () => ({ x: camera.x, y: camera.y, zoom: camera.zoom }),
   atlasReady: () => atlas.ready(),

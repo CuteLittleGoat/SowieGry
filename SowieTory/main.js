@@ -70,6 +70,8 @@ let summaryModal = null;
 // Samouczek: przy pierwszym biegu kampanii (brak `tutorialDone` w dokumencie gry), z „Jak grać?” albo z ?samouczek=1.
 let tutorial = null;
 let forceTutorial = params.get("samouczek") === "1";
+// Testy e2e: logika wstrzymana w klatkach (hak `hold`) — przesuwa ją tylko `advance`; rysowanie i HUD działają.
+let testHold = false;
 let lastLeafPopup = -1;
 let previousCombo = 1;
 let lastFrame = 0;
@@ -163,7 +165,8 @@ function tutorialFinished() {
   game?.setSafe(false);
   tutorial = null;
   play("zycie", { pitch: 1.2 });
-  toasts.show("Świetnie! Teraz sama trasa — powodzenia!", { kind: "success", key: "samouczek", priority: 2 });
+  // Własny klucz i najwyższy priorytet: nie łączy się z komunikatem startu samouczka i nie ginie w pełnej kolejce.
+  toasts.show("Świetnie! Teraz sama trasa — powodzenia!", { kind: "success", key: "samouczek-koniec", priority: 3 });
   cloud?.updateGame?.(GAME_ID, { tutorialDone: true });
 }
 
@@ -711,7 +714,7 @@ function handleEvents() {
 function update(step) {
   if (screen === "playing" && game) {
     if (hitStop > 0) hitStop -= step;
-    else if (shell.state() === "running") {
+    else if (shell.state() === "running" && !testHold) {
       // Samouczek zatrzymuje grę przed przeszkodą, dopóki gracz nie wykona pokazanego ruchu.
       if (!tutorial?.frozen()) {
         game.update(step);
@@ -940,14 +943,24 @@ window.SowieTory = Object.freeze({
   end: () => game?.end("gracz"),
   warp: (meters) => game?.warp(meters),
   // Testy: przewinięcie logiki gry o `seconds` (krok 1/120 s, bez czekania na klatki — np. 20 s rejsu humbaka
-  // w e2e; w WebKit w CI klatki bywają wolniejsze niż czas rzeczywisty). Zatrzymuje się na podsumowaniu planszy.
+  // w e2e; w WebKit w CI klatki bywają wolniejsze niż czas rzeczywisty). Zatrzymuje się na podsumowaniu planszy
+  // i wtedy, gdy samouczek zatrzyma grę przed przeszkodą (czeka na ruch gracza); samouczek dostaje każdy krok.
   advance: (seconds) => {
     if (!game || screen !== "playing") return;
     for (let index = Math.round(seconds * 120); index > 0 && screen === "playing"; index -= 1) {
       if (game.state.phase === "stageEnd" || game.state.phase === "over") break;
-      game.update(1 / 120);
-      handleEvents();
+      if (!tutorial?.frozen()) {
+        game.update(1 / 120);
+        handleEvents();
+      }
+      if (screen === "playing" && game.state.phase === "run") tutorial?.update(game.state);
+      if (tutorial?.frozen()) break;
     }
+  },
+  // Testy: wstrzymanie logiki w klatkach (stany zależne od czasu gry bez wyścigu z wolnymi klatkami WebKit w CI);
+  // rysowanie, HUD, komunikaty i gesty działają dalej.
+  hold: (on = true) => {
+    testHold = Boolean(on);
   },
   goat: (kind) => game?.giveGoat(kind),
   fever: () => game?.giveFever(),

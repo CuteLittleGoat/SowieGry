@@ -106,11 +106,21 @@ test("Sowa w Chmurach: kózki — Rakietka, Tarcza i Gorączka Monster w komunik
   await page.locator("[data-start]").click();
   // Rakietka trwa 3 s czasu gry — logikę przesuwa tylko `advance` (wolne klatki WebKit w CI nie skrócą sprawdzania).
   await page.evaluate(() => window.SowaWChmurach.hold(true));
+  // Kózka działa tylko w zwykłym locie (nie w czasie ratunku po upadku w pierwszych, wolnych klatkach WebKit).
+  await page.evaluate(() => {
+    const game = window.SowaWChmurach;
+    for (let time = 0; time < 10 && game.state().phase !== "run"; time += 0.05) game.advance(0.05);
+  });
+  expect((await state(page)).phase).toBe("run");
+  // Logika stoi, więc nowe komunikaty nie przychodzą: kolejka pustoszeje (start lotu i ewentualne z pierwszych klatek)
+  // i komunikat kózki pojawia się od razu, a nie po kilku innych.
+  await expect(page.locator(".sowie-toast-chip")).toHaveCount(0, { timeout: 15_000 });
   const before = (await state(page)).owl.y;
   await page.evaluate(() => {
     window.SowaWChmurach.goat("turbo");
     window.SowaWChmurach.advance(1 / 120);
   });
+  expect((await state(page)).goats).toBe(1);
   await expect(page.locator(".sowie-toast-chip", { hasText: "Rakietka!" })).toBeVisible();
   await expect(page.locator(".sowie-hud-powerup", { hasText: "Rakietka" })).toBeVisible();
   // Rakietka: 3 s lotu w górę (logika przewinięta krokami).

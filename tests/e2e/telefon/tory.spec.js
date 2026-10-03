@@ -286,45 +286,74 @@ test("Sowie Tory: ukończona kampania odblokowuje tryb Nieskończony — pętla 
 test("Sowie Tory: samouczek pierwszego biegu — gra czeka na pokazany ruch, 4 kroki, zapis w dokumencie gry (emulator)", async ({
   page,
 }, testInfo) => {
-  // Między krokami gra biegnie kilka sekund czasu gry — w WebKit w CI wolniej niż czas rzeczywisty (wolne klatki).
-  test.setTimeout(150_000);
-  const step = { timeout: 30_000 };
+  // Kroki samouczka zależą od czasu gry: logika wstrzymana w klatkach (`hold`) i przewijana porcjami (`advance`) —
+  // w WebKit w CI klatki bywają wolniejsze niż czas rzeczywisty (wcześniej koniec samouczka nie nadchodził w 30 s).
+  test.setTimeout(90_000);
   const project = uniqueProject(testInfo);
   const errors = watchErrors(page);
   await openGame(page, cloudUrl("/SowieTory/", project));
   await page.locator("[data-start]").click();
+  await page.evaluate(() => window.SowieTory.hold(true));
   const prompt = page.locator(".tory-tutorial");
   const demo = prompt.locator(".sowie-gesture-demo");
+  // Logika porcjami po 0,05 s, aż samouczek zatrzyma grę przed przeszkodą albo się skończy (najwyżej `seconds` s).
+  const advanceToPrompt = (seconds = 20) =>
+    page.evaluate((limit) => {
+      const game = window.SowieTory;
+      for (let time = 0; time < limit; time += 0.05) {
+        game.advance(0.05);
+        const now = game.tutorial();
+        if (!now || now.frozen) return now;
+      }
+      return game.tutorial();
+    }, seconds);
+  // Ruch przyjęty: krótki krok logiki (podpowiedź znika, gra rusza).
+  const resume = () => page.evaluate(() => window.SowieTory.advance(0.05));
 
-  // 1. Zmiana toru: gra stoi; stuknięcie w środek (skok) nic nie daje, przesunięcie w lewo — wznawia.
-  await expect(prompt).toContainText("Telefon na torze!", step);
+  // 1. Zmiana toru: gra stoi (także w zwykłych klatkach — bez `hold`); stuknięcie w środek (skok) nic nie daje,
+  // przesunięcie w lewo — wznawia.
+  expect((await advanceToPrompt()).frozen).toBe(true);
+  await expect(prompt).toContainText("Telefon na torze!");
   await expect(prompt).toContainText("krok 1 z 4");
   await expect(demo).toHaveAttribute("data-gesture", "swipe-left");
+  await page.evaluate(() => window.SowieTory.hold(false));
   const frozen = (await state(page)).stageDistance;
   await page.waitForTimeout(400);
   expect((await state(page)).stageDistance).toBe(frozen);
+  await page.evaluate(() => window.SowieTory.hold(true));
   const box = await page.locator("[data-stage]").boundingBox();
   await page.mouse.click(box.x + box.width / 2, box.y + box.height * 0.55);
-  await page.waitForTimeout(200);
+  await resume();
   await expect(prompt).toBeVisible();
+  expect((await page.evaluate(() => window.SowieTory.tutorial())).frozen).toBe(true);
   await swipe(page, -90, 0);
-  await expect(prompt).toBeHidden(step);
+  await resume();
+  await expect(prompt).toBeHidden();
 
   // 2. Skok, 3. ślizg, 4. kózka na środkowym torze (sowa jest na lewym — w prawo).
-  await expect(prompt).toContainText("Teczki", step);
+  expect((await advanceToPrompt()).frozen).toBe(true);
+  await expect(prompt).toContainText("Teczki");
   await expect(demo).toHaveAttribute("data-gesture", "swipe-up");
   await swipe(page, 0, -90);
-  await expect(prompt).toBeHidden(step);
-  await expect(prompt).toContainText("Dymki", step);
+  await resume();
+  await expect(prompt).toBeHidden();
+  expect((await advanceToPrompt()).frozen).toBe(true);
+  await expect(prompt).toContainText("Dymki");
   await expect(demo).toHaveAttribute("data-gesture", "swipe-down");
   await swipe(page, 0, 90);
-  await expect(prompt).toBeHidden(step);
-  await expect(prompt).toContainText("Kózka!", step);
+  await resume();
+  await expect(prompt).toBeHidden();
+  expect((await advanceToPrompt()).frozen).toBe(true);
+  await expect(prompt).toContainText("Kózka!");
   await expect(demo).toHaveAttribute("data-gesture", "swipe-right");
   await swipe(page, 90, 0);
-  await expect(prompt).toBeHidden(step);
+  await resume();
+  await expect(prompt).toBeHidden();
 
-  await expect(page.locator(".sowie-toast-chip", { hasText: "Świetnie! Teraz sama trasa" })).toBeVisible(step);
+  expect(await advanceToPrompt(10)).toBeNull();
+  await expect(page.locator(".sowie-toast-chip", { hasText: "Świetnie! Teraz sama trasa" })).toBeVisible({
+    timeout: 10_000,
+  });
   expect(await page.evaluate(() => window.SowieTory.tutorial())).toBeNull();
   // Po samouczku tryb bezpieczny się kończy (sowa bez ruchu może już trafić w zwykłą przeszkodę) — brak trafień
   // przy właściwych ruchach sprawdza test jednostkowy; tu: kózka z kroku 4 złapana.
@@ -332,8 +361,11 @@ test("Sowie Tory: samouczek pierwszego biegu — gra czeka na pokazany ruch, 4 k
   await page.evaluate(() => window.SowieCloud.flush());
   expect((await readDoc(project, "sowiegry/profil/sowiegry_gry/sowa3")).tutorialDone).toBe(true);
 
-  // Kolejny bieg już bez samouczka.
-  await page.evaluate(() => window.SowieTory.end());
+  // Kolejny bieg już bez samouczka (logika znowu w klatkach — koniec biegu i wyniki obsługuje pętla).
+  await page.evaluate(() => {
+    window.SowieTory.hold(false);
+    window.SowieTory.end();
+  });
   await page
     .getByRole("dialog", { name: /Koniec biegu/ })
     .getByRole("button", { name: "Jeszcze raz" })
