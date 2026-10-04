@@ -276,6 +276,12 @@ titleNode.querySelector("[data-guide]").addEventListener("click", (event) => ope
 
 // ---------- Bieg ----------
 
+// Tryb diagnostyczny: `?debug=1&wzory=t3-cysterny,t1-cysterna` — te wzory na początku biegu (sprawdzanie wyglądu).
+function debugPatterns() {
+  if (params.get("debug") !== "1") return [];
+  return (params.get("wzory") || "").split(",").filter(Boolean);
+}
+
 function seedFor() {
   const seed = params.get("seed");
   return seed ? `${seed}:${difficulty}` : `${Date.now()}:${Math.random()}`;
@@ -299,7 +305,7 @@ function startRun() {
     startStage: START_STAGE,
     finishSeen: Boolean(cloud?.game?.(GAME_ID)?.finishSeen),
     mode: withTutorial ? "kampania" : mode,
-    intro: withTutorial ? TUTORIAL_PATTERNS : [],
+    intro: withTutorial ? TUTORIAL_PATTERNS : debugPatterns(),
     // W samouczku trafienia się nie liczą.
     safe: withTutorial,
   });

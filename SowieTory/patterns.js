@@ -229,14 +229,16 @@ export const PATTERNS = Object.freeze([
       [16, "WtW", ".^."],
     ],
   ),
+  // Cysterny po bokach, potem dystrybutor na środku: 14 m po końcu cystern na zmianę toru (dawniej 4 m — dla
+  // człowieka za mało, choć przeszukiwanie przechodziło; uwaga właściciela T1).
   pattern(
     "t3-cysterny",
     3,
-    30,
+    40,
     ["amic", "long"],
     [
       [8, "C.C", ".o."],
-      [22, "KDK", "^.^"],
+      [32, "KDK", "^.^"],
     ],
   ),
   pattern(

@@ -141,7 +141,9 @@ export const ENDLESS = Object.freeze({ maxSpeed: 24 });
 export const STARS = Object.freeze({ leafShare: 0.6 });
 
 // Liście: w torze na wysokości 0,6 m, zbierane w promieniu 0,7 m (w bok) i 0,8 m (w głąb).
-export const LEAVES = Object.freeze({ height: 0.6, reachX: 0.7, reachZ: 0.8, spacing: 3 });
+// standReach — najwyżej tak wysoko (m) sowa sięga stojąc (zbiera, gdy |y sowy + 0,5 − y liścia| < 0,9); wyżej trzeba
+// skoczyć — takie liście mają obręcz (uwaga właściciela T2).
+export const LEAVES = Object.freeze({ height: 0.6, reachX: 0.7, reachZ: 0.8, spacing: 3, standReach: 1.4 });
 
 // Efekty wczytywane po pierwszym dotknięciu (tylko używane przez grę).
 export const GAME_SOUNDS = Object.freeze([

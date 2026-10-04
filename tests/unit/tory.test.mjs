@@ -2,7 +2,17 @@
 // (każdy do przejścia z każdego toru), generator trasy i bieg przez całą kampanię z prostym autopilotem.
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { BOARS, DIFFICULTIES, LANES, MOVING, OBSTACLE_TYPES, OWL, PROJECTION, TRACK } from "../../SowieTory/config.js";
+import {
+  BOARS,
+  DIFFICULTIES,
+  LANES,
+  LEAVES,
+  MOVING,
+  OBSTACLE_TYPES,
+  OWL,
+  PROJECTION,
+  TRACK,
+} from "../../SowieTory/config.js";
 import { comboLevel, createRun, moverTrigger, speedAt } from "../../SowieTory/game.js";
 import { OBSTACLES, collides, laneOf, obstacleShape } from "../../SowieTory/obstacles.js";
 import { OBSTACLE_CODES, PATTERNS, allowedOn, createTrack, gapAfter, tierAt } from "../../SowieTory/patterns.js";
@@ -285,6 +295,56 @@ test("każdy wzór na każdej planszy (po zamianie skórek) da się przejść z 
     }
   });
   assert.deepEqual(failures, []);
+});
+
+test("po długiej przeszkodzie (cysterna) co najmniej 10 m, zanim jedyny wolny tor zablokuje pełna przeszkoda", () => {
+  // Przeszukiwanie zakłada idealne wyczucie czasu; człowiek potrzebuje chwili po minięciu długiej przeszkody, żeby
+  // zobaczyć, co jest dalej, i zmienić tor (uwaga właściciela T1: 4 m za cysternami — nie do ominięcia w praktyce).
+  for (const stage of STAGES) {
+    for (const entry of PATTERNS) {
+      const obstacles = entry.items
+        .filter((item) => item.type === "obstacle")
+        .map((item) => ({ ...item, shape: obstacleShape(stage.remap[item.kind] || item.kind) }));
+      for (const long of obstacles.filter((item) => item.shape.depth > 4)) {
+        const start = long.z;
+        const end = long.z + long.shape.depth;
+        const full = (item) => item.shape.type === "full";
+        const busy = new Set(
+          obstacles
+            .filter((item) => full(item) && item.z < end && item.z + item.shape.depth > start)
+            .map((i) => i.lane),
+        );
+        const free = [-1, 0, 1].filter((lane) => !busy.has(lane));
+        const blocked = free.filter((lane) =>
+          obstacles.some((item) => full(item) && item.lane === lane && item.z >= end && item.z < end + 10),
+        );
+        assert.ok(
+          !free.length || blocked.length < free.length,
+          `${stage.id} ${entry.id}: wolny tor zablokowany tuż za ${long.kind}`,
+        );
+      }
+    }
+  }
+});
+
+test("liście do zebrania skokiem (z obręczą): wyżej niż zasięg stojącej sowy są tylko szczyty łuków nad niską przeszkodą", () => {
+  // Stojąca sowa zbiera liść, gdy |0 + 0,5 − y| < 0,9 — czyli do 1,4 m (LEAVES.standReach).
+  assert.equal(LEAVES.standReach, 0.5 + 0.9);
+  const high = [];
+  for (const entry of PATTERNS) {
+    for (const item of entry.items.filter((leaf) => leaf.type === "leaf" && leaf.y >= LEAVES.standReach)) {
+      high.push(entry.id);
+      const under = entry.items.find(
+        (other) =>
+          other.type === "obstacle" &&
+          other.lane === item.lane &&
+          Math.abs(other.z - item.z) < 0.01 &&
+          obstacleShape(other.kind).type === "low",
+      );
+      assert.ok(under, `${entry.id}: wysoki liść bez niskiej przeszkody pod spodem`);
+    }
+  }
+  assert.ok(high.length >= 3, "są liście do zebrania skokiem");
 });
 
 test("przeszukiwanie wykrywa wzór nie do przejścia (kontrola testu)", () => {

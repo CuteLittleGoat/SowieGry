@@ -152,7 +152,8 @@ Amic) — sposób omijania się nie zmienia. Przeszkody pojawiają się z mgły 
   **+250 pkt** za ukończenie planszy i **+300 pkt** za planszę bez trafienia, **+25 pkt** za „O włos!” (zmiana toru
   tuż przed pełną przeszkodą).
 - **Combo** rośnie o 1 co 8 liści bez trafienia (najwyżej ×5); trafienie obniża je o jeden poziom.
-- Łuk liści nad przeszkodą podpowiada skok, nisko ułożone liście — ślizg.
+- Łuk liści nad przeszkodą podpowiada skok, nisko ułożone liście — ślizg. Liść, po który **trzeba skoczyć** (wisi
+  wyżej, niż sięga stojąca sowa), ma **złotą obręcz**, a pod nim na drodze widać cień i kropkowaną linię.
 
 ## Poziomy trudności
 

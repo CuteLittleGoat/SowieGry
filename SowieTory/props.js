@@ -17,10 +17,12 @@ function rounded(context, x, y, width, height, radius) {
   context.closePath();
 }
 
+// `line` 0 — bez obrysu (canvas pomija lineWidth = 0 i obrysowałby grubością z poprzedniego rysunku).
 export function box(context, x, y, width, height, fill, radius = 0.06, line = 0.05) {
   rounded(context, x, y, width, height, radius);
   context.fillStyle = fill;
   context.fill();
+  if (line <= 0) return;
   context.lineWidth = line;
   context.strokeStyle = INK;
   context.stroke();
@@ -80,6 +82,39 @@ function canister(context, x, y, color) {
 // ---------- Przeszkody (kolidują; rysunek: szerokość ok. 1,3 m) ----------
 
 export const OBSTACLE_PROPS = Object.freeze({
+  // Cysterna Amic od tyłu (pełna, długa — zmiana toru): koniec zbiornika z pasami Amic, drabinka, światła, zderzak
+  // i koła; mieści się w swoim torze (1,44 m). Zbiornik ciągnący się w głąb rysuje render.js (`longBody`).
+  cysterna(context) {
+    for (const x of [-0.56, -0.36, 0.36, 0.56]) box(context, x - 0.08, -0.34, 0.16, 0.34, INK, 0.06, 0);
+    box(context, -0.72, -0.52, 1.44, 0.2, COLORS.szaryCiemny, 0.04, 0.04);
+    ellipse(context, 0, -1.28, 0.66, 0.74, COLORS.bialy, 0.05);
+    context.save();
+    context.beginPath();
+    context.ellipse(0, -1.28, 0.64, 0.72, 0, 0, Math.PI * 2);
+    context.clip();
+    context.fillStyle = COLORS.amicCzerwony;
+    context.fillRect(-0.7, -2.05, 1.4, 0.42);
+    context.fillStyle = COLORS.amicZielony;
+    context.fillRect(-0.7, -0.88, 1.4, 0.36);
+    context.restore();
+    label(context, "Amic", 0, -1.3, 0.3, COLORS.amicCzerwony);
+    // Drabinka z boku i światła na zderzaku.
+    context.strokeStyle = COLORS.szaryCiemny;
+    context.lineWidth = 0.035;
+    context.beginPath();
+    context.moveTo(0.42, -0.6);
+    context.lineTo(0.42, -1.9);
+    context.moveTo(0.54, -0.6);
+    context.lineTo(0.54, -1.82);
+    for (let y = -0.75; y > -1.85; y -= 0.22) {
+      context.moveTo(0.42, y);
+      context.lineTo(0.54, y);
+    }
+    context.stroke();
+    box(context, -0.68, -0.5, 0.2, 0.12, COLORS.amicCzerwony, 0.04, 0.025);
+    box(context, 0.48, -0.5, 0.2, 0.12, COLORS.amicCzerwony, 0.04, 0.025);
+    box(context, -0.18, -0.5, 0.36, 0.12, COLORS.zloto, 0.03, 0.025);
+  },
   // Paleta z płynem do spryskiwaczy i kanistrami (Biedronka, niska — skok).
   paleta(context) {
     box(context, -0.62, -0.16, 1.24, 0.16, "#c9965f", 0.02, 0.04);

@@ -32,11 +32,12 @@ export const OBSTACLES = Object.freeze({
     label: "Stacja Amic blokuje tor!",
   },
   wozek: { family: "amic", type: "full", sprite: "amic-wozek", draw: 1.4, label: "Wózek na torze!" },
+  // Cysterna od tyłu (prop) z długim zbiornikiem w głąb toru — mieści się w swoim torze (dawniej rysunek z boku
+  // na całą szerokość drogi, powtórzony 3 razy, zasłaniał sąsiednie tory — uwaga właściciela T1).
   cysterna: {
     family: "amic",
     type: "full",
-    sprite: "amic-cysterna",
-    draw: 2.3,
+    prop: "cysterna",
     depth: 10,
     label: "Cysterna Amic!",
   },

@@ -7,7 +7,7 @@
 import { drawShadow } from "../shared/engine/sprites.js";
 import { drawOwl } from "../shared/world/owl.js";
 import { COLORS, font } from "../shared/world/tokens.js";
-import { OWL } from "./config.js";
+import { LEAVES, OWL } from "./config.js";
 import { createFinaleScene } from "./finale-scene.js";
 import { goatPose } from "./goats.js";
 import { OBSTACLES, obstacleShape, obstacleX } from "./obstacles.js";
@@ -155,15 +155,95 @@ export function createRenderer({ canvas, view, atlas }) {
     }
   }
 
+  // Otoczka wypukła punktów ekranu (algorytm łańcucha monotonicznego) — sylwetka bryły w perspektywie.
+  function hull(points) {
+    const list = [...points].sort((a, b) => a.x - b.x || a.y - b.y);
+    const cross = (o, a, b) => (a.x - o.x) * (b.y - o.y) - (a.y - o.y) * (b.x - o.x);
+    const lower = [];
+    for (const p of list) {
+      while (lower.length >= 2 && cross(lower.at(-2), lower.at(-1), p) <= 0) lower.pop();
+      lower.push(p);
+    }
+    const upper = [];
+    for (const p of list.reverse()) {
+      while (upper.length >= 2 && cross(upper.at(-2), upper.at(-1), p) <= 0) upper.pop();
+      upper.push(p);
+    }
+    return lower.slice(0, -1).concat(upper.slice(0, -1));
+  }
+
+  function polygon(points, fill, line = 0) {
+    context.beginPath();
+    points.forEach((p, index) => (index ? context.lineTo(p.x, p.y) : context.moveTo(p.x, p.y)));
+    context.closePath();
+    context.fillStyle = fill;
+    context.fill();
+    if (line) {
+      context.lineWidth = line;
+      context.strokeStyle = COLORS.kontur;
+      context.stroke();
+    }
+  }
+
+  // Punkt ściany bocznej (x stałe) na wysokości y i głębokości z.
+  const sidePoint = (x, y, z) => {
+    const p = project(layout, x, y, z, { x: 0, y: 0, scale: 0 });
+    return p ? { x: p.x, y: p.y } : null;
+  };
+
+  // Długa przeszkoda (cysterna): zbiornik w głąb toru — sylwetka prostopadłościanu (szerokość pasa przeszkody,
+  // od podwozia do dachu) z pasami Amic na ścianie bocznej widocznej z kamery; tył dorysowuje prop.
+  function longBody(x, zNear, zFar) {
+    const left = x - 0.62;
+    const right = x + 0.62;
+    const [bottom, top] = [0.42, 2.0];
+    const corners = [];
+    for (const zz of [zNear, zFar]) {
+      for (const xx of [left, right]) {
+        for (const yy of [bottom, top]) {
+          const p = sidePoint(xx, yy, zz);
+          if (p) corners.push(p);
+        }
+      }
+    }
+    if (corners.length < 3) return;
+    polygon(hull(corners), "#f4f6f8", Math.max(1, layout.focal * 0.0015));
+    // Ściana boczna widoczna z kamery (tor z lewej — prawa ściana, z prawej — lewa); na środkowym torze tylko dach.
+    const side = x < -0.01 ? right : x > 0.01 ? left : null;
+    if (side !== null) {
+      for (const [y0, y1, color] of [
+        [1.55, 1.95, COLORS.amicCzerwony],
+        [0.5, 0.82, COLORS.amicZielony],
+      ]) {
+        const quad = [
+          sidePoint(side, y0, zNear),
+          sidePoint(side, y1, zNear),
+          sidePoint(side, y1, zFar),
+          sidePoint(side, y0, zFar),
+        ];
+        if (quad.every(Boolean)) polygon(quad, color);
+      }
+    }
+    // Dach: czerwony pas wzdłuż zbiornika.
+    const roof = [
+      sidePoint(left + 0.25, top, zNear),
+      sidePoint(right - 0.25, top, zNear),
+      sidePoint(right - 0.25, top, zFar),
+      sidePoint(left + 0.25, top, zFar),
+    ];
+    if (roof.every(Boolean)) polygon(roof, COLORS.amicCzerwony);
+  }
+
   function obstacle(item, distance, time) {
     const z = item.at - distance;
     const shape = obstacleShape(item.kind);
     if (z > layout.farZ || z + shape.depth < nearZ()) return;
     const info = OBSTACLES[item.kind];
-    // Długie przeszkody (cysterna) — kilka rysunków wzdłuż toru.
-    const copies = shape.depth > 5 ? Math.ceil(shape.depth / 4.5) : 1;
+    // Długa przeszkoda (cysterna): jeden rysunek — zbiornik w głąb i tył na bliższym końcu.
+    const long = shape.depth > 5;
+    const copies = 1;
     for (let copy = 0; copy < copies; copy += 1) {
-      const zz = z + (copies > 1 ? copy * (shape.depth / copies) + 1 : Math.min(shape.depth / 2, 0.6));
+      const zz = long ? Math.max(z + 0.3, nearZ() + 0.3) : z + Math.min(shape.depth / 2, 0.6);
       drawList.push({
         z: zz,
         draw: () => {
@@ -175,8 +255,17 @@ export function createRenderer({ canvas, view, atlas }) {
           const scale = base.scale;
           const fog = fogAt(layout, zz);
           context.globalAlpha = 1 - fog;
+          if (long) {
+            longBody(x, zz, Math.min(z + shape.depth, layout.farZ));
+            // Tył cysterny już za kamerą (sowa ją mija) — sam zbiornik, bez tyłu i cienia.
+            if (z + 0.3 < nearZ() + 0.3) {
+              context.globalAlpha = 1;
+              return;
+            }
+          }
           const ground = project(layout, x, 0, zz, point2);
-          drawShadow(context, ground.x, ground.y, 1.3 * scale, {});
+          // Cysterna stoi na kołach — bez ciemnej plamy cienia pod tyłem.
+          if (!long) drawShadow(context, ground.x, ground.y, 1.3 * scale, {});
           if (info.prop) {
             // Skórka planszy rysowana kodem (props.js) — w metrach od punktu na ziemi.
             context.save();
@@ -318,6 +407,35 @@ export function createRenderer({ canvas, view, atlas }) {
     });
   }
 
+  // Oznaczenie przedmiotu do zebrania skokiem: cień na drodze pod nim, kropkowana linia i pulsująca złota obręcz.
+  function jumpMark(x, z, base, phase) {
+    const ground = project(layout, x, 0, z, point2);
+    if (!ground) return;
+    const scale = base.scale;
+    drawShadow(context, ground.x, ground.y, 0.5 * scale, { alpha: 0.22 });
+    context.save();
+    context.strokeStyle = "rgba(255, 255, 255, 0.8)";
+    context.lineWidth = Math.max(1, 0.035 * scale);
+    context.setLineDash([0.08 * scale, 0.09 * scale]);
+    context.beginPath();
+    context.moveTo(ground.x, ground.y);
+    context.lineTo(base.x, base.y + 0.42 * scale);
+    context.stroke();
+    context.setLineDash([]);
+    const pulse = 1 + Math.sin(phase * 5) * 0.07;
+    for (const [width, color] of [
+      [0.13, COLORS.bialy],
+      [0.07, COLORS.zloto],
+    ]) {
+      context.lineWidth = Math.max(1.5, width * scale);
+      context.strokeStyle = color;
+      context.beginPath();
+      context.ellipse(base.x, base.y, 0.44 * scale * pulse, 0.5 * scale * pulse, 0, 0, Math.PI * 2);
+      context.stroke();
+    }
+    context.restore();
+  }
+
   // Liść; przyciągany Magnesem (`pull` 0–1) leci do sowy.
   function leaf(item, distance, time, owl) {
     if (item.taken) return;
@@ -334,6 +452,8 @@ export function createRenderer({ canvas, view, atlas }) {
         if (!base) return;
         context.globalAlpha = 1 - fogAt(layout, z);
         const size = 0.6 * base.scale;
+        // Liść poza zasięgiem stojącej sowy (trzeba skoczyć): cień na drodze, kropkowana linia w dół i złota obręcz.
+        if (item.y >= LEAVES.standReach && !pull) jumpMark(x, z, base, time + item.at);
         atlas.draw(context, LEAF_SPRITE[item.kind] || LEAF_SPRITE.zielony, base.x, base.y, {
           width: size,
           height: size,
