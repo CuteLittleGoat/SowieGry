@@ -1,12 +1,13 @@
-// Łącz i Hoduj — strona gry (prototyp, krok 8.0): wczytanie i zapis stanu (pole `preview` dokumentu
+// Łącz i Hoduj — strona gry (prototyp, kroki 8.0–8.1): wczytanie i zapis stanu (pole `preview` dokumentu
 // `sowiegry_gry/szklarnia` — dawna Szklarnia zostaje bez zmian), pętla, przeciąganie roślin z uniesieniem nad palec,
-// zaznaczanie stuknięciem (bez przeciągania), Sowia doniczka, kompostownik, komunikaty i haki testowe.
+// zaznaczanie stuknięciem (bez przeciągania), Sowia doniczka, kompostownik, hybrydy, nowe łańcuchy w doniczce,
+// komunikaty i haki testowe.
 import { connectAudioSettings, createAudio } from "../shared/engine/audio.js";
 import { EVENTS, progress } from "../shared/meta/progress.js";
 import { createToasts } from "../shared/ui/index.js";
 import { COLORS } from "../shared/world/tokens.js";
-import { canMerge, itemName } from "./board.js";
-import { BOARD, GAME_ID, GAME_SOUNDS, GREENHOUSE_MUSIC, POT, PREVIEW_FIELD } from "./config.js";
+import { canMerge, hybridOf, itemName } from "./board.js";
+import { BOARD, COMPOST_LEAVES, GAME_ID, GAME_SOUNDS, GREENHOUSE_MUSIC, POT, PREVIEW_FIELD } from "./config.js";
 import { createGame, defaultState, loadState } from "./game.js";
 import { createBoardRenderer, LIFT } from "./render.js";
 
@@ -95,19 +96,40 @@ function handleEvents() {
         const center = renderer.cellCenter(event.to);
         if (event.leaves) renderer.popup(`+${event.leaves}`, center.x, center.y - 10, COLORS.bialy, 18);
         hint(`${itemName(event.item)}!`);
-        // Połączenie: wyższy ton na wyższym poziomie; Złota Monstera — fanfara.
+        // Połączenie: wyższy ton na wyższym poziomie; szczyt łańcucha — fanfara.
         play("polaczenie", { pitch: 0.9 + event.item.level * 0.1 });
         if (event.top) play("rekord", { volume: 0.8 });
         if (event.top) {
-          toasts.show("Złota Monstera! Szczyt łańcucha — możesz ją skompostować za 25 liści", {
-            kind: "reward",
-            key: "zlota",
-            priority: 2,
-          });
+          toasts.show(
+            `${itemName(event.item)}! Szczyt łańcucha — skrzyżuj ją z innym szczytem albo skompostuj za ${COMPOST_LEAVES[event.item.level]} liści`,
+            { kind: "reward", key: "szczyt", priority: 2 },
+          );
         }
         save({ immediate: true });
         break;
       }
+      case "hybrid": {
+        renderer.pop(event.to);
+        const center = renderer.cellCenter(event.to);
+        renderer.popup(`+${event.leaves}`, center.x, center.y - 10, COLORS.zloto, 20);
+        hint(`Hybryda: ${itemName(event.item)}!`);
+        play("polaczenie", { pitch: 1.5 });
+        play("rekord", { volume: 0.9 });
+        toasts.show(`Nowa hybryda: ${itemName(event.item)}! +${event.leaves} liści`, {
+          kind: "reward",
+          key: "hybryda",
+          priority: 2,
+        });
+        save({ immediate: true });
+        break;
+      }
+      case "unlock":
+        toasts.show(`Nowa roślina w Sowiej doniczce: ${event.name}!`, {
+          kind: "reward",
+          key: "nowa-roslina",
+          priority: 2,
+        });
+        break;
       case "compost": {
         const center = renderer.cellCenter(event.index);
         renderer.popup(`+${event.leaves}`, center.x, center.y - 10, COLORS.monsteraJasna, 18);
@@ -249,7 +271,9 @@ function dragView() {
   const source = game.board.cells[press.index];
   const kind = press.compost
     ? "compost"
-    : target >= 0 && target !== press.index && canMerge(source, game.board.cells[target])
+    : target >= 0 &&
+        target !== press.index &&
+        (canMerge(source, game.board.cells[target]) || hybridOf(source, game.board.cells[target]))
       ? "merge"
       : "move";
   return { from: press.index, x: press.point.x, y: press.point.y, target: target === press.index ? -1 : target, kind };

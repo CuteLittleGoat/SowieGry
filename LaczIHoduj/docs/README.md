@@ -8,16 +8,30 @@ zapisuje swój postęp osobno i niczego w niej nie rusza.
 ## Cel gry
 
 Na półkach szklarni (7 kolumn × 9 rzędów) stoją rośliny. **Dwie takie same rośliny połączone razem dają roślinę
-następnego poziomu.** W prototypie jest jeden łańcuch — **Monstera**:
+następnego poziomu.** Każda roślina ma swój łańcuch pięciu poziomów:
 
-1. **Nasionko** →
-2. **Kiełek** →
-3. **Sadzonka** →
-4. **Monstera** →
-5. **Złota Monstera** (szczyt łańcucha — już się nie łączy).
+| Roślina      | 1              | 2            | 3            | 4        | 5 (szczyt)      |
+| ------------ | -------------- | ------------ | ------------ | -------- | --------------- |
+| **Monstera** | Nasionko       | Kiełek       | Sadzonka     | Monstera | Złota Monstera  |
+| **Pilea**    | Ziarenko pilei | Listek pilei | Pieniążek    | Pilea    | Złota Pilea     |
+| **Paproć**   | Zarodnik       | Pastorał     | Młoda paproć | Paproć   | Złota Paproć    |
+| **Kaktus**   | Pestka kaktusa | Kuleczka     | Kaktusik     | Kaktus   | Kwitnący Kaktus |
 
 Mała cyfra w rogu pola pokazuje poziom rośliny. Za każde połączenie dostajesz **liście monstery** (licznik w prawym
-górnym rogu): Kiełek 1, Sadzonka 3, Monstera 8, Złota Monstera 20.
+górnym rogu): poziom 2 — 1, poziom 3 — 3, poziom 4 — 8, poziom 5 — 20. Dwie takie same rośliny na szczycie łańcucha
+już się nie łączą — ale mogą dać **hybrydę**.
+
+## Hybrydy
+
+**Dwie różne rośliny na szczycie łańcucha** połączone razem dają hybrydę — jak w dawnej Sowiej Szklarni:
+
+- **Złota Monstera + Złota Pilea → Monpilea Przytulna** (+60 liści),
+- **Złota Paproć + Kwitnący Kaktus → Alopaproć Wachlarzowa** (+60 liści),
+- **Monpilea Przytulna + Alopaproć Wachlarzowa → Złotolistka** (+200 liści).
+
+Hybryda stoi w doniczce ze złotym rantem, świeci się złotą poświatą i ma w rogu **★** zamiast cyfry. Kolejność nie ma
+znaczenia (Pilea na Monsterę też działa). Gdy przeciągasz roślinę nad pole, z którym zrobi hybrydę, pole świeci się na
+zielono — tak jak przy zwykłym połączeniu.
 
 ## Jak przesuwać rośliny
 
@@ -31,13 +45,17 @@ górnym rogu): Kiełek 1, Sadzonka 3, Monstera 8, Złota Monstera 20.
 ## Sowia doniczka
 
 Przycisk **🌱 Sowia doniczka** na dole kładzie **nasionko** na losowym wolnym polu. Doniczka ma **12 ładunków**
-(licznik „12/12”); jeden ładunek wraca **co 3 sekundy**. Gdy półki są pełne, doniczka nic nie kładzie i nie zużywa
+(licznik „12/12”); jeden ładunek wraca **co 3 sekundy**.
+
+Na początku doniczka daje tylko nasionka Monstery. Kolejne rośliny dochodzą z liczbą połączeń (hybrydy też się
+liczą): **Pilea po 10 połączeniach**, **Paproć po 30**, **Kaktus po 60** — gra ogłasza to komunikatem „Nowa roślina
+w Sowiej doniczce”. Potem doniczka losuje nasionko spośród odblokowanych roślin (Monstera najczęściej). Gdy półki są pełne, doniczka nic nie kładzie i nie zużywa
 ładunku — wtedy połącz albo skompostuj jakąś roślinę.
 
 ## Kompost
 
-Kompostownik usuwa roślinę i zwalnia pole — za liście (Nasionko 1, Kiełek 2, Sadzonka 4, Monstera 10, Złota
-Monstera 25). Możesz:
+Kompostownik usuwa roślinę i zwalnia pole — za liście (poziom 1 — 1, poziom 2 — 2, poziom 3 — 4, poziom 4 — 10,
+poziom 5 — 25; Monpilea i Alopaproć — 50, Złotolistka — 150). Możesz:
 
 - **przeciągnąć roślinę na przycisk ♻️ Kompost** (przycisk podświetla się na zielono, gdy roślina jest nad nim), albo
 - **zaznaczyć roślinę stuknięciem i stuknąć ♻️ Kompost**.
@@ -47,7 +65,7 @@ Dzięki kompostowi plansza nigdy nie zablokuje się na dobre — zawsze możesz 
 ## Dźwięk
 
 W szklarni gra spokojna muzyka, a każdy ruch ma swój dźwięk: podniesienie rośliny, odstawienie na półkę, połączenie
-(im wyższy poziom, tym wyższy ton; Złota Monstera dostaje fanfarę), nasionko z Sowiej doniczki i kompost. Dźwięk
+(im wyższy poziom, tym wyższy ton; szczyt łańcucha i hybryda dostają fanfarę), nasionko z Sowiej doniczki i kompost. Dźwięk
 rusza po pierwszym dotknięciu ekranu. Głośność muzyki i efektów ustawisz w menu głównym (zakładka **Sowa** →
 **Ustawienia**).
 
@@ -71,7 +89,6 @@ Na komputerze plansza stoi na środku, a rośliny przesuwa się myszą tak samo 
 
 ## Co dalej
 
-To prototyp — sprawdzamy, czy łączenie roślin jest przyjemne. Jeśli tak, w kolejnych krokach dojdą: nowe łańcuchy
-(Pilea, Paproć, Kaktus) i hybrydy z dawnej Szklarni, zamówienia sowich sąsiadek, odnawianie pomieszczeń szklarni
+Gra wciąż rośnie. W kolejnych krokach dojdą: zamówienia sowich sąsiadek, odnawianie pomieszczeń szklarni
 (Doniczarnia, Sala Upraw, Zraszalnia…), przeszkody Pracu Pracu i Amic, kózki-pomocnice, Basen Humbaka z rekordem,
 pakiet startowy z postępu dawnej Szklarni i samouczek (z przyciskiem do jego powtórzenia).

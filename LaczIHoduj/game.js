@@ -1,7 +1,22 @@
 // Łącz i Hoduj — stan gry (wersja 2) i silnik (czysta logika, bez DOM): Sowia doniczka z ładunkami, ruchy
 // z łączeniem, kompostownik, liście monstery, statystyki i zdarzenia dla interfejsu.
-import { BOARD, COMPOST_LEAVES, MERGE_LEAVES, POT, SAVE_VERSION, START_ITEMS } from "./config.js";
+import { BOARD, CHAINS, COMPOST_LEAVES, HYBRIDS, MERGE_LEAVES, POT, SAVE_VERSION, START_ITEMS } from "./config.js";
 import { createBoard, maxLevel, moveItem, removeItem, serializeCells, spawnItem } from "./board.js";
+
+/** Łańcuchy doniczki dostępne przy danej liczbie połączeń (`stats.merges`). */
+export const potChains = (merges) => POT.chains.filter((entry) => merges >= entry.unlock);
+
+/** Łańcuch nasionka z doniczki: losowanie z wagami spośród odblokowanych. */
+export function pickChain(merges, random = Math.random) {
+  const list = potChains(merges);
+  const total = list.reduce((sum, entry) => sum + entry.weight, 0);
+  let roll = random() * total;
+  for (const entry of list) {
+    roll -= entry.weight;
+    if (roll < 0) return entry.chain;
+  }
+  return list.at(-1).chain;
+}
 
 const number = (value) => (Number.isFinite(Number(value)) ? Number(value) : 0);
 
@@ -16,7 +31,7 @@ export function defaultState(now = Date.now()) {
     cells: serializeCells(board),
     leaves: 0,
     pot: { charges: POT.max, progress: 0 },
-    stats: { merges: 0, spawns: 0, composted: 0, best: 2, moves: 0 },
+    stats: { merges: 0, spawns: 0, composted: 0, best: 2, moves: 0, hybrids: 0 },
   };
 }
 
@@ -41,7 +56,8 @@ export function loadState(raw, now = Date.now()) {
 /**
  * createGame({ state, random }) → { state, board, update(dt), tapPot(), move(from, to), compost(index),
  * takeEvents() }. Zdarzenia: spawn { index, item }, potEmpty, boardFull, move { from, to }, swap { from, to },
- * merge { from, to, item, leaves, top }, compost { index, item, leaves }.
+ * merge { from, to, item, leaves, top }, hybrid { from, to, item, leaves }, unlock { chain, name },
+ * compost { index, item, leaves }.
  */
 export function createGame({ state = defaultState(), random = Math.random } = {}) {
   const board = createBoard({ ...BOARD, cells: state.cells });
@@ -71,7 +87,7 @@ export function createGame({ state = defaultState(), random = Math.random } = {}
       emit("potEmpty");
       return -1;
     }
-    const item = { chain: POT.chain, level: 1 };
+    const item = { chain: pickChain(state.stats.merges, random), level: 1 };
     const index = spawnItem(board, item, random);
     if (index < 0) {
       emit("boardFull");
@@ -88,13 +104,24 @@ export function createGame({ state = defaultState(), random = Math.random } = {}
     const result = moveItem(board, from, to);
     if (result.type === "none") return result;
     state.stats.moves += 1;
+    const unlocked = potChains(state.stats.merges).length;
     if (result.type === "merge") {
       const leaves = MERGE_LEAVES[result.item.level] || 0;
       state.leaves += leaves;
       state.stats.merges += 1;
       state.stats.best = Math.max(state.stats.best, result.item.level);
       emit("merge", { from, to, item: result.item, leaves, top: result.item.level >= maxLevel(result.item.chain) });
+    } else if (result.type === "hybrid") {
+      const leaves = HYBRIDS[result.item.chain].leaves;
+      state.leaves += leaves;
+      state.stats.merges += 1;
+      state.stats.hybrids += 1;
+      emit("hybrid", { from, to, item: result.item, leaves });
     } else emit(result.type, { from, to });
+    // Nowy łańcuch w doniczce po przekroczeniu progu połączeń.
+    for (const entry of potChains(state.stats.merges).slice(unlocked)) {
+      emit("unlock", { chain: entry.chain, name: CHAINS[entry.chain].name });
+    }
     sync();
     return result;
   }
@@ -103,7 +130,7 @@ export function createGame({ state = defaultState(), random = Math.random } = {}
   function compost(index) {
     const item = removeItem(board, index);
     if (!item) return null;
-    const leaves = COMPOST_LEAVES[item.level] || 0;
+    const leaves = HYBRIDS[item.chain]?.compost ?? (COMPOST_LEAVES[item.level] || 0);
     state.leaves += leaves;
     state.stats.composted += 1;
     sync();

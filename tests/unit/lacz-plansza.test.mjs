@@ -5,6 +5,9 @@ import { test } from "node:test";
 import {
   canMerge,
   cellIndex,
+  hybridOf,
+  isTop,
+  mergeablePairs,
   cellPosition,
   createBoard,
   emptyCells,
@@ -14,8 +17,8 @@ import {
   moveItem,
   spawnItem,
 } from "../../LaczIHoduj/board.js";
-import { BOARD, CHAINS, COMPOST_LEAVES, MERGE_LEAVES, POT, SAVE_VERSION } from "../../LaczIHoduj/config.js";
-import { createGame, defaultState, loadState } from "../../LaczIHoduj/game.js";
+import { BOARD, CHAINS, COMPOST_LEAVES, HYBRIDS, MERGE_LEAVES, POT, SAVE_VERSION } from "../../LaczIHoduj/config.js";
+import { createGame, defaultState, loadState, pickChain, potChains } from "../../LaczIHoduj/game.js";
 
 const seed = (level) => ({ chain: "monstera", level });
 const queue =
@@ -133,7 +136,7 @@ test("stan: nowa gra z przedmiotami startowymi, zapis i wczytanie, niepoprawne p
   assert.ok(state.cells.filter(Boolean).length >= 4);
   assert.ok(exits(createBoard({ ...BOARD, cells: state.cells })).merges >= 2, "od razu jest co łączyć");
   const copy = JSON.parse(JSON.stringify({ ...state, leaves: 42 }));
-  copy.cells[0] = { chain: "kaktus", level: 2 };
+  copy.cells[0] = { chain: "palma", level: 2 };
   copy.cells[1] = { chain: "monstera", level: 9 };
   copy.pot.charges = 99;
   const loaded = loadState(copy, 2000);
@@ -143,4 +146,102 @@ test("stan: nowa gra z przedmiotami startowymi, zapis i wczytanie, niepoprawne p
   assert.equal(loaded.pot.charges, POT.max);
   assert.equal(loadState({ version: 1, leaves: 5 }, 0).leaves, 0, "stan dawnej Szklarni (v1) — nowa gra");
   assert.equal(loadState(null, 0).cells.length, 63);
+});
+
+test("cztery łańcuchy po 5 poziomów i trzy hybrydy z dawnej Szklarni; doniczka odblokowuje łańcuchy z połączeniami", () => {
+  for (const chain of ["monstera", "pilea", "paproc", "kaktus"]) {
+    assert.equal(maxLevel(chain), 5, chain);
+    assert.equal(CHAINS[chain].hybrid, undefined);
+  }
+  assert.equal(itemName({ chain: "kaktus", level: 5 }), "Kwitnący Kaktus");
+  for (const id of Object.keys(HYBRIDS)) {
+    assert.equal(CHAINS[id].hybrid, true);
+    assert.equal(maxLevel(id), 1);
+    for (const parent of HYBRIDS[id].parents) assert.ok(CHAINS[parent], `${id}: ${parent}`);
+  }
+  assert.deepEqual(
+    potChains(0).map((entry) => entry.chain),
+    ["monstera"],
+  );
+  assert.deepEqual(
+    potChains(30).map((entry) => entry.chain),
+    ["monstera", "pilea", "paproc"],
+  );
+  assert.equal(potChains(60).length, 4);
+  // Losowanie z wagami (monstera 4, pilea 3, paproć 2, kaktus 2 — razem 11).
+  assert.equal(
+    pickChain(0, () => 0.99),
+    "monstera",
+  );
+  assert.equal(
+    pickChain(100, () => 0),
+    "monstera",
+  );
+  assert.equal(
+    pickChain(100, () => 5 / 11),
+    "pilea",
+  );
+  assert.equal(
+    pickChain(100, () => 8 / 11),
+    "paproc",
+  );
+  assert.equal(
+    pickChain(100, () => 0.999),
+    "kaktus",
+  );
+});
+
+test("hybrydy: dwie różne rośliny najwyższego poziomu z przepisu (kolejność dowolna); hybryda się nie łączy z taką samą", () => {
+  const top = (chain) => ({ chain, level: maxLevel(chain) });
+  assert.equal(hybridOf(top("monstera"), top("pilea")), "monpilea");
+  assert.equal(hybridOf(top("pilea"), top("monstera")), "monpilea");
+  assert.equal(hybridOf(top("kaktus"), top("paproc")), "alopaproc");
+  assert.equal(hybridOf(top("monpilea"), top("alopaproc")), "zlotolistka");
+  assert.equal(hybridOf(top("monstera"), top("kaktus")), null, "bez przepisu");
+  assert.equal(hybridOf({ chain: "monstera", level: 4 }, top("pilea")), null, "nie najwyższy poziom");
+  assert.equal(hybridOf(top("monstera"), top("monstera")), null);
+  assert.ok(isTop(top("zlotolistka")));
+  const board = createBoard(BOARD);
+  board.cells[0] = top("monstera");
+  board.cells[1] = top("pilea");
+  board.cells[2] = top("monpilea");
+  board.cells[3] = top("monpilea");
+  assert.equal(mergeablePairs(board), 1, "jedna para do hybrydy, dwie Monpilee się nie łączą");
+  assert.deepEqual(moveItem(board, 0, 1), { type: "hybrid", item: { chain: "monpilea", level: 1 } });
+  assert.equal(board.cells[0], null);
+  assert.equal(moveItem(board, 2, 3).type, "swap");
+
+  // W grze: liście za hybrydę, statystyka, kompost hybrydy, odblokowanie łańcucha po progu połączeń.
+  const game = createGame({ state: defaultState(0), random: queue(0) });
+  game.board.cells.fill(null);
+  game.board.cells[0] = top("paproc");
+  game.board.cells[1] = top("kaktus");
+  game.state.stats.merges = 9;
+  game.move(0, 1);
+  const events = game.takeEvents();
+  assert.deepEqual(
+    events.find((event) => event.type === "hybrid"),
+    {
+      type: "hybrid",
+      from: 0,
+      to: 1,
+      item: { chain: "alopaproc", level: 1 },
+      leaves: HYBRIDS.alopaproc.leaves,
+    },
+  );
+  assert.deepEqual(
+    events.find((event) => event.type === "unlock"),
+    { type: "unlock", chain: "pilea", name: "Pilea" },
+  );
+  assert.equal(game.state.leaves, HYBRIDS.alopaproc.leaves);
+  assert.equal(game.state.stats.hybrids, 1);
+  assert.equal(game.state.stats.merges, 10);
+  game.compost(1);
+  assert.equal(game.state.leaves, HYBRIDS.alopaproc.leaves + HYBRIDS.alopaproc.compost);
+  // Zapis i wczytanie zachowują hybrydy i inne łańcuchy.
+  game.board.cells[5] = top("zlotolistka");
+  game.board.cells[6] = { chain: "kaktus", level: 3 };
+  const loaded = loadState(JSON.parse(JSON.stringify({ ...game.state, cells: game.board.cells })), 0);
+  assert.deepEqual(loaded.cells[5], top("zlotolistka"));
+  assert.deepEqual(loaded.cells[6], { chain: "kaktus", level: 3 });
 });

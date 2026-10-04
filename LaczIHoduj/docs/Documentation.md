@@ -2,22 +2,22 @@
 
 Nowa **Sowia Szklarnia** (Analiza 2, rozdz. 3.5; Analiza 3, etap E8): gra logiczna typu **merge** na półkach szklarni. Dwa takie same przedmioty połączone przeciągnięciem dają przedmiot następnego poziomu. Gra powstaje od zera w osobnym folderze `LaczIHoduj/` jako **wersja podglądowa** (Analiza 3, „Podgląd przed podmianą”): w rejestrze gier wpis `szklarnia` ma `preview: { path: "LaczIHoduj/", name: "Łącz i Hoduj" }`, więc karta Sowiej Szklarni w menu ma przycisk „Wypróbuj nową wersję: Łącz i Hoduj”, a `SowieCloud.currentGame()` rozpoznaje stronę jako grę `szklarnia`. Identyfikator w bazie — **`szklarnia`** — nie zmienia się nigdy (opublikowane reguły Firestore). Dawna gra (`SowiaSzklarnia/`) działa bez zmian obok.
 
-Stan: **E8a — prototyp (krok 8.0)**: plansza 7 × 9, jeden łańcuch (Monstera, 5 poziomów), przeciąganie z uniesieniem przedmiotu nad palec, zaznaczanie stuknięciem, Sowia doniczka z ładunkami, kompostownik (wyjście z zapchanej planszy), liście monstery, zapis w polu `preview`. **Punkt kontrolny właściciela:** jeśli rozgrywka merge się nie podoba, gra przechodzi na wariant zapasowy z Analizy 2, rozdz. 3.5 (idle z odwróconymi rolami). Kolejne kroki (8.1–8.3: cztery łańcuchy i hybrydy, zamówienia sąsiadek, odnawianie pomieszczeń, przeszkody Pracu i Amic, kózki-wzmacniacze, Basen Humbaka, pakiet startowy z dawnej gry, samouczek, podmiana) — dopiero po akceptacji prototypu.
+Stan: **E8a — prototyp (krok 8.0)**: plansza 7 × 9, przeciąganie z uniesieniem przedmiotu nad palec, zaznaczanie stuknięciem, Sowia doniczka z ładunkami, kompostownik (wyjście z zapchanej planszy), liście monstery, zapis w polu `preview`. Właściciel przyjął ekrany prototypu (2026-10-04), więc gra rośnie dalej w ścieżce merge. **E8b1 (krok 8.1, część 1)**: cztery łańcuchy roślin po 5 poziomów (Monstera, Pilea, Paproć, Kaktus) odblokowywane w Sowiej doniczce liczbą połączeń i trzy hybrydy z dawnej Szklarni (Monpilea Przytulna, Alopaproć Wachlarzowa, Złotolistka). Kolejne kroki (8.1 dalej: zamówienia sąsiadek, odnawianie pomieszczeń; 8.2–8.3: przeszkody Pracu i Amic, kózki-wzmacniacze, Basen Humbaka, pakiet startowy z dawnej gry, samouczek, podmiana) — w planie (Analiza 3, rozdz. 8.9).
 
 ## Pliki
 
-| Plik                    | Rola                                                                                                                                                                     |
-| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `index.html`            | strona gry: nagłówek (Menu, tytuł, liście), podpowiedź, płótno planszy, pasek (Sowia doniczka, kompost), notka o prototypie                                              |
-| `style.css`             | układ strony (siatka na całą wysokość ekranu), wygląd paska i notki, warianty dla wąskich i niskich ekranów                                                              |
-| `package.json`          | `{"type": "module"}` — pliki `.js` folderu to moduły ES (Node w testach jednostkowych)                                                                                   |
-| `config.js`             | dane gry: identyfikator, wersja zapisu, pole podglądu, plansza, łańcuchy, doniczka, nagrody, przedmioty startowe                                                         |
-| `board.js`              | czysta logika planszy (bez DOM): tworzenie, ruchy (przeniesienie, łączenie, zamiana), wolne pola, kompost, wyjścia z zapchanej planszy                                   |
-| `game.js`               | stan gry (wersja 2) i silnik: doniczka z ładunkami, ruchy z nagrodami, kompost, statystyki, kolejka zdarzeń                                                              |
-| `render.js`             | rysowanie planszy na płótnie: szklarnia z półkami, rośliny łańcucha Monstery kształtami, zaznaczenie, uniesiony przedmiot, podświetlenie celu, „pyknięcia” i napisy „+N” |
-| `main.js`               | strona gry: wczytanie i zapis stanu, pętla klatek, obsługa wskaźnika (przeciąganie i stuknięcia), przyciski, komunikaty, haki testowe                                    |
-| `docs/README.md`        | instrukcja dla gracza (po polsku)                                                                                                                                        |
-| `docs/Documentation.md` | ten plik                                                                                                                                                                 |
+| Plik                    | Rola                                                                                                                                                                  |
+| ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `index.html`            | strona gry: nagłówek (Menu, tytuł, liście), podpowiedź, płótno planszy, pasek (Sowia doniczka, kompost), notka o prototypie                                           |
+| `style.css`             | układ strony (siatka na całą wysokość ekranu), wygląd paska i notki, warianty dla wąskich i niskich ekranów                                                           |
+| `package.json`          | `{"type": "module"}` — pliki `.js` folderu to moduły ES (Node w testach jednostkowych)                                                                                |
+| `config.js`             | dane gry: identyfikator, wersja zapisu, pole podglądu, plansza, łańcuchy i hybrydy, doniczka (łańcuchy z progami), nagrody, przedmioty startowe                       |
+| `board.js`              | czysta logika planszy (bez DOM): tworzenie, ruchy (przeniesienie, łączenie, hybryda, zamiana), wolne pola, kompost, wyjścia z zapchanej planszy                       |
+| `game.js`               | stan gry (wersja 2) i silnik: doniczka z ładunkami i losowaniem łańcucha, ruchy z nagrodami, hybrydy, kompost, statystyki, kolejka zdarzeń                            |
+| `render.js`             | rysowanie planszy na płótnie: szklarnia z półkami, rośliny czterech łańcuchów i hybrydy kształtami, zaznaczenie, uniesiony przedmiot, podświetlenie celu, napisy „+N” |
+| `main.js`               | strona gry: wczytanie i zapis stanu, pętla klatek, obsługa wskaźnika (przeciąganie i stuknięcia), przyciski, komunikaty, haki testowe                                 |
+| `docs/README.md`        | instrukcja dla gracza (po polsku)                                                                                                                                     |
+| `docs/Documentation.md` | ten plik                                                                                                                                                              |
 
 Testy: `tests/unit/lacz-plansza.test.mjs` (logika), `tests/e2e/telefon/lacz.spec.js` (strona na telefonach), wpis podglądu w `tests/e2e/telefon/menu.spec.js`; folder jest dopisany w `eslint.config.js` (moduły ES), `package.json` (`format`, `format:check`, `html`), `tests/unit/architecture.test.mjs` (`newGamePages`, `projectScripts`), `tests/unit/pwa.test.mjs` i `tests/unit/owl-gallery.test.mjs`.
 
@@ -25,8 +25,8 @@ Testy: `tests/unit/lacz-plansza.test.mjs` (logika), `tests/e2e/telefon/lacz.spec
 
 Z dawnej gry (`SowiaSzklarnia/script.js`) do nowej trafią (Analiza 2, rozdz. 3.5):
 
-- **Rośliny** jako łańcuchy po 5 poziomów: Monstera (Monstera Miziasta — w prototypie), Pilea (Pilea Pieniążek), Paproć (Paproć Puchata), Kaktus (Kaktus Pracu).
-- **Hybrydy** jako połączenie dwóch różnych roślin najwyższego poziomu: Monpilea Przytulna (Monstera + Pilea), Alopaproć Wachlarzowa (Paproć + Alokazja), Złotolistka (Monpilea + Alopaproć).
+- ✅ (E8b1) **Rośliny** jako łańcuchy po 5 poziomów: Monstera (Monstera Miziasta), Pilea (Pilea Pieniążek), Paproć (Paproć Puchata), Kaktus (Kaktus Pracu).
+- ✅ (E8b1) **Hybrydy** jako połączenie dwóch różnych roślin najwyższego poziomu: Monpilea Przytulna (Monstera + Pilea), Alopaproć Wachlarzowa (w dawnej grze Paproć + Alokazja; Alokazji nie ma wśród łańcuchów nowej gry, więc tu **Paproć + Kaktus**), Złotolistka (Monpilea + Alopaproć).
 - **Pomieszczenia szklarni** odnawiane gwiazdkami z zamówień: Doniczarnia 🪴, Sala Upraw 🌿, Zraszalnia 💧, Sadzonkarnia 🌱, Krzyżówkarium 🧬, Laboratorium Pyłku 🔬, Kompostownia 🪱, Płotek Antykozi 🎀, Sowie Centrum 🦉, Kącik Drzemki 🌙.
 - **Kompost** (dawna Kompostownia) — w prototypie już jest jako kompostownik.
 - **Kozy** zmieniają rolę: zamiast szkodników („SIO! SIO!”) są kózkami-wzmacniaczami (Skoczek, Zjadaczka, Dżoker, Sprężynka, Taran).
@@ -67,21 +67,53 @@ Na 320 × 568: nagłówek 44 px, podpowiedź 17 px, gniazdo 316 × 419 px, płó
 
 ## `config.js`
 
-| Stała              | Wartość                                                                                                                          | Znaczenie                                                                                                                              |
-| ------------------ | -------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
-| `GAME_ID`          | `"szklarnia"`                                                                                                                    | identyfikator w bazie (stały)                                                                                                          |
-| `SAVE_VERSION`     | `2`                                                                                                                              | wersja stanu nowej gry (dawna Szklarnia zapisuje wersję 1)                                                                             |
-| `PREVIEW_FIELD`    | `"preview"`                                                                                                                      | pole dokumentu `sowiegry/profil/sowiegry_gry/szklarnia`, w którym podgląd trzyma swój stan (JSON); pole `state` zostaje dla dawnej gry |
-| `BOARD`            | `{ cols: 7, rows: 9 }`                                                                                                           | plansza (63 pola)                                                                                                                      |
-| `CHAINS`           | `{ monstera: { name: "Monstera", color: "#3fae6a", levels: ["Nasionko", "Kiełek", "Sadzonka", "Monstera", "Złota Monstera"] } }` | łańcuchy; najwyższy poziom się nie łączy                                                                                               |
-| `POT`              | `{ max: 12, regen: 3, chain: "monstera" }`                                                                                       | Sowia doniczka: najwyżej 12 ładunków, jeden wraca co 3 s, daje nasionko Monstery                                                       |
-| `MERGE_LEAVES`     | `[0, 0, 1, 3, 8, 20]`                                                                                                            | liście za połączenie, według poziomu **wyniku** (indeks = poziom)                                                                      |
-| `COMPOST_LEAVES`   | `[0, 1, 2, 4, 10, 25]`                                                                                                           | liście za kompost, według poziomu **usuniętego** przedmiotu                                                                            |
-| `GAME_SOUNDS`      | `["klik", "ladowanie", "polaczenie", "lisc", "rekord", "slizg"]`                                                                 | efekty wczytywane po pierwszym dotknięciu (od uwagi właściciela L1)                                                                    |
-| `GREENHOUSE_MUSIC` | `"szklarnia"`                                                                                                                    | motyw szklarni (`assets/audio/music/szklarnia.mp3`, 76 BPM, `scripts/make-audio.mjs` — `greenhouseTheme`)                              |
-| `START_ITEMS`      | `[[30, 1], [31, 1], [24, 1], [38, 2], [39, 2]]`                                                                                  | nowa gra: [indeks pola, poziom] — trzy nasionka i dwa kiełki (od razu dwie pary do połączenia)                                         |
+| Stała              | Wartość                                                          | Znaczenie                                                                                                                              |
+| ------------------ | ---------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| `GAME_ID`          | `"szklarnia"`                                                    | identyfikator w bazie (stały)                                                                                                          |
+| `SAVE_VERSION`     | `2`                                                              | wersja stanu nowej gry (dawna Szklarnia zapisuje wersję 1)                                                                             |
+| `PREVIEW_FIELD`    | `"preview"`                                                      | pole dokumentu `sowiegry/profil/sowiegry_gry/szklarnia`, w którym podgląd trzyma swój stan (JSON); pole `state` zostaje dla dawnej gry |
+| `BOARD`            | `{ cols: 7, rows: 9 }`                                           | plansza (63 pola)                                                                                                                      |
+| `CHAINS`           | tabela niżej                                                     | łańcuchy i hybrydy; najwyższy poziom nie łączy się z takim samym                                                                       |
+| `HYBRIDS`          | tabela niżej                                                     | przepisy hybryd: para łańcuchów (kolejność dowolna) → hybryda; liście za skrzyżowanie i za kompost hybrydy                             |
+| `POT`              | `{ max: 12, regen: 3, chain: "monstera", chains: [...] }`        | Sowia doniczka: najwyżej 12 ładunków, jeden wraca co 3 s; `chain` — łańcuch przedmiotów startowych; `chains` — tabela niżej            |
+| `MERGE_LEAVES`     | `[0, 0, 1, 3, 8, 20]`                                            | liście za połączenie, według poziomu **wyniku** (indeks = poziom)                                                                      |
+| `COMPOST_LEAVES`   | `[0, 1, 2, 4, 10, 25]`                                           | liście za kompost, według poziomu **usuniętego** przedmiotu                                                                            |
+| `GAME_SOUNDS`      | `["klik", "ladowanie", "polaczenie", "lisc", "rekord", "slizg"]` | efekty wczytywane po pierwszym dotknięciu (od uwagi właściciela L1)                                                                    |
+| `GREENHOUSE_MUSIC` | `"szklarnia"`                                                    | motyw szklarni (`assets/audio/music/szklarnia.mp3`, 76 BPM, `scripts/make-audio.mjs` — `greenhouseTheme`)                              |
+| `START_ITEMS`      | `[[30, 1], [31, 1], [24, 1], [38, 2], [39, 2]]`                  | nowa gra: [indeks pola, poziom] — trzy nasionka i dwa kiełki (od razu dwie pary do połączenia)                                         |
 
-Wszystkie obiekty są zamrożone (`Object.freeze`).
+`CHAINS` (`{ name, color, levels, hybrid? }`; `color` — zieleń rysunku, `levels` — nazwy poziomów od 1):
+
+| Klucz         | `name`      | `color`   | `levels`                                                                      |
+| ------------- | ----------- | --------- | ----------------------------------------------------------------------------- |
+| `monstera`    | Monstera    | `#3fae6a` | Nasionko, Kiełek, Sadzonka, Monstera, Złota Monstera                          |
+| `pilea`       | Pilea       | `#72bd68` | Ziarenko pilei, Listek pilei, Pieniążek, Pilea, Złota Pilea                   |
+| `paproc`      | Paproć      | `#4b9e72` | Zarodnik, Pastorał, Młoda paproć, Paproć, Złota Paproć                        |
+| `kaktus`      | Kaktus      | `#5ba760` | Pestka kaktusa, Kuleczka, Kaktusik, Kaktus, Kwitnący Kaktus                   |
+| `monpilea`    | Monpilea    | `#68c582` | Monpilea Przytulna (`hybrid: true` — jeden poziom, nie łączy się z taką samą) |
+| `alopaproc`   | Alopaproć   | `#3fa976` | Alopaproć Wachlarzowa (`hybrid: true`)                                        |
+| `zlotolistka` | Złotolistka | `#caa34a` | Złotolistka (`hybrid: true`)                                                  |
+
+`HYBRIDS` (`{ parents, leaves, compost }`):
+
+| Hybryda       | `parents`                   | `leaves` | `compost` |
+| ------------- | --------------------------- | -------- | --------- |
+| `monpilea`    | `["monstera", "pilea"]`     | 60       | 50        |
+| `alopaproc`   | `["paproc", "kaktus"]`      | 60       | 50        |
+| `zlotolistka` | `["monpilea", "alopaproc"]` | 200      | 150       |
+
+Składniki pierwszych dwóch hybryd to rośliny **poziomu 5** (np. Złota Monstera + Złota Pilea), Złotolistki — dwie hybrydy.
+
+`POT.chains` (`{ chain, weight, unlock }` — łańcuch wchodzi do doniczki, gdy `stats.merges ≥ unlock`; losowanie z wagami spośród odblokowanych):
+
+| `chain`    | `weight` | `unlock` (połączeń) |
+| ---------- | -------- | ------------------- |
+| `monstera` | 4        | 0                   |
+| `pilea`    | 3        | 10                  |
+| `paproc`   | 2        | 30                  |
+| `kaktus`   | 2        | 60                  |
+
+Połączenie i skrzyżowanie hybrydy liczą się tak samo (`stats.merges + 1`). Wszystkie obiekty są zamrożone (`Object.freeze`).
 
 ## `board.js` — plansza
 
@@ -93,14 +125,17 @@ Przedmiot: `{ chain, level }` (poziom od 1), puste pole: `null`. Plansza: `{ col
 - `cellIndex(board, col, row)`, `cellPosition(board, index)` → `{ col, row }`.
 - `emptyCells(board)` — indeksy wolnych pól (rosnąco).
 - `canMerge(a, b)` — ten sam łańcuch i poziom, poziom poniżej najwyższego.
-- `moveItem(board, from, to)` → `{ type, item }`:
+- `isTop(item)` — przedmiot ma najwyższy poziom swojego łańcucha (hybryda ma jeden poziom, więc zawsze).
+- `hybridOf(a, b)` — oba przedmioty `isTop`, różne łańcuchy i para jest w `HYBRIDS` (`parents` w dowolnej kolejności) → klucz hybrydy (np. `"monpilea"`), inaczej `null`.
+- `moveItem(board, from, to)` → `{ type, item }` (sprawdzane w tej kolejności):
   - `"none"` — to samo pole, puste pole źródłowe albo cel poza planszą (bez zmian);
   - `"move"` — cel pusty: przeniesienie;
   - `"merge"` — `canMerge`: na polu docelowym przedmiot o poziom wyżej, źródło puste;
-  - `"swap"` — inny przedmiot (także dwa najwyższego poziomu): zamiana miejscami.
+  - `"hybrid"` — `hybridOf`: na polu docelowym hybryda `{ chain: klucz, level: 1 }`, źródło puste;
+  - `"swap"` — inny przedmiot (także dwa takie same najwyższego poziomu albo dwie takie same hybrydy): zamiana miejscami.
 - `spawnItem(board, item, random = Math.random)` — kopia przedmiotu na polu `free[floor(random() * free.length)]` → indeks albo `-1` (plansza pełna).
 - `removeItem(board, index)` — usunięcie (kompost) → przedmiot albo `null`.
-- `mergeablePairs(board)` — liczba par do połączenia: dla każdej grupy `łańcuch:poziom` (bez najwyższych) `floor(liczba / 2)`; każdy przedmiot można przenieść w dowolne miejsce, więc liczy się sam skład planszy.
+- `mergeablePairs(board)` — liczba par do połączenia: dla każdej grupy `łańcuch:poziom` (bez najwyższych) `floor(liczba / 2)`, plus po jednej parze na każdy przepis `HYBRIDS`, którego oba łańcuchy mają na planszy przedmiot najwyższego poziomu; każdy przedmiot można przenieść w dowolne miejsce, więc liczy się sam skład planszy.
 - `exits(board)` → `{ merges, empty, compost }` — pary, wolne pola, przedmioty do kompostu. **Plansza nigdy nie blokuje się bez wyjścia:** pełna plansza bez par ma zawsze `compost > 0` (kompost zwalnia pole, a doniczka znowu działa) — sprawdza to test jednostkowy na 200 losowych planszach i na pełnej planszy bez par.
 - `serializeCells(board)` — kopia pól do zapisu (`{ chain, level }` albo `null`).
 
@@ -115,17 +150,20 @@ Stan (wersja 2, zapisywany jako JSON w polu `preview`):
   cells: [...63 pól],            // { chain, level } | null
   leaves: 0,                     // liście monstery (waluta)
   pot: { charges: 12, progress: 0 },   // ładunki doniczki i postęp następnego (0…1)
-  stats: { merges: 0, spawns: 0, composted: 0, best: 2, moves: 0 },
+  stats: { merges: 0, spawns: 0, composted: 0, best: 2, moves: 0, hybrids: 0 },
 }
 ```
 
+- `potChains(merges)` — wpisy `POT.chains` z `unlock ≤ merges` (kolejność z tabeli).
+- `pickChain(merges, random = Math.random)` — losowanie z wagami: `roll = random() · suma wag`, kolejno odejmowana waga wpisu, pierwszy z `roll < 0` (zabezpieczenie — ostatni wpis).
+
 - `defaultState(now = Date.now())` — plansza z `START_ITEMS` (łańcuch `POT.chain`), pełna doniczka, `stats.best = 2` (na starcie są kiełki).
-- `loadState(raw, now)` — `raw` nie jest obiektem albo `version !== 2` (np. stan dawnej Szklarni) → `defaultState(now)`. W przeciwnym razie: domyślne wartości nadpisane zapisem, pola przez `createBoard` (niepoprawne przedmioty → puste), `leaves` liczbowo (nie-liczba → 0), `pot.charges` w 0…12, `pot.progress` w 0…1, `stats` uzupełnione domyślnymi, `version: 2`.
+- `loadState(raw, now)` — `raw` nie jest obiektem albo `version !== 2` (np. stan dawnej Szklarni) → `defaultState(now)`. W przeciwnym razie: domyślne wartości nadpisane zapisem, pola przez `createBoard` (niepoprawne przedmioty → puste; hybrydy to zwykłe klucze `CHAINS` z poziomem 1), `leaves` liczbowo (nie-liczba → 0), `pot.charges` w 0…12, `pot.progress` w 0…1, `stats` uzupełnione domyślnymi (zapis sprzed E8b1 dostaje `hybrids: 0`), `version: 2`.
 - `createGame({ state = defaultState(), random = Math.random })` → `{ state, board, update, tapPot, move, compost, takeEvents }`; plansza tworzona z `state.cells`, po każdej zmianie `state.cells = serializeCells(board)`.
   - `update(dt)` — ładowanie doniczki: przy pełnej `progress = 0`; inaczej `progress += dt / POT.regen`, każde pełne 1 → +1 ładunek (do `max`).
-  - `tapPot()` — bez ładunku: zdarzenie `potEmpty`, `-1`; brak wolnego pola: `boardFull`, `-1` (**ładunek zostaje**); inaczej nasionko na losowym wolnym polu, `charges − 1`, `stats.spawns + 1`, zdarzenie `spawn { index, item }`, zwraca indeks.
-  - `move(from, to)` — `moveItem`; przy `"none"` nic; inaczej `stats.moves + 1`; połączenie: `leaves += MERGE_LEAVES[poziom wyniku]`, `stats.merges + 1`, `stats.best = max(best, poziom)`, zdarzenie `merge { from, to, item, leaves, top }` (`top` — wynik ma najwyższy poziom); przeniesienie i zamiana: zdarzenia `move` / `swap { from, to }`.
-  - `compost(index)` — usunięcie przedmiotu, `leaves += COMPOST_LEAVES[poziom]`, `stats.composted + 1`, zdarzenie `compost { index, item, leaves }`, zwraca przedmiot (puste pole — `null`).
+  - `tapPot()` — bez ładunku: zdarzenie `potEmpty`, `-1`; brak wolnego pola: `boardFull`, `-1` (**ładunek zostaje**); inaczej nasionko `{ chain: pickChain(stats.merges, random), level: 1 }` na losowym wolnym polu (najpierw losowany łańcuch, potem pole), `charges − 1`, `stats.spawns + 1`, zdarzenie `spawn { index, item }`, zwraca indeks.
+  - `move(from, to)` — `moveItem`; przy `"none"` nic; inaczej `stats.moves + 1`; połączenie: `leaves += MERGE_LEAVES[poziom wyniku]`, `stats.merges + 1`, `stats.best = max(best, poziom)`, zdarzenie `merge { from, to, item, leaves, top }` (`top` — wynik ma najwyższy poziom); hybryda: `leaves += HYBRIDS[klucz].leaves`, `stats.merges + 1`, `stats.hybrids + 1`, zdarzenie `hybrid { from, to, item, leaves }`; przeniesienie i zamiana: zdarzenia `move` / `swap { from, to }`. Po ruchu: dla każdego łańcucha, który właśnie wszedł do doniczki (`potChains` po ruchu dłuższe niż przed), zdarzenie `unlock { chain, name }` (`name` z `CHAINS`).
+  - `compost(index)` — usunięcie przedmiotu, `leaves += HYBRIDS[łańcuch].compost` dla hybrydy, inaczej `COMPOST_LEAVES[poziom]`, `stats.composted + 1`, zdarzenie `compost { index, item, leaves }`, zwraca przedmiot (puste pole — `null`).
   - `takeEvents()` — zabiera i zwraca kolejkę zdarzeń.
 
 ## `render.js` — rysowanie
@@ -144,14 +182,17 @@ Wszystko w pikselach CSS płótna (`setTransform(ratio, …)`, `ratio = min(2, d
   - `draw({ cells, selected = -1, drag = null, time = 0, dt = 0 })`.
 - **Tło (szklarnia; deski półek pod każdym rzędem na ekranie — w obróconej planszy 7 desek):** pionowy gradient `#dff7ea` → `#bfe8cf`; pionowe szprosy (`rgba(78, 130, 105, 0.22)`, 2 px) co 1/3 szerokości od 1/6; odblask szyby — biała elipsa `rgba(255, 255, 255, 0.35)` w prawym górnym rogu, kołysząca się `sin(time · 0,3) · 6` px; pod każdym rzędem deska półki `#b9895a` (wysokość 6 px, zaokrąglenie 3, wystaje 4 px na boki, 3 px nad dołem pola) z cieniem `rgba(59, 47, 74, 0.12)` 2 px; każde pole — jasne miejsce `rgba(255, 255, 255, 0.45)` (zaokrąglenie 20% pola).
 - **Cel przeciągania:** pole, na które spadnie przedmiot — zielone `rgba(63, 174, 106, 0.45)` przy połączeniu, niebieskie `rgba(92, 200, 232, 0.4)` przy przeniesieniu i zamianie; nad kompostem bez podświetlenia pola.
-- **Rośliny** (`item(target, cx, cy, s, time)`; `bottom = cy + 0,32 s`; kołysanie `sin(time · 1,8 + cx · 0,05) · 0,06` rad; zielenie `COLORS.monstera` / `COLORS.monsteraCiemna`, przy poziomie 5 złoto `COLORS.zloto` / `COLORS.zlotoCiemne`):
-  - poziomy 1–2: kopczyk ziemi `#8a5a3b` (elipsa 0,3 s × 0,12 s); poziomy 3–5: doniczka `COLORS.doniczka` szerokości `s · (0,36 + (poziom − 3) · 0,06)`, wysokości 0,26 s, z ciemnym rantem;
-  - 1 **Nasionko** — elipsa `#a0703f` (0,12 s × 0,16 s, obrót 0,4) z białym połyskiem;
-  - 2 **Kiełek** — łodyżka (ciemna zieleń, grubość `max(2, 0,05 s)`) i dwa listki pod kątem ±0,9 rad;
-  - 3 **Sadzonka** — 3 liście (długość 0,32 s, szerokość 0,1 s, rozstaw 0,6 rad);
-  - 4 **Monstera** — 5 liści (0,42 s × 0,14 s, rozstaw 0,5 rad) z białymi wycięciami;
-  - 5 **Złota Monstera** — jak 4, w złocie, z trzema migającymi iskierkami (romby);
-  - liście na zmianę jasne i ciemne; poziom (cyfra) w prawym górnym rogu pola (`font(max(9, round(0,2 s)))`, `rgba(59, 47, 74, 0.7)`).
+- **Rośliny** (`item(target, cx, cy, s, time, label = true)`; `bottom = cy + 0,32 s`; kołysanie `sway = sin(time · 1,8 + cx · 0,05) · 0,06` rad; `green` = `CHAINS[łańcuch].color`, `dark` = `COLORS.monsteraCiemna`; poziom 5 Monstery, Pilei i Paproci — złoto: `green = COLORS.zloto`, `dark = COLORS.zlotoCiemne`; Kwitnący Kaktus zostaje zielony):
+  - **podłoże:** poziomy 1–2 — kopczyk ziemi `#8a5a3b` (elipsa 0,3 s × 0,12 s w `bottom`); poziomy 3–5 — doniczka `COLORS.doniczka` szerokości `s · (0,36 + (poziom − 3) · 0,06)`, wysokości 0,26 s (zaokrąglenie 4), z ciemnym rantem `rgba(59, 47, 74, 0.18)` wysokości `max(2, 0,04 s)`; hybryda — doniczka szerokości 0,5 s ze **złotym rantem** `COLORS.zloto` wysokości `max(2, 0,06 s)`;
+  - funkcje pomocnicze: `leaf(x, y, angle, length, width, color, holes)` — elipsa od punktu w kierunku kąta (przy `holes` dwa białe wycięcia `rgba(255, 255, 255, 0.55)` na 0,35 i 0,6 długości); `stem(x0, y0, x1, y1, width, color)` — kreska z okrągłymi końcami; `coin(x, y, r, color)` — okrągły listek pilei z jaśniejszym środkiem (`rgba(255, 255, 255, 0.35)`, promień 0,25 r); `frond(x, y, angle, length, color)` — liść paproci: łuk `quadraticCurveTo(0,25 L, −0,6 L, 0, −L)` (grubość `max(1,5, 0,06 L)`) i po 5 par listków-elips wzdłuż łuku (`u = k/6`, rozmiar `0,13 L · (1 − u/2)`, spłaszczenie 0,45, obrót ±0,5);
+  - **poziom 1** (`seedShape`): Monstera — elipsa `#a0703f` 0,12 s × 0,16 s; Pilea — `#c58f52` 0,1 × 0,1; Kaktus — `#5b4a3a` 0,08 × 0,11 (wszystkie w `bottom − 0,12 s`, obrót 0,4, z białym połyskiem `rgba(255, 255, 255, 0.5)`); Paproć — trzy zarodniki-kropki `#7a9c5a` (promień 0,07 s; środkowa wyżej, w `bottom − 0,16 s`, boczne ±0,1 s w `bottom − 0,1 s`);
+  - **Monstera** (`monsteraPlant`): 2 Kiełek — łodyżka `dark` (grubość `max(2, 0,05 s)`, od `bottom − 0,06 s` do `bottom − 0,36 s`) i dwa listki 0,24 s × 0,08 s pod kątem ±0,9 rad; 3 Sadzonka — 3 liście 0,32 s × 0,1 s co 0,6 rad z `bottom − 0,24 s`; 4–5 — 5 liści 0,42 s × 0,14 s co 0,5 rad z wycięciami; liście na zmianę `green` i `dark`;
+  - **Pilea** (`pileaPlant`): okrągłe listki `coin` na cienkich ogonkach `stem` (grubość `max(1, 0,025 s)`, kolor `dark`) z punktu `bottom − 0,06 s` (poziom 2) albo `bottom − 0,24 s`; listki `[dx, wysokość, promień]` w ułamkach `s` (dx przesunięte o `sway · 0,4`): poziom 2 — `[−0,12, 0,26, 0,08]`, `[0,12, 0,3, 0,08]`; 3 — `[−0,18, 0,3, 0,1]`, `[0, 0,42, 0,11]`, `[0,18, 0,3, 0,1]`; 4–5 — `[−0,3, 0,28, 0,11]`, `[−0,16, 0,44, 0,12]`, `[0, 0,52, 0,13]`, `[0,16, 0,44, 0,12]`, `[0,3, 0,28, 0,11]`, `[0, 0,3, 0,1]`;
+  - **Paproć** (`paprocPlant`): 2 Pastorał — pęd `green` (grubość `max(2, 0,05 s)`) od `bottom − 0,06 s` do `bottom − 0,3 s` zakończony zwiniętym łukiem (środek `+0,07 s`, promień 0,07 s, od π do 2,6π); 3 — 3 liście `frond` długości 0,36 s; 4–5 — 5 liści długości 0,48 s; rozstaw 0,45 rad z `bottom − 0,22 s`, na zmianę `green` i `dark`;
+  - **Kaktus** (`kaktusPlant`): 2 Kuleczka — koło `green` promienia 0,12 s w `bottom − 0,13 s`; 3–5 — pień (zaokrąglony prostokąt szerokości 0,16 s / 0,2 s, wysokości 0,3 s / 0,44 s z `bottom − 0,24 s`) z ciemną pręgą `dark` 2 px; od 4 — dwa ramiona (po dwa zaokrąglone prostokąty: lewe niżej, prawe wyżej); kolce — 4 białe kwadraciki `rgba(255, 255, 255, 0.75)` (bok `max(1, 0,02 s)`); 5 Kwitnący Kaktus — kwiat na czubku: 5 płatków `COLORS.policzki` (elipsy 0,05 s × 0,035 s wokół środka w odległości 0,06 s) i złoty środek (promień 0,035 s);
+  - **hybrydy** (`hybridPlant`, z punktu `bottom − 0,24 s`; za rośliną **złota poświata** `halo`: gradient promieniowy `rgba(244, 197, 66, 0.7)` → przezroczysty, promień 0,48 s, środek pola): Monpilea — 3 liście monstery z wycięciami (0,4 s × 0,13 s, kąty −0,55 / 0 / 0,55) w `COLORS.monstera` i dwa listki pilei `#72bd68` (promień 0,1 s, ±0,3 s w bok, 0,3 s wyżej); Alopaproć — wachlarz 7 liści paproci (długość 0,46 s, co 0,32 rad) na zmianę `#3fa976` i `COLORS.monsteraCiemna`; Złotolistka — z tyłu 4 liście paproci `COLORS.zlotoCiemne` (0,48 s, co 0,55 rad), z przodu 2 złote liście monstery z wycięciami (0,4 s × 0,14 s, ±0,5 rad) i trzy złote listki pilei (dwa `COLORS.zloto` promienia 0,09 s ±0,2 s w bok 0,36 s wyżej, środkowy `#fff1b8` promienia 0,1 s 0,44 s wyżej);
+  - **iskierki** (`sparkles`) przy poziomie najwyższym i hybrydach: trzy białe romby migające `0,05 s · (0,6 + 0,4 · sin(time · 2 + k · 2,1))`;
+  - **oznaczenie poziomu** w prawym górnym rogu pola (`font(max(9, round(0,2 s)))`, wyrównanie do prawej w `cx + 0,44 s`, `cy − 0,26 s`): cyfra `rgba(59, 47, 74, 0.7)`, u hybrydy gwiazdka „★” w `COLORS.zlotoCiemne`.
 - **Zaznaczenie** (stuknięcie, bez przeciągania): złota ramka `COLORS.zloto` 4 px.
 - **Przeciąganie:** przedmiot z pola źródłowego znika z planszy i jest rysowany powiększony ×1,15 w punkcie `(x, y − LIFT · s)` — nad palcem — z cieniem (elipsa `rgba(59, 47, 74, 0.2)`) pod palcem; **bez cyfry poziomu** (`item(…, label = false)`), żeby nie zasłaniał cyfry pola docelowego.
 
@@ -168,15 +209,15 @@ Stałe: `SAVE_EVERY = 20` (s gry), `IMPORTANT_DELAY = 2000` (ms), `DRAG_START = 
   - puszczenie bez przeciągania (**stuknięcie**): bez zaznaczenia — stuknięta roślina zostaje zaznaczona (podpowiedź „Kiełek — stuknij pole albo kompost”); z zaznaczeniem — ruch na stuknięte pole (to samo pole — odznaczenie);
   - `pointercancel` — przerwanie bez ruchu.
 - **Przyciski:** Sowia doniczka → `tapPot()`; kompost: zaznaczona roślina → `compost`, bez zaznaczenia — komunikat „Przeciągnij roślinę na kompost albo zaznacz ją i stuknij tutaj”.
-- **Zdarzenia gry** (`handleEvents`): `spawn` — pyknięcie pola; `merge` — pyknięcie, napis `+N` (biały, 18 px) nad polem, podpowiedź „Kiełek!” (nazwa wyniku), przy Złotej Monsterze komunikat-nagroda „Złota Monstera! Szczyt łańcucha — możesz ją skompostować za 25 liści” (`priority: 2`), zapis po 2 s; `compost` — napis `+N` w kolorze `COLORS.monsteraJasna`, podpowiedź „Kompost: Kiełek → +2 liści”, zapis po 2 s; `potEmpty` — „Doniczka się ładuje — nasionko co 3 sekundy”; `boardFull` — „Brak miejsca na półkach — połącz albo skompostuj roślinę” (`kind: "warn"`).
-- **Dźwięk** (od uwagi właściciela L1): `fetch(../assets/audio/audio.json)` → `createAudio({ manifest, baseUrl, preloadOnUnlock: GAME_SOUNDS })`, `connectAudioSettings(audio, SowieCloud)` (głośności z profilu), `bindUnlock(window, { ignore: gest w a[href] })`, od razu `playMusic("szklarnia")` (zagra po odblokowaniu dotknięciem); `play(nazwa, opcje)` łapie błędy. Efekty: podniesienie rośliny (przeciąganie od 8 px) i zaznaczenie stuknięciem — `klik` (ton 1,2, głośność 0,6); przeniesienie i zamiana — `ladowanie` (0,55); połączenie — `polaczenie` z tonem `0,9 + 0,1 × poziom wyniku`, Złota Monstera — dodatkowo `rekord` (0,8); nasionko z doniczki — `lisc` (ton 1,25, 0,6); kompost — `slizg` (ton 0,8, 0,7); pusta doniczka i pełne półki — `klik` (ton 0,6, 0,5). Kontekst usypia się przy zejściu do tła (silnik).
+- **Zdarzenia gry** (`handleEvents`): `spawn` — pyknięcie pola; `merge` — pyknięcie, napis `+N` (biały, 18 px) nad polem, podpowiedź „Kiełek!” (nazwa wyniku), przy szczycie łańcucha komunikat-nagroda „Złota Monstera! Szczyt łańcucha — skrzyżuj ją z innym szczytem albo skompostuj za 25 liści” (nazwa wyniku, liście z `COMPOST_LEAVES`; `kind: "reward"`, `key: "szczyt"`, `priority: 2`), zapis po 2 s; `hybrid` — pyknięcie, napis `+N` złoty (`COLORS.zloto`, 20 px), podpowiedź „Hybryda: Monpilea Przytulna!”, komunikat „Nowa hybryda: Monpilea Przytulna! +60 liści” (`kind: "reward"`, `key: "hybryda"`, `priority: 2`), zapis po 2 s; `unlock` — komunikat „Nowa roślina w Sowiej doniczce: Pilea!” (`kind: "reward"`, `key: "nowa-roslina"`, `priority: 2`); `compost` — napis `+N` w kolorze `COLORS.monsteraJasna`, podpowiedź „Kompost: Kiełek → +2 liści”, zapis po 2 s; `potEmpty` — „Doniczka się ładuje — nasionko co 3 sekundy”; `boardFull` — „Brak miejsca na półkach — połącz albo skompostuj roślinę” (`kind: "warn"`).
+- **Dźwięk** (od uwagi właściciela L1): `fetch(../assets/audio/audio.json)` → `createAudio({ manifest, baseUrl, preloadOnUnlock: GAME_SOUNDS })`, `connectAudioSettings(audio, SowieCloud)` (głośności z profilu), `bindUnlock(window, { ignore: gest w a[href] })`, od razu `playMusic("szklarnia")` (zagra po odblokowaniu dotknięciem); `play(nazwa, opcje)` łapie błędy. Efekty: podniesienie rośliny (przeciąganie od 8 px) i zaznaczenie stuknięciem — `klik` (ton 1,2, głośność 0,6); przeniesienie i zamiana — `ladowanie` (0,55); połączenie — `polaczenie` z tonem `0,9 + 0,1 × poziom wyniku`, szczyt łańcucha — dodatkowo `rekord` (0,8); hybryda — `polaczenie` (ton 1,5) i `rekord` (0,9); nasionko z doniczki — `lisc` (ton 1,25, 0,6); kompost — `slizg` (ton 0,8, 0,7); pusta doniczka i pełne półki — `klik` (ton 0,6, 0,5). Kontekst usypia się przy zejściu do tła (silnik).
 - **HUD** (`updateHud`, co 0,2 s i po akcjach): liście (`toLocaleString("pl-PL")`), ładunki „N/12”, `aria-label` doniczki „Sowia doniczka — nasionko na wolne pole, ładunki N z 12”.
-- **Pętla** (`frame`): `dt = min(0,25 s, …)`; gdy gra gotowa i nie wstrzymana hakiem — `game.update(dt)` i licznik zapisu; rysowanie planszy z widokiem przeciągania (`dragView`: pole źródłowe, punkt palca, cel — przy celu = źródle `-1` — i rodzaj `merge` / `move` / `compost`). Powrót z tła zeruje czas klatki.
+- **Pętla** (`frame`): `dt = min(0,25 s, …)`; gdy gra gotowa i nie wstrzymana hakiem — `game.update(dt)` i licznik zapisu; rysowanie planszy z widokiem przeciągania (`dragView`: pole źródłowe, punkt palca, cel — przy celu = źródle `-1` — i rodzaj: `compost` nad kompostownikiem, `merge` gdy `canMerge` albo `hybridOf` z przedmiotem na celu — zielone podświetlenie — inaczej `move`). Powrót z tła zeruje czas klatki.
 - **Rozmiar planszy** (`fitBoard`): `renderer.resize()` i opis płótna `aria-label` „Półki szklarni: 7 kolumn, 9 rzędów” (obrócona — „9 kolumn, 7 rzędów”); wywołane na starcie, przy `resize` okna i przez `ResizeObserver` gniazda (obrót telefonu, wczytana czcionka zmienia wysokość nagłówka).
-- **Haki testowe** `window.LaczIHoduj` (zamrożony obiekt): `ready()`, `state()`, `cells()` (kopie), `cellCenter(index)`, `cellSize()`, `transposed()` (plansza obrócona), `lift()` (piksele uniesienia), `selected()`, `place(index, level, chain = "monstera")` (wstawia przedmiot, `level` 0 — czyści pole), `move(from, to)` → typ ruchu, `tapPot()` → indeks, `hold(on = true)` (wstrzymanie logiki w klatkach), `music()` (bieżący motyw albo `null`), `save()` (zapis z `flush`).
+- **Haki testowe** `window.LaczIHoduj` (zamrożony obiekt): `ready()`, `state()`, `cells()` (kopie), `cellCenter(index)`, `cellSize()`, `transposed()` (plansza obrócona), `lift()` (piksele uniesienia), `selected()`, `place(index, level, chain = "monstera")` (wstawia przedmiot dowolnego łańcucha albo hybrydę, `level` 0 — czyści pole), `move(from, to)` → typ ruchu, `tapPot()` → indeks, `hold(on = true)` (wstrzymanie logiki w klatkach), `music()` (bieżący motyw albo `null`), `save()` (zapis z `flush`).
 
 ## Testy
 
-- `tests/unit/lacz-plansza.test.mjs` (6 testów): dane (plansza 7 × 9, łańcuch 5 poziomów, nagrody rosną z poziomem); ruchy (przeniesienie, połączenie, zamiana, „none”, najwyższy poziom się nie łączy); doniczka (losowe wolne pole, ładowanie co 3 s, bez ładunku i bez miejsca — ładunek zostaje); nagrody i statystyki, Złota Monstera, kompost; **plansza nigdy bez wyjścia** (pełna bez par — kompost, potem doniczka; 200 losowych plansz); stan (nowa gra ma ≥ 2 pary, zapis i wczytanie, niepoprawne pola, stan v1 dawnej gry → nowa gra).
-- `tests/e2e/telefon/lacz.spec.js` (każdy profil telefonu): płótno przylega do siatki (górny rząd ≤ 24 px od krawędzi, wysokość płótna ≤ dół siatki + 40 px), plansza obrócona tylko przy ekranie poziomym; przeciągnięcie nasionka na nasionko (kiełek, liście, podpowiedź), zaznaczenie i połączenie stuknięciami, zamiana; doniczka, kompost przeciągnięciem (podświetlenie `is-target`) i przyciskiem, pełne półki (komunikat, ładunek zostaje); zapis w polu `preview` na emulatorze — pole `state` dawnej Szklarni bez zmian, plansza wraca w nowej karcie; 320 × 568 — pole ≥ 44 px, cała plansza na ekranie, przyciski ≥ 44 px, bez przewijania w bok; telefon poziomo (844 × 390 i 667 × 375) — plansza obrócona (`aria-label` „9 kolumn, 7 rzędów”), pole ≥ 44 px, bez przewijania, przyciski ≥ 44 px na prawo od planszy, pola 30 i 31 jedno pod drugim i przeciągnięcie je łączy.
+- `tests/unit/lacz-plansza.test.mjs` (8 testów): dane (plansza 7 × 9, łańcuch 5 poziomów, nagrody rosną z poziomem); ruchy (przeniesienie, połączenie, zamiana, „none”, najwyższy poziom się nie łączy); doniczka (losowe wolne pole, ładowanie co 3 s, bez ładunku i bez miejsca — ładunek zostaje); nagrody i statystyki, Złota Monstera, kompost; **plansza nigdy bez wyjścia** (pełna bez par — kompost, potem doniczka; 200 losowych plansz); stan (nowa gra ma ≥ 2 pary, zapis i wczytanie, niepoprawne pola, stan v1 dawnej gry → nowa gra); cztery łańcuchy po 5 poziomów i trzy hybrydy, odblokowanie łańcuchów w doniczce (progi 10 / 30 / 60 połączeń, zdarzenie `unlock`, wagi losowania `pickChain`); hybrydy (oba porządki składników, nagroda 60 liści, `stats.hybrids`, Złotolistka z dwóch hybryd, dwie takie same hybrydy i dwa takie same szczyty — zamiana, kompost hybrydy za 50 liści, `mergeablePairs` liczy przepisy, zapis i wczytanie zachowują hybrydy i inne łańcuchy).
+- `tests/e2e/telefon/lacz.spec.js` (każdy profil telefonu): płótno przylega do siatki (górny rząd ≤ 24 px od krawędzi, wysokość płótna ≤ dół siatki + 40 px), plansza obrócona tylko przy ekranie poziomym; przeciągnięcie nasionka na nasionko (kiełek, liście, podpowiedź), zaznaczenie i połączenie stuknięciami, zamiana; doniczka, kompost przeciągnięciem (podświetlenie `is-target`) i przyciskiem, pełne półki (komunikat, ładunek zostaje); zapis w polu `preview` na emulatorze — pole `state` dawnej Szklarni bez zmian, plansza wraca w nowej karcie; 320 × 568 — pole ≥ 44 px, cała plansza na ekranie, przyciski ≥ 44 px, bez przewijania w bok; telefon poziomo (844 × 390 i 667 × 375) — plansza obrócona (`aria-label` „9 kolumn, 7 rzędów”), pole ≥ 44 px, bez przewijania, przyciski ≥ 44 px na prawo od planszy, pola 30 i 31 jedno pod drugim i przeciągnięcie je łączy; hybryda — Złota Monstera przeciągnięta na Złotą Pileę daje Monpileę (podpowiedź, +60 liści, komunikat, `stats.hybrids`), hybryda nie łączy się z taką samą (zamiana), po 10 połączeniach komunikat „Nowa roślina w Sowiej doniczce: Pilea!”.
 - `tests/e2e/telefon/menu.spec.js` — karta Sowiej Szklarni ma przycisk „Wypróbuj nową wersję: Łącz i Hoduj” (`LaczIHoduj/`).

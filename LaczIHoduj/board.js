@@ -1,6 +1,6 @@
 // Łącz i Hoduj — plansza (czysta logika, bez DOM): pola, przenoszenie, łączenie, zamiana, wolne pola i wyjścia
 // z zapchanej planszy. Przedmiot: { chain, level } (poziom od 1), puste pole: null.
-import { CHAINS } from "./config.js";
+import { CHAINS, HYBRIDS } from "./config.js";
 
 /** Najwyższy poziom łańcucha. */
 export const maxLevel = (chain) => CHAINS[chain]?.levels.length ?? 0;
@@ -31,10 +31,26 @@ export const emptyCells = (board) =>
 export const canMerge = (a, b) =>
   Boolean(a && b && a.chain === b.chain && a.level === b.level && a.level < maxLevel(a.chain));
 
+/** Czy przedmiot ma najwyższy poziom swojego łańcucha (hybryda — zawsze). */
+export const isTop = (item) => Boolean(item && item.level >= maxLevel(item.chain));
+
 /**
- * Ruch przedmiotu z pola `from` na pole `to` → { type: "none" | "move" | "merge" | "swap", item }:
- * puste pole — przeniesienie; taki sam przedmiot — połączenie w następny poziom (na polu docelowym);
- * inny przedmiot — zamiana miejscami.
+ * Hybryda z dwóch różnych roślin najwyższego poziomu (kolejność dowolna) → identyfikator z `HYBRIDS` albo null.
+ * Np. Złota Monstera + Złota Pilea → „monpilea”; Monpilea + Alopaproć → „zlotolistka”.
+ */
+export function hybridOf(a, b) {
+  if (!isTop(a) || !isTop(b) || a.chain === b.chain) return null;
+  for (const [id, recipe] of Object.entries(HYBRIDS)) {
+    const [x, y] = recipe.parents;
+    if ((a.chain === x && b.chain === y) || (a.chain === y && b.chain === x)) return id;
+  }
+  return null;
+}
+
+/**
+ * Ruch przedmiotu z pola `from` na pole `to` → { type: "none" | "move" | "merge" | "hybrid" | "swap", item }:
+ * puste pole — przeniesienie; taki sam przedmiot — połączenie w następny poziom (na polu docelowym); dwie różne
+ * rośliny najwyższego poziomu z przepisu `HYBRIDS` — hybryda (na polu docelowym); inny przedmiot — zamiana.
  */
 export function moveItem(board, from, to) {
   const source = board.cells[from];
@@ -50,6 +66,13 @@ export function moveItem(board, from, to) {
     board.cells[to] = item;
     board.cells[from] = null;
     return { type: "merge", item };
+  }
+  const hybrid = hybridOf(source, target);
+  if (hybrid) {
+    const item = { chain: hybrid, level: 1 };
+    board.cells[to] = item;
+    board.cells[from] = null;
+    return { type: "hybrid", item };
   }
   board.cells[to] = source;
   board.cells[from] = target;
@@ -73,16 +96,25 @@ export function removeItem(board, index) {
   return item;
 }
 
-/** Pary do połączenia na planszy (każdy przedmiot może trafić w dowolne miejsce, więc liczy się sam skład). */
+/**
+ * Pary do połączenia na planszy (każdy przedmiot może trafić w dowolne miejsce, więc liczy się sam skład): takie
+ * same przedmioty poniżej najwyższego poziomu i pary do hybrydy (po jednej na przepis, jeśli są oba składniki).
+ */
 export function mergeablePairs(board) {
   const counts = new Map();
+  const tops = new Set();
   for (const item of board.cells) {
-    if (!item || item.level >= maxLevel(item.chain)) continue;
+    if (!item) continue;
+    if (isTop(item)) {
+      tops.add(item.chain);
+      continue;
+    }
     const key = `${item.chain}:${item.level}`;
     counts.set(key, (counts.get(key) || 0) + 1);
   }
   let pairs = 0;
   for (const count of counts.values()) pairs += Math.floor(count / 2);
+  for (const recipe of Object.values(HYBRIDS)) if (recipe.parents.every((chain) => tops.has(chain))) pairs += 1;
   return pairs;
 }
 

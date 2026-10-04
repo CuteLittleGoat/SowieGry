@@ -1,7 +1,7 @@
-// Łącz i Hoduj (nowa Sowia Szklarnia — prototyp, Analiza 3, E8 krok 8.0) na telefonach: przeciąganie z uniesieniem
-// nad palec i łączenie, zaznaczanie stuknięciem, Sowia doniczka, kompostownik (przeciągnięcie i przycisk), pełna
-// plansza, zapis w osobnym polu `preview` (emulator), plansza 7 × 9 z polami ≥ 44 px na najmniejszym telefonie
-// i telefon poziomo (plansza obrócona do 9 × 7, przyciski z boku).
+// Łącz i Hoduj (nowa Sowia Szklarnia — prototyp, Analiza 3, E8 kroki 8.0–8.1) na telefonach: przeciąganie
+// z uniesieniem nad palec i łączenie, zaznaczanie stuknięciem, Sowia doniczka, kompostownik (przeciągnięcie
+// i przycisk), hybrydy i nowe łańcuchy w doniczce, pełna plansza, zapis w osobnym polu `preview` (emulator), plansza
+// 7 × 9 z polami ≥ 44 px na najmniejszym telefonie i telefon poziomo (plansza obrócona do 9 × 7, przyciski z boku).
 const { test, expect, waitForCloud, watchErrors } = require("../fixtures");
 const { cloudUrl, readDoc, seedDoc, uniqueProject } = require("../emulator");
 
@@ -106,6 +106,36 @@ test("Łącz i Hoduj: Sowia doniczka, kompostownik (przeciągnięcie i przycisk)
   await page.locator("[data-pot]").click();
   await expect(page.locator(".sowie-toast-chip", { hasText: "Brak miejsca na półkach" })).toBeVisible();
   await expect(page.locator("[data-charges]")).toHaveText("11/12");
+  expect(errors).toEqual([]);
+});
+
+test("Łącz i Hoduj: dwa różne szczyty łańcuchów — hybryda; po 10 połączeniach Pilea w Sowiej doniczce", async ({
+  page,
+}) => {
+  const errors = watchErrors(page);
+  await openGame(page);
+  // Złota Monstera przeciągnięta na Złotą Pileę — hybryda Monpilea Przytulna (+60 liści).
+  await game(page, "place", 0, 5, "monstera");
+  await game(page, "place", 1, 5, "pilea");
+  await drag(page, 0, 1);
+  let board = await cells(page);
+  expect(board[0]).toBeNull();
+  expect(board[1]).toEqual({ chain: "monpilea", level: 1 });
+  await expect(page.locator("[data-hint]")).toHaveText("Hybryda: Monpilea Przytulna!");
+  await expect(page.locator("[data-leaves]")).toHaveText("60");
+  await expect(page.getByText("Nowa hybryda: Monpilea Przytulna! +60 liści")).toBeVisible();
+  expect((await game(page, "state")).stats.hybrids).toBe(1);
+  // Hybryda nie łączy się z taką samą — zamiana miejscami.
+  await game(page, "place", 2, 1, "monpilea");
+  expect(await game(page, "move", 2, 1)).toBe("swap");
+  // Kolejne połączenia (hak `move`): po 10. w doniczce pojawia się Pilea.
+  for (let round = 0; round < 9; round += 1) {
+    await game(page, "place", 2, 1);
+    await game(page, "place", 3, 1);
+    expect(await game(page, "move", 2, 3)).toBe("merge");
+  }
+  expect((await game(page, "state")).stats.merges).toBe(10);
+  await expect(page.getByText("Nowa roślina w Sowiej doniczce: Pilea!")).toBeVisible({ timeout: 15_000 });
   expect(errors).toEqual([]);
 });
 
