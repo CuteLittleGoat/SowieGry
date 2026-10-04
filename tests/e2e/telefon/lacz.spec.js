@@ -1,6 +1,7 @@
 // Łącz i Hoduj (nowa Sowia Szklarnia — prototyp, Analiza 3, E8 krok 8.0) na telefonach: przeciąganie z uniesieniem
 // nad palec i łączenie, zaznaczanie stuknięciem, Sowia doniczka, kompostownik (przeciągnięcie i przycisk), pełna
-// plansza, zapis w osobnym polu `preview` (emulator) i plansza 7 × 9 z polami ≥ 44 px na najmniejszym telefonie.
+// plansza, zapis w osobnym polu `preview` (emulator), plansza 7 × 9 z polami ≥ 44 px na najmniejszym telefonie
+// i telefon poziomo (plansza obrócona do 9 × 7, przyciski z boku).
 const { test, expect, waitForCloud, watchErrors } = require("../fixtures");
 const { cloudUrl, readDoc, seedDoc, uniqueProject } = require("../emulator");
 
@@ -38,6 +39,12 @@ test("Łącz i Hoduj: przeciągnięcie nasionka na nasionko — kiełek i liści
   const errors = watchErrors(page);
   await openGame(page);
   await expect(page.getByRole("heading", { name: "Łącz i Hoduj" })).toBeVisible();
+  // Płótno przylega do siatki (bez pustego szkła nad i pod półkami); plansza obrócona tylko na telefonie poziomo.
+  const canvasBox = await page.locator("[data-canvas]").boundingBox();
+  expect((await game(page, "cellCenter", 0)).y - (await game(page, "cellSize")) / 2).toBeLessThanOrEqual(24);
+  expect(canvasBox.height).toBeLessThanOrEqual((await game(page, "cellCenter", 62)).y + 40);
+  const viewport = page.viewportSize();
+  expect(await game(page, "transposed")).toBe(viewport.width > viewport.height);
   const start = await cells(page);
   expect(start[30]).toEqual({ chain: "monstera", level: 1 });
   expect(start[31]).toEqual({ chain: "monstera", level: 1 });
@@ -150,3 +157,40 @@ test.describe("Łącz i Hoduj — najmniejszy telefon (320 × 568)", () => {
     expect(errors).toEqual([]);
   });
 });
+
+for (const [width, height] of [
+  [844, 390],
+  [667, 375],
+]) {
+  test.describe(`Łącz i Hoduj — telefon poziomo (${width} × ${height})`, () => {
+    test.use({ viewport: { width, height } });
+
+    test("plansza obrócona do 9 × 7 z polami ≥ 44 px, przyciski z boku, przeciąganie łączy", async ({ page }) => {
+      const errors = watchErrors(page);
+      await openGame(page);
+      expect(await game(page, "transposed")).toBe(true);
+      await expect(page.locator("[data-canvas]")).toHaveAttribute("aria-label", "Półki szklarni: 9 kolumn, 7 rzędów");
+      const size = await game(page, "cellSize");
+      expect(size).toBeGreaterThanOrEqual(44);
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+      expect(await page.evaluate(() => document.documentElement.scrollHeight <= window.innerHeight)).toBe(true);
+      const canvas = await page.locator("[data-canvas]").boundingBox();
+      for (const selector of ["[data-pot]", "[data-compost]"]) {
+        const box = await page.locator(selector).boundingBox();
+        expect(box.height).toBeGreaterThanOrEqual(44);
+        expect(box.x).toBeGreaterThanOrEqual(canvas.x + canvas.width);
+        expect(box.y + box.height).toBeLessThanOrEqual(height);
+      }
+      // Pole 30 i 31 (dwa nasionka) leżą w obróconej planszy jedno pod drugim — przeciągnięcie je łączy.
+      const first = await cellPoint(page, 30);
+      const second = await cellPoint(page, 31);
+      expect(Math.abs(first.x - second.x)).toBeLessThan(1);
+      expect(second.y).toBeGreaterThan(first.y);
+      await drag(page, 30, 31);
+      const board = await cells(page);
+      expect(board[30]).toBeNull();
+      expect(board[31]).toEqual({ chain: "monstera", level: 2 });
+      expect(errors).toEqual([]);
+    });
+  });
+}

@@ -28,33 +28,59 @@ export function boardLayout(width, height, cols, rows) {
   };
 }
 
+/** Ramka płótna wokół siatki (piksele): trzy przerwy, co najmniej 6 px — zawsze nie mniej niż margines układu. */
+export const boardFrame = (layout) => Math.max(6, layout.gap * 3);
+
 export function createBoardRenderer({ canvas, cols, rows }) {
   const context = canvas.getContext("2d");
   let size = { width: 0, height: 0, ratio: 1 };
   let layout = boardLayout(1, 1, cols, rows);
+  // Plansza obrócona (transpozycja: kolumny logiczne → rzędy na ekranie), gdy daje większe pola — telefon poziomo.
+  // Logika gry bez zmian, sąsiedztwo pól zachowane.
+  let transposed = false;
+  const visual = () => (transposed ? { cols: rows, rows: cols } : { cols, rows });
   const pops = new Map();
   const popups = [];
 
+  // Płótno przylega do siatki: układ liczony dla miejsca w rodzicu (gniazdo planszy) w obu ułożeniach (zwykłym
+  // i obróconym — wygrywa większe pole), potem płótno dostaje rozmiar siatki z ramką `boardFrame` (nie większy niż
+  // gniazdo) — bez pustego szkła nad i pod półkami na wysokim telefonie.
   function resize() {
-    const rect = canvas.getBoundingClientRect();
+    const slot = (canvas.parentElement || canvas).getBoundingClientRect();
+    const slotWidth = Math.max(1, slot.width);
+    const slotHeight = Math.max(1, slot.height);
+    const normal = boardLayout(slotWidth, slotHeight, cols, rows);
+    const turned = boardLayout(slotWidth, slotHeight, rows, cols);
+    transposed = turned.size > normal.size;
+    const fit = transposed ? turned : normal;
+    const frame = boardFrame(fit);
+    const width = Math.max(1, Math.min(slot.width, Math.ceil(fit.width + frame * 2)));
+    const height = Math.max(1, Math.min(slot.height, Math.ceil(fit.height + frame * 2)));
+    canvas.style.width = `${width}px`;
+    canvas.style.height = `${height}px`;
     const ratio = Math.min(2, window.devicePixelRatio || 1);
-    size = { width: Math.max(1, rect.width), height: Math.max(1, rect.height), ratio };
-    canvas.width = Math.round(size.width * ratio);
-    canvas.height = Math.round(size.height * ratio);
-    layout = boardLayout(size.width, size.height, cols, rows);
+    size = { width, height, ratio };
+    canvas.width = Math.round(width * ratio);
+    canvas.height = Math.round(height * ratio);
+    const grid = visual();
+    layout = boardLayout(width, height, grid.cols, grid.rows);
   }
 
+  // Lewy górny róg pola na ekranie (w obróconej planszy kolumna logiczna to rząd na ekranie).
   const cellRect = (index) => {
     const col = index % cols;
     const row = Math.floor(index / cols);
-    return { x: layout.x + col * (layout.size + layout.gap), y: layout.y + row * (layout.size + layout.gap) };
+    const [x, y] = transposed ? [row, col] : [col, row];
+    return { x: layout.x + x * (layout.size + layout.gap), y: layout.y + y * (layout.size + layout.gap) };
   };
 
   /** Pole pod punktem (piksele CSS płótna) albo -1. */
   function cellAt(x, y) {
-    const col = Math.floor((x - layout.x) / (layout.size + layout.gap));
-    const row = Math.floor((y - layout.y) / (layout.size + layout.gap));
-    if (col < 0 || row < 0 || col >= cols || row >= rows) return -1;
+    const grid = visual();
+    const across = Math.floor((x - layout.x) / (layout.size + layout.gap));
+    const down = Math.floor((y - layout.y) / (layout.size + layout.gap));
+    if (across < 0 || down < 0 || across >= grid.cols || down >= grid.rows) return -1;
+    const [col, row] = transposed ? [down, across] : [across, down];
     return row * cols + col;
   }
 
@@ -89,7 +115,8 @@ export function createBoardRenderer({ canvas, cols, rows }) {
     context.beginPath();
     context.ellipse(width * 0.8 + Math.sin(time * 0.3) * 6, height * 0.08, width * 0.2, 10, -0.2, 0, Math.PI * 2);
     context.fill();
-    for (let row = 0; row < rows; row += 1) {
+    // Deski półek pod każdym rzędem na ekranie.
+    for (let row = 0; row < visual().rows; row += 1) {
       const y = layout.y + row * (layout.size + layout.gap) + layout.size - 3;
       context.fillStyle = "#b9895a";
       roundRect(layout.x - 4, y, layout.width + 8, 6, 3);
@@ -124,7 +151,7 @@ export function createBoardRenderer({ canvas, cols, rows }) {
   }
 
   /** Przedmiot (łańcuch Monstery) w środku (cx, cy) na polu wielkości `s`. */
-  function item(target, cx, cy, s, time) {
+  function item(target, cx, cy, s, time, label = true) {
     const level = target.level;
     const bottom = cy + s * 0.32;
     const green = level >= 5 ? COLORS.zloto : COLORS.monstera;
@@ -191,7 +218,8 @@ export function createBoardRenderer({ canvas, cols, rows }) {
         context.fill();
       }
     }
-    // Poziom w rogu pola.
+    // Poziom w rogu pola (bez niego przy przedmiocie uniesionym nad palcem — nie zasłania cyfry pola docelowego).
+    if (!label) return;
     context.fillStyle = "rgba(59, 47, 74, 0.7)";
     context.font = font(Math.max(9, Math.round(s * 0.2)));
     context.textAlign = "right";
@@ -219,7 +247,7 @@ export function createBoardRenderer({ canvas, cols, rows }) {
     resize,
     cellAt,
     cellCenter,
-    layout: () => ({ ...layout }),
+    layout: () => ({ ...layout, transposed }),
     size: () => ({ ...size }),
     /** Krótkie „pyknięcie” przedmiotu na polu (po połączeniu albo nowym nasionku). */
     pop(index) {
@@ -280,7 +308,7 @@ export function createBoardRenderer({ canvas, cols, rows }) {
         context.save();
         context.translate(lifted.x, lifted.y);
         context.scale(1.15, 1.15);
-        item(cells[drag.from], 0, 0, s, time);
+        item(cells[drag.from], 0, 0, s, time, false);
         context.restore();
       }
       effects(dt);

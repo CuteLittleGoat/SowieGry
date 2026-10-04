@@ -250,7 +250,17 @@ function frame(time) {
   requestAnimationFrame(frame);
 }
 
-window.addEventListener("resize", () => renderer.resize());
+// Rozmiar planszy idzie za gniazdem (obrót telefonu, okno, wczytana czcionka zmienia wysokość nagłówka); opis
+// płótna mówi, jak plansza jest ułożona (obrócona — 9 kolumn, 7 rzędów).
+function fitBoard() {
+  renderer.resize();
+  const { transposed } = renderer.layout();
+  const [across, down] = transposed ? [BOARD.rows, BOARD.cols] : [BOARD.cols, BOARD.rows];
+  canvas.setAttribute("aria-label", `Półki szklarni: ${across} kolumn, ${down} rzędów`);
+}
+
+window.addEventListener("resize", fitBoard);
+if (window.ResizeObserver) new ResizeObserver(fitBoard).observe(canvas.parentElement);
 document.addEventListener("visibilitychange", () => {
   if (document.hidden) save({ flush: true });
   lastFrame = 0;
@@ -278,7 +288,7 @@ async function start() {
   updateHud();
 }
 
-renderer.resize();
+fitBoard();
 requestAnimationFrame(frame);
 start().catch((error) => console.warn("LaczIHoduj: start", error));
 
@@ -289,6 +299,7 @@ window.LaczIHoduj = Object.freeze({
   cells: () => JSON.parse(JSON.stringify(game.board.cells)),
   cellCenter: (index) => renderer.cellCenter(index),
   cellSize: () => renderer.layout().size,
+  transposed: () => renderer.layout().transposed,
   lift: () => renderer.layout().size * LIFT,
   selected: () => selected,
   place: (index, level, chain = POT.chain) => {

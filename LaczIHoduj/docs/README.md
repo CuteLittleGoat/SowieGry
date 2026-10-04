@@ -50,11 +50,17 @@ Gra zapisuje się automatycznie w chmurze (ten sam profil, hasło `huhu` przy pi
 po każdym połączeniu i komposcie (po 2 sekundach), co 20 sekund gry oraz od razu, gdy przełączysz się na inną
 aplikację albo zamkniesz stronę. Postęp prototypu jest zapisany **osobno** od dawnej Sowiej Szklarni.
 
-## Mały ekran i komputer
+## Telefon pionowo, poziomo i komputer
 
-Na telefonie plansza zajmuje całą szerokość ekranu — nawet na najmniejszym (320 × 568) każde pole ma co najmniej
-44 px, więc wygodnie trafia się palcem. Na niskim ekranie notka o prototypie chowa się, żeby zostało więcej miejsca
-na półki. Na komputerze plansza stoi na środku i rośliny przesuwa się myszą tak samo jak palcem.
+Na telefonie trzymanym pionowo plansza zajmuje całą szerokość ekranu — nawet na najmniejszym (320 × 568) każde pole
+ma co najmniej 44 px, więc wygodnie trafia się palcem. Na wysokim telefonie plansza stoi na środku ekranu, a na niskim
+notka o prototypie chowa się, żeby zostało więcej miejsca na półki.
+
+Gdy obrócisz telefon **poziomo**, plansza staje się szersza niż wyższa (9 kolumn × 7 rzędów), a przyciski Sowiej
+doniczki i kompostu przechodzą na prawą stronę. Układ roślin obraca się razem z planszą — rośliny, które stały obok
+siebie, nadal są sąsiadkami.
+
+Na komputerze plansza stoi na środku, a rośliny przesuwa się myszą tak samo jak palcem.
 
 ## Co dalej
 
