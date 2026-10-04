@@ -2,7 +2,7 @@
 // bonus: grzbiety humbaków wybijają, morze chmur nie pozwala spaść, liście w rzędach; potem powrót nad gejzer.
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { OCEAN, OWL } from "../../SowaWChmurach/config.js";
+import { OCEAN, OWL, WORLD } from "../../SowaWChmurach/config.js";
 import { createRun } from "../../SowaWChmurach/game.js";
 import { createGenerator } from "../../SowaWChmurach/generator.js";
 import { createGeyserPlanner, createOcean, inFountain, whaleX } from "../../SowaWChmurach/ocean.js";
@@ -131,6 +131,24 @@ test("lot: fontanna zaczyna ocean, moce stoją, po 20 s sowa wraca nad gejzer z 
   assert.ok(state.owl.vy > OWL.jumpVelocity);
   assert.equal(run.summary().oceans, 1);
   assert.equal(geyser.taken, true);
+});
+
+test("ocean: przeciąganie palcem przesuwa sowę w bok (jak w locie), klawiatura też; w ratunku nie", () => {
+  const run = createRun({ seed: "ocean-palec", hazards: false, extras: false });
+  run.warp(120);
+  for (let index = 0; index < 30; index += 1) run.update(STEP);
+  run.giveOcean();
+  run.update(STEP);
+  assert.equal(run.state.phase, "ocean");
+  const before = run.state.owl.x;
+  run.steer(1);
+  for (let index = 0; index < 60; index += 1) run.update(STEP);
+  near(run.state.owl.x, (before + 1 * OWL.drag) % WORLD.width, 0.05, "palec w oceanie");
+  const keysBefore = run.state.owl.x;
+  run.setKeys(false, true);
+  for (let index = 0; index < 30; index += 1) run.update(STEP);
+  run.setKeys(false, false);
+  assert.notEqual(run.state.owl.x, keysBefore, "klawiatura w oceanie");
 });
 
 test("gejzery na trasie lotu (z dodatkami) i ocean z haka testowego", () => {

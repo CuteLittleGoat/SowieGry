@@ -38,7 +38,7 @@ Wersje do sprawdzenia (menu → „Wypróbuj nową wersję: …”):
 
 | # | Uwaga właściciela (dosłownie) | Do zrobienia | Stan |
 |---|---|---|---|
-| C1 | „W grze o skakaniu na poziomie z humbakiem nie działa sterowanie.” | Niebiański Ocean (20 s odbijania od grzbietów humbaków po wskoczeniu w fontannę humbaka-gejzera): sowa nie reaguje na przeciąganie palcem (i przechylanie). Odtworzyć na telefonie (Chromium i WebKit, dotyk), znaleźć przyczynę (np. ruch w oceanie liczony osobno i pomijający wejście gracza, przechwycenie zdarzeń przez nakładkę) i naprawić; test e2e sterowania w oceanie przez prawdziwe gesty. | ⏳ |
+| C1 | „W grze o skakaniu na poziomie z humbakiem nie działa sterowanie.” | Niebiański Ocean (20 s odbijania od grzbietów humbaków po wskoczeniu w fontannę humbaka-gejzera): sowa nie reaguje na przeciąganie palcem (i przechylanie). Odtworzyć na telefonie (Chromium i WebKit, dotyk), znaleźć przyczynę (np. ruch w oceanie liczony osobno i pomijający wejście gracza, przechwycenie zdarzeń przez nakładkę) i naprawić; test e2e sterowania w oceanie przez prawdziwe gesty. | ✅ przyczyna: `steer()` (przeciąganie) działało tylko w fazie `run` — w oceanie gra je pomijała (klawiatura i przechylanie działały); poprawka w `SowaWChmurach/game.js`, test jednostkowy i e2e prawdziwym gestem |
 
 ## Sowie Ogrody — nowa odsłona (E7)
 

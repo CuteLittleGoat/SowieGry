@@ -142,7 +142,7 @@ test("Sowa w Chmurach: kózki — Rakietka, Tarcza i Gorączka Monster w komunik
   expect(errors).toEqual([]);
 });
 
-test("Sowa w Chmurach: Niebiański Ocean — 20 s na humbakach z pieśnią, pasek czasu, powrót do lotu", async ({
+test("Sowa w Chmurach: Niebiański Ocean — 20 s na humbakach z pieśnią, sterowanie palcem, pasek czasu, powrót do lotu", async ({
   page,
 }) => {
   const errors = watchErrors(page);
@@ -158,12 +158,18 @@ test("Sowa w Chmurach: Niebiański Ocean — 20 s na humbakach z pieśnią, pase
   await expect(page.locator(".chmury-height")).toHaveClass(/is-ocean/);
   await expect.poll(music, { timeout: 10_000 }).toBe("humbak");
   expect((await state(page)).phase).toBe("ocean");
-  // Logika przewinięta krokami: 20 s oceanu (sowa nie spada), potem znowu lot z tej samej wysokości; klatki logiki
-  // nie ruszają (hold), więc po oceanie sowa nie zdąży spaść przed sprawdzeniem żyć.
-  await page.evaluate(() => {
-    window.SowaWChmurach.hold(true);
-    window.SowaWChmurach.advance(21);
-  });
+  // W oceanie sowa idzie za palcem (uwaga właściciela C1 — przeciąganie działało tylko w locie): logika wstrzymana,
+  // przeciągnięcie o 60 px w prawo i 1 s logiki — sowa przesunięta o 60 px × (metry na piksel) × 1,25.
+  await page.evaluate(() => window.SowaWChmurach.hold(true));
+  const oceanX = (await state(page)).owl.x;
+  const oceanMeters = 60 * (await page.evaluate(() => window.SowaWChmurach.metersPerPixel()));
+  await drag(page, 60);
+  await page.evaluate(() => window.SowaWChmurach.advance(1));
+  expect((await state(page)).phase).toBe("ocean");
+  expect((await state(page)).owl.x).toBeCloseTo((oceanX + oceanMeters * 1.25) % 9, 1);
+  // Logika przewinięta krokami: reszta 20 s oceanu (sowa nie spada), potem znowu lot z tej samej wysokości; klatki
+  // logiki nie ruszają (hold), więc po oceanie sowa nie zdąży spaść przed sprawdzeniem żyć.
+  await page.evaluate(() => window.SowaWChmurach.advance(20));
   expect((await state(page)).phase).toBe("run");
   await expect(page.locator(".sowie-toast-chip", { hasText: "Koniec oceanu" })).toBeVisible();
   await expect(page.locator(".chmury-height")).toContainText("m · Ogródek");

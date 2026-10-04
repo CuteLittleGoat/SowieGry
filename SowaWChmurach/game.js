@@ -580,9 +580,10 @@ export function createRun({
     state,
     update,
     takeEvents: () => events.splice(0),
-    // Przeciąganie palcem: przesunięcie w metrach świata.
+    // Przeciąganie palcem: przesunięcie w metrach świata — w locie i w Niebiańskim Oceanie (na grzbietach humbaków
+    // sowa też idzie za palcem); w ratunku kózki nie.
     steer(meters) {
-      if (state.phase === "run") steerBy(state.owl, meters);
+      if (state.phase === "run" || state.phase === "ocean") steerBy(state.owl, meters);
     },
     setKeys(left, right) {
       state.keys.left = Boolean(left);
