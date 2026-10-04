@@ -65,7 +65,7 @@ Z obecnych plików `Sowa3/` (`script.js` i 15 warstw). ✅ — jest w Sowich Tor
   - grupa `[data-difficulty]` (`role="group"`, „Poziom trudności”) z `button.sowie-ui-chip[data-level]` Chill / Arcade / Chaos (`aria-pressed`, domyślnie Arcade);
   - `p.tory-title-record[data-record]` (rekord), `p.tory-title-note[data-cozy]` „Tryb Przytulny: wolniej i bez końca gry.” (ukryty);
   - **Start** (`[data-start]`, `.sowie-ui-button.is-primary.is-big`);
-  - `.tory-title-actions` (2 kolumny): **Jak grać?** (`[data-guide]`) i **Menu** (`a.is-quiet`, `../`);
+  - `.tory-title-actions` (kontener `display: flex; flex-wrap: wrap; justify-content: center; gap: 6px`, przyciski kompaktowe (`box-sizing: border-box; flex: 1 1 auto; min-height: 48px; padding: 6px 10px; font-size: 15px`) — na 320 × 568 trzy w jednym rzędzie): **Jak grać?** (`[data-guide]`), **Samouczek** (`[data-tutorial-replay]`, `aria-label="Zagraj samouczek jeszcze raz"` — `forceTutorial = true` i `startRun()`; uwaga właściciela G1) i **Menu** (`a.is-quiet`, `../`);
   - `p.tory-title-note[data-preview]` „Wersja podglądowa nowej gry. Rekordy liczą się jak w Sowa3.”
 
 ## `style.css`

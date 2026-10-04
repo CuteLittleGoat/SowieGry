@@ -8,11 +8,11 @@ Grasz z menu: karta **Łąka — Sowia Ucieczka** (ze znaczkiem „Nowe!”), pr
 
 1. Wybierz poziom: **Chill** (wolniej), **Arcade** albo **Chaos** (szybciej, trudniejsze fragmenty wcześniej). Każdy poziom ma osobne rekordy — pod przyciskami widać rekord wybranego poziomu.
 2. Stuknij **Start**.
-3. **Zadania ×N** pokazuje Twoje 3 zadania biegu i Sowi mnożnik, **Wyzwanie dnia** otwiera trasę dnia, **Jak grać?** pokazuje krótką instrukcję, **Menu** wraca do menu SowieGry.
+3. **Zadania ×N** pokazuje Twoje 3 zadania biegu i Sowi mnożnik, **Wyzwanie dnia** otwiera trasę dnia, **Jak grać?** pokazuje krótką instrukcję, **Samouczek** uruchamia samouczek jeszcze raz, **Menu** wraca do menu SowieGry.
 
 ## Samouczek
 
-Przy pierwszym biegu gra uczy ruchów w 4 krótkich krokach: skok nad telefonem, ślizg pod dymkiem, podwójny skok na wysoką platformę i szybowanie nad szeroką dziurą. Tuż przed przeszkodą gra się zatrzymuje i pokazuje, co zrobić (animowany palec i krótki opis) — rusza dopiero, gdy wykonasz ten ruch. W samouczku nic Ci nie grozi. Samouczek możesz powtórzyć: **Jak grać?** → **Zagraj samouczek**.
+Przy pierwszym biegu gra uczy ruchów w 4 krótkich krokach: skok nad telefonem, ślizg pod dymkiem, podwójny skok na wysoką platformę i szybowanie nad szeroką dziurą. Tuż przed przeszkodą gra się zatrzymuje i pokazuje, co zrobić (animowany palec i krótki opis) — rusza dopiero, gdy wykonasz ten ruch. W samouczku nic Ci nie grozi. Samouczek możesz powtórzyć przyciskiem **Samouczek** na ekranie tytułowym (albo **Jak grać?** → **Zagraj samouczek**). W menu głównym (zakładka **Sowa** → **Ustawienia**) przycisk **Powtórz samouczki we wszystkich grach** sprawia, że samouczek pokaże się przy następnym wejściu do każdej gry.
 
 ## Sterowanie (jedną ręką, w dowolnym miejscu ekranu)
 

@@ -2,7 +2,7 @@
 // wybór gry, instrukcje, galeria (odblokowane, zablokowane, przeglądarka), zakładka „Sowa”,
 // cele dotyku ≥ 48 px i układ od 320 × 568 bez przewijania w bok.
 const { test, expect, waitForCloud, watchErrors, DEVICE_KEY } = require("../fixtures");
-const { cloudUrl, seedDoc, uniqueProject } = require("../emulator");
+const { cloudUrl, readDoc, seedDoc, uniqueProject } = require("../emulator");
 
 async function openMenu(page, query = "seed=menu-telefon&testNow=1783656000000") {
   await page.goto(`/?${query}`, { waitUntil: "load" });
@@ -279,6 +279,35 @@ test("zakładka „Sowa”: garderoba, ustawienia, rekordy i wylogowanie urządz
   await Promise.all([page.waitForEvent("load"), confirm.getByRole("button", { name: "Wyloguj" }).click()]);
   await expect(page.getByRole("dialog", { name: "Hasło sowy" })).toBeVisible();
   expect(await page.evaluate((key) => JSON.parse(localStorage.getItem(key)).unlocked, DEVICE_KEY)).toBe(false);
+  expect(errors).toEqual([]);
+});
+
+test("zakładka „Sowa”: „Powtórz samouczki we wszystkich grach” — `tutorialDone: false` w dokumentach gier z samouczkiem (emulator, uwaga G1)", async ({
+  page,
+}, testInfo) => {
+  const project = uniqueProject(testInfo);
+  await seedDoc(project, "sowiegry/profil/sowiegry_gry/runner", {
+    tutorialDone: true,
+    top10: { arcade: [{ score: 1250, difficulty: "arcade", at: 1783656000000 }] },
+  });
+  const errors = watchErrors(page);
+  await page.goto(cloudUrl("/?seed=menu-samouczki", project), { waitUntil: "load" });
+  await waitForCloud(page);
+  await page.getByRole("tab", { name: "Sowa" }).click();
+  const button = page.getByRole("button", { name: "Powtórz samouczki we wszystkich grach" });
+  await button.click();
+  const confirm = page.getByRole("dialog", { name: "Powtórzyć samouczki?" });
+  await confirm.getByRole("button", { name: "Anuluj" }).click();
+  await expect(confirm).toBeHidden();
+  await button.click();
+  await confirm.getByRole("button", { name: "Powtórz" }).click();
+  await expect(page.locator("[data-tutorials-reset]")).toContainText("Samouczki wrócą przy następnym wejściu");
+  await page.evaluate(() => window.SowieCloud.flush());
+  for (const gameId of ["runner", "sowa3", "jumper", "ogrody"]) {
+    expect((await readDoc(project, `sowiegry/profil/sowiegry_gry/${gameId}`)).tutorialDone, gameId).toBe(false);
+  }
+  // Reszta dokumentu gry bez zmian (Top 10 zostaje) — zapis tylko pola `tutorialDone`.
+  expect((await readDoc(project, "sowiegry/profil/sowiegry_gry/runner")).top10.arcade[0].score).toBe(1250);
   expect(errors).toEqual([]);
 });
 

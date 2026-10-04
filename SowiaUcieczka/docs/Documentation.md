@@ -37,7 +37,7 @@ Jednostki: świat w **jednostkach logicznych** (1 j. = 1 m dystansu), czas w sek
   - `[data-record]` — rekord wybranego poziomu; `[data-cozy]` — „Tryb Przytulny: wolniej i bez końca gry.” (tylko Chill z włączonym Trybem Przytulnym);
   - `[data-daily-note]` (`p.ucieczka-title-daily`, ukryty poza wyzwaniem dnia) — opis wyzwania dnia i dzisiejszy wynik;
   - **Start** (`[data-start]`, `.sowie-ui-button.is-primary.is-big`);
-  - siatka `.ucieczka-title-actions` (2 × 2): **Zadania** (`button[data-tasks]` z plakietką `span.ucieczka-multiplier[data-multiplier]` „×N”), **Wyzwanie dnia** (`a[data-daily]`, początkowo `href="?daily=1"`; w wyzwaniu dnia „Zwykły bieg”), **Jak grać?** (`[data-guide]`), **Menu** (odnośnik `../`, `is-quiet`).
+  - `.ucieczka-title-actions` (kontener `display: flex; flex-wrap: wrap; justify-content: center; gap: 6px`, przyciski kompaktowe (`box-sizing: border-box; flex: 1 1 auto; min-height: 48px; padding: 6px 10px; font-size: 15px`) — na 320 × 568 Zadania i Wyzwanie dnia w pierwszym rzędzie, trzy pozostałe w drugim): **Zadania** (`button[data-tasks]` z plakietką `span.ucieczka-multiplier[data-multiplier]` „×N”), **Wyzwanie dnia** (`a[data-daily]`, początkowo `href="?daily=1"`; w wyzwaniu dnia „Zwykły bieg”), **Jak grać?** (`[data-guide]`), **Samouczek** (`[data-tutorial-replay]`, `aria-label="Zagraj samouczek jeszcze raz"` — `forceTutorial = true` i `startRun()`; uwaga właściciela G1), **Menu** (odnośnik `../`, `is-quiet`).
 
 ## `style.css`
 

@@ -331,6 +331,42 @@ test("nowe Sowie Ogrody: samouczek pierwszego wejścia (4 kroki), zapis w podgl�
   // „Pomiń” kończy samouczek bez komunikatu.
   await again.locator("[data-tutorial]").getByRole("button", { name: "Pomiń samouczek" }).click();
   await expect(again.locator("[data-tutorial]")).toBeHidden();
+  // Kolekcja: „Powtórz samouczek” (uwaga G1).
+  await again.getByRole("tab", { name: "Kolekcja" }).click();
+  await again.getByRole("button", { name: "Powtórz samouczek" }).click();
+  await expect(again.locator("[data-tutorial]")).toContainText("krok 1 z 4");
+  expect(errors).toEqual([]);
+  expect(errorsAgain).toEqual([]);
+});
+
+test("nowe Sowie Ogrody: menu prosi o powtórzenie samouczka (`tutorialDone: false` w dokumencie gry) — samouczek wraca, po nim prośba spełniona (emulator)", async ({
+  page,
+}, testInfo) => {
+  const project = uniqueProject(testInfo);
+  const errors = watchErrors(page);
+  await openGarden(page, cloudUrl("/SowieOgrody/nowa.html", project));
+  await page.locator("[data-tutorial]").getByRole("button", { name: "Pomiń samouczek" }).click();
+  // To samo, co robi przycisk w menu (zakładka Sowa → „Powtórz samouczki we wszystkich grach”).
+  await page.evaluate(() => {
+    window.SowieCloud.updateGame("ogrody", { tutorialDone: false });
+    return window.SowieCloud.flush();
+  });
+  const requested = await readDoc(project, "sowiegry/profil/sowiegry_gry/ogrody");
+  expect(JSON.parse(requested.preview).tutorialDone).toBe(true);
+  expect(requested.tutorialDone).toBe(false);
+
+  const again = await page.context().newPage();
+  await page.close();
+  const errorsAgain = watchErrors(again);
+  await openGarden(again, cloudUrl("/SowieOgrody/nowa.html", project));
+  const bubble = again.locator("[data-tutorial]");
+  await expect(bubble).toContainText("krok 1 z 4");
+  await bubble.getByRole("button", { name: "Pomiń samouczek" }).click();
+  await expect(bubble).toBeHidden();
+  await again.evaluate(() => window.SowieCloud.flush());
+  const after = await readDoc(project, "sowiegry/profil/sowiegry_gry/ogrody");
+  expect(after.tutorialDone).toBe(true);
+  expect(JSON.parse(after.preview).tutorialDone).toBe(true);
   expect(errors).toEqual([]);
   expect(errorsAgain).toEqual([]);
 });

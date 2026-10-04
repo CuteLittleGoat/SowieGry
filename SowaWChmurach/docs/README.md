@@ -31,7 +31,8 @@ poziomo — z lewej strony) pokazuje, co zrobić, a mała animacja palca — jak
    powodzenia!”).
 
 Gra się przy tym nie zatrzymuje, a w samouczku **nie tracisz serduszek** (ani przy upadku, ani przy trafieniu).
-Samouczek pojawia się tylko raz — możesz go powtórzyć przyciskiem **„Zagraj samouczek”** w oknie **„Jak grać?”**
+Samouczek pojawia się tylko raz — możesz go powtórzyć przyciskiem **„Samouczek”** na ekranie tytułowym (w menu głównym:
+zakładka **Sowa** → **Powtórz samouczki we wszystkich grach**) albo przyciskiem **„Zagraj samouczek”** w oknie **„Jak grać?”**
 (na ekranie tytułowym albo w menu pauzy). To okno opisuje sterowanie, platformy, Pracu i Amic, kózki,
 Niebiański Ocean i upadek.
 

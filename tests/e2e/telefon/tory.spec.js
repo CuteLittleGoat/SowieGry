@@ -295,6 +295,24 @@ test("Sowie Tory: ukończona kampania odblokowuje tryb Nieskończony — pętla 
   expect(errorsAgain).toEqual([]);
 });
 
+test("Sowie Tory: przycisk „Samouczek” na ekranie tytułowym uruchamia samouczek od nowa (uwaga G1)", async ({
+  page,
+}) => {
+  const errors = watchErrors(page);
+  await openGame(page);
+  await page.locator("[data-tutorial-replay]").click();
+  await expect(page.locator("[data-title]")).toBeHidden();
+  const first = await page.evaluate(() => {
+    const game = window.SowieTory;
+    game.hold(true);
+    for (let time = 0; time < 20 && !game.tutorial()?.frozen; time += 0.05) game.advance(0.05);
+    return game.tutorial();
+  });
+  expect(first.frozen).toBe(true);
+  await expect(page.locator(".tory-tutorial")).toContainText("krok 1 z 4");
+  expect(errors).toEqual([]);
+});
+
 test("Sowie Tory: samouczek pierwszego biegu — gra czeka na pokazany ruch, 4 kroki, zapis w dokumencie gry (emulator)", async ({
   page,
 }, testInfo) => {

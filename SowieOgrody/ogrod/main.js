@@ -147,6 +147,8 @@ const panel = createPanel({
   onPrestige: () => confirmPrestige(),
   onNode: (id) => garden.buyPrestige(id),
   onClaim: (id) => claimDaily(id),
+  // Powtórzenie samouczka z zakładki Kolekcja (uwaga właściciela G1).
+  onTutorial: () => startTutorial(),
 });
 
 // Kontrakty dnia (E7d3): nagroda przez SowieProgress (zdarzenie `award` → SowieAcademy.award; ten sam identyfikator
@@ -455,6 +457,8 @@ function tutorialFinished() {
     garden.state.tutorialDone = true;
     save({ immediate: true });
   }
+  // Prośba z menu („Powtórz samouczki we wszystkich grach” — `tutorialDone: false` w dokumencie gry) spełniona.
+  if (cloud?.game?.(GAME_ID)?.tutorialDone === false) cloud.updateGame?.(GAME_ID, { tutorialDone: true });
 }
 
 function startTutorial() {
@@ -650,6 +654,8 @@ async function start() {
   progress.emit(EVENTS.VISIT, { gameId: GAME_ID });
   reportProgress();
   welcome({ offline, report });
+  // Menu („Powtórz samouczki we wszystkich grach”) ustawia w dokumencie gry `tutorialDone: false`.
+  if (doc.tutorialDone === false) garden.state.tutorialDone = false;
   if (!garden.state.tutorialDone) startTutorial();
   updateHud();
   panel.render(garden.state, now());

@@ -35,7 +35,9 @@ Przed każdą przeszkodą gra **zatrzymuje się** i pokazuje ruch palca nad drog
 Rusza dalej dopiero wtedy, gdy wykonasz pokazany ruch — inne ruchy nic nie robią. Jeśli wykonasz go chwilę
 wcześniej, gra w ogóle się nie zatrzyma. W samouczku przeszkody **nie zabierają życia**. Po czwartym kroku pojawia
 się „Świetnie! Teraz sama trasa — powodzenia!” i dalej biegniesz już normalnie. Samouczek pojawia się tylko raz
-(zapisuje się w chmurze); możesz go powtórzyć przyciskiem **Zagraj samouczek** w oknie **Jak grać?**.
+(zapisuje się w chmurze); możesz go powtórzyć przyciskiem **Samouczek** na ekranie tytułowym (albo **Zagraj samouczek**
+w oknie **Jak grać?**). W menu głównym (zakładka **Sowa** → **Ustawienia**) przycisk **Powtórz samouczki we wszystkich
+grach** sprawia, że samouczek pokaże się przy następnym wejściu do każdej gry.
 
 ## Tryb Nieskończony
 

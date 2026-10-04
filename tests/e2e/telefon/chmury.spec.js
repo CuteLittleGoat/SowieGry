@@ -340,6 +340,15 @@ test("Sowa w Chmurach: „Jak grać?” — instrukcja Sowy w Chmurach i „Zagr
   expect(errors).toEqual([]);
 });
 
+test("Sowa w Chmurach: przycisk „Samouczek” na ekranie tytułowym (uwaga G1)", async ({ page }) => {
+  const errors = watchErrors(page);
+  await openGame(page);
+  await page.locator("[data-tutorial-replay]").click();
+  await expect(page.locator("[data-title]")).toBeHidden();
+  await expect(page.locator(".chmury-tutorial")).toContainText("Samouczek · krok 1 z 5");
+  expect(errors).toEqual([]);
+});
+
 test("Sowa w Chmurach: pauza z HUD i wznowienie przez odliczanie", async ({ page }) => {
   const errors = watchErrors(page);
   await openGame(page);

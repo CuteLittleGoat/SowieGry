@@ -14,7 +14,9 @@ Podgląd zapisuje postęp osobno — obecna gra zostaje bez zmian i można do ni
   Monstera, cele rozdziału, wydarzenia). Kroki z akcją zaliczają się same, pozostałe — przyciskiem **„Dalej”**;
   **„✕”** pomija samouczek. Ogród rośnie przy tym normalnie.
 - **„Jak grać?”:** przycisk **„?”** obok „Menu” otwiera krótką instrukcję z obrazkami; jest w niej przycisk
-  **„Zagraj samouczek”**, który uruchamia samouczek jeszcze raz.
+  **„Zagraj samouczek”**, który uruchamia samouczek jeszcze raz. Samouczek powtórzysz też przyciskiem
+  **„Powtórz samouczek”** na dole zakładki **Kolekcja**, a w menu głównym (zakładka **Sowa** → **Ustawienia**) przycisk
+  **„Powtórz samouczki we wszystkich grach”** pokaże go przy następnym wejściu.
 - **Pierwsze wejście:** Twój dotychczasowy ogród przenosi się do nowej odsłony. Okno **„Witaj w nowym ogrodzie!”**
   mówi, co zostało, i ile liści (oraz nasion) dostajesz za ulepszenia, których w nowej wersji nie ma.
 - **Liście:** stukaj w ogród — każde stuknięcie daje liście (napis „+N” w miejscu palca). U góry widać liczbę liści
@@ -42,7 +44,7 @@ Podgląd zapisuje postęp osobno — obecna gra zostaje bez zmian i można do ni
   - **Plusk-o-metr** (prawy górny róg ogrodu) napełnia się przy podlewaniu i łapaniu kózek. Pełny otwiera
     **Zatokę Humbaka**: przez 20 sekund humbak wyrzuca liście z fontanny — stukaj w nie, zanim spadną. Każdy złapany
     liść to kilka sekund produkcji, a łapanie pod rząd (combo) daje więcej.
-  Gdy zamkniesz grę, wydarzenia nie przeszkadzają — po powrocie telefonu i ciężarówki już nie ma.
+    Gdy zamkniesz grę, wydarzenia nie przeszkadzają — po powrocie telefonu i ciężarówki już nie ma.
 - **Gdy Cię nie ma:** ogród rośnie dalej (połowa zwykłej produkcji, najwyżej 4 godziny). Po powrocie okno
   **„Witaj z powrotem!”** pokaże, jak długo sowa doglądała ogrodu i ile urosło.
 - **Dźwięk:** po pierwszym dotknięciu gra spokojna muzyka ogrodu (w Zatoce Humbaka — pieśń humbaka), a stuknięcia,

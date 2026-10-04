@@ -51,6 +51,9 @@ export function cosmeticHint(key, missions = {}, defaults = {}) {
   return `${MISSION_LABELS[missionKey] || missionKey} (${formatNumber(progress)} / ${formatNumber(mission.target)})`;
 }
 
+// Gry z samouczkiem (identyfikatory w bazie): Sowia Ucieczka, Sowie Tory (sowa3), Sowa w Chmurach (jumper), nowe Ogrody.
+export const TUTORIAL_GAMES = Object.freeze(["runner", "sowa3", "jumper", "ogrody"]);
+
 export function createOwlTab({ root, cloud, platform, academy, audio, atlas, onCosmetic = () => {} }) {
   const profile = () => cloud?.profile?.() || {};
   const settings = () => profile().settings || {};
@@ -153,6 +156,7 @@ export function createOwlTab({ root, cloud, platform, academy, audio, atlas, onC
         ${toggle("Komentarze sowy", "quips", current.quips !== false)}
       </div>
       <p class="menu-save-state" data-save-state>${status.long}</p>
+      <button type="button" class="menu-button" data-tutorials-reset>${ICONS.restart}<span>Powtórz samouczki we wszystkich grach</span></button>
       <button type="button" class="menu-button is-danger" data-logout>${ICONS.lock}<span>Wyloguj to urządzenie</span></button>
     </section>`;
   }
@@ -310,6 +314,36 @@ export function createOwlTab({ root, cloud, platform, academy, audio, atlas, onC
     });
   }
 
+  // Samouczki: przy następnym wejściu do gry samouczek pokaże się jeszcze raz (`tutorialDone: false` w dokumencie
+  // gry — tylko w kolekcji `sowiegry`; gra po samouczku zapisuje `true`). Uwaga właściciela G1.
+  function confirmTutorials(trigger) {
+    openModal({
+      title: "Powtórzyć samouczki?",
+      content:
+        "Przy następnym wejściu do Sowiej Ucieczki, Sowich Torów, Sowy w Chmurach i nowych Sowich Ogrodów samouczek pokaże się jeszcze raz. Postęp i rekordy zostają.",
+      actions: [
+        { label: "Anuluj", onClick: (close) => close() },
+        {
+          label: "Powtórz",
+          primary: true,
+          onClick: (close) => {
+            close();
+            const label = trigger?.querySelector?.("span");
+            // Najpierw dokumenty gier (inaczej w pamięci zostałby niepełny dokument — np. puste Top 10 w Rekordach).
+            Promise.all(TUTORIAL_GAMES.map((gameId) => cloud?.loadGame?.(gameId)))
+              .catch(() => {})
+              .then(() => {
+                for (const gameId of TUTORIAL_GAMES) cloud?.updateGame?.(gameId, { tutorialDone: false });
+                cloud?.flush?.();
+                if (label) label.textContent = "Samouczki wrócą przy następnym wejściu ✓";
+              });
+          },
+        },
+      ],
+      onClose: () => trigger?.focus?.({ preventScroll: true }),
+    });
+  }
+
   function confirmLogout(trigger) {
     openModal({
       title: "Wylogować to urządzenie?",
@@ -336,6 +370,10 @@ export function createOwlTab({ root, cloud, platform, academy, audio, atlas, onC
     const records = event.target.closest("[data-records]");
     if (records) {
       openRecordsModal(records.dataset.records, records);
+      return;
+    }
+    if (event.target.closest("[data-tutorials-reset]")) {
+      confirmTutorials(event.target.closest("[data-tutorials-reset]"));
       return;
     }
     if (event.target.closest("[data-logout]")) {

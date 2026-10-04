@@ -296,6 +296,11 @@ difficultyGroup.addEventListener("click", (event) => {
 });
 titleNode.querySelector("[data-start]").addEventListener("click", () => startRun());
 titleNode.querySelector("[data-guide]").addEventListener("click", (event) => openGuide(event.currentTarget));
+// Powtórzenie samouczka z ekranu tytułowego (uwaga właściciela G1 — wcześniej tylko z okna „Jak grać?”).
+titleNode.querySelector("[data-tutorial-replay]").addEventListener("click", () => {
+  forceTutorial = true;
+  startRun();
+});
 tasksButton.addEventListener("click", (event) => openTasks(event.currentTarget));
 setupDaily();
 

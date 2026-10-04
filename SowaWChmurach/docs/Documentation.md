@@ -65,7 +65,7 @@ Z obecnych plików `SowaJumper/` (`script.js`, `difficulty.js`, `cute-rework.js`
   - przełącznik `button.sowie-ui-chip.chmury-tilt[data-tilt]` „Przechylanie: wyłączone” / „Przechylanie: włączone” (`aria-pressed`, ukryty bez czujnika orientacji) i `p.chmury-title-note[data-tilt-note]` (ukryty; „Bez zgody na czujnik ruchu — steruj palcem.”);
   - `p.chmury-title-record[data-record]` (rekord), `p.chmury-title-note[data-cozy]` „Tryb Przytulny: wolniej i bez końca gry.” (ukryty);
   - **Start** (`[data-start]`, `.sowie-ui-button.is-primary.is-big`);
-  - `.chmury-title-actions` (2 kolumny): **Jak grać?** (`[data-guide]`) i **Menu** (`a.sowie-ui-button.is-quiet`, `../`);
+  - `.chmury-title-actions` (kontener `display: flex; flex-wrap: wrap; justify-content: center; gap: 6px`, przyciski kompaktowe (`box-sizing: border-box; flex: 1 1 auto; min-height: 48px; padding: 6px 10px; font-size: 15px`) — na 320 × 568 trzy w jednym rzędzie): **Jak grać?** (`[data-guide]`), **Samouczek** (`[data-tutorial-replay]`, `aria-label="Zagraj samouczek jeszcze raz"` — `forceTutorial = true` i `startRun()`; uwaga właściciela G1) i **Menu** (`a.sowie-ui-button.is-quiet`, `../`);
   - `p.chmury-title-note[data-preview]` „Wersja podglądowa nowej gry. Rekordy liczą się jak w SowaJumper.”
 
 ## `style.css`

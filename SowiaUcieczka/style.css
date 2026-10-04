@@ -109,10 +109,20 @@
   margin: 0 0 12px;
 }
 
+/* „Jak grać?”, „Samouczek” i „Menu” w jednym rzędzie (kompaktowe; gdy brak miejsca — zawijają się). */
 .ucieczka-title-actions {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+}
+
+.ucieczka-title-actions .sowie-ui-button {
+  box-sizing: border-box;
+  flex: 1 1 auto;
+  min-height: 48px;
+  padding: 6px 10px;
+  font-size: 15px;
 }
 
 .ucieczka-title-actions a {

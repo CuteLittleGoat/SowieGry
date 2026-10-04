@@ -406,6 +406,22 @@ test("„Jak grać?” na ekranie tytułowym uruchamia samouczek od nowa", async
   expect(errors).toEqual([]);
 });
 
+test("przycisk „Samouczek” na ekranie tytułowym uruchamia samouczek od nowa (uwaga G1)", async ({ page }) => {
+  const errors = watchErrors(page);
+  await openGame(page);
+  await page.locator("[data-tutorial-replay]").click();
+  expect(await page.evaluate(() => window.SowiaUcieczka.screen())).toBe("playing");
+  const first = await page.evaluate(() => {
+    const run = window.SowiaUcieczka;
+    run.hold(true);
+    for (let time = 0; time < 10 && !run.tutorial()?.frozen; time += 0.05) run.advance(0.05);
+    return run.tutorial();
+  });
+  expect(first.frozen).toBe(true);
+  await expect(page.locator(".ucieczka-tutorial")).toContainText("krok 1 z 4");
+  expect(errors).toEqual([]);
+});
+
 test("tryb diagnostyczny ?debug=1: panel z klatkami na sekundę, prędkością i bieżącym wzorem", async ({ page }) => {
   const errors = watchErrors(page);
   await openGame(page, "/SowiaUcieczka/?seed=ucieczka-debug&debug=1");

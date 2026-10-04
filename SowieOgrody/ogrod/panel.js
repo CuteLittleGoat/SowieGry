@@ -151,15 +151,17 @@ function collectionHtml(state, now) {
     <p class="ogrod-note">${kinds.map((plant) => `${escape(plant.name)} — etap ${plantStage(state.plants[plant.id])}/5`).join(" · ") || "Jeszcze pusto — kup pierwszą Monsterę."}</p>
     <h3 class="ogrod-subtitle">Statystyki</h3>
     <dl class="ogrod-stats">${rows.map(([label, value]) => `<div><dt>${label}</dt><dd>${value}</dd></div>`).join("")}</dl>
+    <button type="button" class="sowie-ui-button ogrod-tutorial-replay" data-tutorial-replay>Powtórz samouczek</button>
     <p class="ogrod-note">Wersja podglądowa nowej odsłony. Postęp zapisuje się osobno — dawna gra (<a href="./">Sowie Ogrody</a>) zostaje bez zmian.</p>`;
 }
 
 /**
- * createPanel({ root, onBuy, onUpgrade, onPrestige, onNode, onClaim }) → { setTab(id), tab(), render(state, now),
+ * createPanel({ root, onBuy, onUpgrade, onPrestige, onNode, onClaim, onTutorial }) → { setTab(id), tab(),
+ * render(state, now),
  * refresh() } (`refresh` — przebudowa zawartości przy następnym `render`).
  * `root` — element z `[data-tabs]` (przyciski zakładek) i `[data-panel]` (zawartość).
  */
-export function createPanel({ root, onBuy, onUpgrade, onPrestige, onNode, onClaim = () => {} }) {
+export function createPanel({ root, onBuy, onUpgrade, onPrestige, onNode, onClaim = () => {}, onTutorial = () => {} }) {
   const tabsNode = root.querySelector("[data-tabs]");
   const content = root.querySelector("[data-panel]");
   let current = "rosliny";
@@ -186,7 +188,8 @@ export function createPanel({ root, onBuy, onUpgrade, onPrestige, onNode, onClai
     const node = event.target.closest("[data-node-buy]");
     if (node && !node.disabled) return onNode(node.dataset.nodeBuy);
     const claim = event.target.closest("[data-claim]");
-    if (claim && !claim.disabled) onClaim(claim.dataset.claim);
+    if (claim && !claim.disabled) return onClaim(claim.dataset.claim);
+    if (event.target.closest("[data-tutorial-replay]")) onTutorial();
   });
 
   // Klucz zawartości zakładki: zmienia się przy zakupie, nowym rozdziale, przesadzaniu (nie co klatkę).
