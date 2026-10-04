@@ -46,7 +46,10 @@ test("pauza z HUD, wznowienie przez odliczanie 3-2-1; ukrycie karty też pauzuje
   expect((await state(page)).distance).toBe(frozen);
   await menu.getByRole("button", { name: "Wznów" }).click();
   await expect(page.locator(".sowie-countdown")).toHaveText("3");
-  await expect.poll(async () => (await state(page)).distance, { timeout: 8000 }).toBeGreaterThan(frozen + 2);
+  // Po odliczaniu bieg rusza dalej. W WebKit w CI klatki bywają wolne (czas gry płynie wolniej niż rzeczywisty),
+  // więc czekamy na koniec odliczania i na jakikolwiek ruch naprzód, nie na konkretny dystans w 8 s (CI 5dc56b1).
+  await expect(page.locator(".sowie-countdown")).toBeHidden({ timeout: 15_000 });
+  await expect.poll(async () => (await state(page)).distance, { timeout: 15_000 }).toBeGreaterThan(frozen + 0.5);
 
   await setVisibility(page, "hidden");
   await setVisibility(page, "visible");

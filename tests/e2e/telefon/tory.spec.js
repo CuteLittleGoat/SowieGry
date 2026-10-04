@@ -106,7 +106,7 @@ test("Sowie Tory: koniec biegu — wyniki z planszami i rekord „sowa3” zapis
 test("Sowie Tory: plansze w kolejności z obecnej gry, na blokowisku PRL szarżujący dzik ze strzałką (?plansza=)", async ({
   page,
 }) => {
-  // Dwa wejścia i ok. 20 m biegu do szarży — w WebKit w CI czas gry bywa wolniejszy od rzeczywistego.
+  // Dwa wejścia strony — w WebKit w CI wczytanie bywa wolne.
   test.setTimeout(60_000);
   const errors = watchErrors(page);
   await openGame(page, "/SowieTory/?seed=tory-plansze&plansza=4");
@@ -118,12 +118,24 @@ test("Sowie Tory: plansze w kolejności z obecnej gry, na blokowisku PRL szarżu
   await page.locator('[data-level="chill"]').click();
   await page.locator("[data-start]").click();
   await expect(page.locator(".tory-progress")).toContainText("3/4 · Blokowisko PRL");
-  // Przeskok tuż przed pierwszą szarżą: strzałka i podpowiedź, potem dzik biegnie torem sowy.
-  await page.evaluate(() => window.SowieTory.warp(125));
-  await expect(page.locator(".sowie-toast-chip", { hasText: "Dzik szarżuje!" })).toBeVisible({ timeout: 30_000 });
-  await expect
-    .poll(async () => (await state(page)).boars.some((item) => item.phase === "charge"), { timeout: 10_000 })
-    .toBe(true);
+  // Przeskok tuż przed pierwszą szarżą: strzałka i podpowiedź, potem dzik biegnie torem sowy. Logika wstrzymana
+  // (hold) i przewijana krokami po 0,25 s (advance) — w WebKit w CI klatki bywają tak wolne, że w 30 s czasu
+  // rzeczywistego gra nie dobiegała do szarży (CI 5dc56b1).
+  await page.evaluate(() => {
+    window.SowieTory.hold(true);
+    window.SowieTory.warp(125);
+  });
+  const boarPhase = (phase) =>
+    page.evaluate((wanted) => {
+      for (let step = 0; step < 160; step += 1) {
+        if (window.SowieTory.state().boars.some((item) => item.phase === wanted)) return true;
+        window.SowieTory.advance(0.25);
+      }
+      return false;
+    }, phase);
+  expect(await boarPhase("warning")).toBe(true);
+  await expect(page.locator(".sowie-toast-chip", { hasText: "Dzik szarżuje!" })).toBeVisible();
+  expect(await boarPhase("charge")).toBe(true);
   expect(errors).toEqual([]);
 });
 
