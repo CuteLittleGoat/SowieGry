@@ -1,11 +1,12 @@
 // Łącz i Hoduj — strona gry (prototyp, krok 8.0): wczytanie i zapis stanu (pole `preview` dokumentu
 // `sowiegry_gry/szklarnia` — dawna Szklarnia zostaje bez zmian), pętla, przeciąganie roślin z uniesieniem nad palec,
 // zaznaczanie stuknięciem (bez przeciągania), Sowia doniczka, kompostownik, komunikaty i haki testowe.
+import { connectAudioSettings, createAudio } from "../shared/engine/audio.js";
 import { EVENTS, progress } from "../shared/meta/progress.js";
 import { createToasts } from "../shared/ui/index.js";
 import { COLORS } from "../shared/world/tokens.js";
 import { canMerge, itemName } from "./board.js";
-import { BOARD, GAME_ID, POT, PREVIEW_FIELD } from "./config.js";
+import { BOARD, GAME_ID, GAME_SOUNDS, GREENHOUSE_MUSIC, POT, PREVIEW_FIELD } from "./config.js";
 import { createGame, defaultState, loadState } from "./game.js";
 import { createBoardRenderer, LIFT } from "./render.js";
 
@@ -16,6 +17,7 @@ const IMPORTANT_DELAY = 2000;
 const DRAG_START = 8;
 
 const cloud = window.SowieCloud;
+const AUDIO_BASE = new URL("../assets/audio/", import.meta.url).href;
 const root = document.querySelector("[data-lacz]");
 const canvas = root.querySelector("[data-canvas]");
 const leavesNode = root.querySelector("[data-leaves]");
@@ -37,6 +39,16 @@ let saveTimer = 0;
 let hudTimer = 0;
 // Testy e2e: logika wstrzymana w klatkach (hak `hold`).
 let testHold = false;
+// Silnik dźwięku (po wczytaniu audio.json) — efekty i motyw szklarni (uwaga właściciela L1).
+let audio = null;
+
+function play(name, options) {
+  try {
+    return audio?.play(name, options) || null;
+  } catch {
+    return null;
+  }
+}
 
 // ---------- Zapis ----------
 
@@ -72,12 +84,20 @@ function handleEvents() {
     switch (event.type) {
       case "spawn":
         renderer.pop(event.index);
+        play("lisc", { pitch: 1.25, volume: 0.6 });
+        break;
+      case "move":
+      case "swap":
+        play("ladowanie", { volume: 0.55 });
         break;
       case "merge": {
         renderer.pop(event.to);
         const center = renderer.cellCenter(event.to);
         if (event.leaves) renderer.popup(`+${event.leaves}`, center.x, center.y - 10, COLORS.bialy, 18);
         hint(`${itemName(event.item)}!`);
+        // Połączenie: wyższy ton na wyższym poziomie; Złota Monstera — fanfara.
+        play("polaczenie", { pitch: 0.9 + event.item.level * 0.1 });
+        if (event.top) play("rekord", { volume: 0.8 });
         if (event.top) {
           toasts.show("Złota Monstera! Szczyt łańcucha — możesz ją skompostować za 25 liści", {
             kind: "reward",
@@ -92,13 +112,16 @@ function handleEvents() {
         const center = renderer.cellCenter(event.index);
         renderer.popup(`+${event.leaves}`, center.x, center.y - 10, COLORS.monsteraJasna, 18);
         hint(`Kompost: ${itemName(event.item)} → +${event.leaves} liści`);
+        play("slizg", { pitch: 0.8, volume: 0.7 });
         save({ immediate: true });
         break;
       }
       case "potEmpty":
+        play("klik", { pitch: 0.6, volume: 0.5 });
         toasts.show("Doniczka się ładuje — nasionko co 3 sekundy", { kind: "info", key: "doniczka" });
         break;
       case "boardFull":
+        play("klik", { pitch: 0.6, volume: 0.5 });
         toasts.show("Brak miejsca na półkach — połącz albo skompostuj roślinę", { kind: "warn", key: "pelno" });
         break;
       default:
@@ -160,6 +183,7 @@ canvas.addEventListener("pointermove", (event) => {
     if (distance >= DRAG_START) {
       press.dragging = true;
       selected = -1;
+      play("klik", { pitch: 1.2, volume: 0.6 });
     }
   }
   if (press.dragging) {
@@ -188,6 +212,7 @@ function finishPress(event, cancelled = false) {
   if (selected < 0) {
     if (game.board.cells[index]) {
       selected = index;
+      play("klik", { pitch: 1.2, volume: 0.6 });
       hint(`${itemName(game.board.cells[index])} — stuknij pole albo kompost`);
     }
     return;
@@ -290,6 +315,18 @@ async function start() {
 
 fitBoard();
 requestAnimationFrame(frame);
+
+// Dźwięk: manifest, ustawienia głośności z profilu, odblokowanie dotknięciem i motyw szklarni (gra od razu po
+// odblokowaniu — silnik wznawia kontekst w geście zakończonym).
+fetch(new URL("audio.json", AUDIO_BASE))
+  .then((response) => (response.ok ? response.json() : Promise.reject(new Error(`audio.json: ${response.status}`))))
+  .then((manifest) => {
+    audio = createAudio({ manifest, baseUrl: AUDIO_BASE, preloadOnUnlock: GAME_SOUNDS });
+    connectAudioSettings(audio, cloud);
+    audio.bindUnlock(window, { ignore: (event) => Boolean(event.target?.closest?.("a[href]")) });
+    audio.playMusic(GREENHOUSE_MUSIC)?.catch?.(() => {});
+  })
+  .catch((error) => console.warn("LaczIHoduj: dźwięk", error));
 start().catch((error) => console.warn("LaczIHoduj: start", error));
 
 // Dostęp dla testów e2e.
@@ -316,5 +353,6 @@ window.LaczIHoduj = Object.freeze({
   hold: (on = true) => {
     testHold = Boolean(on);
   },
+  music: () => audio?.currentMusic?.() ?? null,
   save: () => save({ flush: true }),
 });

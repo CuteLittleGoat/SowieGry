@@ -26,6 +26,10 @@ export const POT = Object.freeze({ max: 12, regen: 3, chain: "monstera" });
 export const MERGE_LEAVES = Object.freeze([0, 0, 1, 3, 8, 20]);
 export const COMPOST_LEAVES = Object.freeze([0, 1, 2, 4, 10, 25]);
 
+// Dźwięk (uwaga właściciela L1): efekty wczytywane po pierwszym dotknięciu (tylko używane) i motyw szklarni.
+export const GAME_SOUNDS = Object.freeze(["klik", "ladowanie", "polaczenie", "lisc", "rekord", "slizg"]);
+export const GREENHOUSE_MUSIC = "szklarnia";
+
 // Nowa gra: kilka przedmiotów na start (indeks pola, poziom), żeby od razu było co łączyć.
 export const START_ITEMS = Object.freeze([
   [30, 1],

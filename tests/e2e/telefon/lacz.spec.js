@@ -39,6 +39,8 @@ test("Łącz i Hoduj: przeciągnięcie nasionka na nasionko — kiełek i liści
   const errors = watchErrors(page);
   await openGame(page);
   await expect(page.getByRole("heading", { name: "Łącz i Hoduj" })).toBeVisible();
+  // Dźwięk (uwaga L1): motyw szklarni zamówiony od razu (zagra po pierwszym dotknięciu).
+  await expect.poll(() => game(page, "music"), { timeout: 10_000 }).toBe("szklarnia");
   // Płótno przylega do siatki (bez pustego szkła nad i pod półkami); plansza obrócona tylko na telefonie poziomo.
   const canvasBox = await page.locator("[data-canvas]").boundingBox();
   expect((await game(page, "cellCenter", 0)).y - (await game(page, "cellSize")) / 2).toBeLessThanOrEqual(24);

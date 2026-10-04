@@ -44,6 +44,13 @@ Monstera 25). Możesz:
 
 Dzięki kompostowi plansza nigdy nie zablokuje się na dobre — zawsze możesz zrobić miejsce.
 
+## Dźwięk
+
+W szklarni gra spokojna muzyka, a każdy ruch ma swój dźwięk: podniesienie rośliny, odstawienie na półkę, połączenie
+(im wyższy poziom, tym wyższy ton; Złota Monstera dostaje fanfarę), nasionko z Sowiej doniczki i kompost. Dźwięk
+rusza po pierwszym dotknięciu ekranu. Głośność muzyki i efektów ustawisz w menu głównym (zakładka **Sowa** →
+**Ustawienia**).
+
 ## Zapis
 
 Gra zapisuje się automatycznie w chmurze (ten sam profil, hasło `huhu` przy pierwszym wejściu na nowym urządzeniu):
@@ -67,4 +74,4 @@ Na komputerze plansza stoi na środku, a rośliny przesuwa się myszą tak samo 
 To prototyp — sprawdzamy, czy łączenie roślin jest przyjemne. Jeśli tak, w kolejnych krokach dojdą: nowe łańcuchy
 (Pilea, Paproć, Kaktus) i hybrydy z dawnej Szklarni, zamówienia sowich sąsiadek, odnawianie pomieszczeń szklarni
 (Doniczarnia, Sala Upraw, Zraszalnia…), przeszkody Pracu Pracu i Amic, kózki-pomocnice, Basen Humbaka z rekordem,
-pakiet startowy z postępu dawnej Szklarni i samouczek.
+pakiet startowy z postępu dawnej Szklarni i samouczek (z przyciskiem do jego powtórzenia).

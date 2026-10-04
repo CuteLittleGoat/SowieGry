@@ -1835,6 +1835,79 @@ const gardenTheme = () =>
     },
   });
 
+// Łącz i Hoduj (uwaga właściciela L1): motyw szklarni — 76 BPM, G-dur (G–e–C–D ×2), łagodna sinusoida z filtrem,
+// bas półnutami, ledwie słyszalna perkusja — spokojne tło do gry logicznej (myślenie, nie pośpiech).
+const greenhouseTheme = () =>
+  stageTheme({
+    bpm: 76,
+    chords: [
+      ["G2", "G3", "B3", "D4"],
+      ["E2", "E3", "G3", "B3"],
+      ["C3", "C4", "E4", "G4"],
+      ["D3", "D4", "F#4", "A4"],
+      ["G2", "G3", "B3", "D4"],
+      ["E2", "E3", "G3", "B3"],
+      ["C3", "C4", "E4", "G4"],
+      ["D3", "D4", "F#4", "A4"],
+    ],
+    bars: [
+      [
+        ["B5", 1],
+        ["D6", 1],
+        ["B5", 1],
+        ["G5", 1],
+      ],
+      [
+        ["E5", 1.5],
+        ["G5", 0.5],
+        ["B5", 2],
+      ],
+      [
+        ["C6", 1],
+        ["E6", 1],
+        ["D6", 1],
+        ["C6", 1],
+      ],
+      [
+        ["A5", 1],
+        ["F#5", 1],
+        ["A5", 2],
+      ],
+      [
+        ["G5", 0.5],
+        ["A5", 0.5],
+        ["B5", 1],
+        ["D6", 1],
+        ["B5", 1],
+      ],
+      [
+        ["G5", 1],
+        ["E5", 1],
+        ["G5", 2],
+      ],
+      [
+        ["E6", 1],
+        ["D6", 0.5],
+        ["C6", 0.5],
+        ["B5", 1],
+        ["C6", 1],
+      ],
+      [
+        ["A5", 1],
+        ["B5", 1],
+        ["G5", 2],
+      ],
+    ],
+    lead: "sine",
+    leadGain: 0.18,
+    lowpass: 2000,
+    bass: "half",
+    drums: {
+      pattern: ["k", "", "", "", "", "", "", "", "", "", "", "", "s", "", "", ""],
+      gains: { kick: 0.22, snare: 0.04, hat: 0.02 },
+    },
+  });
+
 // Muzyka: [nazwa, synteza, opis, kb/s] — motyw biegu 80 kb/s i pieśń humbaka 64 kb/s (lżejsze: Sowia Ucieczka
 // ma budżet < 800 KB razem z rejsem na humbaku).
 for (const [name, render, meta, kbps] of [
@@ -1850,6 +1923,8 @@ for (const [name, render, meta, kbps] of [
   ["chmury", cloudTheme, { label: "Sowa w Chmurach — lot", bpm: 100, volume: 0.5 }, 48],
   // Sowie Ogrody: motyw ogrodu, 48 kb/s (z efektami i pieśnią humbaka w budżecie 800 KB).
   ["ogrod", gardenTheme, { label: "Sowie Ogrody — ogród", bpm: 84, volume: 0.45 }, 48],
+  // Łącz i Hoduj: motyw szklarni, 48 kb/s (z efektami w budżecie 800 KB).
+  ["szklarnia", greenhouseTheme, { label: "Łącz i Hoduj — szklarnia", bpm: 76, volume: 0.4 }, 48],
 ]) {
   random = mulberry32(name.length * 104729);
   const channels = render();

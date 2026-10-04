@@ -19,6 +19,7 @@ import {
 } from "../../shared/engine/audio.js";
 import { GAME_SOUNDS as CHMURY_SOUNDS } from "../../SowaWChmurach/config.js";
 import { BAY_MUSIC, GAME_SOUNDS as OGRODY_SOUNDS, GARDEN_MUSIC } from "../../SowieOgrody/ogrod/config.js";
+import { GAME_SOUNDS as LACZ_SOUNDS, GREENHOUSE_MUSIC } from "../../LaczIHoduj/config.js";
 import { GAME_SOUNDS as TORY_SOUNDS } from "../../SowieTory/config.js";
 import { STAGES as TORY_STAGES } from "../../SowieTory/stages.js";
 
@@ -50,6 +51,7 @@ test("manifest dźwięków: ok. 25 efektów, muzyka menu i humbaka, pliki MP3, r
     "humbak",
     "menu",
     "ogrod",
+    "szklarnia",
     "tory-amic",
     "tory-biedronka",
     "tory-festiwal",
@@ -128,6 +130,19 @@ test("Sowie Ogrody (nowa odsłona): motyw ogrodu (8 taktów, pętla, 48 kb/s), e
     manifest.music[BAY_MUSIC].bytes +
     theme.bytes;
   assert.ok(total < 800 * 1024, `Sowie Ogrody: ${total} B`);
+});
+
+test("Łącz i Hoduj: motyw szklarni (8 taktów, pętla, 76 BPM), efekty w manifeście i budżet poniżej 800 KB", () => {
+  const theme = manifest.music[GREENHOUSE_MUSIC];
+  assert.equal(GREENHOUSE_MUSIC, "szklarnia");
+  assert.ok(theme?.loop && theme.bpm === 76);
+  assert.ok(Math.abs(theme.duration - (8 * 4 * 60) / theme.bpm) < 0.01, "8 taktów");
+  assert.ok(theme.bytes < 160 * 1024, `${theme.bytes} B`);
+  assert.ok(readFileSync(join(audioRoot, "LICENSES.md"), "utf8").includes(theme.file), "licencja");
+  for (const name of LACZ_SOUNDS) assert.ok(manifest.sfx[name], name);
+  assert.equal(new Set(LACZ_SOUNDS).size, LACZ_SOUNDS.length);
+  const total = LACZ_SOUNDS.reduce((sum, name) => sum + manifest.sfx[name].bytes, 0) + theme.bytes;
+  assert.ok(total < 800 * 1024, `Łącz i Hoduj: ${total} B`);
 });
 
 test("głośność: suwak 0–100 → wzmocnienie, ustawienia profilu i stare przełączniki", () => {
