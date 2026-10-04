@@ -389,7 +389,8 @@ Jeżeli plików E5b (`props.js`, `scenery.js`) nie ma w repo (sesja sklonowana p
 | E4 | ✅ podgląd zaakceptowany wstępnie, podmiana wykonana (E4f) |
 | E5 | czeka: test podglądu Sowich Torów na telefonie (4 plansze, dziki, finał z basenem, Humbacze Tory, kózki, Gorączka, Nieskończony, samouczek, muzyka) i zielone światło na podmianę (E5f) |
 | E6 | w toku (E6a): rdzeń Sowy w Chmurach do obejrzenia w menu („Wypróbuj nową wersję: Sowa w Chmurach”); akceptacja całości po E6e |
-| E8 | czeka: **punkt kontrolny prototypu merge** — zagrać w „Łącz i Hoduj” (menu → karta Sowiej Szklarni → „Wypróbuj nową wersję: Łącz i Hoduj”) i zdecydować: merge zostaje (dalej kroki 8.1–8.3) albo wariant zapasowy (Analiza 2, rozdz. 3.5) |
+| Testy podglądów | od 2026-10-04 właściciel testuje podglądy E5–E8 i zgłasza uwagi — **zapisywane w `Analizy/UWAGI_WLASCICIELA.md`**; kodu nie zmieniamy, dopóki właściciel nie napisze, że skończył (potem poprawki według tego pliku, małymi commitami) |
+| E8 | ekrany prototypu zaakceptowane (2026-10-04); czeka: **punkt kontrolny prototypu merge** — zagrać w „Łącz i Hoduj” (menu → karta Sowiej Szklarni → „Wypróbuj nową wersję: Łącz i Hoduj”) i zdecydować: merge zostaje (dalej kroki 8.1–8.3) albo wariant zapasowy (Analiza 2, rozdz. 3.5) |
 
 ### 8.7. E6 — Sowa w Chmurach: plan kroków i miejsce wznowienia
 
