@@ -15,6 +15,7 @@ Wersje do sprawdzenia (menu → „Wypróbuj nową wersję: …”):
 
 | Data | Decyzja |
 |---|---|
+| 2026-10-04 | **Dane w bazie z okresu testów to dane testowe:** „wszystkie rekordy i zapisy do bazy na czas testów traktujemy jako testy. Jeżeli się skasują to nic się nie stanie. Nie trzeba migracji i backupów.” Skutki dla dalszych prac: przy podmianach (E5f, E6f, E7e, E8) nie trzeba przenosić stanu ani rekordów — nowa gra może zacząć od zera albo nadpisać stary stan; migracja Ogrodów v2 → v3 i pakiet startowy z dawnej Szklarni (8.3) nie są wymagane (można je uprościć lub pominąć); bez kopii zapasowych. **Bez zmian zostają:** kod pisze wyłącznie w kolekcji `sowiegry` (i jej podkolekcjach), reguły Firestore bez zmian, testy tylko na emulatorze / w pamięci, nigdy `localStorage.clear()`. |
 | 2026-10-04 | Łącz i Hoduj: **prototypy ekranów zaakceptowane** (zrzuty: przeciąganie na telefonie, 320 × 568, telefon poziomo). Decyzja o samej rozgrywce (merge czy wariant zapasowy) — po teście na telefonie. |
 
 ## Ogólne (wszystkie gry)
