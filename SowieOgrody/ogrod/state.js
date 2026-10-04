@@ -47,6 +47,8 @@ export function defaultState(now = Date.now()) {
       trucks: 0,
     },
     achievements: {},
+    // Samouczek pierwszego wejścia (E7d2) ukończony albo pominięty.
+    tutorialDone: false,
   };
 }
 

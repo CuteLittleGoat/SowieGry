@@ -17,10 +17,12 @@ const gameIndexes = [
 test("katalog instrukcji (shared/meta/guides-data.js) obejmuje pięć gier i „Poznaj Sowi Świat”", async () => {
   const { GUIDES } = await import("../../shared/meta/guides-data.js");
   // `sowietory` — przewodnik nowej wersji Sowa3 w podglądzie (SowieTory/); po podmianie zastąpi `sowa3`;
-  // `chmury` — tak samo Sowa w Chmurach (SowaWChmurach/) zamiast `jumper`.
+  // `chmury` — tak samo Sowa w Chmurach (SowaWChmurach/) zamiast `jumper`; `ogrod` — nowa odsłona Sowich Ogrodów
+  // (SowieOgrody/nowa.html) zamiast `ogrody`.
   assert.deepEqual(Object.keys(GUIDES).sort(), [
     "chmury",
     "jumper",
+    "ogrod",
     "ogrody",
     "runner",
     "sowa3",
@@ -28,7 +30,7 @@ test("katalog instrukcji (shared/meta/guides-data.js) obejmuje pięć gier i „
     "swiat",
     "szklarnia",
   ]);
-  for (const id of ["runner", "jumper", "chmury", "sowa3", "sowietory", "ogrody", "szklarnia"]) {
+  for (const id of ["runner", "jumper", "chmury", "sowa3", "sowietory", "ogrod", "ogrody", "szklarnia"]) {
     assert.ok(GUIDES[id].summary && GUIDES[id].cards.length >= 4, id);
   }
   assert.match(read("shared/game-guides.js"), /meta\/guides-data\.js/);

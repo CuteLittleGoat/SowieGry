@@ -10,6 +10,11 @@
 Na karcie Sowich Ogrodów w menu stuknij **„Wypróbuj nową wersję: nowe Sowie Ogrody”** (strona `SowieOgrody/nowa.html`).
 Podgląd zapisuje postęp osobno — obecna gra zostaje bez zmian i można do niej wrócić w każdej chwili.
 
+- **Samouczek:** przy pierwszym wejściu dymek u góry ogrodu prowadzi przez 4 krótkie kroki (stuknięcia, pierwsza
+  Monstera, cele rozdziału, wydarzenia). Kroki z akcją zaliczają się same, pozostałe — przyciskiem **„Dalej”**;
+  **„✕”** pomija samouczek. Ogród rośnie przy tym normalnie.
+- **„Jak grać?”:** przycisk **„?”** obok „Menu” otwiera krótką instrukcję z obrazkami; jest w niej przycisk
+  **„Zagraj samouczek”**, który uruchamia samouczek jeszcze raz.
 - **Pierwsze wejście:** Twój dotychczasowy ogród przenosi się do nowej odsłony. Okno **„Witaj w nowym ogrodzie!”**
   mówi, co zostało, i ile liści (oraz nasion) dostajesz za ulepszenia, których w nowej wersji nie ma.
 - **Liście:** stukaj w ogród — każde stuknięcie daje liście (napis „+N” w miejscu palca). U góry widać liczbę liści
@@ -42,7 +47,7 @@ Podgląd zapisuje postęp osobno — obecna gra zostaje bez zmian i można do ni
   zakupy i wydarzenia mają swoje dźwięki. Głośność muzyki i efektów ustawisz w menu głównym (zakładka „Sowa”).
 - Przycisk **Menu** (lewy górny róg) wraca do menu głównego.
 
-Wersja podglądowa jest jeszcze w budowie: samouczek, instrukcja w „Jak grać?” i kontrakty dnia dojdą w kolejnych krokach.
+Wersja podglądowa jest jeszcze w budowie: kontrakty dnia dojdą w kolejnym kroku.
 
 ## Cel gry
 

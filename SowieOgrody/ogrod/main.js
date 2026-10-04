@@ -7,8 +7,9 @@
 // migracja dawnego stanu (v2). Po podmianie (E7e) gra zapisze v3 przez `saveGameState`.
 import { connectAudioSettings, createAudio } from "../../shared/engine/audio.js";
 import { createAtlas } from "../../shared/engine/sprites.js";
+import { guideFor } from "../../shared/meta/guides-data.js";
 import { EVENTS, progress } from "../../shared/meta/progress.js";
-import { createToasts, openModal } from "../../shared/ui/index.js";
+import { createToasts, openModal, renderGuide } from "../../shared/ui/index.js";
 import { SPRITES, SVG_BASE } from "../../shared/world/catalog.js";
 import { createOwlAnimator } from "../../shared/world/owl.js";
 import { COLORS } from "../../shared/world/tokens.js";
@@ -28,8 +29,11 @@ import { chapterIndex, createGarden } from "./garden.js";
 import { createPanel } from "./panel.js";
 import { createGardenRenderer, gardenUnit } from "./render.js";
 import { defaultState, loadState } from "./state.js";
+import { createTutorial } from "./tutorial.js";
 
 const PREVIEW_FIELD = "preview";
+// Instrukcja „Jak grać?” nowej odsłony (shared/meta/guides-data.js).
+const GUIDE_ID = "ogrod";
 const AUDIO_BASE = new URL("../../assets/audio/", import.meta.url).href;
 // Zapis: co 30 s w tle gry, po ważnej akcji po 2 s, przy zejściu do tła od razu.
 const SAVE_EVERY = 30;
@@ -52,6 +56,7 @@ const truckTapsNode = root.querySelector("[data-truck-taps]");
 const splashNode = root.querySelector("[data-splash]");
 const splashFill = root.querySelector("[data-splash-fill]");
 const bayHud = root.querySelector("[data-bay-hud]");
+const tutorialNode = root.querySelector("[data-tutorial]");
 
 const atlas = createAtlas({ catalog: SPRITES, baseUrl: SVG_BASE });
 const animator = createOwlAnimator();
@@ -78,6 +83,9 @@ let testHold = false;
 // Silnik dźwięku (po wczytaniu audio.json); stuknięcia grają najwyżej co 70 ms (szybkie stukanie nie dudni).
 let audio = null;
 let lastTapSound = 0;
+// Samouczek pierwszego wejścia (E7d2) — trwa, dopóki nie ukończony albo pominięty.
+let tutorial = null;
+let tutorialSkipped = false;
 
 const now = () => Date.now();
 
@@ -390,6 +398,64 @@ function welcome({ offline, report }) {
   });
 }
 
+// ---------- Samouczek i „Jak grać?” ----------
+
+function showTutorial(item) {
+  tutorialNode.hidden = !item;
+  if (!item) return;
+  tutorialNode.querySelector("[data-tutorial-step]").textContent = `Samouczek · krok ${item.step} z ${item.steps}`;
+  const demo = tutorialNode.querySelector(".sowie-gesture-demo");
+  demo.hidden = !item.gesture;
+  if (item.gesture) demo.dataset.gesture = item.gesture;
+  tutorialNode.querySelector("[data-tutorial-text]").textContent = item.text;
+  tutorialNode.querySelector("[data-tutorial-next]").hidden = !item.next;
+}
+
+function tutorialFinished() {
+  tutorial = null;
+  if (!tutorialSkipped) {
+    play("zycie", { pitch: 1.2 });
+    toasts.show("Świetnie! Ogród jest Twój — powodzenia!", { kind: "success", key: "samouczek-koniec", priority: 3 });
+  }
+  if (!garden.state.tutorialDone) {
+    garden.state.tutorialDone = true;
+    save({ immediate: true });
+  }
+}
+
+function startTutorial() {
+  tutorialSkipped = false;
+  tutorial = createTutorial({ state: garden.state, onStep: showTutorial, onDone: tutorialFinished });
+}
+
+tutorialNode.querySelector("[data-tutorial-next]").addEventListener("click", () => tutorial?.next(garden.state));
+tutorialNode.querySelector("[data-tutorial-skip]").addEventListener("click", () => {
+  tutorialSkipped = true;
+  tutorial?.skip();
+});
+
+function openGuide(trigger) {
+  openModal({
+    title: `Jak grać — ${guideFor(GUIDE_ID).title}`,
+    content: renderGuide(guideFor(GUIDE_ID), { atlas, sprites: SPRITES }),
+    root,
+    className: "is-guide",
+    actions: [
+      {
+        label: "Zagraj samouczek",
+        onClick: (close) => {
+          close();
+          startTutorial();
+        },
+      },
+      { label: "Rozumiem", primary: true, onClick: (close) => close() },
+    ],
+    onClose: () => trigger?.focus?.({ preventScroll: true }),
+  });
+}
+
+root.querySelector("[data-guide]").addEventListener("click", (event) => openGuide(event.currentTarget));
+
 // ---------- Stuknięcia ----------
 
 function tapAt(x, y) {
@@ -491,6 +557,7 @@ function frame(time) {
     hudTimer = 0;
     updateHud();
     panel.render(garden.state, now());
+    tutorial?.update(garden.state);
   }
   requestAnimationFrame(frame);
 }
@@ -548,6 +615,7 @@ async function start() {
   progress.emit(EVENTS.VISIT, { gameId: GAME_ID });
   reportProgress();
   welcome({ offline, report });
+  if (!garden.state.tutorialDone) startTutorial();
   updateHud();
   panel.render(garden.state, now());
 }
@@ -635,6 +703,7 @@ window.SowieOgrody = Object.freeze({
   },
   hit: (name) => renderer.hits()[name] ?? null,
   music: () => audio?.currentMusic?.() ?? null,
+  tutorial: () => tutorial?.progress() ?? null,
   // Testy: wstrzymanie logiki w klatkach (np. liście Zatoki stoją w miejscu do stuknięcia); `advance` działa dalej.
   hold: (on = true) => {
     testHold = Boolean(on);

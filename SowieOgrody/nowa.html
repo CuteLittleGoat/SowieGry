@@ -33,6 +33,7 @@
     <main class="ogrod" data-ogrod aria-label="Sowie Ogrody">
       <header class="ogrod-top">
         <a class="sowie-ui-button is-quiet ogrod-back" href="../">Menu</a>
+        <button type="button" class="sowie-ui-button is-quiet ogrod-help" data-guide aria-label="Jak grać?">?</button>
         <div class="ogrod-leaves" aria-live="off">
           <strong data-leaves>0</strong>
           <span data-lps>0 liści/s</span>
@@ -44,6 +45,22 @@
       <section class="ogrod-goal" data-goal aria-live="polite"></section>
       <div class="ogrod-garden">
         <canvas data-canvas tabindex="0" aria-label="Ogród — stuknij, żeby zebrać liście"></canvas>
+        <div class="ogrod-tutorial" data-tutorial hidden role="status" aria-live="polite">
+          <span class="sowie-gesture-demo" aria-hidden="true"><span class="sowie-gesture-finger"></span></span>
+          <span class="ogrod-tutorial-text">
+            <span class="ogrod-tutorial-step" data-tutorial-step></span>
+            <span data-tutorial-text></span>
+          </span>
+          <button type="button" class="sowie-ui-button is-primary" data-tutorial-next hidden>Dalej</button>
+          <button
+            type="button"
+            class="sowie-ui-button is-quiet ogrod-tutorial-skip"
+            data-tutorial-skip
+            aria-label="Pomiń samouczek"
+          >
+            ✕
+          </button>
+        </div>
         <div class="ogrod-splash" data-splash hidden>
           <span>Plusk-o-metr</span>
           <span class="ogrod-splash-bar"><i data-splash-fill></i></span>

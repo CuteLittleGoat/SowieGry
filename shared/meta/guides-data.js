@@ -335,6 +335,61 @@ export const GUIDES = Object.freeze({
       },
     ],
   },
+  // Nowa odsłona Sowich Ogrodów (E7d2, podgląd SowieOgrody/nowa.html; poza GUIDE_ORDER — po podmianie w E7e
+  // zastąpi przewodnik `ogrody`).
+  ogrod: {
+    id: "ogrod",
+    title: "Sowie Ogrody",
+    summary:
+      "Sowa ogrodniczka sadzi rośliny od parapetu po arboretum. Stukaj w ogród, kupuj rośliny i wykonuj cele rozdziałów — ogród rośnie także wtedy, gdy Cię nie ma.",
+    cards: [
+      {
+        id: "cel",
+        title: "Cel gry",
+        text: "Przejdź sześć rozdziałów: Parapet, Balkon, Działkę, Basen, Szklarnię i Arboretum. Cele bieżącego rozdziału są pod licznikiem liści.",
+        sprite: "sowa-stoi",
+        tip: "Każdy rozdział otwiera nowe rośliny i ulepszenia.",
+      },
+      {
+        id: "liscie",
+        title: "Liście",
+        text: "Stukaj w ogród, żeby zbierać liście monstery, i kupuj za nie rośliny — każda zbiera liście co sekundę.",
+        gesture: "tap",
+        sprite: "lisc-zielony",
+      },
+      {
+        id: "rosliny",
+        title: "Rośliny i kamienie milowe",
+        text: "Przy 10, 25, 50 i 100 sztukach roślina zmienia wygląd, a przy 25 i 100 zbiera dwa razy więcej. Przycisk „max” kupuje tyle, ile Cię stać.",
+        sprite: "lisc-zloty",
+      },
+      {
+        id: "konewka",
+        title: "Konewka i Plusk-o-metr",
+        text: "Konewka sowy podwaja zbiory na chwilę. Podlewanie i złote kózki napełniają Plusk-o-metr — pełny otwiera Zatokę Humbaka.",
+        sprite: "plusk",
+      },
+      {
+        id: "pracu-amic",
+        title: "Pracu Pracu i Amic",
+        text: "Dzwoniący telefon spowalnia ogród o 30% — odrzuć go. Ciężarówka Amic zastawia roślinę — stuknij ją trzy razy, żeby odjechała.",
+        sprite: "pracu-telefon",
+        tip: "Ulepszenia Tryb samolotowy i Kozi kurier zrobią to za Ciebie.",
+      },
+      {
+        id: "kozka-zatoka",
+        title: "Złota kózka i Zatoka Humbaka",
+        text: "Złap złotą kózkę, zanim ucieknie — da premię. W Zatoce Humbaka łap liście z fontanny; łapanie pod rząd daje więcej.",
+        sprite: "kozka-sprezynka",
+      },
+      {
+        id: "przesadzanie",
+        title: "Wielkie Przesadzanie",
+        text: "Po Szklarni możesz zacząć ogród od nowa za nasiona na stałe ulepszenia. Gdy Cię nie ma, ogród rośnie dalej (do 4 godzin).",
+        sprite: "sowa-mruga",
+      },
+    ],
+  },
   ogrody: {
     id: "ogrody",
     title: "Sowie Ogrody",

@@ -277,3 +277,60 @@ test("nowe Sowie Ogrody: złota kózka (×3 na 30 s), Plusk-o-metr i Zatoka Humb
   expect((await ogrod(page, "state")).stats.bays).toBe(1);
   expect(errors).toEqual([]);
 });
+
+test("nowe Sowie Ogrody: samouczek pierwszego wejścia (4 kroki), zapis w podglądzie i „Jak grać?” z „Zagraj samouczek” (emulator)", async ({
+  page,
+}, testInfo) => {
+  const project = uniqueProject(testInfo);
+  const errors = watchErrors(page);
+  await openGarden(page, cloudUrl("/SowieOgrody/nowa.html", project));
+  const bubble = page.locator("[data-tutorial]");
+  // 1. Stuknięcia (podpowiedź nie zasłania ogrodu — stuknięcia przechodzą do płótna).
+  await expect(bubble).toContainText("krok 1 z 4");
+  await expect(bubble).toContainText("Stuknij w ogród");
+  await expect(bubble.locator(".sowie-gesture-demo")).toHaveAttribute("data-gesture", "tap");
+  await expect(bubble.locator("[data-tutorial-next]")).toBeHidden();
+  const garden = page.locator("[data-canvas]");
+  const box = await garden.boundingBox();
+  for (let index = 0; index < 5; index += 1)
+    await garden.click({ position: { x: 40 + index * 30, y: box.height * 0.3 } });
+  // 2. Zakup Monstery.
+  await expect(bubble).toContainText("krok 2 z 4");
+  await expect(bubble).toContainText("Kup Monsterę");
+  await page.evaluate(() => window.SowieOgrody.give(15));
+  await page.locator('[data-buy="monstera"][data-amount="1"]').click();
+  // 3. i 4. Kroki informacyjne — „Dalej”.
+  await expect(bubble).toContainText("krok 3 z 4");
+  await bubble.getByRole("button", { name: "Dalej" }).click();
+  await expect(bubble).toContainText("krok 4 z 4");
+  await expect(bubble).toContainText("łap złotą kózkę");
+  await bubble.getByRole("button", { name: "Dalej" }).click();
+  await expect(bubble).toBeHidden();
+  await expect(page.locator(".sowie-toast-chip", { hasText: "Świetnie! Ogród jest Twój" })).toBeVisible({
+    timeout: 10_000,
+  });
+  expect(await page.evaluate(() => window.SowieOgrody.tutorial())).toBeNull();
+  await page.evaluate(() => window.SowieCloud.flush());
+  const doc = await readDoc(project, "sowiegry/profil/sowiegry_gry/ogrody");
+  expect(JSON.parse(doc.preview).tutorialDone).toBe(true);
+
+  // Ponowne wejście (nowa karta): bez samouczka; „Jak grać?” — instrukcja i „Zagraj samouczek”.
+  const again = await page.context().newPage();
+  await page.close();
+  const errorsAgain = watchErrors(again);
+  await openGarden(again, cloudUrl("/SowieOgrody/nowa.html", project));
+  await expect(again.locator("[data-tutorial]")).toBeHidden();
+  await again.getByRole("button", { name: "Jak grać?" }).click();
+  const guide = again.getByRole("dialog", { name: "Jak grać — Sowie Ogrody" });
+  await expect(guide).toBeVisible();
+  await expect(guide).toContainText("Wielkie Przesadzanie");
+  await expect(guide).toContainText("Zatoce Humbaka");
+  await guide.getByRole("button", { name: "Zagraj samouczek" }).click();
+  await expect(guide).toBeHidden();
+  await expect(again.locator("[data-tutorial]")).toContainText("krok 1 z 4");
+  // „Pomiń” kończy samouczek bez komunikatu.
+  await again.locator("[data-tutorial]").getByRole("button", { name: "Pomiń samouczek" }).click();
+  await expect(again.locator("[data-tutorial]")).toBeHidden();
+  expect(errors).toEqual([]);
+  expect(errorsAgain).toEqual([]);
+});
