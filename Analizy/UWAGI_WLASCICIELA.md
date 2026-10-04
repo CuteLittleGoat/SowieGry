@@ -35,12 +35,18 @@ Wersje do sprawdzenia (menu → „Wypróbuj nową wersję: …”):
 
 ## Sowa w Chmurach (E6)
 
-Brak uwag (na razie).
+| # | Uwaga właściciela (dosłownie) | Do zrobienia | Stan |
+|---|---|---|---|
+| C1 | „W grze o skakaniu na poziomie z humbakiem nie działa sterowanie.” | Niebiański Ocean (20 s odbijania od grzbietów humbaków po wskoczeniu w fontannę humbaka-gejzera): sowa nie reaguje na przeciąganie palcem (i przechylanie). Odtworzyć na telefonie (Chromium i WebKit, dotyk), znaleźć przyczynę (np. ruch w oceanie liczony osobno i pomijający wejście gracza, przechwycenie zdarzeń przez nakładkę) i naprawić; test e2e sterowania w oceanie przez prawdziwe gesty. | ⏳ |
 
 ## Sowie Ogrody — nowa odsłona (E7)
 
-Brak uwag (na razie).
+| # | Uwaga właściciela (dosłownie) | Do zrobienia | Stan |
+|---|---|---|---|
+| O1 | „W Sowie Ogrody oraz Łącz i Hoduj nie ma audio.” | Nowe Ogrody (`SowieOgrody/nowa.html`) mają od E7d1 muzykę ogrodu i efekty zdarzeń — na telefonie właściciela nic nie słychać. Sprawdzić na telefonie (iPhone/Android): odblokowanie dźwięku po pierwszym dotyku (`bindUnlock` — czy obejmuje stuknięcia w płótno i panel), wczytanie plików (`assets/audio/`), ustawienia dźwięku (zakładka Sowa w menu), uśpienie kontekstu po powrocie z tła; porównać z grami, w których dźwięk działa (Sowie Tory, Sowa w Chmurach). Naprawić i dodać test, który to wychwyci. | ⏳ |
 
 ## Łącz i Hoduj (E8)
 
-Brak uwag (na razie).
+| # | Uwaga właściciela (dosłownie) | Do zrobienia | Stan |
+|---|---|---|---|
+| L1 | „W Sowie Ogrody oraz Łącz i Hoduj nie ma audio.” | Prototyp (krok 8.0) nie ma jeszcze żadnego dźwięku — w planie muzyka i dźwięki są w kroku 8.3. Dodać wcześniej: efekty (podniesienie, upuszczenie, połączenie — wyższy ton na wyższym poziomie, Złota Monstera, nasionko z doniczki, kompost, pełne półki) i spokojną muzykę szklarni, przez Sowi Silnik (`shared/engine/audio.js`, `scripts/make-audio.mjs`, budżet < 800 KB), z ustawieniami dźwięku z menu. | ⏳ |
