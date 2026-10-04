@@ -188,6 +188,7 @@ export function createGarden({
       stats: { ...state.stats, prestiges: state.stats.prestiges + 1, seedsEarned: state.stats.seedsEarned + seeds },
       achievements: { ...state.achievements },
       tutorialDone: state.tutorialDone,
+      daily: state.daily,
       createdAt: state.createdAt,
       splash: state.splash,
     };

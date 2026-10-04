@@ -14,6 +14,7 @@ import {
   prestigeSeeds,
   production,
 } from "./economy.js";
+import { dailyContracts } from "./daily.js";
 import { chapterIndex, chapterOpen } from "./garden.js";
 
 export const TABS = Object.freeze([
@@ -106,6 +107,25 @@ function prestigeHtml(state) {
       .join("")}`;
 }
 
+// Kontrakty dnia (E7d3): postęp i „Odbierz” (XP i piórka Sowiej Akademii).
+function contractsHtml(state, now) {
+  return `<section class="ogrod-contracts" aria-label="Kontrakty dnia">
+    <h3 class="ogrod-subtitle">Kontrakty dnia</h3>
+    ${dailyContracts(state, now)
+      .map(
+        (item) => `<article class="ogrod-card is-row${item.claimed ? " is-done" : ""}" data-contract="${item.id}">
+        <div class="ogrod-card-text"><h3>${escape(item.label)}</h3><p><span data-contract-progress>${item.progress}/${item.target}</span> · +${item.xp} XP · +${item.feathers} piórka</p></div>
+        ${
+          item.claimed
+            ? `<span class="ogrod-done">Odebrano ✓</span>`
+            : `<button type="button" class="sowie-ui-button is-primary" data-claim="${item.id}" ${item.done ? "" : "disabled"}>Odbierz</button>`
+        }
+      </article>`,
+      )
+      .join("")}
+  </section>`;
+}
+
 function collectionHtml(state, now) {
   const index = chapterIndex(state);
   const stats = state.stats;
@@ -121,21 +141,25 @@ function collectionHtml(state, now) {
     ["Liście z offline", formatNumber(stats.offlineLeaves)],
   ];
   const kinds = PLANTS.filter((plant) => (state.plants[plant.id] || 0) > 0);
-  return `<ol class="ogrod-chapters">${CHAPTERS.map(
-    (chapter, position) =>
-      `<li class="${state.chapters[chapter.id] ? "is-done" : position === index ? "is-current" : ""}">${escape(chapter.name)}</li>`,
-  ).join("")}</ol>
+  return `${contractsHtml(state, now)}
+    <h3 class="ogrod-subtitle">Rozdziały</h3>
+    <ol class="ogrod-chapters">${CHAPTERS.map(
+      (chapter, position) =>
+        `<li class="${state.chapters[chapter.id] ? "is-done" : position === index ? "is-current" : ""}">${escape(chapter.name)}</li>`,
+    ).join("")}</ol>
     <h3 class="ogrod-subtitle">Gatunki w ogrodzie (${kinds.length}/${PLANTS.length})</h3>
     <p class="ogrod-note">${kinds.map((plant) => `${escape(plant.name)} — etap ${plantStage(state.plants[plant.id])}/5`).join(" · ") || "Jeszcze pusto — kup pierwszą Monsterę."}</p>
     <h3 class="ogrod-subtitle">Statystyki</h3>
-    <dl class="ogrod-stats">${rows.map(([label, value]) => `<div><dt>${label}</dt><dd>${value}</dd></div>`).join("")}</dl>`;
+    <dl class="ogrod-stats">${rows.map(([label, value]) => `<div><dt>${label}</dt><dd>${value}</dd></div>`).join("")}</dl>
+    <p class="ogrod-note">Wersja podglądowa nowej odsłony. Postęp zapisuje się osobno — dawna gra (<a href="./">Sowie Ogrody</a>) zostaje bez zmian.</p>`;
 }
 
 /**
- * createPanel({ root, onBuy, onUpgrade, onPrestige, onNode }) → { setTab(id), tab(), render(state, now) }.
+ * createPanel({ root, onBuy, onUpgrade, onPrestige, onNode, onClaim }) → { setTab(id), tab(), render(state, now),
+ * refresh() } (`refresh` — przebudowa zawartości przy następnym `render`).
  * `root` — element z `[data-tabs]` (przyciski zakładek) i `[data-panel]` (zawartość).
  */
-export function createPanel({ root, onBuy, onUpgrade, onPrestige, onNode }) {
+export function createPanel({ root, onBuy, onUpgrade, onPrestige, onNode, onClaim = () => {} }) {
   const tabsNode = root.querySelector("[data-tabs]");
   const content = root.querySelector("[data-panel]");
   let current = "rosliny";
@@ -160,7 +184,9 @@ export function createPanel({ root, onBuy, onUpgrade, onPrestige, onNode }) {
     if (event.target.closest("[data-prestige]") && !event.target.closest("[data-prestige]").disabled)
       return onPrestige();
     const node = event.target.closest("[data-node-buy]");
-    if (node && !node.disabled) onNode(node.dataset.nodeBuy);
+    if (node && !node.disabled) return onNode(node.dataset.nodeBuy);
+    const claim = event.target.closest("[data-claim]");
+    if (claim && !claim.disabled) onClaim(claim.dataset.claim);
   });
 
   // Klucz zawartości zakładki: zmienia się przy zakupie, nowym rozdziale, przesadzaniu (nie co klatkę).
@@ -174,6 +200,7 @@ export function createPanel({ root, onBuy, onUpgrade, onPrestige, onNode }) {
       Math.floor(state.seeds),
       prestigeSeeds(state),
       current === "kolekcja" ? Math.floor(Date.now() / 2000) : 0,
+      current === "kolekcja" ? JSON.stringify(state.daily?.claimed || {}) : "",
     ].join("|");
   }
 
@@ -203,6 +230,9 @@ export function createPanel({ root, onBuy, onUpgrade, onPrestige, onNode }) {
 
   const api = {
     tab: () => current,
+    refresh() {
+      key = "";
+    },
     setTab(id) {
       if (!TABS.some((tab) => tab.id === id)) return;
       current = id;

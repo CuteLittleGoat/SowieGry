@@ -49,6 +49,8 @@ export function defaultState(now = Date.now()) {
     achievements: {},
     // Samouczek pierwszego wejścia (E7d2) ukończony albo pominięty.
     tutorialDone: false,
+    // Kontrakty dnia (E7d3, daily.js): { date, baseline, claimed } albo null przed pierwszym wejściem.
+    daily: null,
   };
 }
 

@@ -448,6 +448,11 @@ body {
   margin: 0;
 }
 
+.ogrod-contracts {
+  display: grid;
+  gap: 8px;
+}
+
 .ogrod-chapters {
   display: flex;
   flex-wrap: wrap;
@@ -495,6 +500,13 @@ body {
   padding: 4px 12px calc(6px + env(safe-area-inset-bottom));
   font-size: 12px;
   opacity: 0.8;
+}
+
+/* Niski ekran (np. 320 × 568, telefon poziomo): notka o podglądzie tylko w zakładce Kolekcja — panel ma więcej miejsca. */
+@media (max-height: 600px) {
+  .ogrod-preview {
+    display: none;
+  }
 }
 
 /* Telefon poziomo: ogród po lewej, panel po prawej (mało wysokości). */

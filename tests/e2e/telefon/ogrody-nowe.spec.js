@@ -334,3 +334,29 @@ test("nowe Sowie Ogrody: samouczek pierwszego wejścia (4 kroki), zapis w podgl�
   expect(errors).toEqual([]);
   expect(errorsAgain).toEqual([]);
 });
+
+test("nowe Sowie Ogrody: kontrakt dnia — 25 stuknięć, komunikat, „Odbierz” w Kolekcji, nagroda w Sowiej Akademii", async ({
+  page,
+}) => {
+  const errors = watchErrors(page);
+  await openGarden(page);
+  const xpBefore = await page.evaluate(() => window.SowieAcademy.snapshot().xp);
+  await page.evaluate(() => window.SowieOgrody.tap(25));
+  await expect(
+    page.locator(".sowie-toast-chip", { hasText: "Kontrakt gotowy: Zbierz liście 25 stuknięciami" }),
+  ).toBeVisible({ timeout: 10_000 });
+  await page.getByRole("tab", { name: "Kolekcja" }).click();
+  const card = page.locator('[data-contract="clicks"]');
+  await expect(card).toContainText("25/25");
+  await expect(page.locator('[data-contract="buys"] [data-claim]')).toBeDisabled();
+  await card.getByRole("button", { name: "Odbierz" }).click();
+  await expect(card).toContainText("Odebrano ✓");
+  await expect(page.locator(".sowie-toast-chip", { hasText: "Kontrakt wykonany" })).toBeVisible({ timeout: 10_000 });
+  const academy = await page.evaluate(() => window.SowieAcademy.snapshot());
+  const day = new Date().toISOString().slice(0, 10);
+  expect(academy.awards[`feature:ogrody:${day}:clicks`]).toBeTruthy();
+  expect(academy.xp).toBeGreaterThanOrEqual(xpBefore + 30);
+  const claimed = await page.evaluate(() => window.SowieOgrody.contracts().find((item) => item.id === "clicks"));
+  expect(claimed.claimed).toBe(true);
+  expect(errors).toEqual([]);
+});

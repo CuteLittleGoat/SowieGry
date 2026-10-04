@@ -30,6 +30,7 @@ import { createPanel } from "./panel.js";
 import { createGardenRenderer, gardenUnit } from "./render.js";
 import { defaultState, loadState } from "./state.js";
 import { createTutorial } from "./tutorial.js";
+import { claimContract, dailyContracts, ensureDaily } from "./daily.js";
 
 const PREVIEW_FIELD = "preview";
 // Instrukcja „Jak grać?” nowej odsłony (shared/meta/guides-data.js).
@@ -86,6 +87,8 @@ let lastTapSound = 0;
 // Samouczek pierwszego wejścia (E7d2) — trwa, dopóki nie ukończony albo pominięty.
 let tutorial = null;
 let tutorialSkipped = false;
+// Kontrakty dnia gotowe do odbioru, o których już był komunikat (w tej wizycie).
+const contractsAnnounced = new Set();
 
 const now = () => Date.now();
 
@@ -143,7 +146,37 @@ const panel = createPanel({
   onUpgrade: (id) => garden.buyUpgrade(id),
   onPrestige: () => confirmPrestige(),
   onNode: (id) => garden.buyPrestige(id),
+  onClaim: (id) => claimDaily(id),
 });
+
+// Kontrakty dnia (E7d3): nagroda przez SowieProgress (zdarzenie `award` → SowieAcademy.award; ten sam identyfikator
+// co w dawnej grze — tego samego dnia raz), komunikat, zapis po 2 s.
+function claimDaily(id) {
+  const item = claimContract(garden.state, id, now());
+  if (!item) return;
+  progress.emit(EVENTS.AWARD, { id: item.award, xp: item.xp, feathers: item.feathers, label: "Kontrakt ogrodniczy" });
+  play("powerup-start");
+  toasts.show(`Kontrakt wykonany: ${item.label} (+${item.xp} XP, +${item.feathers} piórka)`, {
+    kind: "reward",
+    key: `kontrakt-${id}`,
+    priority: 2,
+  });
+  panel.refresh();
+  save({ immediate: true });
+}
+
+// Komunikat, gdy kontrakt jest gotowy do odbioru (raz na wizytę); przy okazji nowy dzień — nowa linia bazowa.
+function checkContracts() {
+  for (const item of dailyContracts(garden.state, now())) {
+    const key = `${garden.state.daily.date}:${item.id}`;
+    if (!item.done || item.claimed || contractsAnnounced.has(key)) continue;
+    contractsAnnounced.add(key);
+    toasts.show(`Kontrakt gotowy: ${item.label} — odbierz w zakładce Kolekcja`, {
+      kind: "reward",
+      key: `gotowy-${item.id}`,
+    });
+  }
+}
 
 function updateHud() {
   const state = garden.state;
@@ -163,6 +196,7 @@ function updateHud() {
   );
   renderGoals();
   updateEvents();
+  if (ready) checkContracts();
 }
 
 // Zdarzenia: przyciski reakcji, Plusk-o-metr, licznik Zatoki Humbaka.
@@ -611,6 +645,7 @@ async function start() {
   const offline = garden.applyOffline((now() - last) / 1000);
   garden.takeEvents();
   ready = true;
+  ensureDaily(garden.state, now());
   if (report) save({ immediate: true });
   progress.emit(EVENTS.VISIT, { gameId: GAME_ID });
   reportProgress();
@@ -704,6 +739,7 @@ window.SowieOgrody = Object.freeze({
   hit: (name) => renderer.hits()[name] ?? null,
   music: () => audio?.currentMusic?.() ?? null,
   tutorial: () => tutorial?.progress() ?? null,
+  contracts: () => dailyContracts(garden.state, now()),
   // Testy: wstrzymanie logiki w klatkach (np. liście Zatoki stoją w miejscu do stuknięcia); `advance` działa dalej.
   hold: (on = true) => {
     testHold = Boolean(on);

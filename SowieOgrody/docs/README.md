@@ -28,7 +28,9 @@ Podgląd zapisuje postęp osobno — obecna gra zostaje bez zmian i można do ni
     **„Podlej”** (ładunki, np. 3/3): podlanie podwaja produkcję na chwilę, a ładunki same się odnawiają;
   - **Prestiż** — **Wielkie Przesadzanie** (po Szklarni): ogród zaczyna od nowa, ale dostajesz nasiona na stałe
     ulepszenia w drzewku (Korzenie, Woda, Sen). Przed przesadzeniem gra zapyta, czy na pewno;
-  - **Kolekcja** — rozdziały, gatunki w ogrodzie i statystyki.
+  - **Kolekcja** — na górze **kontrakty dnia** (25 stuknięć, 6 kupionych roślin, 2 podlania — liczone od pierwszego
+    wejścia danego dnia); wykonany kontrakt odbierasz przyciskiem **„Odbierz”** i dostajesz XP oraz piórka Sowiej
+    Akademii. Niżej rozdziały, gatunki w ogrodzie i statystyki.
 - **Wydarzenia w ogrodzie** (przycisk pojawia się przy dolnej krawędzi ogrodu; możesz też stuknąć w samą postać):
   - **telefon Pracu Pracu** (od Balkonu, co kilka minut) — dopóki dzwoni, ogród rośnie o 30% wolniej. Stuknij
     **„Odrzuć”** albo telefon w lewym górnym rogu. Ulepszenie **Tryb samolotowy** wycisza go samo po 10 s;
@@ -47,7 +49,7 @@ Podgląd zapisuje postęp osobno — obecna gra zostaje bez zmian i można do ni
   zakupy i wydarzenia mają swoje dźwięki. Głośność muzyki i efektów ustawisz w menu głównym (zakładka „Sowa”).
 - Przycisk **Menu** (lewy górny róg) wraca do menu głównego.
 
-Wersja podglądowa jest jeszcze w budowie: kontrakty dnia dojdą w kolejnym kroku.
+Wersja podglądowa jest kompletna i czeka na akceptację — po niej zastąpi obecną grę (Twój postęp z podglądu zostanie).
 
 ## Cel gry
 
