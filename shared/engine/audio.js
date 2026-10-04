@@ -310,19 +310,32 @@ export function createAudio({
           return context.state === "running";
         });
     },
-    // Odblokowanie przy pierwszym dotknięciu / klawiszu; zwraca funkcję sprzątającą.
+    // Odblokowanie przy dotknięciu / klawiszu; zwraca funkcję sprzątającą.
     // ignore(zdarzenie) → true pomija gest (np. stuknięcie w odnośnik, po którym strona i tak się zmieni —
     // pobieranie dźwięków zostałoby przerwane).
+    // Palcem przeglądarki (zwłaszcza Safari na iPhonie) pozwalają wznowić dźwięk dopiero w geście zakończonym
+    // (pointerup, touchend, click) — samo pointerdown nie wystarcza. Dlatego nasłuch zostaje, dopóki kontekst
+    // naprawdę nie gra (wcześniej znikał po pierwszym pointerdown i dźwięk mógł nie ruszyć wcale — uwaga O1).
     bindUnlock(target = globalThis.window, { ignore = () => false } = {}) {
       if (!target?.addEventListener) return () => {};
-      const events = ["pointerdown", "touchend", "keydown"];
-      const handler = (event) => {
-        if (ignore(event)) return;
-        api.unlock();
+      const events = ["pointerdown", "pointerup", "touchend", "click", "keydown"];
+      let removed = false;
+      const remove = () => {
+        removed = true;
         events.forEach((type) => target.removeEventListener(type, handler, true));
       };
+      function handler(event) {
+        if (removed || ignore(event)) return;
+        if (running()) {
+          remove();
+          return;
+        }
+        api.unlock().then((ok) => {
+          if (ok) remove();
+        });
+      }
       events.forEach((type) => target.addEventListener(type, handler, true));
-      return () => events.forEach((type) => target.removeEventListener(type, handler, true));
+      return remove;
     },
     // Wczytuje efekty (muzyka jest ładowana leniwie przy pierwszym odtworzeniu).
     preload(names = Object.keys(manifest?.sfx || {})) {

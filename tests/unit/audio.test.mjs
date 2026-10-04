@@ -392,6 +392,40 @@ test("silnik audio: sesja „ambient” w Safari i brak Web Audio", async () => 
   assert.equal(silent.canVibrate(), false);
 });
 
+test("silnik audio: palcem dźwięk rusza dopiero w geście zakończonym — nasłuch zostaje, aż kontekst gra (iPhone)", async () => {
+  // Jak Safari na iPhonie: wznowienie działa tylko w trakcie gestu zakończonego (pointerup / touchend / click).
+  const { audio, context } = setup();
+  let activation = false;
+  context.resume = () => {
+    if (activation) context.state = "running";
+    return Promise.resolve();
+  };
+  // Muzyka zamówiona przed pierwszym dotknięciem (jak w Ogrodach) — kontekst powstaje wcześniej, wstrzymany.
+  await audio.playMusic("menu");
+  assert.equal(context.state, "suspended");
+  const target = new EventTarget();
+  audio.bindUnlock(target);
+  const settle = () => new Promise((resolve) => setTimeout(resolve, 0));
+  target.dispatchEvent(new Event("pointerdown"));
+  await settle();
+  assert.equal(context.state, "suspended", "pointerdown palcem nie wystarcza");
+  activation = true;
+  target.dispatchEvent(new Event("pointerup"));
+  await settle();
+  assert.equal(context.state, "running", "pointerup wznawia dźwięk");
+  assert.equal(audio.currentMusic(), "menu");
+  // Po wznowieniu nasłuch znika: kolejne gesty nie wołają już wznowienia.
+  let resumes = 0;
+  context.resume = () => {
+    resumes += 1;
+    return Promise.resolve();
+  };
+  target.dispatchEvent(new Event("click"));
+  target.dispatchEvent(new Event("touchend"));
+  await settle();
+  assert.equal(resumes, 0);
+});
+
 test("silnik audio: odblokowanie pierwszym gestem z pominięciem wskazanych gestów i wybrane efekty", async () => {
   const { audio, fetches } = setup({ options: { preloadOnUnlock: ["klik", "hu-hu"] } });
   const target = new EventTarget();
