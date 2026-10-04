@@ -35,6 +35,7 @@ module.exports = [
       "SowiaUcieczka/**/*.js",
       "SowieTory/**/*.js",
       "SowaWChmurach/**/*.js",
+      "LaczIHoduj/**/*.js",
       "SowieOgrody/ogrod/**/*.js",
     ],
     languageOptions: {

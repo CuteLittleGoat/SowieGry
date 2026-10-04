@@ -14,7 +14,12 @@ const legacyGamePages = [
 ];
 // Wszystkie gry z rejestru: Sowia Ucieczka (E4, moduły ES na Sowim Silniku; zastąpiła SowaRunner), podglądy
 // Sowich Torów (E5, nowa wersja Sowa3) i Sowy w Chmurach (E6, nowa wersja SowaJumper) oraz obecne gry.
-const newGamePages = ["SowiaUcieczka/index.html", "SowieTory/index.html", "SowaWChmurach/index.html"];
+const newGamePages = [
+  "SowiaUcieczka/index.html",
+  "SowieTory/index.html",
+  "SowaWChmurach/index.html",
+  "LaczIHoduj/index.html",
+];
 // Podgląd nowej odsłony Sowich Ogrodów (E7) w tym samym folderze: moduł ogrod/main.js.
 const previewPages = ["SowieOgrody/nowa.html"];
 const gamePages = [...newGamePages, ...previewPages, ...legacyGamePages];
@@ -76,6 +81,7 @@ async function projectScripts() {
     "SowiaUcieczka",
     "SowieTory",
     "SowaWChmurach",
+    "LaczIHoduj",
     "SowaJumper",
     "Sowa3",
     "SowieOgrody",

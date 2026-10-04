@@ -85,6 +85,7 @@ test("menu i wszystkie gry ładują skrypt galerii; gry także jej okno (style)"
     "SowiaUcieczka/index.html",
     "SowieTory/index.html",
     "SowaWChmurach/index.html",
+    "LaczIHoduj/index.html",
     ...gameIndexes,
   ]) {
     assert.match(read(file), /owl-gallery\.js/, file);

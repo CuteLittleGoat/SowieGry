@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="pl" class="sowie-shell">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#dff7ea" />
+    <meta
+      name="description"
+      content="Łącz i Hoduj — nowa Sowia Szklarnia: łącz takie same rośliny na półkach szklarni, od nasionka po Złotą Monsterę."
+    />
+    <title>Łącz i Hoduj (prototyp) — SowieGry</title>
+    <link rel="manifest" href="../manifest.webmanifest" />
+    <link rel="icon" href="../assets/icons/icon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="../assets/icons/apple-touch-icon.png" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="SowieGry" />
+    <script src="../config/firebase-config.js"></script>
+    <script src="../shared/sowie-platform.js"></script>
+    <script src="../shared/sowie-cloud.js"></script>
+    <script src="../shared/password-gate.js"></script>
+    <script src="../shared/pwa.js"></script>
+    <link rel="preload" href="../assets/fonts/fredoka-700.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="stylesheet" href="../shared/cute-ui.css" />
+    <link rel="stylesheet" href="../shared/world/tokens.css" />
+    <link rel="stylesheet" href="../shared/ui/ui.css" />
+    <link rel="stylesheet" href="style.css" />
+    <script src="../shared/sowie-academy.js" defer></script>
+    <script src="../shared/owl-gallery.js" defer></script>
+    <script type="module" src="main.js"></script>
+  </head>
+  <body data-sowie-game="szklarnia">
+    <main class="lacz" data-lacz aria-label="Łącz i Hoduj">
+      <header class="lacz-top">
+        <a class="sowie-ui-button is-quiet lacz-back" href="../">Menu</a>
+        <h1 class="lacz-title">Łącz i Hoduj</h1>
+        <div class="lacz-leaves" aria-live="off">
+          <strong data-leaves>0</strong>
+          <span>liści</span>
+        </div>
+      </header>
+      <p class="lacz-hint" data-hint aria-live="polite">Przeciągnij roślinę na taką samą — urośnie!</p>
+      <div class="lacz-board">
+        <canvas data-canvas tabindex="0" aria-label="Półki szklarni: 7 kolumn, 9 rzędów"></canvas>
+      </div>
+      <div class="lacz-bar">
+        <button type="button" class="sowie-ui-button is-primary lacz-pot" data-pot>
+          <span>🌱 Sowia doniczka</span>
+          <span class="lacz-charges" data-charges>12/12</span>
+        </button>
+        <button
+          type="button"
+          class="sowie-ui-button lacz-compost"
+          data-compost
+          aria-label="Kompostownik — usuń roślinę"
+        >
+          ♻️ Kompost
+        </button>
+      </div>
+      <p class="lacz-preview">
+        Prototyp nowej Szklarni. Postęp zapisuje się osobno — dawna gra (<a href="../SowiaSzklarnia/">Sowia Szklarnia</a
+        >) zostaje bez zmian.
+      </p>
+    </main>
+  </body>
+</html>

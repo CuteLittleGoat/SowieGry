@@ -53,7 +53,16 @@
       // Nowa odsłona w podglądzie (E7): ten sam folder i dokument gry (stan podglądu w polu `preview`).
       preview: Object.freeze({ path: "SowieOgrody/nowa.html", name: "nowe Sowie Ogrody" }),
     },
-    { id: "szklarnia", name: "Sowia Szklarnia", path: "SowiaSzklarnia/", icon: "🏡", kind: "idle", saveVersion: 1 },
+    {
+      id: "szklarnia",
+      name: "Sowia Szklarnia",
+      path: "SowiaSzklarnia/",
+      icon: "🏡",
+      kind: "idle",
+      saveVersion: 1,
+      // Nowa gra w podglądzie (E8): „Łącz i Hoduj” w folderze LaczIHoduj/ (stan podglądu w polu `preview`).
+      preview: Object.freeze({ path: "LaczIHoduj/", name: "Łącz i Hoduj" }),
+    },
   ]);
 
   const COSMETICS = Object.freeze({
