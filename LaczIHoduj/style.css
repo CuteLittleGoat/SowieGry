@@ -1,5 +1,6 @@
-/* Łącz i Hoduj (prototyp). Telefon: u góry Menu, nazwa i liście, podpowiedź, plansza 7 × 9 na całą szerokość,
-   na dole Sowia doniczka i kompostownik. Większe ekrany: plansza na środku, do 560 px szerokości. */
+/* Łącz i Hoduj (prototyp). Telefon: u góry Menu, zamówienia trzech sąsiadek (zamiast widocznej nazwy gry), liście
+   i gwiazdki, podpowiedź, plansza 7 × 9 na całą szerokość, na dole Sowia doniczka i kompostownik. Większe ekrany:
+   plansza na środku, do 560 px szerokości. */
 
 html,
 body {
@@ -40,32 +41,108 @@ body {
   text-decoration: none;
 }
 
-.lacz-title {
+/* Nazwa gry tylko dla czytników ekranu (i w tytule karty) — w nagłówku stoją zamówienia sąsiadek. */
+.lacz-title,
+.lacz-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
   margin: 0;
   overflow: hidden;
-  font-size: 20px;
-  text-align: center;
+  clip-path: inset(50%);
   white-space: nowrap;
-  text-overflow: ellipsis;
 }
 
-.lacz-leaves {
+/* Zamówienia: trzy karty sąsiadek (ramka w kolorze chustki, rysunek rośliny na płótnie, liczba sztuk). */
+.lacz-orders {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 4px;
+  min-width: 0;
+}
+
+.lacz-order {
+  position: relative;
+  box-sizing: border-box;
+  min-width: 0;
+  height: 44px;
+  padding: 0;
+  border: 2px solid var(--sasiadka, var(--monstera));
+  border-radius: 12px;
+  background: var(--bialy);
+  color: var(--kontur);
+  font: inherit;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.lacz-order canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 10px;
+}
+
+.lacz-order-count {
+  position: absolute;
+  right: 3px;
+  bottom: 1px;
+  font-size: 12px;
+  line-height: 1;
+}
+
+/* Zamówienie gotowe do oddania (rośliny są na półkach): zielone tło i znaczek ✓. */
+.lacz-order.is-ready {
+  border-color: var(--monstera);
+  background: #e3f8ea;
+}
+
+.lacz-order.is-ready::after {
+  content: "✓";
+  position: absolute;
+  top: -6px;
+  right: -5px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--monstera);
+  color: var(--bialy);
+  font-size: 12px;
+  line-height: 18px;
+  text-align: center;
+}
+
+/* Karta jako cel upuszczenia przeciąganej rośliny. */
+.lacz-order.is-target {
+  box-shadow: 0 0 0 4px var(--monstera);
+}
+
+.lacz-wallet {
   display: grid;
   justify-items: end;
-  padding-right: 4px;
+  padding-right: 2px;
   line-height: 1.1;
 }
 
-.lacz-leaves strong {
-  font-size: 22px;
+.lacz-wallet-row {
+  display: flex;
+  align-items: baseline;
+  gap: 2px;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.lacz-wallet-row strong {
+  font-size: 18px;
   font-variant-numeric: tabular-nums;
   color: var(--bialy);
-  -webkit-text-stroke: 5px var(--kontur);
+  -webkit-text-stroke: 4px var(--kontur);
   paint-order: stroke fill;
 }
 
-.lacz-leaves span {
-  font-size: 12px;
+.lacz-wallet-row.is-stars strong {
+  font-size: 15px;
+  color: var(--zloto);
 }
 
 /* Podpowiedź zawsze w jednym wierszu (dłuższa kończy się wielokropkiem) — plansza nie skacze. */
@@ -130,11 +207,26 @@ body {
   opacity: 0.8;
 }
 
-/* Wąski telefon: mniejsze marginesy boczne (7 pól po 44 px). */
+/* Wąski telefon: mniejsze marginesy boczne (7 pól po 44 px) i węższy przycisk Menu (miejsce na zamówienia). */
 @media (max-width: 340px) {
   .lacz {
     padding-right: max(2px, env(safe-area-inset-right));
     padding-left: max(2px, env(safe-area-inset-left));
+  }
+
+  .lacz-top {
+    gap: 4px;
+  }
+
+  .lacz-back {
+    padding: 0 8px;
+  }
+}
+
+/* Wysoki telefon: większe karty zamówień. */
+@media (min-height: 700px) {
+  .lacz-order {
+    height: 52px;
   }
 }
 
@@ -142,10 +234,6 @@ body {
 @media (max-height: 600px) {
   .lacz-preview {
     display: none;
-  }
-
-  .lacz-title {
-    font-size: 17px;
   }
 
   .lacz-hint {
@@ -167,8 +255,25 @@ body {
     max-width: none;
   }
 
+  /* Nagłówek w dwóch wierszach: Menu i portfel, pod nimi zamówienia na całą szerokość kolumny. */
   .lacz-top {
     grid-area: top;
+    row-gap: 6px;
+  }
+
+  .lacz-back {
+    grid-row: 1;
+    grid-column: 1;
+  }
+
+  .lacz-wallet {
+    grid-row: 1;
+    grid-column: 3;
+  }
+
+  .lacz-orders {
+    grid-row: 2;
+    grid-column: 1 / -1;
   }
 
   .lacz-hint {

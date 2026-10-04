@@ -17,7 +17,7 @@ następnego poziomu.** Każda roślina ma swój łańcuch pięciu poziomów:
 | **Paproć**   | Zarodnik       | Pastorał     | Młoda paproć | Paproć   | Złota Paproć    |
 | **Kaktus**   | Pestka kaktusa | Kuleczka     | Kaktusik     | Kaktus   | Kwitnący Kaktus |
 
-Mała cyfra w rogu pola pokazuje poziom rośliny. Za każde połączenie dostajesz **liście monstery** (licznik w prawym
+Mała cyfra w rogu pola pokazuje poziom rośliny. Za każde połączenie dostajesz **liście monstery** (licznik 🍃 w prawym
 górnym rogu): poziom 2 — 1, poziom 3 — 3, poziom 4 — 8, poziom 5 — 20. Dwie takie same rośliny na szczycie łańcucha
 już się nie łączą — ale mogą dać **hybrydę**.
 
@@ -41,6 +41,24 @@ zielono — tak jak przy zwykłym połączeniu.
 - **Stuknięcia:** stuknij roślinę (dostaje złotą ramkę), potem stuknij pole docelowe. Stuknięcie tej samej rośliny
   jeszcze raz odznacza ją.
 - Upuszczenie na **puste pole** przenosi roślinę, na **taką samą** — łączy je, a na **inną** — zamienia je miejscami.
+
+## Zamówienia sowich sąsiadek
+
+U góry ekranu, obok przycisku **Menu**, są trzy karty zamówień — od **Pani Puszczykowej**, **Płomykówki Poli**
+i **Pójdźki Peli** (każda sąsiadka ma swój kolor ramki i małą główkę sowy). Na karcie widać roślinę, o którą prosi
+sąsiadka, z cyfrą poziomu; **„×2”** w rogu znaczy, że chce dwie takie rośliny.
+
+- Gdy potrzebne rośliny stoją już na półkach, karta robi się **zielona** i dostaje znaczek **✓**. **Stuknij ją**, żeby
+  oddać rośliny (znikną z półek).
+- Możesz też **przeciągnąć roślinę na kartę** — karta podświetla się, a sąsiadka bierze właśnie tę roślinę. Jeśli
+  przeciągniesz inną roślinę, niż chce sąsiadka, roślina wraca na półkę, a podpowiedź mówi, o co prosi.
+- Stuknięcie karty, której jeszcze nie da się oddać, pokazuje w podpowiedzi, czego potrzeba.
+
+Za zamówienie dostajesz **liście** i **gwiazdki odnowy ⭐** (licznik pod liśćmi): im wyższy poziom rośliny, tym więcej
+(kiełek — 4 liście i 1 gwiazdka, roślina 5. poziomu — 45 liści i 3 gwiazdki; za drugą sztukę dodatkowa gwiazdka).
+Sąsiadka od razu prosi o coś nowego. Z czasem zamówienia są trudniejsze (wyższe poziomy, nowe rośliny z doniczki),
+a po kilku zamówieniach sąsiadki proszą czasem o **hybrydę** (90 liści i 4 gwiazdki). Gwiazdki odnowy przydadzą się
+wkrótce do odnawiania pomieszczeń szklarni.
 
 ## Sowia doniczka
 
@@ -81,14 +99,14 @@ Na telefonie trzymanym pionowo plansza zajmuje całą szerokość ekranu — naw
 ma co najmniej 44 px, więc wygodnie trafia się palcem. Na wysokim telefonie plansza stoi na środku ekranu, a na niskim
 notka o prototypie chowa się, żeby zostało więcej miejsca na półki.
 
-Gdy obrócisz telefon **poziomo**, plansza staje się szersza niż wyższa (9 kolumn × 7 rzędów), a przyciski Sowiej
-doniczki i kompostu przechodzą na prawą stronę. Układ roślin obraca się razem z planszą — rośliny, które stały obok
+Gdy obrócisz telefon **poziomo**, plansza staje się szersza niż wyższa (9 kolumn × 7 rzędów), a zamówienia oraz
+przyciski Sowiej doniczki i kompostu przechodzą na prawą stronę. Układ roślin obraca się razem z planszą — rośliny, które stały obok
 siebie, nadal są sąsiadkami.
 
 Na komputerze plansza stoi na środku, a rośliny przesuwa się myszą tak samo jak palcem.
 
 ## Co dalej
 
-Gra wciąż rośnie. W kolejnych krokach dojdą: zamówienia sowich sąsiadek, odnawianie pomieszczeń szklarni
-(Doniczarnia, Sala Upraw, Zraszalnia…), przeszkody Pracu Pracu i Amic, kózki-pomocnice, Basen Humbaka z rekordem,
+Gra wciąż rośnie. W kolejnych krokach dojdą: odnawianie pomieszczeń szklarni za gwiazdki (Doniczarnia, Sala Upraw,
+Zraszalnia…), przeszkody Pracu Pracu i Amic, kózki-pomocnice, Basen Humbaka z rekordem,
 pakiet startowy z postępu dawnej Szklarni i samouczek (z przyciskiem do jego powtórzenia).

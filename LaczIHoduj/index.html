@@ -34,9 +34,31 @@
       <header class="lacz-top">
         <a class="sowie-ui-button is-quiet lacz-back" href="../">Menu</a>
         <h1 class="lacz-title">Łącz i Hoduj</h1>
-        <div class="lacz-leaves" aria-live="off">
-          <strong data-leaves>0</strong>
-          <span>liści</span>
+        <div class="lacz-orders" role="group" aria-label="Zamówienia sowich sąsiadek" data-orders>
+          <button type="button" class="lacz-order" data-order="0">
+            <canvas aria-hidden="true"></canvas>
+            <span class="lacz-order-count" data-order-count></span>
+          </button>
+          <button type="button" class="lacz-order" data-order="1">
+            <canvas aria-hidden="true"></canvas>
+            <span class="lacz-order-count" data-order-count></span>
+          </button>
+          <button type="button" class="lacz-order" data-order="2">
+            <canvas aria-hidden="true"></canvas>
+            <span class="lacz-order-count" data-order-count></span>
+          </button>
+        </div>
+        <div class="lacz-wallet" aria-live="off">
+          <span class="lacz-wallet-row">
+            <strong data-leaves>0</strong>
+            <span aria-hidden="true">🍃</span>
+            <span class="lacz-sr">liści</span>
+          </span>
+          <span class="lacz-wallet-row is-stars">
+            <strong data-stars>0</strong>
+            <span aria-hidden="true">⭐</span>
+            <span class="lacz-sr">gwiazdek odnowy</span>
+          </span>
         </div>
       </header>
       <p class="lacz-hint" data-hint aria-live="polite">Przeciągnij roślinę na taką samą — urośnie!</p>

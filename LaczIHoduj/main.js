@@ -1,15 +1,15 @@
 // Łącz i Hoduj — strona gry (prototyp, kroki 8.0–8.1): wczytanie i zapis stanu (pole `preview` dokumentu
 // `sowiegry_gry/szklarnia` — dawna Szklarnia zostaje bez zmian), pętla, przeciąganie roślin z uniesieniem nad palec,
 // zaznaczanie stuknięciem (bez przeciągania), Sowia doniczka, kompostownik, hybrydy, nowe łańcuchy w doniczce,
-// komunikaty i haki testowe.
+// zamówienia sąsiadek (oddanie stuknięciem karty albo przeciągnięciem rośliny na kartę), komunikaty i haki testowe.
 import { connectAudioSettings, createAudio } from "../shared/engine/audio.js";
 import { EVENTS, progress } from "../shared/meta/progress.js";
 import { createToasts } from "../shared/ui/index.js";
 import { COLORS } from "../shared/world/tokens.js";
 import { canMerge, hybridOf, itemName } from "./board.js";
-import { BOARD, COMPOST_LEAVES, GAME_ID, GAME_SOUNDS, GREENHOUSE_MUSIC, POT, PREVIEW_FIELD } from "./config.js";
-import { createGame, defaultState, loadState } from "./game.js";
-import { createBoardRenderer, LIFT } from "./render.js";
+import { BOARD, CHAINS, COMPOST_LEAVES, GAME_ID, GAME_SOUNDS, GREENHOUSE_MUSIC, POT, PREVIEW_FIELD } from "./config.js";
+import { createGame, defaultState, loadState, neighborOf } from "./game.js";
+import { createBoardRenderer, drawOrderCard, LIFT } from "./render.js";
 
 // Zapis: co 20 s gry, po połączeniu po 2 s, przy zejściu do tła od razu.
 const SAVE_EVERY = 20;
@@ -26,6 +26,10 @@ const hintNode = root.querySelector("[data-hint]");
 const potButton = root.querySelector("[data-pot]");
 const chargesNode = root.querySelector("[data-charges]");
 const compostButton = root.querySelector("[data-compost]");
+const starsNode = root.querySelector("[data-stars]");
+const orderButtons = [...root.querySelectorAll("[data-order]")];
+// Ostatnio narysowana karta zamówienia (zamówienie i rozmiar) — rysujemy tylko po zmianie.
+const drawnOrders = orderButtons.map(() => "");
 
 const renderer = createBoardRenderer({ canvas, cols: BOARD.cols, rows: BOARD.rows });
 const toasts = createToasts({ root, isInGame: () => true });
@@ -70,14 +74,45 @@ function hint(text) {
   if (hintNode.textContent !== text) hintNode.textContent = text;
 }
 
+// Zamówienie słowami: „2 × Kiełek” albo „Monpilea Przytulna”.
+const orderText = (order) => `${order.count > 1 ? `${order.count} × ` : ""}${itemName(order)}`;
+
+/** Karty zamówień: rysunek (po zmianie zamówienia albo rozmiaru), liczba sztuk, gotowość i opis dla czytnika. */
+function updateOrders() {
+  orderButtons.forEach((button, slot) => {
+    const order = game.state.orders[slot];
+    const neighbor = neighborOf(order?.neighbor) || { name: "Sąsiadka", color: COLORS.monstera };
+    const canvasNode = button.querySelector("canvas");
+    const key = `${JSON.stringify(order)}|${button.clientWidth}x${button.clientHeight}`;
+    if (drawnOrders[slot] !== key) {
+      drawnOrders[slot] = key;
+      button.style.setProperty("--sasiadka", neighbor.color);
+      drawOrderCard(canvasNode, order, neighbor.color);
+      button.querySelector("[data-order-count]").textContent = order?.count > 1 ? `×${order.count}` : "";
+    }
+    const ready = Boolean(order && game.orderCells(slot));
+    button.classList.toggle("is-ready", ready);
+    const chain = CHAINS[order?.chain];
+    const detail = chain?.hybrid ? "hybryda" : `${chain?.name || ""}, poziom ${order?.level}`;
+    button.setAttribute(
+      "aria-label",
+      order
+        ? `${neighbor.name} prosi: ${orderText(order)} (${detail}) — ${ready ? "stuknij, żeby oddać" : "jeszcze brak na półkach"}`
+        : neighbor.name,
+    );
+  });
+}
+
 function updateHud() {
   const { state } = game;
   leavesNode.textContent = state.leaves.toLocaleString("pl-PL");
+  starsNode.textContent = state.stars.toLocaleString("pl-PL");
   chargesNode.textContent = `${Math.floor(state.pot.charges)}/${POT.max}`;
   potButton.setAttribute(
     "aria-label",
     `Sowia doniczka — nasionko na wolne pole, ładunki ${Math.floor(state.pot.charges)} z ${POT.max}`,
   );
+  updateOrders();
 }
 
 function handleEvents() {
@@ -121,6 +156,31 @@ function handleEvents() {
           priority: 2,
         });
         save({ immediate: true });
+        break;
+      }
+      case "order": {
+        const neighbor = neighborOf(event.order.neighbor);
+        if (event.cells.includes(selected)) selected = -1;
+        hint(`${neighbor?.name || "Sąsiadka"} dziękuje! +${event.leaves} liści, +${event.stars} ⭐`);
+        toasts.show(
+          `${neighbor?.name || "Sąsiadka"} dziękuje za ${orderText(event.order)}! +${event.leaves} liści · +${event.stars} ⭐`,
+          {
+            kind: "reward",
+            key: "zamowienie",
+          },
+        );
+        play("rekord", { pitch: 1.2, volume: 0.7 });
+        orderButtons[event.slot]?.animate?.(
+          [{ transform: "scale(1)" }, { transform: "scale(1.12)" }, { transform: "scale(1)" }],
+          { duration: 350 },
+        );
+        save({ immediate: true });
+        break;
+      }
+      case "orderMissing": {
+        const neighbor = neighborOf(event.order.neighbor);
+        hint(`${neighbor?.name || "Sąsiadka"} prosi: ${orderText(event.order)}`);
+        play("klik", { pitch: 0.6, volume: 0.5 });
         break;
       }
       case "unlock":
@@ -170,6 +230,44 @@ function overCompost(event) {
   );
 }
 
+// Karta zamówienia pod punktem ekranu (cel upuszczenia) albo -1.
+function orderAt(event) {
+  return orderButtons.findIndex((button) => {
+    const rect = button.getBoundingClientRect();
+    return (
+      event.clientX >= rect.left &&
+      event.clientX <= rect.right &&
+      event.clientY >= rect.top &&
+      event.clientY <= rect.bottom
+    );
+  });
+}
+
+function showOrderTarget(slot) {
+  orderButtons.forEach((button, index) => button.classList.toggle("is-target", index === slot));
+}
+
+// Oddanie zamówienia (najpierw roślina `prefer` — przeciągnięta albo zaznaczona, jeśli pasuje).
+function deliverOrder(slot, prefer = -1) {
+  game.deliver(slot, prefer);
+  handleEvents();
+  updateHud();
+}
+
+// Roślina upuszczona na kartę zamówienia: oddanie, gdy pasuje; inaczej podpowiedź, czego chce sąsiadka.
+function dropOnOrder(index, slot) {
+  const item = game.board.cells[index];
+  const order = game.state.orders[slot];
+  if (!item || !order) return;
+  if (item.chain === order.chain && item.level === order.level) {
+    deliverOrder(slot, index);
+    return;
+  }
+  const neighbor = neighborOf(order.neighbor);
+  hint(`${neighbor?.name || "Sąsiadka"} prosi: ${orderText(order)}, nie ${itemName(item)}`);
+  play("klik", { pitch: 0.6, volume: 0.5 });
+}
+
 // Pole, na które spadnie uniesiony przedmiot (pod przedmiotem, nie pod palcem).
 function dropTarget(point) {
   return renderer.cellAt(point.x, point.y - renderer.layout().size * LIFT);
@@ -193,7 +291,7 @@ canvas.addEventListener("pointerdown", (event) => {
   if (!ready) return;
   const point = localPoint(event);
   const index = renderer.cellAt(point.x, point.y);
-  press = { index, start: point, point, dragging: false, compost: false, id: event.pointerId };
+  press = { index, start: point, point, dragging: false, compost: false, order: -1, id: event.pointerId };
   if (index >= 0 && game.board.cells[index]) canvas.setPointerCapture?.(event.pointerId);
 });
 
@@ -211,6 +309,8 @@ canvas.addEventListener("pointermove", (event) => {
   if (press.dragging) {
     press.compost = overCompost(event);
     compostButton.classList.toggle("is-target", press.compost);
+    press.order = press.compost ? -1 : orderAt(event);
+    showOrderTarget(press.order);
   }
 });
 
@@ -219,9 +319,12 @@ function finishPress(event, cancelled = false) {
   const current = press;
   press = null;
   compostButton.classList.remove("is-target");
+  showOrderTarget(-1);
   if (cancelled) return;
   if (current.dragging) {
+    const slot = orderAt(event);
     if (overCompost(event)) compostAt(current.index);
+    else if (slot >= 0) dropOnOrder(current.index, slot);
     else {
       const target = dropTarget(localPoint(event));
       if (target >= 0) moveTo(current.index, target);
@@ -253,6 +356,14 @@ potButton.addEventListener("click", () => {
   updateHud();
 });
 
+// Karta zamówienia: stuknięcie oddaje rośliny (gotowe zamówienie) albo podpowiada, czego chce sąsiadka.
+orderButtons.forEach((button, slot) => {
+  button.addEventListener("click", () => {
+    if (!ready) return;
+    deliverOrder(slot, selected);
+  });
+});
+
 compostButton.addEventListener("click", () => {
   if (!ready) return;
   if (selected >= 0) {
@@ -267,15 +378,12 @@ compostButton.addEventListener("click", () => {
 
 function dragView() {
   if (!press?.dragging) return null;
-  const target = press.compost ? -1 : dropTarget(press.point);
+  // Nad kompostownikiem albo kartą zamówienia — bez podświetlenia pola.
+  const away = press.compost || press.order >= 0;
+  const target = away ? -1 : dropTarget(press.point);
   const source = game.board.cells[press.index];
-  const kind = press.compost
-    ? "compost"
-    : target >= 0 &&
-        target !== press.index &&
-        (canMerge(source, game.board.cells[target]) || hybridOf(source, game.board.cells[target]))
-      ? "merge"
-      : "move";
+  const other = target >= 0 && target !== press.index ? game.board.cells[target] : null;
+  const kind = away ? "compost" : canMerge(source, other) || hybridOf(source, other) ? "merge" : "move";
   return { from: press.index, x: press.point.x, y: press.point.y, target: target === press.index ? -1 : target, kind };
 }
 
@@ -368,6 +476,11 @@ window.LaczIHoduj = Object.freeze({
     game.state.cells = game.board.cells.map((item) => (item ? { ...item } : null));
   },
   move: (from, to) => moveTo(from, to).type,
+  orders: () => JSON.parse(JSON.stringify(game.state.orders)),
+  setOrder: (slot, chain, level, count = 1) => {
+    game.state.orders[slot] = { neighbor: game.state.orders[slot].neighbor, chain, level, count };
+    updateHud();
+  },
   tapPot: () => {
     const index = game.tapPot();
     handleEvents();

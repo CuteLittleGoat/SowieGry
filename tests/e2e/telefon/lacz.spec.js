@@ -1,7 +1,8 @@
 // Łącz i Hoduj (nowa Sowia Szklarnia — prototyp, Analiza 3, E8 kroki 8.0–8.1) na telefonach: przeciąganie
 // z uniesieniem nad palec i łączenie, zaznaczanie stuknięciem, Sowia doniczka, kompostownik (przeciągnięcie
-// i przycisk), hybrydy i nowe łańcuchy w doniczce, pełna plansza, zapis w osobnym polu `preview` (emulator), plansza
-// 7 × 9 z polami ≥ 44 px na najmniejszym telefonie i telefon poziomo (plansza obrócona do 9 × 7, przyciski z boku).
+// i przycisk), hybrydy i nowe łańcuchy w doniczce, zamówienia sąsiadek (stuknięcie karty, przeciągnięcie rośliny na
+// kartę), pełna plansza, zapis w osobnym polu `preview` (emulator), plansza 7 × 9 z polami ≥ 44 px na najmniejszym
+// telefonie i telefon poziomo (plansza obrócona do 9 × 7, przyciski z boku).
 const { test, expect, waitForCloud, watchErrors } = require("../fixtures");
 const { cloudUrl, readDoc, seedDoc, uniqueProject } = require("../emulator");
 
@@ -139,6 +140,67 @@ test("Łącz i Hoduj: dwa różne szczyty łańcuchów — hybryda; po 10 połą
   expect(errors).toEqual([]);
 });
 
+// Przeciągnięcie rośliny z pola `from` na kartę zamówienia `slot` (cel — punkt palca nad kartą).
+async function dragToOrder(page, from, slot) {
+  const start = await cellPoint(page, from);
+  const box = await page.locator(`[data-order="${slot}"]`).boundingBox();
+  await page.mouse.move(start.x, start.y);
+  await page.mouse.down();
+  await page.mouse.move(start.x + 5, start.y - 12, { steps: 3 });
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2, { steps: 10 });
+  await expect(page.locator(`[data-order="${slot}"]`)).toHaveClass(/is-target/);
+  await page.mouse.up();
+}
+
+test("Łącz i Hoduj: zamówienia sąsiadek — stuknięcie gotowej karty, podpowiedź, przeciągnięcie rośliny na kartę", async ({
+  page,
+}) => {
+  const errors = watchErrors(page);
+  await openGame(page);
+  const orders = page.locator("[data-order]");
+  await expect(orders).toHaveCount(3);
+  for (let slot = 0; slot < 3; slot += 1) {
+    const box = await orders.nth(slot).boundingBox();
+    expect(box.height).toBeGreaterThanOrEqual(44);
+    expect(box.width).toBeGreaterThanOrEqual(44);
+  }
+  expect((await game(page, "orders")).map((order) => order.neighbor)).toEqual(["puszczyk", "plomykowka", "pojdzka"]);
+  // Gotowe zamówienie (na starcie są dwa kiełki): ✓ na karcie, stuknięcie oddaje kiełek za liście i gwiazdkę.
+  await game(page, "setOrder", 0, "monstera", 2, 1);
+  await expect(orders.nth(0)).toHaveClass(/is-ready/);
+  await expect(orders.nth(0)).toHaveAttribute("aria-label", /Pani Puszczykowa prosi: Kiełek .*stuknij, żeby oddać/);
+  await orders.nth(0).click();
+  let board = await cells(page);
+  expect(board[38]).toBeNull();
+  expect(board[39]).toEqual({ chain: "monstera", level: 2 });
+  await expect(page.locator("[data-hint]")).toHaveText("Pani Puszczykowa dziękuje! +4 liści, +1 ⭐");
+  await expect(page.getByText("Pani Puszczykowa dziękuje za Kiełek! +4 liści · +1 ⭐")).toBeVisible();
+  await expect(page.locator("[data-leaves]")).toHaveText("4");
+  await expect(page.locator("[data-stars]")).toHaveText("1");
+  let state = await game(page, "state");
+  expect(state.stats.orders).toBe(1);
+  expect(state.orders[0].neighbor).toBe("puszczyk");
+  // Zamówienie bez roślin na półkach: podpowiedź, czego chce sąsiadka.
+  await game(page, "setOrder", 1, "pilea", 4, 1);
+  await expect(orders.nth(1)).not.toHaveClass(/is-ready/);
+  await orders.nth(1).click();
+  await expect(page.locator("[data-hint]")).toHaveText("Płomykówka Pola prosi: Pilea");
+  // Przeciągnięcie nasionka na kartę zamówienia nasionek: oddaje właśnie przeciągnięte.
+  await game(page, "setOrder", 2, "monstera", 1, 1);
+  await dragToOrder(page, 31, 2);
+  board = await cells(page);
+  expect(board[31]).toBeNull();
+  expect(board[30]).toEqual({ chain: "monstera", level: 1 });
+  await expect(page.locator("[data-stars]")).toHaveText("2");
+  // Roślina, której sąsiadka nie chce — zostaje na półce.
+  await dragToOrder(page, 30, 1);
+  await expect(page.locator("[data-hint]")).toHaveText("Płomykówka Pola prosi: Pilea, nie Nasionko");
+  expect((await cells(page))[30]).toEqual({ chain: "monstera", level: 1 });
+  state = await game(page, "state");
+  expect(state.stats.orders).toBe(2);
+  expect(errors).toEqual([]);
+});
+
 test("Łącz i Hoduj: zapis w polu `preview` — dawna Szklarnia (pole `state`) bez zmian, plansza wraca po wejściu (emulator)", async ({
   page,
 }, testInfo) => {
@@ -181,10 +243,15 @@ test.describe("Łącz i Hoduj — najmniejszy telefon (320 × 568)", () => {
     expect(first.x - size / 2).toBeGreaterThanOrEqual(0);
     expect(last.x + size / 2).toBeLessThanOrEqual(320);
     expect(last.y + size / 2).toBeLessThanOrEqual(568);
-    for (const selector of ["[data-pot]", "[data-compost]"]) {
-      const box = await page.locator(selector).boundingBox();
-      expect(box.height).toBeGreaterThanOrEqual(44);
-      expect(box.y + box.height).toBeLessThanOrEqual(568);
+    for (const selector of ["[data-pot]", "[data-compost]", "[data-order]"]) {
+      for (const box of await page
+        .locator(selector)
+        .evaluateAll((nodes) => nodes.map((node) => node.getBoundingClientRect().toJSON()))) {
+        expect(box.height).toBeGreaterThanOrEqual(44);
+        expect(box.width).toBeGreaterThanOrEqual(44);
+        expect(box.x + box.width).toBeLessThanOrEqual(320);
+        expect(box.y + box.height).toBeLessThanOrEqual(568);
+      }
     }
     expect(errors).toEqual([]);
   });
@@ -207,11 +274,15 @@ for (const [width, height] of [
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
       expect(await page.evaluate(() => document.documentElement.scrollHeight <= window.innerHeight)).toBe(true);
       const canvas = await page.locator("[data-canvas]").boundingBox();
-      for (const selector of ["[data-pot]", "[data-compost]"]) {
-        const box = await page.locator(selector).boundingBox();
-        expect(box.height).toBeGreaterThanOrEqual(44);
-        expect(box.x).toBeGreaterThanOrEqual(canvas.x + canvas.width);
-        expect(box.y + box.height).toBeLessThanOrEqual(height);
+      for (const selector of ["[data-pot]", "[data-compost]", "[data-order]"]) {
+        for (const box of await page
+          .locator(selector)
+          .evaluateAll((nodes) => nodes.map((node) => node.getBoundingClientRect().toJSON()))) {
+          expect(box.height).toBeGreaterThanOrEqual(44);
+          expect(box.width).toBeGreaterThanOrEqual(44);
+          expect(box.x).toBeGreaterThanOrEqual(canvas.x + canvas.width);
+          expect(box.y + box.height).toBeLessThanOrEqual(height);
+        }
       }
       // Pole 30 i 31 (dwa nasionka) leżą w obróconej planszy jedno pod drugim — przeciągnięcie je łączy.
       const first = await cellPoint(page, 30);

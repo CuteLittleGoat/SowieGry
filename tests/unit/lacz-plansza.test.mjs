@@ -1,5 +1,6 @@
-// Łącz i Hoduj (nowa Sowia Szklarnia, Analiza 3, E8 — prototyp 8.0): plansza 7 × 9, łączenie w łańcuchu Monstery,
-// Sowia doniczka, kompostownik, zapis stanu i to, że plansza nigdy nie blokuje się bez wyjścia.
+// Łącz i Hoduj (nowa Sowia Szklarnia, Analiza 3, E8 — kroki 8.0–8.1): plansza 7 × 9, łączenie w łańcuchach,
+// hybrydy, Sowia doniczka, kompostownik, zamówienia sąsiadek, zapis stanu i to, że plansza nigdy nie blokuje się
+// bez wyjścia.
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
@@ -17,8 +18,29 @@ import {
   moveItem,
   spawnItem,
 } from "../../LaczIHoduj/board.js";
-import { BOARD, CHAINS, COMPOST_LEAVES, HYBRIDS, MERGE_LEAVES, POT, SAVE_VERSION } from "../../LaczIHoduj/config.js";
-import { createGame, defaultState, loadState, pickChain, potChains } from "../../LaczIHoduj/game.js";
+import {
+  BOARD,
+  CHAINS,
+  COMPOST_LEAVES,
+  HYBRIDS,
+  MERGE_LEAVES,
+  NEIGHBORS,
+  ORDERS,
+  POT,
+  SAVE_VERSION,
+} from "../../LaczIHoduj/config.js";
+import {
+  createGame,
+  defaultState,
+  loadState,
+  makeOrder,
+  orderCells,
+  orderLevels,
+  orderReward,
+  pickChain,
+  potChains,
+  validOrder,
+} from "../../LaczIHoduj/game.js";
 
 const seed = (level) => ({ chain: "monstera", level });
 const queue =
@@ -244,4 +266,114 @@ test("hybrydy: dwie różne rośliny najwyższego poziomu z przepisu (kolejnoś�
   const loaded = loadState(JSON.parse(JSON.stringify({ ...game.state, cells: game.board.cells })), 0);
   assert.deepEqual(loaded.cells[5], top("zlotolistka"));
   assert.deepEqual(loaded.cells[6], { chain: "kaktus", level: 3 });
+});
+
+test("zamówienia: trzy sąsiadki, poziomy rosną z wykonanymi zamówieniami, pary, hybrydy i nagrody", () => {
+  const state = defaultState(0);
+  assert.equal(state.orders.length, NEIGHBORS.length);
+  state.orders.forEach((order, slot) => {
+    assert.ok(validOrder(order, NEIGHBORS[slot].id), JSON.stringify(order));
+    assert.equal(order.chain, "monstera", "na starcie w doniczce jest tylko Monstera");
+    assert.equal(order.level, 2, "pierwsze zamówienia — Kiełek");
+  });
+  assert.deepEqual(orderLevels(0), { min: 2, max: 2 });
+  assert.deepEqual(orderLevels(3), { min: 2, max: 3 });
+  assert.deepEqual(orderLevels(9), { min: 3, max: 5 });
+  assert.deepEqual(orderLevels(100), { min: 3, max: 5 });
+  // Losowanie: łańcuch (wagi doniczki), poziom w zakresie, para tylko do poziomu 3.
+  assert.deepEqual(makeOrder("puszczyk", { done: 0, merges: 0 }, queue(0, 0, 0)), {
+    neighbor: "puszczyk",
+    chain: "monstera",
+    level: 2,
+    count: 2,
+  });
+  assert.deepEqual(makeOrder("pojdzka", { done: 9, merges: 100 }, queue(0.5, 5 / 11, 0.99)), {
+    neighbor: "pojdzka",
+    chain: "pilea",
+    level: 5,
+    count: 1,
+  });
+  // Hybryda od 8 zamówień, gdy jej składniki są w doniczce (Monpilea po odblokowaniu Pilei).
+  assert.equal(makeOrder("puszczyk", { done: 7, merges: 100 }, queue(0, 0, 0, 0)).chain, "monstera");
+  assert.deepEqual(makeOrder("puszczyk", { done: 8, merges: 10 }, queue(0, 0)), {
+    neighbor: "puszczyk",
+    chain: "monpilea",
+    level: 1,
+    count: 1,
+  });
+  // Bez powtórek zamówień innych sąsiadek (kolejna próba losowania).
+  const taken = [{ neighbor: "plomykowka", chain: "monstera", level: 2, count: 1 }];
+  const fresh = makeOrder("puszczyk", { done: 3, merges: 0 }, queue(0, 0, 0.9, 0, 0.99, 0.9), taken);
+  assert.deepEqual(fresh, { neighbor: "puszczyk", chain: "monstera", level: 3, count: 1 });
+  // Nagrody.
+  assert.deepEqual(orderReward({ chain: "monstera", level: 2, count: 1 }), { leaves: ORDERS.leaves[2], stars: 1 });
+  assert.deepEqual(orderReward({ chain: "pilea", level: 3, count: 2 }), { leaves: ORDERS.leaves[3] * 2, stars: 2 });
+  assert.deepEqual(orderReward({ chain: "kaktus", level: 5, count: 1 }), { leaves: ORDERS.leaves[5], stars: 3 });
+  assert.deepEqual(orderReward({ chain: "monpilea", level: 1, count: 1 }), {
+    leaves: ORDERS.hybridLeaves,
+    stars: ORDERS.hybridStars,
+  });
+  // Niepoprawne zamówienia.
+  assert.equal(validOrder({ neighbor: "puszczyk", chain: "palma", level: 2, count: 1 }, "puszczyk"), false);
+  assert.equal(validOrder({ neighbor: "puszczyk", chain: "monstera", level: 6, count: 1 }, "puszczyk"), false);
+  assert.equal(validOrder({ neighbor: "puszczyk", chain: "monstera", level: 2, count: 3 }, "puszczyk"), false);
+  assert.equal(validOrder({ neighbor: "pojdzka", chain: "monstera", level: 2, count: 1 }, "puszczyk"), false);
+});
+
+test("zamówienia w grze: oddanie roślin z planszy (najpierw przeciągnięta), liście i gwiazdki, nowe zamówienie, zapis", () => {
+  const game = createGame({ state: defaultState(0), random: queue(0) });
+  game.board.cells.fill(null);
+  game.state.orders[0] = { neighbor: "puszczyk", chain: "pilea", level: 3, count: 2 };
+  game.board.cells[4] = { chain: "pilea", level: 3 };
+  assert.equal(game.orderCells(0), null, "jedna sztuka z dwóch");
+  assert.equal(game.deliver(0), null);
+  assert.deepEqual(game.takeEvents(), [{ type: "orderMissing", slot: 0, order: game.state.orders[0] }]);
+  game.board.cells[9] = { chain: "pilea", level: 3 };
+  game.board.cells[20] = { chain: "pilea", level: 3 };
+  assert.deepEqual(orderCells(game.board.cells, game.state.orders[0], 20), [20, 4], "najpierw pole przeciągnięte");
+  assert.deepEqual(game.orderCells(0), [4, 9]);
+  const order = game.state.orders[0];
+  assert.deepEqual(game.deliver(0, 20), { leaves: ORDERS.leaves[3] * 2, stars: 2 });
+  assert.equal(game.board.cells[20], null);
+  assert.equal(game.board.cells[4], null);
+  assert.deepEqual(game.board.cells[9], { chain: "pilea", level: 3 });
+  assert.equal(game.state.leaves, ORDERS.leaves[3] * 2);
+  assert.equal(game.state.stars, 2);
+  assert.equal(game.state.stats.orders, 1);
+  assert.equal(game.state.cells[20], null, "stan planszy zsynchronizowany");
+  const events = game.takeEvents();
+  assert.deepEqual(events[0], {
+    type: "order",
+    slot: 0,
+    order,
+    cells: [20, 4],
+    leaves: ORDERS.leaves[3] * 2,
+    stars: 2,
+  });
+  assert.equal(events[1].type, "newOrder");
+  assert.ok(validOrder(game.state.orders[0], "puszczyk"), "sąsiadka od razu prosi o coś nowego");
+  assert.deepEqual(events[1].order, game.state.orders[0]);
+  // Hybryda w zamówieniu.
+  game.state.orders[1] = { neighbor: "plomykowka", chain: "monpilea", level: 1, count: 1 };
+  game.board.cells[30] = { chain: "monpilea", level: 1 };
+  assert.deepEqual(game.deliver(1), { leaves: ORDERS.hybridLeaves, stars: ORDERS.hybridStars });
+  // Zapis i wczytanie: zamówienia i gwiazdki zostają; niepoprawne zamówienie i stan sprzed zamówień — nowe.
+  const saved = JSON.parse(JSON.stringify(game.state));
+  const loaded = loadState(saved, 0);
+  assert.deepEqual(loaded.orders, saved.orders);
+  assert.equal(loaded.stars, saved.stars);
+  saved.orders[2] = { neighbor: "pojdzka", chain: "palma", level: 2, count: 1 };
+  saved.stars = -5;
+  const repaired = loadState(saved, 0, queue(0));
+  assert.ok(validOrder(repaired.orders[2], "pojdzka"));
+  assert.deepEqual(repaired.orders[0], saved.orders[0]);
+  assert.equal(repaired.stars, 0);
+  const old = JSON.parse(JSON.stringify(saved));
+  delete old.orders;
+  delete old.stars;
+  delete old.stats.orders;
+  const upgraded = loadState(old, 0);
+  assert.equal(upgraded.orders.length, 3);
+  assert.equal(upgraded.stars, 0);
+  assert.equal(upgraded.stats.orders, 0);
 });

@@ -81,6 +81,29 @@ export const POT = Object.freeze({
 export const MERGE_LEAVES = Object.freeze([0, 0, 1, 3, 8, 20]);
 export const COMPOST_LEAVES = Object.freeze([0, 1, 2, 4, 10, 25]);
 
+// Sowie sąsiadki (krok 8.1, E8b2): każda ma zawsze jedno zamówienie; `color` — chustka (ramka karty, główka sowy).
+export const NEIGHBORS = Object.freeze([
+  Object.freeze({ id: "puszczyk", name: "Pani Puszczykowa", color: "#a8784f" }),
+  Object.freeze({ id: "plomykowka", name: "Płomykówka Pola", color: "#e7b45c" }),
+  Object.freeze({ id: "pojdzka", name: "Pójdźka Pela", color: "#8f9bb8" }),
+]);
+
+// Zamówienia: najwyższy poziom rośnie co `levelEvery` wykonanych zamówień (od `startLevel` do 5, zakres 3 poziomów);
+// poziomy do `pairUpTo` czasem po dwie sztuki; od `hybridFrom` zamówień czasem hybryda (gdy jej składniki są
+// w doniczce). Nagroda: liście za sztukę (według poziomu) i gwiazdki odnowy za zamówienie (+1 za drugą sztukę).
+export const ORDERS = Object.freeze({
+  startLevel: 2,
+  levelEvery: 3,
+  pairUpTo: 3,
+  pairChance: 0.35,
+  hybridFrom: 8,
+  hybridChance: 0.15,
+  leaves: Object.freeze([0, 2, 4, 9, 20, 45]),
+  stars: Object.freeze([0, 1, 1, 1, 2, 3]),
+  hybridLeaves: 90,
+  hybridStars: 4,
+});
+
 // Dźwięk (uwaga właściciela L1): efekty wczytywane po pierwszym dotknięciu (tylko używane) i motyw szklarni.
 export const GAME_SOUNDS = Object.freeze(["klik", "ladowanie", "polaczenie", "lisc", "rekord", "slizg"]);
 export const GREENHOUSE_MUSIC = "szklarnia";
