@@ -1753,6 +1753,88 @@ for (const [name, effect] of Object.entries(EFFECTS)) {
   });
 }
 
+// Sowie Ogrody (E7d1): motyw ogrodu — 84 BPM, F-dur (F–d–B–C ×2), miękki trójkąt z filtrem (spokojne
+// popołudnie na działce), bas półnutami, cicha perkusja — muzyka do gry idle, która nie męczy w tle.
+const gardenTheme = () =>
+  stageTheme({
+    bpm: 84,
+    chords: [
+      ["F2", "F3", "A3", "C4"],
+      ["D2", "D3", "F3", "A3"],
+      ["Bb2", "Bb3", "D4", "F4"],
+      ["C3", "C4", "E4", "G4"],
+      ["F2", "F3", "A3", "C4"],
+      ["D2", "D3", "F3", "A3"],
+      ["Bb2", "Bb3", "D4", "F4"],
+      ["C3", "C4", "E4", "G4"],
+    ],
+    bars: [
+      [
+        ["A5", 1],
+        ["C6", 0.5],
+        ["A5", 0.5],
+        ["G5", 1],
+        ["F5", 1],
+      ],
+      [
+        ["D5", 0.5],
+        ["F5", 0.5],
+        ["A5", 1],
+        ["G5", 1],
+        ["F5", 1],
+      ],
+      [
+        ["D5", 1],
+        ["F5", 0.5],
+        ["Bb5", 0.5],
+        ["A5", 1],
+        ["G5", 1],
+      ],
+      [
+        ["E5", 0.5],
+        ["G5", 0.5],
+        ["C6", 1],
+        ["Bb5", 1],
+        ["G5", 1],
+      ],
+      [
+        ["F5", 0.5],
+        ["A5", 0.5],
+        ["C6", 1],
+        ["D6", 0.5],
+        ["C6", 0.5],
+        ["A5", 1],
+      ],
+      [
+        ["A5", 1],
+        ["F5", 0.5],
+        ["D5", 0.5],
+        ["F5", 2],
+      ],
+      [
+        ["G5", 0.5],
+        ["A5", 0.5],
+        ["Bb5", 1],
+        ["A5", 0.5],
+        ["G5", 0.5],
+        ["F5", 1],
+      ],
+      [
+        ["E5", 1],
+        ["G5", 1],
+        ["F5", 2],
+      ],
+    ],
+    lead: "triangle",
+    leadGain: 0.16,
+    lowpass: 2400,
+    bass: "half",
+    drums: {
+      pattern: ["k", "", "", "", "", "", "", "", "k", "", "", "", "s", "", "", ""],
+      gains: { kick: 0.3, snare: 0.06, hat: 0.035 },
+    },
+  });
+
 // Muzyka: [nazwa, synteza, opis, kb/s] — motyw biegu 80 kb/s i pieśń humbaka 64 kb/s (lżejsze: Sowia Ucieczka
 // ma budżet < 800 KB razem z rejsem na humbaku).
 for (const [name, render, meta, kbps] of [
@@ -1766,6 +1848,8 @@ for (const [name, render, meta, kbps] of [
   ["tory-amic", stationTheme, { label: "Sowie Tory — stacja Amic", bpm: 126, volume: 0.5 }, 48],
   // Sowa w Chmurach: motyw lotu, 48 kb/s (z efektami i pieśnią humbaka w budżecie 800 KB).
   ["chmury", cloudTheme, { label: "Sowa w Chmurach — lot", bpm: 100, volume: 0.5 }, 48],
+  // Sowie Ogrody: motyw ogrodu, 48 kb/s (z efektami i pieśnią humbaka w budżecie 800 KB).
+  ["ogrod", gardenTheme, { label: "Sowie Ogrody — ogród", bpm: 84, volume: 0.45 }, 48],
 ]) {
   random = mulberry32(name.length * 104729);
   const channels = render();

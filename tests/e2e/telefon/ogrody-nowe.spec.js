@@ -241,6 +241,9 @@ test("nowe Sowie Ogrody: złota kózka (×3 na 30 s), Plusk-o-metr i Zatoka Humb
   await expect(goat).toBeVisible();
   await goat.click();
   await expect(goat).toBeHidden();
+  // Muzyka (po pierwszym dotknięciu): motyw ogrodu, w Zatoce pieśń humbaka, potem znowu ogród.
+  const music = () => ogrod(page, "music");
+  await expect.poll(music, { timeout: 10_000 }).toBe("ogrod");
   await expect(page.locator(".sowie-toast-chip", { hasText: "Złota kózka: produkcja ×3 przez 30 s!" })).toBeVisible();
   expect((await ogrod(page, "production")) / full).toBeCloseTo(3, 5);
   expect((await ogrod(page, "events")).splash).toBeCloseTo(0.1, 5);
@@ -253,6 +256,7 @@ test("nowe Sowie Ogrody: złota kózka (×3 na 30 s), Plusk-o-metr i Zatoka Humb
   await expect(bayButton).toBeHidden();
   const hud = page.locator("[data-bay-hud]");
   await expect(hud).toBeVisible();
+  await expect.poll(music, { timeout: 10_000 }).toBe("humbak");
   await ogrod(page, "hold", true);
   await ogrod(page, "advance", 0.5);
   const { bay } = await ogrod(page, "events");
@@ -266,6 +270,7 @@ test("nowe Sowie Ogrody: złota kózka (×3 na 30 s), Plusk-o-metr i Zatoka Humb
   // Koniec po 20 s: komunikat z liczbą złapanych liści.
   await ogrod(page, "advance", 21);
   await expect(hud).toBeHidden();
+  await expect.poll(music, { timeout: 10_000 }).toBe("ogrod");
   await expect(page.locator(".sowie-toast-chip", { hasText: "Zatoka Humbaka: złapane liście — 1" })).toBeVisible({
     timeout: 10_000,
   });

@@ -5,13 +5,24 @@
 // Zapis w czasie podglądu: stan v3 w polu `preview` dokumentu gry `sowiegry_gry/ogrody` (pole `state` z wersją 2
 // zostaje dla dawnej gry — można do niej wrócić bez strat). Pierwsze wejście: stan z `preview`, a gdy go nie ma —
 // migracja dawnego stanu (v2). Po podmianie (E7e) gra zapisze v3 przez `saveGameState`.
+import { connectAudioSettings, createAudio } from "../../shared/engine/audio.js";
 import { createAtlas } from "../../shared/engine/sprites.js";
 import { EVENTS, progress } from "../../shared/meta/progress.js";
 import { createToasts, openModal } from "../../shared/ui/index.js";
 import { SPRITES, SVG_BASE } from "../../shared/world/catalog.js";
 import { createOwlAnimator } from "../../shared/world/owl.js";
 import { COLORS } from "../../shared/world/tokens.js";
-import { CHAPTERS, GAME_ID, GARDEN_EVENTS, GOAT_REWARDS, PLANTS, UPGRADES } from "./config.js";
+import {
+  BAY_MUSIC,
+  CHAPTERS,
+  GAME_ID,
+  GAME_SOUNDS,
+  GARDEN_EVENTS,
+  GARDEN_MUSIC,
+  GOAT_REWARDS,
+  PLANTS,
+  UPGRADES,
+} from "./config.js";
 import { formatNumber, formatTime, hasUpgrade, plantById, prestigeSeeds, production, waterStats } from "./economy.js";
 import { chapterIndex, createGarden } from "./garden.js";
 import { createPanel } from "./panel.js";
@@ -19,6 +30,7 @@ import { createGardenRenderer, gardenUnit } from "./render.js";
 import { defaultState, loadState } from "./state.js";
 
 const PREVIEW_FIELD = "preview";
+const AUDIO_BASE = new URL("../../assets/audio/", import.meta.url).href;
 // Zapis: co 30 s w tle gry, po ważnej akcji po 2 s, przy zejściu do tła od razu.
 const SAVE_EVERY = 30;
 const IMPORTANT_DELAY = 2000;
@@ -63,8 +75,26 @@ let harvestGain = 0;
 let harvestTimer = 0;
 // Testy e2e: logika wstrzymana w klatkach (hak `hold`) — przesuwa ją tylko `advance`; rysowanie i HUD działają.
 let testHold = false;
+// Silnik dźwięku (po wczytaniu audio.json); stuknięcia grają najwyżej co 70 ms (szybkie stukanie nie dudni).
+let audio = null;
+let lastTapSound = 0;
 
 const now = () => Date.now();
+
+// ---------- Dźwięk ----------
+
+function play(name, options) {
+  try {
+    return audio?.play(name, options) || null;
+  } catch {
+    return null;
+  }
+}
+
+function playMusic(name) {
+  if (audio?.currentMusic?.() === name) return;
+  audio?.playMusic?.(name)?.catch?.(() => {});
+}
 const cosmetic = () => cloud?.profile?.()?.cosmetics?.selected || "none";
 
 // ---------- Sowia Akademia ----------
@@ -98,7 +128,10 @@ function save({ immediate = false, flush = false } = {}) {
 
 const panel = createPanel({
   root,
-  onBuy: (id, amount) => garden.buyPlant(id, amount),
+  // Dźwięk zakupu tylko dla zakupów gracza (Sowa zakupowa kupuje po cichu).
+  onBuy: (id, amount) => {
+    if (garden.buyPlant(id, amount)) play("zakup", { volume: 0.7 });
+  },
   onUpgrade: (id) => garden.buyUpgrade(id),
   onPrestige: () => confirmPrestige(),
   onNode: (id) => garden.buyPrestige(id),
@@ -179,10 +212,12 @@ function handleEvents() {
           },
         );
         happyTime = 2;
+        play("rekord");
         save({ immediate: true });
         break;
       }
       case "milestone": {
+        play("hu-hu", { volume: 0.8 });
         const plant = plantById(event.id);
         toasts.show(
           `${plant.name}: ${event.owned} sztuk!${event.owned === 25 || event.owned === 100 ? " Produkcja ×2" : " Nowy wygląd"}`,
@@ -191,16 +226,19 @@ function handleEvents() {
         break;
       }
       case "upgrade":
+        play("zakup");
         toasts.show(`Kupiono: ${UPGRADES.find((item) => item.id === event.id).name}`, { kind: "success" });
         save({ immediate: true });
         break;
       case "water": {
+        play("humbak-plusk", { volume: 0.6 });
         const size = renderer.size();
         renderer.popup("Podlane!", size.width / 2, size.height * 0.3, COLORS.woda, 22);
         renderer.burst(size.width / 2, size.height * 0.3, 14, COLORS.woda);
         break;
       }
       case "prestige":
+        play("rekord");
         toasts.show(`Wielkie Przesadzanie! +${formatNumber(event.seeds)} nasion`, { kind: "reward", priority: 2 });
         save({ immediate: true, flush: true });
         break;
@@ -208,6 +246,7 @@ function handleEvents() {
         save({ immediate: true });
         break;
       case "pracu":
+        play("dzwonek");
         toasts.show("Dzwoni Pracu Pracu! Odrzuć telefon — do tego czasu produkcja −30%", {
           kind: "warn",
           key: "pracu",
@@ -215,6 +254,7 @@ function handleEvents() {
         });
         break;
       case "pracuEnd":
+        play("klik");
         if (event.auto) toasts.show("Tryb samolotowy wyciszył telefon Pracu Pracu", { kind: "info", key: "samolot" });
         else {
           const target = renderer.hits().phone;
@@ -222,6 +262,7 @@ function handleEvents() {
         }
         break;
       case "truck":
+        play("trafienie-amic", { volume: 0.7 });
         toasts.show(`Ciężarówka Amic zastawiła: ${plantById(event.plant).name}! Stuknij ją, żeby odjechała`, {
           kind: "warn",
           key: "ciezarowka",
@@ -229,15 +270,21 @@ function handleEvents() {
         });
         break;
       case "truckTap": {
+        play("klik");
         const target = renderer.hits().truck;
         if (target)
           renderer.popup(`${event.taps}/${event.need}`, target.x, target.y - target.r * 0.6, COLORS.bialy, 18);
         break;
       }
       case "truckEnd":
+        play("zycie");
         toasts.show("Ciężarówka Amic odjechała — grządka wolna!", { kind: "success", key: "ciezarowka-koniec" });
         break;
+      case "goat":
+        play("koza-meee", { volume: 0.8 });
+        break;
       case "goatCaught": {
+        play("powerup-start");
         const reward = GOAT_REWARDS.find((item) => item.id === event.reward);
         toasts.show(reward.text, { kind: "reward", key: `kozka-${event.reward}`, priority: 2 });
         const size = renderer.size();
@@ -251,12 +298,16 @@ function handleEvents() {
         harvestGain += event.gain;
         break;
       case "bayReady":
+        play("hu-hu");
         toasts.show("Plusk-o-metr pełny! Zatoka Humbaka czeka", { kind: "reward", key: "zatoka-gotowa", priority: 2 });
         break;
       case "bay":
+        play("bonus-start");
+        playMusic(BAY_MUSIC);
         toasts.show("Zatoka Humbaka! Łap liście z fontanny", { kind: "info", key: "zatoka" });
         break;
       case "bayCatch": {
+        play("lisc-zloty", { pitch: 1 + Math.min(event.combo, 10) * 0.03 });
         const size = renderer.size();
         const x = event.x * size.width;
         const y = event.y * size.height;
@@ -271,6 +322,8 @@ function handleEvents() {
         break;
       }
       case "bayEnd":
+        play("powerup-koniec");
+        playMusic(GARDEN_MUSIC);
         toasts.show(`Zatoka Humbaka: złapane liście — ${event.caught}, razem +${formatNumber(event.reward)}`, {
           kind: "reward",
           key: "zatoka-koniec",
@@ -342,6 +395,11 @@ function welcome({ offline, report }) {
 function tapAt(x, y) {
   if (!ready) return;
   const gain = garden.tap();
+  const time = performance.now();
+  if (time - lastTapSound > 70) {
+    lastTapSound = time;
+    play("lisc", { volume: 0.6 });
+  }
   renderer.popup(`+${formatNumber(gain)}`, x, y, COLORS.bialy, 20);
   renderer.burst(x, y, 6);
   happyTime = 0.4;
@@ -496,6 +554,18 @@ async function start() {
 
 resize();
 requestAnimationFrame(frame);
+
+// Dźwięk: manifest, ustawienia głośności z profilu, odblokowanie pierwszym dotknięciem (wymóg przeglądarek);
+// muzyka ogrodu gra od odblokowania (w Zatoce — pieśń humbaka).
+fetch(new URL("audio.json", AUDIO_BASE))
+  .then((response) => (response.ok ? response.json() : Promise.reject(new Error(`audio.json: ${response.status}`))))
+  .then((manifest) => {
+    audio = createAudio({ manifest, baseUrl: AUDIO_BASE, preloadOnUnlock: GAME_SOUNDS });
+    connectAudioSettings(audio, cloud);
+    audio.bindUnlock(window, { ignore: (event) => Boolean(event.target?.closest?.("a[href]")) });
+    playMusic(garden.state.bay ? BAY_MUSIC : GARDEN_MUSIC);
+  })
+  .catch((error) => console.warn("SowieOgrody: bez dźwięku", error));
 start().catch((error) => console.warn("SowieOgrody: start", error));
 
 // Dostęp dla testów e2e (logika i stan bez czekania na klatki).
@@ -564,6 +634,7 @@ window.SowieOgrody = Object.freeze({
     updateHud();
   },
   hit: (name) => renderer.hits()[name] ?? null,
+  music: () => audio?.currentMusic?.() ?? null,
   // Testy: wstrzymanie logiki w klatkach (np. liście Zatoki stoją w miejscu do stuknięcia); `advance` działa dalej.
   hold: (on = true) => {
     testHold = Boolean(on);

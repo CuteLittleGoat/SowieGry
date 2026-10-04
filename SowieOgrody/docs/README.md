@@ -38,9 +38,11 @@ Podgląd zapisuje postęp osobno — obecna gra zostaje bez zmian i można do ni
   Gdy zamkniesz grę, wydarzenia nie przeszkadzają — po powrocie telefonu i ciężarówki już nie ma.
 - **Gdy Cię nie ma:** ogród rośnie dalej (połowa zwykłej produkcji, najwyżej 4 godziny). Po powrocie okno
   **„Witaj z powrotem!”** pokaże, jak długo sowa doglądała ogrodu i ile urosło.
+- **Dźwięk:** po pierwszym dotknięciu gra spokojna muzyka ogrodu (w Zatoce Humbaka — pieśń humbaka), a stuknięcia,
+  zakupy i wydarzenia mają swoje dźwięki. Głośność muzyki i efektów ustawisz w menu głównym (zakładka „Sowa”).
 - Przycisk **Menu** (lewy górny róg) wraca do menu głównego.
 
-Wersja podglądowa jest jeszcze w budowie: samouczek, instrukcja w „Jak grać?” i muzyka dojdą w kolejnych krokach.
+Wersja podglądowa jest jeszcze w budowie: samouczek, instrukcja w „Jak grać?” i kontrakty dnia dojdą w kolejnych krokach.
 
 ## Cel gry
 

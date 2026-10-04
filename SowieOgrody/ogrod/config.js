@@ -116,6 +116,27 @@ export const WATER = Object.freeze({ charges: 3, regen: 60, multiplier: 2, durat
 // Postęp offline (gdy gra jest zamknięta albo w tle): `efficiency` produkcji, najwyżej `cap` s.
 export const OFFLINE = Object.freeze({ efficiency: 0.5, cap: 4 * 3600, min: 60 });
 
+// Dźwięki (E7d1): efekty z assets/audio/audio.json wczytywane po pierwszym dotknięciu; muzyka — motyw „ogrod”,
+// w Zatoce Humbaka pieśń „humbak”.
+export const GAME_SOUNDS = Object.freeze([
+  "lisc",
+  "lisc-zloty",
+  "zakup",
+  "hu-hu",
+  "rekord",
+  "humbak-plusk",
+  "dzwonek",
+  "klik",
+  "trafienie-amic",
+  "zycie",
+  "koza-meee",
+  "powerup-start",
+  "powerup-koniec",
+  "bonus-start",
+]);
+export const GARDEN_MUSIC = "ogrod";
+export const BAY_MUSIC = "humbak";
+
 // Zdarzenia aktywnej gry (Analiza 2, rozdz. 3.4; E7c) — czasy w s gry (nieobecność się nie liczy), `first` — pierwsze
 // po tylu s, potem co `every` [od, do]; `chapter` — od którego rozdziału zdarzenie się pojawia.
 // - pracu: dzwoniący telefon (produkcja × `penalty`, dopóki go nie odrzucisz; Tryb samolotowy — sam po `airplane` s);

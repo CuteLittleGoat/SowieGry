@@ -18,6 +18,7 @@ import {
   volumeToGain,
 } from "../../shared/engine/audio.js";
 import { GAME_SOUNDS as CHMURY_SOUNDS } from "../../SowaWChmurach/config.js";
+import { BAY_MUSIC, GAME_SOUNDS as OGRODY_SOUNDS, GARDEN_MUSIC } from "../../SowieOgrody/ogrod/config.js";
 import { GAME_SOUNDS as TORY_SOUNDS } from "../../SowieTory/config.js";
 import { STAGES as TORY_STAGES } from "../../SowieTory/stages.js";
 
@@ -48,6 +49,7 @@ test("manifest dźwięków: ok. 25 efektów, muzyka menu i humbaka, pliki MP3, r
     "chmury",
     "humbak",
     "menu",
+    "ogrod",
     "tory-amic",
     "tory-biedronka",
     "tory-festiwal",
@@ -109,6 +111,23 @@ test("Sowa w Chmurach: motyw lotu (8 taktów, pętla, 48 kb/s), efekty w manife�
   const total =
     CHMURY_SOUNDS.reduce((sum, name) => sum + manifest.sfx[name].bytes, 0) + manifest.music.humbak.bytes + theme.bytes;
   assert.ok(total < 800 * 1024, `Sowa w Chmurach: ${total} B`);
+});
+
+test("Sowie Ogrody (nowa odsłona): motyw ogrodu (8 taktów, pętla, 48 kb/s), efekty w manifeście i budżet poniżej 800 KB", () => {
+  const theme = manifest.music[GARDEN_MUSIC];
+  assert.equal(GARDEN_MUSIC, "ogrod");
+  assert.ok(theme?.loop && theme.bpm === 84);
+  assert.ok(Math.abs(theme.duration - (8 * 4 * 60) / theme.bpm) < 0.01, "8 taktów");
+  assert.ok(theme.bytes < 150 * 1024, `${theme.bytes} B`);
+  assert.ok(readFileSync(join(audioRoot, "LICENSES.md"), "utf8").includes(theme.file), "licencja");
+  assert.ok(manifest.music[BAY_MUSIC], "pieśń humbaka w Zatoce");
+  for (const name of OGRODY_SOUNDS) assert.ok(manifest.sfx[name], name);
+  assert.equal(new Set(OGRODY_SOUNDS).size, OGRODY_SOUNDS.length);
+  const total =
+    OGRODY_SOUNDS.reduce((sum, name) => sum + manifest.sfx[name].bytes, 0) +
+    manifest.music[BAY_MUSIC].bytes +
+    theme.bytes;
+  assert.ok(total < 800 * 1024, `Sowie Ogrody: ${total} B`);
 });
 
 test("głośność: suwak 0–100 → wzmocnienie, ustawienia profilu i stare przełączniki", () => {

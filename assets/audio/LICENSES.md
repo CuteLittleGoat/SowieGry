@@ -23,6 +23,7 @@ Sowiej Ucieczki i cztery motywy plansz Sowich Torów to własne kompozycje zapis
 | `music/tory-prl.mp3` | Sowie Tory, plansza 3 (blokowisko PRL, pościg dzików) — 132 BPM, a-moll (a–F–G–E), 8 taktów, kwadratowy syntezator, gęsta perkusja (stereo, 48 kb/s) |
 | `music/tory-amic.mp3` | Sowie Tory, plansza 4 (stacja Amic) — 126 BPM, D-dur (D–h–G–A), 8 taktów, piłokształtny syntezator z filtrem, bas ósemkami (stereo, 48 kb/s) |
 | `music/chmury.mp3` | Sowa w Chmurach (lot) — 100 BPM, G-dur (G–e–C–D), 8 taktów, flet (sinus z vibrato) wznoszący się po akordach, bas półnutami, delikatna perkusja (stereo, 48 kb/s) |
+| `music/ogrod.mp3` | Sowie Ogrody (ogród) — 84 BPM, F-dur (F–d–B–C), 8 taktów, miękki trójkąt z filtrem, bas półnutami, cicha perkusja (stereo, 48 kb/s) |
 | `audio.json` | manifest: plik, rozmiar, długość, liczba próbek, początek dźwięku, podpis, głośność, pętla, limit głosów, odstęp, odcisk początku pętli |
 
 ## Nagrania właściciela (opcjonalne)
