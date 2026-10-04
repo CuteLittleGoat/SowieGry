@@ -57,8 +57,27 @@ sąsiadka, z cyfrą poziomu; **„×2”** w rogu znaczy, że chce dwie takie ro
 Za zamówienie dostajesz **liście** i **gwiazdki odnowy ⭐** (licznik pod liśćmi): im wyższy poziom rośliny, tym więcej
 (kiełek — 4 liście i 1 gwiazdka, roślina 5. poziomu — 45 liści i 3 gwiazdki; za drugą sztukę dodatkowa gwiazdka).
 Sąsiadka od razu prosi o coś nowego. Z czasem zamówienia są trudniejsze (wyższe poziomy, nowe rośliny z doniczki),
-a po kilku zamówieniach sąsiadki proszą czasem o **hybrydę** (90 liści i 4 gwiazdki). Gwiazdki odnowy przydadzą się
-wkrótce do odnawiania pomieszczeń szklarni.
+a po kilku zamówieniach sąsiadki proszą czasem o **hybrydę** (90 liści i 4 gwiazdki). Gwiazdki wydajesz na odnawianie pomieszczeń szklarni (niżej).
+
+## Pomieszczenia szklarni
+
+Stuknij **liczniki liści i gwiazdek** w prawym górnym rogu — otworzy się okno **Pomieszczenia szklarni**. Odnawiasz je
+**po kolei**, etap po etapie (np. „Zamieść podłogę”, „Umyj szyby”), a każdy etap kosztuje kilka gwiazdek odnowy ⭐.
+Zielona kropka przy licznikach znaczy, że masz dość gwiazdek na kolejny etap. Każde odnowione pomieszczenie daje
+ułatwienie:
+
+| Pomieszczenie         | Gwiazdki za etap | Ułatwienie po odnowieniu                                       |
+| --------------------- | ---------------- | -------------------------------------------------------------- |
+| 🪴 Doniczarnia        | 1 (3 etapy)      | Sowia doniczka mieści 2 ładunki więcej (14)                    |
+| 🌿 Sala Upraw         | 2 (3 etapy)      | doniczka ładuje się co 2,5 s                                   |
+| 💧 Zraszalnia         | 2 (4 etapy)      | niektóre nasionka z doniczki od razu kiełkują                  |
+| 🌱 Sadzonkarnia       | 3 (4 etapy)      | doniczka ładuje się co 2 s                                     |
+| 🪱 Kompostownia       | 3 (4 etapy)      | kompost daje 2 razy więcej liści                               |
+| 🧬 Krzyżówkarium      | 3 (5 etapów)     | hybrydy dają o połowę więcej liści                             |
+| 🐐 Kozi Zakątek       | 4 (5 etapów)     | kózki pomagają: nasionko z doniczki ląduje obok takiego samego |
+| 🔬 Laboratorium Pyłku | 4 (5 etapów)     | zamówienia roślin 4. i 5. poziomu oraz hybryd: +1 gwiazdka     |
+| 🌙 Kącik Drzemki      | 4 (6 etapów)     | doniczka ładuje się też wtedy, gdy gra jest zamknięta          |
+| 🦉 Sowie Centrum      | 5 (6 etapów)     | zamówienia dają o połowę więcej liści                          |
 
 ## Sowia doniczka
 
@@ -107,6 +126,5 @@ Na komputerze plansza stoi na środku, a rośliny przesuwa się myszą tak samo 
 
 ## Co dalej
 
-Gra wciąż rośnie. W kolejnych krokach dojdą: odnawianie pomieszczeń szklarni za gwiazdki (Doniczarnia, Sala Upraw,
-Zraszalnia…), przeszkody Pracu Pracu i Amic, kózki-pomocnice, Basen Humbaka z rekordem,
+Gra wciąż rośnie. W kolejnych krokach dojdą: przeszkody Pracu Pracu i Amic, kózki-pomocnice, Basen Humbaka z rekordem,
 pakiet startowy z postępu dawnej Szklarni i samouczek (z przyciskiem do jego powtórzenia).

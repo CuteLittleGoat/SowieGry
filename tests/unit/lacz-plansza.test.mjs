@@ -1,6 +1,6 @@
 // Łącz i Hoduj (nowa Sowia Szklarnia, Analiza 3, E8 — kroki 8.0–8.1): plansza 7 × 9, łączenie w łańcuchach,
-// hybrydy, Sowia doniczka, kompostownik, zamówienia sąsiadek, zapis stanu i to, że plansza nigdy nie blokuje się
-// bez wyjścia.
+// hybrydy, Sowia doniczka, kompostownik, zamówienia sąsiadek, odnawianie pomieszczeń z ułatwieniami, zapis stanu
+// i to, że plansza nigdy nie blokuje się bez wyjścia.
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
@@ -17,6 +17,7 @@ import {
   maxLevel,
   moveItem,
   spawnItem,
+  spawnNear,
 } from "../../LaczIHoduj/board.js";
 import {
   BOARD,
@@ -26,12 +27,19 @@ import {
   MERGE_LEAVES,
   NEIGHBORS,
   ORDERS,
+  PERKS,
   POT,
+  ROOMS,
   SAVE_VERSION,
 } from "../../LaczIHoduj/config.js";
 import {
+  RENOVATION_STEPS,
   createGame,
   defaultState,
+  hasPerk,
+  potMax,
+  potRegen,
+  renovation,
   loadState,
   makeOrder,
   orderCells,
@@ -376,4 +384,131 @@ test("zamówienia w grze: oddanie roślin z planszy (najpierw przeciągnięta), 
   assert.equal(upgraded.orders.length, 3);
   assert.equal(upgraded.stars, 0);
   assert.equal(upgraded.stats.orders, 0);
+});
+
+// Liczba etapów odnowy do końca pomieszczenia `id` włącznie.
+const stepsThrough = (id) => {
+  let total = 0;
+  for (const entry of ROOMS) {
+    total += entry.steps.length;
+    if (entry.id === id) return total;
+  }
+  return total;
+};
+
+test("pomieszczenia: 10 z dawnej Szklarni odnawianych po kolei etapami za gwiazdki", () => {
+  assert.equal(ROOMS.length, 10);
+  assert.deepEqual(
+    ROOMS.map((entry) => entry.name),
+    [
+      "Doniczarnia",
+      "Sala Upraw",
+      "Zraszalnia",
+      "Sadzonkarnia",
+      "Kompostownia",
+      "Krzyżówkarium",
+      "Kozi Zakątek",
+      "Laboratorium Pyłku",
+      "Kącik Drzemki",
+      "Sowie Centrum",
+    ],
+  );
+  assert.equal(RENOVATION_STEPS, 45);
+  for (let index = 1; index < ROOMS.length; index += 1) {
+    assert.ok(ROOMS[index].cost >= ROOMS[index - 1].cost, "koszt etapu nie maleje");
+  }
+  assert.deepEqual(renovation(0), { index: 0, room: ROOMS[0], step: 0, finished: [] });
+  assert.deepEqual(renovation(4), { index: 1, room: ROOMS[1], step: 1, finished: ["potting"] });
+  assert.equal(renovation(RENOVATION_STEPS).room, null);
+  assert.equal(renovation(RENOVATION_STEPS).finished.length, 10);
+
+  const game = createGame({ state: defaultState(0), random: queue(0) });
+  assert.equal(game.state.renovation, 0);
+  assert.equal(game.renovate(), null, "bez gwiazdek");
+  assert.deepEqual(game.takeEvents(), [{ type: "renovateMissing", room: "potting", need: 1 }]);
+  game.state.stars = 4;
+  assert.deepEqual(game.renovate(), { room: "potting", step: 0, name: "Zamieść podłogę", roomDone: false });
+  game.renovate();
+  assert.deepEqual(game.renovate(), { room: "potting", step: 2, name: "Ustaw stół do sadzenia", roomDone: true });
+  assert.equal(game.state.stars, 1);
+  assert.equal(game.state.renovation, 3);
+  assert.ok(hasPerk(game.state, "potting"));
+  assert.equal(game.potMax(), POT.max + PERKS.potBonus);
+  // Sala Upraw kosztuje 2 gwiazdki za etap.
+  assert.equal(game.renovate(), null);
+  assert.equal(game.takeEvents().at(-1).need, 1);
+  // Doniczka po Doniczarni ładuje się do 14.
+  game.state.pot.charges = POT.max;
+  game.update(POT.regen * 3);
+  assert.equal(game.state.pot.charges, POT.max + PERKS.potBonus);
+});
+
+test("ułatwienia pomieszczeń: doniczka, kiełki, kózki, kompost, hybrydy, zamówienia, Kącik Drzemki; zapis odnowy", () => {
+  const at = (id) => ({ ...defaultState(0), renovation: stepsThrough(id) });
+  assert.equal(potRegen(defaultState(0)), POT.regen);
+  assert.equal(potRegen(at("grow")), PERKS.regenGrow);
+  assert.equal(potRegen(at("seedling")), PERKS.regenSeedling);
+  assert.equal(potMax(at("water")), POT.max + PERKS.potBonus);
+
+  // Zraszalnia: kiełek z doniczki, gdy losowanie < 0,15 (kolejność: łańcuch, kiełek, pole).
+  let game = createGame({ state: at("water"), random: queue(0, 0.1, 0) });
+  game.board.cells.fill(null);
+  assert.deepEqual(game.board.cells[game.tapPot()], { chain: "monstera", level: 2 });
+  game = createGame({ state: at("water"), random: queue(0, 0.5, 0) });
+  game.board.cells.fill(null);
+  assert.deepEqual(game.board.cells[game.tapPot()], { chain: "monstera", level: 1 });
+
+  // Kozi Zakątek: nasionko obok takiego samego (sąsiednie wolne pole), bez takiego — gdziekolwiek.
+  const board = createBoard(BOARD);
+  board.cells[cellIndex(board, 3, 4)] = seed(1);
+  board.cells[cellIndex(board, 3, 3)] = seed(2);
+  const placed = spawnNear(board, seed(1), () => 0);
+  const { col, row } = cellPosition(board, placed);
+  assert.equal(Math.abs(col - 3) + Math.abs(row - 4), 1, "obok nasionka");
+  const empty = createBoard(BOARD);
+  assert.equal(
+    spawnNear(empty, seed(1), () => 0),
+    0,
+  );
+  game = createGame({ state: at("goats"), random: queue(0, 0.9, 0.99) });
+  game.board.cells.fill(null);
+  game.board.cells[0] = seed(1);
+  const index = game.tapPot();
+  assert.ok(index === 1 || index === BOARD.cols, `nasionko obok pola 0, a jest na ${index}`);
+
+  // Kompostownia: 2 × liście za kompost; Krzyżówkarium: hybryda × 1,5.
+  game = createGame({ state: at("cross"), random: queue(0) });
+  game.board.cells.fill(null);
+  game.board.cells[5] = { chain: "monstera", level: 3 };
+  game.compost(5);
+  assert.equal(game.state.leaves, COMPOST_LEAVES[3] * PERKS.compostFactor);
+  game.board.cells[0] = { chain: "monstera", level: 5 };
+  game.board.cells[1] = { chain: "pilea", level: 5 };
+  game.move(0, 1);
+  assert.equal(game.state.leaves, COMPOST_LEAVES[3] * 2 + Math.round(HYBRIDS.monpilea.leaves * PERKS.hybridFactor));
+
+  // Zamówienia: Laboratorium Pyłku (+1 gwiazdka za poziom 4–5 i hybrydę), Sowie Centrum (liście × 1,5).
+  const big = { chain: "pilea", level: 4, count: 1 };
+  assert.deepEqual(orderReward(big, stepsThrough("goats")), { leaves: ORDERS.leaves[4], stars: 2 });
+  assert.deepEqual(orderReward(big, stepsThrough("pollen")), { leaves: ORDERS.leaves[4], stars: 3 });
+  assert.deepEqual(orderReward({ chain: "monstera", level: 2, count: 1 }, stepsThrough("pollen")), {
+    leaves: ORDERS.leaves[2],
+    stars: 1,
+  });
+  assert.deepEqual(orderReward(big, RENOVATION_STEPS), { leaves: Math.round(ORDERS.leaves[4] * 1.5), stars: 3 });
+
+  // Zapis: odnowa zostaje, poza zakresem — przycięta; ładunki do pojemności doniczki.
+  const saved = JSON.parse(JSON.stringify({ ...at("potting"), savedAt: 1000 }));
+  saved.pot.charges = 99;
+  assert.equal(loadState(saved, 1000).renovation, 3);
+  assert.equal(loadState(saved, 1000).pot.charges, POT.max + PERKS.potBonus);
+  assert.equal(loadState({ ...saved, renovation: 999 }, 1000).renovation, RENOVATION_STEPS);
+  assert.equal(loadState({ ...saved, renovation: -4 }, 1000).renovation, 0);
+  // Kącik Drzemki: doniczka ładuje się, gdy gra jest zamknięta (bez niego — nie).
+  const sleepy = { ...JSON.parse(JSON.stringify(at("nap"))), savedAt: 0 };
+  sleepy.pot = { charges: 0, progress: 0 };
+  assert.equal(loadState(sleepy, 10_000).pot.charges, Math.floor(10 / PERKS.regenSeedling));
+  const awake = { ...JSON.parse(JSON.stringify(at("pollen"))), savedAt: 0 };
+  awake.pot = { charges: 0, progress: 0 };
+  assert.equal(loadState(awake, 10_000).pot.charges, 0);
 });

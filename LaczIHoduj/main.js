@@ -1,14 +1,25 @@
 // Łącz i Hoduj — strona gry (prototyp, kroki 8.0–8.1): wczytanie i zapis stanu (pole `preview` dokumentu
 // `sowiegry_gry/szklarnia` — dawna Szklarnia zostaje bez zmian), pętla, przeciąganie roślin z uniesieniem nad palec,
 // zaznaczanie stuknięciem (bez przeciągania), Sowia doniczka, kompostownik, hybrydy, nowe łańcuchy w doniczce,
-// zamówienia sąsiadek (oddanie stuknięciem karty albo przeciągnięciem rośliny na kartę), komunikaty i haki testowe.
+// zamówienia sąsiadek (oddanie stuknięciem karty albo przeciągnięciem rośliny na kartę), okno odnawiania pomieszczeń
+// szklarni (stuknięcie portfela), komunikaty i haki testowe.
 import { connectAudioSettings, createAudio } from "../shared/engine/audio.js";
 import { EVENTS, progress } from "../shared/meta/progress.js";
-import { createToasts } from "../shared/ui/index.js";
+import { createToasts, openModal } from "../shared/ui/index.js";
 import { COLORS } from "../shared/world/tokens.js";
 import { canMerge, hybridOf, itemName } from "./board.js";
-import { BOARD, CHAINS, COMPOST_LEAVES, GAME_ID, GAME_SOUNDS, GREENHOUSE_MUSIC, POT, PREVIEW_FIELD } from "./config.js";
-import { createGame, defaultState, loadState, neighborOf } from "./game.js";
+import {
+  BOARD,
+  CHAINS,
+  COMPOST_LEAVES,
+  GAME_ID,
+  GAME_SOUNDS,
+  GREENHOUSE_MUSIC,
+  POT,
+  PREVIEW_FIELD,
+  ROOMS,
+} from "./config.js";
+import { createGame, defaultState, loadState, neighborOf, renovation } from "./game.js";
 import { createBoardRenderer, drawOrderCard, LIFT } from "./render.js";
 
 // Zapis: co 20 s gry, po połączeniu po 2 s, przy zejściu do tła od razu.
@@ -27,6 +38,7 @@ const potButton = root.querySelector("[data-pot]");
 const chargesNode = root.querySelector("[data-charges]");
 const compostButton = root.querySelector("[data-compost]");
 const starsNode = root.querySelector("[data-stars]");
+const roomsButton = root.querySelector("[data-rooms]");
 const orderButtons = [...root.querySelectorAll("[data-order]")];
 // Ostatnio narysowana karta zamówienia (zamówienie i rozmiar) — rysujemy tylko po zmianie.
 const drawnOrders = orderButtons.map(() => "");
@@ -46,6 +58,8 @@ let hudTimer = 0;
 let testHold = false;
 // Silnik dźwięku (po wczytaniu audio.json) — efekty i motyw szklarni (uwaga właściciela L1).
 let audio = null;
+// Otwarte okno pomieszczeń (odświeżane po każdym etapie odnowy) albo null.
+let roomsModal = null;
 
 function play(name, options) {
   try {
@@ -107,10 +121,18 @@ function updateHud() {
   const { state } = game;
   leavesNode.textContent = state.leaves.toLocaleString("pl-PL");
   starsNode.textContent = state.stars.toLocaleString("pl-PL");
-  chargesNode.textContent = `${Math.floor(state.pot.charges)}/${POT.max}`;
+  const max = game.potMax();
+  chargesNode.textContent = `${Math.floor(state.pot.charges)}/${max}`;
   potButton.setAttribute(
     "aria-label",
-    `Sowia doniczka — nasionko na wolne pole, ładunki ${Math.floor(state.pot.charges)} z ${POT.max}`,
+    `Sowia doniczka — nasionko na wolne pole, ładunki ${Math.floor(state.pot.charges)} z ${max}`,
+  );
+  // Portfel: opis i kropka, gdy starczy gwiazdek na kolejny etap odnowy.
+  const { room } = renovation(state.renovation);
+  roomsButton.classList.toggle("is-ready", Boolean(room && state.stars >= room.cost));
+  roomsButton.setAttribute(
+    "aria-label",
+    `Pomieszczenia szklarni — ${state.stars} gwiazdek odnowy, ${state.leaves.toLocaleString("pl-PL")} liści`,
   );
   updateOrders();
 }
@@ -183,6 +205,28 @@ function handleEvents() {
         play("klik", { pitch: 0.6, volume: 0.5 });
         break;
       }
+      case "renovate": {
+        const room = ROOMS.find((entry) => entry.id === event.room);
+        hint(`${room.icon} ${room.name}: ${event.name} ✓`);
+        play("ladowanie", { pitch: 1.2, volume: 0.7 });
+        if (event.roomDone) {
+          play("rekord", { volume: 0.8 });
+          toasts.show(`Odnowione pomieszczenie: ${room.icon} ${room.name}! ${room.perk}`, {
+            kind: "reward",
+            key: "pomieszczenie",
+            priority: 2,
+          });
+        }
+        save({ immediate: true });
+        break;
+      }
+      case "renovateMissing":
+        play("klik", { pitch: 0.6, volume: 0.5 });
+        toasts.show(`Potrzeba jeszcze ${event.need} ⭐ — oddawaj zamówienia sąsiadek`, {
+          kind: "info",
+          key: "gwiazdki",
+        });
+        break;
       case "unlock":
         toasts.show(`Nowa roślina w Sowiej doniczce: ${event.name}!`, {
           kind: "reward",
@@ -211,6 +255,89 @@ function handleEvents() {
     }
   }
 }
+
+// ---------- Pomieszczenia szklarni ----------
+
+function element(tag, className, text) {
+  const node = document.createElement(tag);
+  if (className) node.className = className;
+  if (text !== undefined) node.textContent = text;
+  return node;
+}
+
+/** Treść okna pomieszczeń: gwiazdki i lista pomieszczeń (odnowione, w toku z przyciskiem etapu, zamknięte). */
+function roomsContent() {
+  const { state } = game;
+  const status = renovation(state.renovation);
+  const list = element("div", "lacz-rooms");
+  list.append(
+    element(
+      "p",
+      "lacz-rooms-stars",
+      status.room
+        ? `Masz ${state.stars} ⭐ (za zamówienia sąsiadek). Odnawiaj pomieszczenia po kolei — każde daje ułatwienie.`
+        : `Masz ${state.stars} ⭐. Cała szklarnia odnowiona — brawo!`,
+    ),
+  );
+  ROOMS.forEach((room, index) => {
+    const done = index < status.index;
+    const current = index === status.index;
+    const card = element("article", "lacz-room");
+    card.dataset.room = room.id;
+    card.classList.toggle("is-done", done);
+    card.classList.toggle("is-locked", index > status.index);
+    const steps = done ? room.steps.length : current ? status.step : 0;
+    card.append(
+      element("span", "lacz-room-icon", room.icon),
+      element("strong", "lacz-room-name", room.name),
+      element("span", "lacz-room-progress", `${steps}/${room.steps.length}`),
+      element("p", "lacz-room-perk", done ? `✓ ${room.perk}` : `Po odnowieniu: ${room.perk}`),
+    );
+    if (current) {
+      const button = element(
+        "button",
+        "sowie-ui-button is-primary",
+        `Odnów: ${room.steps[status.step]} — ⭐ ${room.cost}`,
+      );
+      button.type = "button";
+      button.dataset.renovate = "";
+      button.disabled = state.stars < room.cost;
+      button.addEventListener("click", () => {
+        game.renovate();
+        handleEvents();
+        updateHud();
+        refreshRooms();
+      });
+      card.append(button);
+      if (state.stars < room.cost) {
+        card.append(element("p", "lacz-room-note", `Potrzeba ${room.cost} ⭐ (masz ${state.stars}).`));
+      }
+    } else if (index > status.index) {
+      card.append(element("p", "lacz-room-note", `🔒 Najpierw: ${ROOMS[index - 1].name}`));
+    }
+    list.append(card);
+  });
+  return list;
+}
+
+function refreshRooms() {
+  if (!roomsModal) return;
+  roomsModal.body.replaceChildren(roomsContent());
+  roomsModal.body.querySelector("[data-renovate]:not([disabled])")?.focus({ preventScroll: true });
+}
+
+function openRooms() {
+  if (!ready || roomsModal) return;
+  roomsModal = openModal({
+    title: "Pomieszczenia szklarni",
+    content: roomsContent(),
+    onClose: () => {
+      roomsModal = null;
+    },
+  });
+}
+
+roomsButton.addEventListener("click", openRooms);
 
 // ---------- Ruchy: przeciąganie i stuknięcia ----------
 
@@ -477,6 +604,14 @@ window.LaczIHoduj = Object.freeze({
   },
   move: (from, to) => moveTo(from, to).type,
   orders: () => JSON.parse(JSON.stringify(game.state.orders)),
+  setStars: (stars) => {
+    game.state.stars = stars;
+    updateHud();
+  },
+  setRenovation: (done) => {
+    game.state.renovation = done;
+    updateHud();
+  },
   setOrder: (slot, chain, level, count = 1) => {
     game.state.orders[slot] = { neighbor: game.state.orders[slot].neighbor, chain, level, count };
     updateHud();

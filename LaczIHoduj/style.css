@@ -42,8 +42,7 @@ body {
 }
 
 /* Nazwa gry tylko dla czytników ekranu (i w tytule karty) — w nagłówku stoją zamówienia sąsiadek. */
-.lacz-title,
-.lacz-sr {
+.lacz-title {
   position: absolute;
   width: 1px;
   height: 1px;
@@ -117,11 +116,37 @@ body {
   box-shadow: 0 0 0 4px var(--monstera);
 }
 
+/* Portfel (liście i gwiazdki) — przycisk okna pomieszczeń szklarni. */
 .lacz-wallet {
+  position: relative;
   display: grid;
+  align-content: center;
   justify-items: end;
-  padding-right: 2px;
+  box-sizing: border-box;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0 2px;
+  border: 0;
+  border-radius: 10px;
+  background: none;
+  color: var(--kontur);
+  font: inherit;
   line-height: 1.1;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+/* Starczy gwiazdek na kolejny etap odnowy: zielona kropka. */
+.lacz-wallet.is-ready::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 10px;
+  height: 10px;
+  border: 2px solid var(--bialy);
+  border-radius: 50%;
+  background: var(--monstera);
 }
 
 .lacz-wallet-row {
@@ -299,4 +324,64 @@ body {
   .lacz-preview {
     display: none;
   }
+}
+
+/* Okno pomieszczeń szklarni (treść arkusza Sowiego Interfejsu). */
+.lacz-rooms {
+  display: grid;
+  gap: 8px;
+}
+
+.lacz-rooms-stars {
+  margin: 0;
+  font-size: 15px;
+}
+
+.lacz-room {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 4px 10px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: #eef8f1;
+}
+
+.lacz-room-icon {
+  font-size: 26px;
+}
+
+.lacz-room-name {
+  font-size: 16px;
+}
+
+.lacz-room-progress {
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+}
+
+.lacz-room-perk,
+.lacz-room-note {
+  grid-column: 1 / -1;
+  margin: 0;
+  font-size: 13px;
+}
+
+.lacz-room .sowie-ui-button {
+  grid-column: 1 / -1;
+  min-height: 48px;
+}
+
+/* Za mało gwiazdek: przycisk etapu wyszarzony. */
+.lacz-room .sowie-ui-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.lacz-room.is-done {
+  background: #e3f8ea;
+}
+
+.lacz-room.is-locked {
+  opacity: 0.6;
 }

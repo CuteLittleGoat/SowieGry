@@ -1,7 +1,7 @@
 // Łącz i Hoduj (nowa Sowia Szklarnia — prototyp, Analiza 3, E8 kroki 8.0–8.1) na telefonach: przeciąganie
 // z uniesieniem nad palec i łączenie, zaznaczanie stuknięciem, Sowia doniczka, kompostownik (przeciągnięcie
 // i przycisk), hybrydy i nowe łańcuchy w doniczce, zamówienia sąsiadek (stuknięcie karty, przeciągnięcie rośliny na
-// kartę), pełna plansza, zapis w osobnym polu `preview` (emulator), plansza 7 × 9 z polami ≥ 44 px na najmniejszym
+// kartę), odnawianie pomieszczeń szklarni (okno z portfela), pełna plansza, zapis w osobnym polu `preview` (emulator), plansza 7 × 9 z polami ≥ 44 px na najmniejszym
 // telefonie i telefon poziomo (plansza obrócona do 9 × 7, przyciski z boku).
 const { test, expect, waitForCloud, watchErrors } = require("../fixtures");
 const { cloudUrl, readDoc, seedDoc, uniqueProject } = require("../emulator");
@@ -198,6 +198,44 @@ test("Łącz i Hoduj: zamówienia sąsiadek — stuknięcie gotowej karty, podpo
   expect((await cells(page))[30]).toEqual({ chain: "monstera", level: 1 });
   state = await game(page, "state");
   expect(state.stats.orders).toBe(2);
+  expect(errors).toEqual([]);
+});
+
+test("Łącz i Hoduj: odnawianie pomieszczeń — okno z portfela, etapy za gwiazdki, Doniczarnia powiększa doniczkę", async ({
+  page,
+}) => {
+  const errors = watchErrors(page);
+  await openGame(page);
+  const wallet = page.locator("[data-rooms]");
+  const box = await wallet.boundingBox();
+  expect(box.width).toBeGreaterThanOrEqual(44);
+  expect(box.height).toBeGreaterThanOrEqual(44);
+  await expect(wallet).not.toHaveClass(/is-ready/);
+  await game(page, "setStars", 3);
+  await expect(wallet).toHaveClass(/is-ready/);
+  await expect(wallet).toHaveAttribute("aria-label", /3 gwiazdek odnowy/);
+  await wallet.click();
+  const dialog = page.getByRole("dialog", { name: "Pomieszczenia szklarni" });
+  await expect(dialog).toBeVisible();
+  await expect(dialog.locator(".lacz-room")).toHaveCount(10);
+  await expect(dialog.locator('[data-room="grow"]')).toContainText("🔒 Najpierw: Doniczarnia");
+  // Trzy etapy Doniczarni po 1 gwiazdce.
+  for (const step of ["Zamieść podłogę", "Umyj szyby", "Ustaw stół do sadzenia"]) {
+    await dialog.getByRole("button", { name: `Odnów: ${step} — ⭐ 1` }).click();
+  }
+  await expect(
+    page.getByText("Odnowione pomieszczenie: 🪴 Doniczarnia! Sowia doniczka mieści 2 ładunki więcej"),
+  ).toBeVisible();
+  await expect(dialog.locator('[data-room="potting"]')).toHaveClass(/is-done/);
+  await expect(dialog.locator('[data-room="potting"]')).toContainText("3/3");
+  // Sala Upraw: za mało gwiazdek — przycisk wyłączony.
+  await expect(dialog.getByRole("button", { name: "Odnów: Napraw półki — ⭐ 2" })).toBeDisabled();
+  await expect(dialog.locator('[data-room="grow"]')).toContainText("Potrzeba 2 ⭐ (masz 0).");
+  await dialog.getByRole("button", { name: "Zamknij" }).click();
+  await expect(dialog).toBeHidden();
+  await expect(page.locator("[data-stars]")).toHaveText("0");
+  await expect(page.locator("[data-charges]")).toHaveText("12/14");
+  expect((await game(page, "state")).renovation).toBe(3);
   expect(errors).toEqual([]);
 });
 

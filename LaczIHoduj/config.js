@@ -104,6 +104,113 @@ export const ORDERS = Object.freeze({
   hybridStars: 4,
 });
 
+// Pomieszczenia szklarni (krok 8.1, E8b3; nazwy i ikony z dawnej Sowiej Szklarni — Płotek Antykozi zmienia się
+// w Kozi Zakątek, bo kozy są teraz pomocnicami): odnawiane po kolei, etap po etapie, za gwiazdki odnowy (`cost` za
+// etap). Odnowione pomieszczenie daje ułatwienie (`perk` — opis dla gracza; działanie w `game.js`, `PERKS`).
+const room = (id, icon, name, cost, steps, perk) =>
+  Object.freeze({ id, icon, name, cost, steps: Object.freeze(steps), perk });
+export const ROOMS = Object.freeze([
+  room(
+    "potting",
+    "🪴",
+    "Doniczarnia",
+    1,
+    ["Zamieść podłogę", "Umyj szyby", "Ustaw stół do sadzenia"],
+    "Sowia doniczka mieści 2 ładunki więcej",
+  ),
+  room("grow", "🌿", "Sala Upraw", 2, ["Napraw półki", "Zawieś lampy", "Rozłóż maty"], "Doniczka ładuje się co 2,5 s"),
+  room(
+    "water",
+    "💧",
+    "Zraszalnia",
+    2,
+    ["Podłącz wodę", "Zamontuj zraszacze", "Postaw beczkę na deszczówkę", "Wymaluj kafelki"],
+    "Niektóre nasionka z doniczki od razu kiełkują",
+  ),
+  room(
+    "seedling",
+    "🌱",
+    "Sadzonkarnia",
+    3,
+    ["Ustaw skrzynki", "Wsyp świeżą ziemię", "Podpisz tabliczki", "Rozwieś girlandę"],
+    "Doniczka ładuje się co 2 s",
+  ),
+  room(
+    "compost",
+    "🪱",
+    "Kompostownia",
+    3,
+    ["Zbuduj skrzynię", "Zaproś dżdżownice", "Ustaw łopatki", "Posadź nasturcje"],
+    "Kompost daje 2 razy więcej liści",
+  ),
+  room(
+    "cross",
+    "🧬",
+    "Krzyżówkarium",
+    3,
+    ["Wstaw stół do krzyżowania", "Ustaw lupy", "Powieś mapę hybryd", "Zamontuj termometr", "Postaw złotą doniczkę"],
+    "Hybrydy dają o połowę więcej liści",
+  ),
+  room(
+    "goats",
+    "🐐",
+    "Kozi Zakątek",
+    4,
+    ["Postaw płotek z kokardką", "Wnieś siano", "Ustaw poidełko", "Zawieś dzwoneczki", "Zbuduj kozi domek"],
+    "Kózki pomagają: nasionko z doniczki ląduje obok takiego samego",
+  ),
+  room(
+    "pollen",
+    "🔬",
+    "Laboratorium Pyłku",
+    4,
+    ["Ustaw mikroskop", "Umyj pędzelki", "Ustaw słoiczki na pyłek", "Zawieś lampę", "Zamontuj wentylator"],
+    "Zamówienia roślin 4. i 5. poziomu oraz hybryd: +1 gwiazdka",
+  ),
+  room(
+    "nap",
+    "🌙",
+    "Kącik Drzemki",
+    4,
+    [
+      "Rozłóż poduszki",
+      "Zawieś hamak",
+      "Postaw lampkę",
+      "Przyklej gwiazdki na sufit",
+      "Ustaw półkę z książkami",
+      "Przynieś kocyk",
+    ],
+    "Doniczka ładuje się też, gdy gra jest zamknięta",
+  ),
+  room(
+    "command",
+    "🦉",
+    "Sowie Centrum",
+    5,
+    [
+      "Ustaw biurko",
+      "Podłącz tablicę",
+      "Zawieś mapę szklarni",
+      "Postaw globus",
+      "Ustaw lunetę",
+      "Powieś portret Sówki",
+    ],
+    "Zamówienia dają o połowę więcej liści",
+  ),
+]);
+
+// Liczby ułatwień z odnowionych pomieszczeń.
+export const PERKS = Object.freeze({
+  potBonus: 2,
+  regenGrow: 2.5,
+  regenSeedling: 2,
+  sproutChance: 0.15,
+  compostFactor: 2,
+  hybridFactor: 1.5,
+  pollenStars: 1,
+  commandFactor: 1.5,
+});
+
 // Dźwięk (uwaga właściciela L1): efekty wczytywane po pierwszym dotknięciu (tylko używane) i motyw szklarni.
 export const GAME_SOUNDS = Object.freeze(["klik", "ladowanie", "polaczenie", "lisc", "rekord", "slizg"]);
 export const GREENHOUSE_MUSIC = "szklarnia";

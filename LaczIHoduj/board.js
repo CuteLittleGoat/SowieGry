@@ -88,6 +88,35 @@ export function spawnItem(board, item, random = Math.random) {
   return index;
 }
 
+/**
+ * Kopia przedmiotu na losowym wolnym polu **obok** (góra, dół, lewo, prawo) takiego samego przedmiotu → indeks;
+ * gdy takiego miejsca nie ma — jak `spawnItem` (losowe wolne pole albo -1).
+ */
+export function spawnNear(board, item, random = Math.random) {
+  const near = new Set();
+  board.cells.forEach((other, index) => {
+    if (!other || other.chain !== item.chain || other.level !== item.level) return;
+    const { col, row } = cellPosition(board, index);
+    for (const [dc, dr] of [
+      [0, -1],
+      [0, 1],
+      [-1, 0],
+      [1, 0],
+    ]) {
+      const c = col + dc;
+      const r = row + dr;
+      if (c < 0 || r < 0 || c >= board.cols || r >= board.rows) continue;
+      const target = cellIndex(board, c, r);
+      if (!board.cells[target]) near.add(target);
+    }
+  });
+  if (!near.size) return spawnItem(board, item, random);
+  const free = [...near].sort((a, b) => a - b);
+  const index = free[Math.floor(random() * free.length)];
+  board.cells[index] = { ...item };
+  return index;
+}
+
 /** Usunięcie przedmiotu (kompostownik) → usunięty przedmiot albo null. */
 export function removeItem(board, index) {
   const item = board.cells[index];
