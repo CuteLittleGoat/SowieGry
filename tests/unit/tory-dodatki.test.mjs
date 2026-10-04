@@ -8,7 +8,10 @@ import { createRun } from "../../SowieTory/game.js";
 import { GOAT_MOTION, GOAT_ORDER, catchesGoat, goatPose, pickGoat } from "../../SowieTory/goats.js";
 import { obstacleShape } from "../../SowieTory/obstacles.js";
 import { createOwlBody } from "../../SowieTory/physics.js";
-import { laneX } from "../../SowieTory/projection.js";
+import { ROAD_WIDTH, laneX } from "../../SowieTory/projection.js";
+import { DECOR_PROPS, DECOR_WIDTH } from "../../SowieTory/props.js";
+import { SCENERY } from "../../SowieTory/scenery.js";
+import { STAGES } from "../../SowieTory/stages.js";
 
 const STEP = 1 / 120;
 
@@ -262,4 +265,40 @@ test("dodatki mają osobny generator: to samo ziarno — te same kózki; kózki 
     first.patterns.map((item) => item.id),
     second.patterns.map((item) => item.id),
   );
+});
+
+test("scenografia: rekwizyty zawsze poza drogą, każdy narysowany; sklep w strefach — bez ciągłych regałów (uwaga T4)", () => {
+  const half = ROAD_WIDTH / 2;
+  const seen = {};
+  for (const stage of STAGES) {
+    seen[stage.id] = new Map();
+    for (let slot = 0; slot < 600; slot += 1) {
+      for (const side of [-1, 1]) {
+        for (const item of SCENERY[stage.id].side(slot, side)) {
+          assert.ok(DECOR_PROPS[item.kind], `${stage.id}: brak rysunku ${item.kind}`);
+          assert.ok(DECOR_WIDTH[item.kind], `${stage.id}: brak szerokości ${item.kind}`);
+          assert.ok(
+            Math.abs(item.x) - DECOR_WIDTH[item.kind] / 2 >= half - 1e-9,
+            `${stage.id}: ${item.kind} na drodze`,
+          );
+          assert.equal(Math.sign(item.x), side);
+          seen[stage.id].set(item.kind, (seen[stage.id].get(item.kind) || 0) + 1);
+        }
+      }
+    }
+  }
+  const shop = seen.biedronka;
+  for (const kind of ["warzywniak", "lodowka", "piekarnia", "promocja", "kwiaty", "kasa", "regal", "koszyki"]) {
+    assert.ok(shop.get(kind) > 0, `sklep: ${kind}`);
+  }
+  const walls = [...shop.entries()].filter(([kind]) => kind !== "koszyki" && kind !== "pracownik");
+  const total = walls.reduce((sum, [, count]) => sum + count, 0);
+  assert.ok(shop.get("regal") / total < 0.4, `regały to ${Math.round((shop.get("regal") / total) * 100)}% sklepu`);
+  for (const [stageId, kinds] of [
+    ["festiwal", ["namiot", "balony"]],
+    ["prl", ["kiosk", "maluch", "piaskownica"]],
+    ["amic", ["myjnia", "butle", "powietrze"]],
+  ]) {
+    for (const kind of kinds) assert.ok(seen[stageId].get(kind) > 0, `${stageId}: ${kind}`);
+  }
 });

@@ -550,6 +550,310 @@ function planter(context, t, seed) {
   ellipse(context, -0.14 + sway, -0.95, 0.14, 0.12, COLORS.monsteraJasna, 0.025);
 }
 
+// ---------- Scenografia — więcej rodzajów (uwaga właściciela T4) ----------
+// Biedronka (format sklepu 3.0/4.0): strefa owoców i warzyw jak stragan pod daszkiem, oszklone lodówki, kwiaty,
+// promocje na paletach, kasy (także samoobsługowe), koszyki. Kolory i napisy w stylu gry, bez logotypów.
+
+// Stragan z owocami i warzywami w skrzynkach pod czerwono-białym daszkiem.
+function fruitStand(context, t, seed) {
+  // Daszek w pasy na dwóch słupkach.
+  context.fillStyle = COLORS.szaryCiemny;
+  context.fillRect(-0.76, -2.15, 0.06, 2.15);
+  context.fillRect(0.7, -2.15, 0.06, 2.15);
+  for (let stripe = 0; stripe < 6; stripe += 1) {
+    context.fillStyle = stripe % 2 ? COLORS.bialy : "#e2231a";
+    context.fillRect(-0.8 + stripe * (1.6 / 6), -2.35, 1.6 / 6, 0.32);
+  }
+  context.strokeStyle = INK;
+  context.lineWidth = 0.04;
+  context.strokeRect(-0.8, -2.35, 1.6, 0.32);
+  // Stół z trzema skrzynkami na dwóch poziomach.
+  box(context, -0.78, -0.75, 1.56, 0.12, "#c9965f", 0.03, 0.035);
+  context.fillStyle = "#8a5a3b";
+  context.fillRect(-0.7, -0.63, 0.08, 0.63);
+  context.fillRect(0.62, -0.63, 0.08, 0.63);
+  const produce = [
+    ["#e2231a", "JABŁKA"],
+    [COLORS.pomaranczowy, "POMARAŃCZE"],
+    [COLORS.zloto, "BANANY"],
+    [COLORS.monstera, "SAŁATA"],
+    ["#e8742c", "MARCHEW"],
+    [COLORS.fiolet, "ŚLIWKI"],
+  ];
+  for (let index = 0; index < 3; index += 1) {
+    const [color] = produce[(seed + index * 2) % produce.length];
+    const x = -0.52 + index * 0.52;
+    const y = -0.75 - (index === 1 ? 0.5 : 0.22);
+    box(context, x - 0.24, y, 0.48, 0.22, "#d9a066", 0.03, 0.03);
+    for (let fruit = 0; fruit < 4; fruit += 1) {
+      ellipse(context, x - 0.16 + fruit * 0.11, y - 0.02, 0.07, 0.07, color, 0.02);
+    }
+  }
+  const [, name] = produce[seed % produce.length];
+  box(context, -0.5, -1.75, 1, 0.24, COLORS.bialy, 0.05, 0.03);
+  label(context, name, 0, -1.63, 0.13, INK);
+}
+
+// Oszklona lodówka (dwoje drzwi, podświetlenie LED): nabiał albo napoje.
+function fridge(context, t, seed) {
+  box(context, -0.8, -2.25, 1.6, 2.25, "#e9eef3", 0.06);
+  box(context, -0.76, -2.2, 1.52, 0.18, COLORS.bialy, 0.03, 0.025);
+  const drinks = seed % 2 === 1;
+  label(context, drinks ? "NAPOJE" : "NABIAŁ", 0, -2.11, 0.13, COLORS.niebieski);
+  for (const x of [-0.74, 0.02]) {
+    box(context, x, -1.95, 0.72, 1.8, "#d9f2fb", 0.04, 0.035);
+    for (let row = 0; row < 4; row += 1) {
+      const y = -1.62 + row * 0.42;
+      context.fillStyle = COLORS.szary;
+      context.fillRect(x + 0.04, y + 0.06, 0.64, 0.03);
+      for (let item = 0; item < 4; item += 1) {
+        const color = drinks
+          ? [COLORS.pomaranczowy, COLORS.monstera, COLORS.woda, "#e2231a"][(seed + row + item) % 4]
+          : [COLORS.bialy, COLORS.zloto, COLORS.niebieski, COLORS.policzki][(seed + row * 2 + item) % 4];
+        const height = drinks ? 0.28 : 0.18;
+        box(context, x + 0.07 + item * 0.15, y + 0.06 - height, 0.11, height, color, 0.03, 0.02);
+      }
+    }
+    // Uchwyt drzwi.
+    context.fillStyle = COLORS.szaryCiemny;
+    context.fillRect(x + (x < 0 ? 0.62 : 0.06), -1.2, 0.04, 0.4);
+  }
+  // Delikatna poświata LED u góry szyb.
+  context.fillStyle = "rgba(255, 255, 255, 0.55)";
+  context.fillRect(-0.72, -1.93, 1.44, 0.05);
+}
+
+// Kwiaty w wiaderkach na schodkowym stojaku.
+function flowerStand(context, t, seed) {
+  box(context, -0.6, -0.45, 1.2, 0.45, "#c9965f", 0.04);
+  box(context, -0.5, -0.8, 1, 0.35, "#b9895a", 0.04);
+  const colors = [COLORS.policzki, COLORS.zloto, "#e2231a", COLORS.fiolet, COLORS.bialy];
+  for (let index = 0; index < 5; index += 1) {
+    const top = index % 2 === 0;
+    const x = -0.44 + index * 0.22;
+    const base = top ? -0.8 : -0.45;
+    box(context, x - 0.09, base - 0.2, 0.18, 0.2, COLORS.szary, 0.03, 0.025);
+    const sway = Math.sin(t * 1.8 + index + seed) * 0.03;
+    for (let flower = 0; flower < 3; flower += 1) {
+      const fx = x - 0.06 + flower * 0.06 + sway;
+      context.strokeStyle = COLORS.monsteraCiemna;
+      context.lineWidth = 0.02;
+      context.beginPath();
+      context.moveTo(x - 0.04 + flower * 0.04, base - 0.2);
+      context.lineTo(fx, base - 0.5);
+      context.stroke();
+      ellipse(context, fx, base - 0.55, 0.06, 0.06, colors[(index + flower + seed) % colors.length], 0.02);
+    }
+  }
+  box(context, -0.45, -1.62, 0.9, 0.24, COLORS.bialy, 0.05, 0.03);
+  label(context, "KWIATY", 0, -1.5, 0.13, COLORS.monsteraCiemna);
+}
+
+// Promocja na palecie: stos kartonów i duża tablica „-50%”.
+function promoPallet(context, t, seed) {
+  box(context, -0.7, -0.14, 1.4, 0.14, "#c9965f", 0.02, 0.035);
+  const colors = [COLORS.niebieski, COLORS.zloto, COLORS.monsteraJasna, COLORS.policzki];
+  for (let row = 0; row < 3; row += 1) {
+    for (let item = 0; item < 3 - (row === 2 ? 1 : 0); item += 1) {
+      const x = -0.62 + item * 0.42 + (row === 2 ? 0.21 : 0);
+      const y = -0.14 - (row + 1) * 0.34;
+      box(context, x, y, 0.4, 0.34, "#d9a066", 0.03, 0.03);
+      box(context, x + 0.08, y + 0.1, 0.24, 0.12, colors[(seed + row + item) % colors.length], 0.02, 0.02);
+    }
+  }
+  context.fillStyle = COLORS.szaryCiemny;
+  context.fillRect(0.55, -2, 0.05, 1);
+  box(context, 0.2, -2.3, 0.75, 0.5, "#e2231a", 0.08);
+  label(context, seed % 2 ? "-50%" : "2+1", 0.575, -2.05, 0.24, COLORS.zloto);
+  ladybug(context, 0.85, -2.22, 0.06);
+}
+
+// Kasa (taśma, terminal, numer na słupku) albo kasa samoobsługowa z ekranem.
+function checkout(context, t, seed) {
+  if (seed % 2) {
+    box(context, -0.45, -1.1, 0.9, 1.1, COLORS.bialy, 0.06);
+    box(context, -0.3, -1.6, 0.6, 0.5, INK, 0.05, 0.03);
+    box(context, -0.25, -1.55, 0.5, 0.4, COLORS.woda, 0.03, 0.02);
+    label(context, "Hu-hu!", 0, -1.35, 0.1, INK);
+    box(context, -0.4, -1.05, 0.8, 0.12, COLORS.szary, 0.02, 0.02);
+    context.fillStyle = COLORS.szaryCiemny;
+    context.fillRect(-0.03, -2.12, 0.06, 0.52);
+    box(context, -0.6, -2.4, 1.2, 0.3, COLORS.zloto, 0.06, 0.03);
+    label(context, "KASA SAMOOBSŁUGOWA", 0, -2.25, 0.09, INK);
+    return;
+  }
+  box(context, -0.8, -0.9, 1.6, 0.9, COLORS.szary, 0.05);
+  box(context, -0.78, -0.95, 1.1, 0.1, INK, 0.03, 0.02);
+  box(context, 0.35, -1.3, 0.4, 0.35, COLORS.bialy, 0.05, 0.03);
+  box(context, 0.42, -1.25, 0.26, 0.14, COLORS.monsteraJasna, 0.02, 0.02);
+  // Zakupy na taśmie.
+  for (const [x, color] of [
+    [-0.6, COLORS.pomaranczowy],
+    [-0.35, COLORS.niebieski],
+    [-0.1, COLORS.zloto],
+  ]) {
+    box(context, x, -1.15, 0.18, 0.2, color, 0.03, 0.02);
+  }
+  context.fillStyle = COLORS.szaryCiemny;
+  context.fillRect(0.72, -2.3, 0.05, 1.4);
+  ellipse(context, 0.745, -2.4, 0.16, 0.16, "#e2231a", 0.03);
+  label(context, String(1 + (seed % 6)), 0.745, -2.4, 0.16);
+}
+
+// Stos czerwonych koszyków (przy krawędzi drogi).
+function baskets(context) {
+  for (let index = 0; index < 4; index += 1) {
+    const y = -0.18 - index * 0.12;
+    box(context, -0.26, y, 0.52, 0.22, "#e2231a", 0.05, 0.03);
+  }
+  context.strokeStyle = INK;
+  context.lineWidth = 0.03;
+  context.beginPath();
+  context.arc(0, -0.62, 0.16, Math.PI, 0);
+  context.stroke();
+}
+
+// Festiwal: namiot ze sprzedażą sadzonek i pęk balonów.
+function seedlingTent(context, t, seed) {
+  context.fillStyle = COLORS.szaryCiemny;
+  context.fillRect(-0.78, -2, 0.05, 2);
+  context.fillRect(0.73, -2, 0.05, 2);
+  context.fillStyle = seed % 2 ? COLORS.monsteraJasna : COLORS.policzki;
+  context.beginPath();
+  context.moveTo(-0.9, -2);
+  context.lineTo(0, -2.6);
+  context.lineTo(0.9, -2);
+  context.closePath();
+  context.fill();
+  context.strokeStyle = INK;
+  context.lineWidth = 0.04;
+  context.stroke();
+  box(context, -0.7, -0.7, 1.4, 0.1, "#c9965f", 0.03, 0.03);
+  for (let index = 0; index < 5; index += 1) {
+    const x = -0.56 + index * 0.28;
+    box(context, x - 0.08, -0.86, 0.16, 0.16, COLORS.doniczka, 0.03, 0.02);
+    const sway = Math.sin(t * 1.4 + index + seed) * 0.03;
+    ellipse(context, x + sway, -0.98, 0.1, 0.1, COLORS.monstera, 0.02);
+  }
+  box(context, -0.5, -1.85, 1, 0.26, COLORS.bialy, 0.05, 0.03);
+  label(context, "SADZONKI", 0, -1.72, 0.14, COLORS.monsteraCiemna);
+}
+
+function balloons(context, t, seed) {
+  const colors = [COLORS.policzki, COLORS.woda, COLORS.zloto, COLORS.fiolet, COLORS.monsteraJasna];
+  context.strokeStyle = COLORS.szaryCiemny;
+  context.lineWidth = 0.02;
+  for (let index = 0; index < 5; index += 1) {
+    const bob = Math.sin(t * 1.5 + index + seed) * 0.05;
+    const x = -0.3 + index * 0.15;
+    const y = -1.9 - (index % 2) * 0.25 + bob;
+    context.beginPath();
+    context.moveTo(0, -0.2);
+    context.lineTo(x, y + 0.2);
+    context.stroke();
+    ellipse(context, x, y, 0.16, 0.2, colors[(index + seed) % colors.length], 0.025);
+  }
+  box(context, -0.08, -0.2, 0.16, 0.2, COLORS.szary, 0.03, 0.02);
+}
+
+// PRL: kiosk z gazetami, mały fiat przy krawężniku, piaskownica.
+function kiosk(context) {
+  box(context, -0.8, -2.1, 1.6, 2.1, "#e9e0c9", 0.06);
+  box(context, -0.85, -2.35, 1.7, 0.3, "#c8553d", 0.05);
+  label(context, "KIOSK", 0, -2.2, 0.18);
+  box(context, -0.6, -1.7, 1.2, 0.8, "#cfeefa", 0.04, 0.035);
+  for (let index = 0; index < 4; index += 1) {
+    box(
+      context,
+      -0.55 + index * 0.28,
+      -1.65,
+      0.22,
+      0.3,
+      [COLORS.zloto, COLORS.bialy, COLORS.policzki, COLORS.woda][index],
+      0.02,
+      0.02,
+    );
+  }
+  box(context, -0.8, -0.95, 1.6, 0.12, "#8a5a3b", 0.03, 0.03);
+}
+
+function smallFiat(context, t, seed) {
+  const body = ["#d9b23a", "#8fb56f", "#c8553d", COLORS.woda][seed % 4];
+  box(context, -0.62, -0.85, 1.24, 0.55, body, 0.2);
+  box(context, -0.42, -1.25, 0.84, 0.45, body, 0.22);
+  box(context, -0.34, -1.18, 0.68, 0.3, "#cfeefa", 0.12, 0.03);
+  for (const x of [-0.42, 0.42]) ellipse(context, x, -0.28, 0.14, 0.14, INK, 0);
+  box(context, -0.56, -0.72, 0.2, 0.12, COLORS.zloto, 0.04, 0.02);
+  box(context, 0.36, -0.72, 0.2, 0.12, COLORS.zloto, 0.04, 0.02);
+}
+
+function sandbox(context, t, seed) {
+  box(context, -0.75, -0.3, 1.5, 0.3, "#c9965f", 0.04);
+  ellipse(context, 0, -0.32, 0.65, 0.1, "#f2d38b", 0);
+  ellipse(context, -0.25, -0.42, 0.18, 0.12, "#f2d38b", 0.02);
+  // Wiaderko i łopatka.
+  box(context, 0.2, -0.6, 0.18, 0.2, seed % 2 ? COLORS.policzki : COLORS.woda, 0.03, 0.02);
+  context.strokeStyle = COLORS.zloto;
+  context.lineWidth = 0.04;
+  context.beginPath();
+  context.moveTo(0.5, -0.35);
+  context.lineTo(0.62, -0.8);
+  context.stroke();
+}
+
+// Stacja Amic: myjnia, klatka z butlami gazowymi, stanowisko „powietrze i woda”.
+function carWash(context, t) {
+  box(context, -0.9, -2.6, 1.8, 0.4, COLORS.amicZielony, 0.06);
+  label(context, "MYJNIA", 0, -2.4, 0.2);
+  context.fillStyle = COLORS.szary;
+  context.fillRect(-0.85, -2.2, 0.12, 2.2);
+  context.fillRect(0.73, -2.2, 0.12, 2.2);
+  // Kręcące się szczotki.
+  for (const x of [-0.55, 0.55]) {
+    box(context, x - 0.13, -1.9, 0.26, 1.6, COLORS.woda, 0.12, 0.03);
+    context.strokeStyle = COLORS.bialy;
+    context.lineWidth = 0.03;
+    for (let line = 0; line < 4; line += 1) {
+      const y = -1.8 + ((line * 0.4 + t * 1.2) % 1.6);
+      context.beginPath();
+      context.moveTo(x - 0.1, y);
+      context.lineTo(x + 0.1, y + 0.08);
+      context.stroke();
+    }
+  }
+}
+
+function gasCage(context) {
+  box(context, -0.6, -1.3, 1.2, 1.3, COLORS.szary, 0.04);
+  for (let index = 0; index < 4; index += 1) {
+    const x = -0.42 + index * 0.28;
+    box(context, x - 0.1, -1.1, 0.2, 0.9, index % 2 ? COLORS.amicCzerwony : COLORS.zloto, 0.08, 0.025);
+  }
+  context.strokeStyle = COLORS.szaryCiemny;
+  context.lineWidth = 0.025;
+  for (let index = 0; index < 7; index += 1) {
+    const x = -0.6 + index * 0.2;
+    context.beginPath();
+    context.moveTo(x, -1.3);
+    context.lineTo(x, 0);
+    context.stroke();
+  }
+  box(context, -0.4, -1.55, 0.8, 0.22, COLORS.bialy, 0.04, 0.025);
+  label(context, "GAZ", 0, -1.44, 0.13, COLORS.amicCzerwony);
+}
+
+function airStation(context) {
+  box(context, -0.25, -1.4, 0.5, 1.4, COLORS.amicZielony, 0.06);
+  box(context, -0.18, -1.3, 0.36, 0.3, COLORS.bialy, 0.04, 0.02);
+  label(context, "AIR", 0, -1.15, 0.1, INK);
+  context.strokeStyle = INK;
+  context.lineWidth = 0.035;
+  context.beginPath();
+  context.moveTo(0.25, -0.8);
+  context.quadraticCurveTo(0.6, -0.5, 0.45, -0.1);
+  context.stroke();
+}
+
 export const DECOR_PROPS = Object.freeze({
   regal: shelf,
   piekarnia: bakery,
@@ -566,6 +870,20 @@ export const DECOR_PROPS = Object.freeze({
   pylon: pricePylon,
   auto: parkedCar,
   donica: planter,
+  warzywniak: fruitStand,
+  lodowka: fridge,
+  kwiaty: flowerStand,
+  promocja: promoPallet,
+  kasa: checkout,
+  koszyki: baskets,
+  namiot: seedlingTent,
+  balony: balloons,
+  kiosk,
+  maluch: smallFiat,
+  piaskownica: sandbox,
+  myjnia: carWash,
+  butle: gasCage,
+  powietrze: airStation,
 });
 
 // Szerokość (m) rekwizytu dekoracji — do rozstawiania przy krawędzi drogi.
@@ -585,6 +903,20 @@ export const DECOR_WIDTH = Object.freeze({
   pylon: 1.1,
   auto: 1.5,
   donica: 0.6,
+  warzywniak: 1.6,
+  lodowka: 1.6,
+  kwiaty: 1.2,
+  promocja: 1.6,
+  kasa: 1.6,
+  koszyki: 0.6,
+  namiot: 1.8,
+  balony: 0.8,
+  kiosk: 1.7,
+  maluch: 1.3,
+  piaskownica: 1.5,
+  myjnia: 1.8,
+  butle: 1.2,
+  powietrze: 0.6,
 });
 
 // Transparenty nad alejką / girlandy / zadaszenie nad drogą (wysoko, bez kolizji): rysunek szerokości `width` m.

@@ -100,16 +100,20 @@ wyniki kampanii). Najlepszy wynik gwiazdek każdej planszy zapisuje się w chmur
 
 ## Plansze
 
-- **Sklep Biedronka** — alejka między regałami pełnymi produktów („PROMOCJA”, „SUPER CENA!”, „NOWOŚĆ”), piekarnia,
-  pracownik z paleciakiem i czerwone tablice nad alejką. Uważaj na **wózki sklepowe** (zmień tor), **palety z płynem
+- **Sklep Biedronka** — alejka przez kolejne strefy sklepu: stragany z owocami i warzywami pod daszkiem, regały
+  pełne produktów („PROMOCJA”, „SUPER CENA!”, „NOWOŚĆ”), oszklone lodówki z nabiałem i napojami, piekarnia, promocje
+  na paletach, kwiaty i kasy (także samoobsługowe); do tego koszyki, pracownik z paleciakiem i czerwone tablice nad
+  alejką. Uważaj na **wózki sklepowe** (zmień tor), **palety z płynem
   do spryskiwaczy** (przeskocz) i **stojaki z promocją** (ślizg pod spodem) — a przy kasach na dymki Pracu Pracu.
-- **Festiwal roślin** — stojaki z roślinami, wózki z kwiatami, zwiedzający przy bokach, zraszacze i girlandy
-  z balonami. Przeszkody: **stoiska Amic** (zmień tor), **stosy katalogów** Pracu (przeskocz) i kanistry z wodą.
-- **Blokowisko PRL** — bloki z wielkiej płyty (wypatrz kota na balkonie i gołębie), trzepak, ławka, słupki.
+- **Festiwal roślin** — stojaki z roślinami, wózki z kwiatami, namioty z sadzonkami, pęki balonów, zwiedzający przy
+  bokach, zraszacze i girlandy z balonami. Przeszkody: **stoiska Amic** (zmień tor), **stosy katalogów** Pracu (przeskocz) i kanistry z wodą.
+- **Blokowisko PRL** — bloki z wielkiej płyty (wypatrz kota na balkonie i gołębie), trzepak, ławka, piaskownica,
+  kiosk, mały fiat przy krawężniku, słupki.
   Za sową biegnie **stado dzików** — widać je u dołu ekranu: im mniej masz żyć, tym są bliżej. Co jakiś czas
   jeden dzik **szarżuje torem sowy**: przy dolnej krawędzi toru miga **pomarańczowa strzałka** — masz 1 sekundę,
   żeby **zmienić tor** (skok nie wystarczy). Udany unik: **+30 pkt**. Obok zawsze jest wolny tor.
-- **Stacja benzynowa Amic** — sklep stacji, pylon z cenami paliw, zaparkowane auta i zadaszenie z zielonym pasem.
+- **Stacja benzynowa Amic** — sklep stacji, pylon z cenami paliw, myjnia, klatka z butlami gazu, stanowisko
+  powietrza, zaparkowane auta i zadaszenie z zielonym pasem.
   Przeszkody: **dystrybutory** i **samochody** na podjeździe (długie — zmień tor), **zadaszenie** i znaki z cenami
   (ślizg), kanistry (przeskocz).
 
