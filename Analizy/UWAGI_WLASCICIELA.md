@@ -17,6 +17,13 @@ Wersje do sprawdzenia (menu → „Wypróbuj nową wersję: …”):
 |---|---|
 | 2026-10-04 | Łącz i Hoduj: **prototypy ekranów zaakceptowane** (zrzuty: przeciąganie na telefonie, 320 × 568, telefon poziomo). Decyzja o samej rozgrywce (merge czy wariant zapasowy) — po teście na telefonie. |
 
+## Ogólne (wszystkie gry)
+
+| # | Uwaga właściciela (dosłownie) | Do zrobienia | Stan |
+|---|---|---|---|
+| G1 | „Potrzebny będzie przycisk do powtórzenia samouczków.” | Dziś samouczek da się powtórzyć tylko z okna „Jak grać?” danej gry (przycisk „Zagraj samouczek” w Sowiej Ucieczce, Sowich Torach, Sowie w Chmurach i nowych Ogrodach) — za mało widoczne. Dodać widoczny przycisk „Powtórz samouczek” na ekranie startowym każdej gry z samouczkiem (także w Łącz i Hoduj, gdy dostanie samouczek w 8.3) oraz w menu głównym (zakładka „Sowa” → ustawienia) przycisk „Powtórz samouczki we wszystkich grach” (kasuje `tutorialDone` w dokumentach gier — tylko w kolekcji `sowiegry`). | ⏳ |
+| G2 | „(ostatni etap) będę chciał też «wersję demo». Uproszczoną aplikację uruchamianą innym linkiem (inny plik HTML) bez zapisu do Firestore. Może nie być tam wyborów trudności itp. Ma to być wersja pokazowa gier.” | **Ostatni etap — E10 „Wersja demo”** (po E9, wpis w planie, Analiza 3, 8.2): osobna strona (np. `demo.html`) z prostym menu gier; bez hasła i bez Firestore (tylko pamięć — `MemoryBackend`, nic nie trafia do bazy ani do `localStorage` poza tym, co niezbędne); bez wyboru poziomu trudności i innych opcji — od razu gra na ustawieniach domyślnych; samouczek przy każdym wejściu (albo przycisk); wyniki tylko na ekranie. Szczegóły do ustalenia z właścicielem przed startem etapu (które gry, czy z galerią, czy z muzyką, czy osobny link do każdej gry). | ⏳ (ostatni etap) |
+
 ## Sowie Tory (E5)
 
 | # | Uwaga właściciela (dosłownie) | Do zrobienia | Stan |

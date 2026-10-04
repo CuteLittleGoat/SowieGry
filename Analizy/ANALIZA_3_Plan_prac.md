@@ -314,6 +314,7 @@ Czytelne moduły zamiast obecnego `script.js`; nowy format stanu z migracją ze 
 | E7 Sowie Ogrody | 🔧 w toku (równolegle z oczekiwaniem na akceptację E5 i E6) | E7a ✅ (logika w `SowieOgrody/ogrod/`, migracja stanu v2 → v3, symulator: pierwsze przesadzanie po ok. 2,7 h); E7b ✅ (strona podglądu `SowieOgrody/nowa.html`, zapis w polu `preview`); E7c1 ✅ (logika zdarzeń, symulator: ok. 2 h 20 min); E7c2 ✅ (zdarzenia na ekranie); E7d1 ✅ (dźwięk i muzyka ogrodu); E7d2 ✅ („Jak grać?” i samouczek); E7d3 ✅ (kontrakty dnia) — **podgląd czeka na akceptację właściciela**, potem E7e (podmiana) — patrz 8.8 |
 | E8 Łącz i Hoduj | 🔧 w toku (równolegle z oczekiwaniem na akceptację E5, E6 i E7) | E8a ✅ prototyp (krok 8.0) w `LaczIHoduj/`: plansza 7 × 9, łańcuch Monstery, przeciąganie z uniesieniem nad palec, Sowia doniczka, kompost, zapis w polu `preview` — **punkt kontrolny właściciela** (merge czy wariant zapasowy), kroki 8.1–8.3 dopiero po nim — patrz 8.9 |
 | E9 Meta i sprzątanie | ⏳ | — |
+| E10 Wersja demo | ⏳ (ostatni etap — prośba właściciela z 2026-10-04) | osobna strona (inny plik HTML, np. `demo.html`) z pokazową wersją gier: bez hasła, **bez zapisu do Firestore** (tylko pamięć), bez wyboru poziomu trudności i innych opcji; szczegóły do ustalenia z właścicielem przed startem — patrz `Analizy/UWAGI_WLASCICIELA.md`, G2 |
 
 ### 8.3. Praktyczne wskazówki techniczne
 
