@@ -30,6 +30,9 @@ import { laneX } from "./projection.js";
 import { STAGES, STAGE_COUNT, stageKind } from "./stages.js";
 import { WHALE, createWhaleRide } from "./whale.js";
 
+// Najwięcej gestów czekających na kroki gry (nadmiar — np. przy zaciętej karcie — przepada).
+const INPUT_QUEUE = 4;
+
 // Prędkość (m/s) na planszy `stage` przy postępie `progress` (0–1): łagodny wzrost, każda plansza szybsza.
 export function speedAt(progress, difficulty = "arcade", stage = 0, cozy = false) {
   const config = DIFFICULTIES[difficulty] || DIFFICULTIES.arcade;
@@ -80,6 +83,9 @@ export function createRun({
   const leaves = [];
   const events = [];
   const controls = { left: false, right: false, up: false, down: false };
+  // Gesty czekające na krok gry: w jednym kroku każdy kierunek najwyżej raz, powtórzony — w następnym kroku
+  // (dwa szybkie przesunięcia w tę samą stronę między klatkami to dwie zmiany toru, nie jedna).
+  const pending = [];
   let track = createTrack({ random: rng, patterns, intro });
   let lastLaneChange = -Infinity;
   let finale = null;
@@ -609,7 +615,7 @@ export function createRun({
     // humbakiem: tor i wyskok; w finale nic nie robi).
     input(direction) {
       if (state.phase === "whale") ride.input(direction);
-      else if (direction in controls) controls[direction] = true;
+      else if (direction in controls && pending.length < INPUT_QUEUE) pending.push(direction);
     },
     update(dt) {
       if (state.phase === "finale" || state.phase === "whale") {
@@ -626,6 +632,7 @@ export function createRun({
       state.stageDistance += moved;
       state.distance += moved;
       state.invulnerable = Math.max(0, state.invulnerable - dt);
+      while (pending.length && !controls[pending[0]]) controls[pending.shift()] = true;
       const motion = stepOwl(owl, controls, dt);
       controls.left = controls.right = controls.up = controls.down = false;
       for (const type of motion) {

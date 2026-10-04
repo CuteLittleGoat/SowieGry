@@ -487,6 +487,34 @@ test("tryb Nieskończony: autopilot przechodzi dwa okrążenia (8 plansz) bez tr
   assert.equal(run.state.loop, 2);
 });
 
+test("gesty między krokami gry nie przepadają: dwa przesunięcia w prawo przed jednym krokiem — dwie zmiany toru", () => {
+  // Wolne klatki (np. słaby telefon): dwa szybkie gesty mogą przyjść, zanim gra zrobi następny krok.
+  const run = createRun({ seed: 5, safe: true });
+  run.update(STEP);
+  run.input("left");
+  run.update(STEP);
+  assert.equal(run.state.owl.lane, -1);
+  run.input("right");
+  run.input("right");
+  run.update(STEP);
+  assert.equal(run.state.owl.lane, 0, "w jednym kroku najwyżej jedna zmiana w tę samą stronę");
+  run.update(STEP);
+  assert.equal(run.state.owl.lane, 1, "drugi gest w następnym kroku");
+  // Różne kierunki działają w tym samym kroku (tor i skok naraz), a kolejka ma limit — nadmiar przepada.
+  run.input("left");
+  run.input("up");
+  run.update(STEP);
+  assert.equal(run.state.owl.lane, 0);
+  assert.equal(run.state.owl.grounded, false);
+  for (let index = 0; index < 10; index += 1) run.input("left");
+  for (let step = 0; step < 4; step += 1) run.update(STEP);
+  assert.equal(run.state.owl.lane, -1);
+  // Po 4 krokach kolejka jest pusta (zostały tylko 4 gesty), więc kolejny gest działa od razu.
+  run.input("right");
+  run.update(STEP);
+  assert.equal(run.state.owl.lane, 0);
+});
+
 test("bieg: bez ruchu sowa traci życia i bieg się kończy; Tryb Przytulny i tryb bezpieczny nie kończą biegu", () => {
   const idle = createRun({ seed: 5, difficulty: "arcade" });
   for (let time = 0; time < 120 && idle.state.phase === "run"; time += STEP) idle.update(STEP);
