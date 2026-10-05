@@ -2,18 +2,20 @@
 // `sowiegry_gry/szklarnia` — dawna Szklarnia zostaje bez zmian), pętla, przeciąganie roślin z uniesieniem nad palec,
 // zaznaczanie stuknięciem (bez przeciągania), Sowia doniczka, kompostownik, hybrydy, nowe łańcuchy w doniczce,
 // zamówienia sąsiadek (oddanie stuknięciem karty albo przeciągnięciem rośliny na kartę), okno odnawiania pomieszczeń
-// szklarni (stuknięcie portfela), przeszkody Pracu i Amic (stuknięcie przeszkody), komunikaty i haki testowe.
+// szklarni (stuknięcie portfela), przeszkody Pracu i Amic (stuknięcie przeszkody), kózki-wzmacniacze (stuknięcie albo
+// przeciągnięcie), komunikaty i haki testowe.
 import { connectAudioSettings, createAudio } from "../shared/engine/audio.js";
 import { EVENTS, progress } from "../shared/meta/progress.js";
 import { createToasts, openModal } from "../shared/ui/index.js";
 import { COLORS } from "../shared/world/tokens.js";
-import { canMerge, hybridOf, itemName } from "./board.js";
+import { canGrow, canMerge, hybridOf, isGoat, itemName } from "./board.js";
 import {
   BOARD,
   CHAINS,
   COMPOST_LEAVES,
   GAME_ID,
   GAME_SOUNDS,
+  GOATS,
   GREENHOUSE_MUSIC,
   OBSTACLES,
   POT,
@@ -284,8 +286,10 @@ function handleEvents() {
       case "crateOpen": {
         const center = renderer.cellCenter(event.index);
         renderer.popup(`+${event.leaves}`, center.x, center.y - 10, COLORS.zloto, 20);
+        renderer.pop(event.index);
         play("zakup", { volume: 0.8 });
-        hint(`Skrzynia otwarta! +${event.leaves} liści, +${event.stars} ⭐`);
+        play("koza-meee", { volume: 0.6 });
+        hint(`Skrzynia otwarta! W środku ${GOATS[event.goat].name}. +${event.leaves} liści, +${event.stars} ⭐`);
         save({ immediate: true });
         break;
       }
@@ -296,6 +300,74 @@ function handleEvents() {
             ? "Telefon Pracu — połącz rośliny obok niego, żeby go wyłączyć"
             : "Skrzynia Amic — połącz rośliny obok niej, żeby ją otworzyć",
         );
+        break;
+      case "goat": {
+        const info = GOATS[event.goat];
+        renderer.pop(event.index);
+        play("koza-meee", { volume: 0.8 });
+        const neighbor = neighborOf(event.from);
+        toasts.show(`${neighbor?.name || "Sąsiadka"} przysyła kózkę! ${info.name} ${info.text}`, {
+          kind: "reward",
+          key: "kozka",
+          priority: 2,
+        });
+        hint(`${info.name} na półce — ${info.use === "tap" ? "stuknij ją" : "przeciągnij ją"}`);
+        save({ immediate: true });
+        break;
+      }
+      case "goatUsed": {
+        const info = GOATS[event.goat];
+        play("powerup-start", { volume: 0.7 });
+        play("koza-meee", { volume: 0.5, pitch: 1.2 });
+        const done = {
+          skoczek: `połączyła pary roślin (${event.count})`,
+          zjadaczka: `zjadła karteczki Pracu (${event.count})`,
+          dzoker: "pomogła roślinie urosnąć",
+          sprezynka: `podniosła rośliny wokół (${event.count})`,
+          taran: "rozbiła przeszkodę!",
+        }[event.goat];
+        hint(`${info.name} ${done}`);
+        save({ immediate: true });
+        break;
+      }
+      case "goatIdle":
+        play("klik", { pitch: 0.6, volume: 0.5 });
+        hint(
+          {
+            skoczek: "Kózka Skoczek czeka — potrzebne są 2 takie same rośliny",
+            zjadaczka: "Kózka Zjadaczka czeka — w jej rzędzie i kolumnie nie ma karteczek",
+            sprezynka: "Kózka Sprężynka czeka — obok nie ma roślin, które mogą urosnąć",
+          }[event.goat],
+        );
+        break;
+      case "goatHint":
+        play("klik", { pitch: 1.2, volume: 0.6 });
+        hint(
+          event.goat === "taran"
+            ? "Kózka Taran: przeciągnij ją na kanister, skrzynię, telefon albo karteczkę"
+            : "Kózka Dżoker: przeciągnij ją na roślinę (albo roślinę na nią) — roślina urośnie",
+        );
+        break;
+      case "grow":
+        renderer.pop(event.index);
+        break;
+      case "canister":
+        renderer.pop(event.index);
+        play("trafienie-amic", { volume: 0.8 });
+        hint("Amic postawił kanister na półce!");
+        toasts.show(
+          "Kanister Amic stoi na stałe — usunie go tylko Kózka Taran (dostaniesz ją w zamówieniach i skrzyniach)",
+          {
+            kind: "warn",
+            key: "amic-kanister",
+            priority: 2,
+          },
+        );
+        save({ immediate: true });
+        break;
+      case "canisterGone":
+        renderer.pop(event.index);
+        play("rekord", { volume: 0.7 });
         break;
       case "unlock":
         toasts.show(`Nowa roślina w Sowiej doniczce: ${event.name}!`, {
@@ -540,8 +612,20 @@ function finishPress(event, cancelled = false) {
   const index = current.index;
   if (index < 0 || current.moved) return;
   if (game.board.blocks[index]) {
+    // Zaznaczona Kózka Taran stuknięciem przeszkody ją rozbija.
+    if (game.board.cells[selected]?.goat === "taran") moveTo(selected, index);
+    else {
+      game.tapBlock(index);
+      handleEvents();
+      updateHud();
+    }
     selected = -1;
-    game.tapBlock(index);
+    return;
+  }
+  // Kózka bez zaznaczenia: stukana — moc od razu; przeciągana (Dżoker, Taran) — zaznaczenie i podpowiedź.
+  if (selected < 0 && isGoat(game.board.cells[index])) {
+    if (GOATS[game.board.cells[index].goat].use !== "tap") selected = index;
+    game.useGoat(index);
     handleEvents();
     updateHud();
     return;
@@ -593,11 +677,18 @@ function dragView() {
   // Nad kompostownikiem albo kartą zamówienia — bez podświetlenia pola.
   const away = press.compost || press.order >= 0;
   const spot = away ? -1 : dropTarget(press.point);
-  // Na przeszkodę nic nie spada — bez podświetlenia.
-  const target = spot >= 0 && game.board.blocks[spot] ? -1 : spot;
   const source = game.board.cells[press.index];
+  // Na przeszkodę nic nie spada (bez podświetlenia) — poza Kózką Taran, która ją rozbija.
+  const ramming = source?.goat === "taran" && spot >= 0 && Boolean(game.board.blocks[spot]);
+  const target = spot >= 0 && game.board.blocks[spot] && !ramming ? -1 : spot;
   const other = target >= 0 && target !== press.index ? game.board.cells[target] : null;
-  const kind = away ? "compost" : canMerge(source, other) || hybridOf(source, other) ? "merge" : "move";
+  // Kózka Dżoker pasuje do każdej rośliny, która może urosnąć.
+  const joker = (source?.goat === "dzoker" && canGrow(other)) || (other?.goat === "dzoker" && canGrow(source));
+  const kind = away
+    ? "compost"
+    : ramming || joker || canMerge(source, other) || hybridOf(source, other)
+      ? "merge"
+      : "move";
   return { from: press.index, x: press.point.x, y: press.point.y, target: target === press.index ? -1 : target, kind };
 }
 
@@ -701,6 +792,10 @@ window.LaczIHoduj = Object.freeze({
   move: (from, to) => moveTo(from, to).type,
   orders: () => JSON.parse(JSON.stringify(game.state.orders)),
   blocks: () => JSON.parse(JSON.stringify(game.board.blocks)),
+  placeGoat: (index, goat) => {
+    game.board.cells[index] = goat ? { goat } : null;
+    game.state.cells = game.board.cells.map((item) => (item ? { ...item } : null));
+  },
   setBlock: (index, type, hits = 0) => {
     game.board.blocks[index] = type ? { type, hits } : null;
     game.state.blocks = game.board.blocks.map((block) => (block ? { ...block } : null));

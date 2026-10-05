@@ -90,9 +90,28 @@ Po kilku zamówieniach do szklarni zaglądają psotnicy:
   skompostować ani oddać sąsiadce, a na karteczkę nic nie spadnie. Znika, gdy **połączysz rośliny na polu obok**, albo
   gdy **stukniesz ją 3 razy** (odklejasz ją po kawałku).
 - **Skrzynia Amic** 📦 (drewniana, z zielono-czerwonym pasem) — czasem zamiast nasionka z Sowiej doniczki. Zajmuje
-  pole; **2 połączenia obok** ją otwierają, a w środku jest nagroda: **15 liści i 1 gwiazdka** ⭐.
+  pole; **2 połączenia obok** ją otwierają, a w środku jest **kózka-pomocnica**, 5 liści i 1 gwiazdka ⭐.
+- **Kanister Amic** ⛽ (czerwony) — po kilkunastu zamówieniach Amic stawia go na półce. Stoi na stałe: nie znika od
+  połączeń obok, usuwa go tylko **Kózka Taran**.
 
 Stuknięcie telefonu albo skrzyni podpowiada, co zrobić.
+
+## Kózki-pomocnice
+
+Kózki wychodzą ze **skrzyń Amic**, a co kilka zamówień **sąsiadka przysyła kózkę** w podziękowaniu. Każda kózka ma
+chustkę w swoim kolorze i znaczek mocy:
+
+| Kózka                  | Jak użyć                                | Co robi                                                                      |
+| ---------------------- | --------------------------------------- | ---------------------------------------------------------------------------- |
+| 🔵 **Kózka Skoczek**   | stuknij ją                              | skacze po półkach i łączy do 3 par takich samych roślin                      |
+| 🟠 **Kózka Zjadaczka** | stuknij ją                              | zjada karteczki Pracu w swoim rzędzie i kolumnie                             |
+| 🟣 **Kózka Dżoker**    | przeciągnij na roślinę (albo odwrotnie) | pasuje do każdej rośliny — roślina rośnie o poziom (jak po połączeniu)       |
+| 🟡 **Kózka Sprężynka** | stuknij ją                              | podnosi o 1 poziom rośliny na 8 polach wokół siebie                          |
+| 🔴 **Kózka Taran**     | przeciągnij na przeszkodę               | rozbija kanister Amic, otwiera skrzynię, wyłącza telefon, zdejmuje karteczkę |
+
+Dżokera i Tarana możesz też **stuknąć** (zaznaczą się), a potem stuknąć roślinę albo przeszkodę. Gdy kózka nie ma nic
+do zrobienia (np. Skoczek bez par), czeka na półce. Jeśli stoi kanister, a nie masz Tarana, następna kózka na pewno
+będzie Taranem.
 
 ## Sowia doniczka
 
@@ -118,7 +137,7 @@ Dzięki kompostowi plansza nigdy nie zablokuje się na dobre — zawsze możesz 
 
 W szklarni gra spokojna muzyka, a każdy ruch ma swój dźwięk: podniesienie rośliny, odstawienie na półkę, połączenie
 (im wyższy poziom, tym wyższy ton; szczyt łańcucha i hybryda dostają fanfarę), dzwonek telefonu Pracu, trafienia
-w przeszkody i otwarcie skrzyni, nasionko z Sowiej doniczki i kompost. Dźwięk
+w przeszkody, otwarcie skrzyni, meczenie kózek i ich moce, nasionko z Sowiej doniczki i kompost. Dźwięk
 rusza po pierwszym dotknięciu ekranu. Głośność muzyki i efektów ustawisz w menu głównym (zakładka **Sowa** →
 **Ustawienia**).
 
@@ -142,5 +161,5 @@ Na komputerze plansza stoi na środku, a rośliny przesuwa się myszą tak samo 
 
 ## Co dalej
 
-Gra wciąż rośnie. W kolejnych krokach dojdą: kanister Amic, kózki-pomocnice, Basen Humbaka z rekordem,
+Gra wciąż rośnie. W kolejnych krokach dojdą: Basen Humbaka z rekordem,
 pakiet startowy z postępu dawnej Szklarni i samouczek (z przyciskiem do jego powtórzenia).

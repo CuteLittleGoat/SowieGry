@@ -1,21 +1,31 @@
 // Łącz i Hoduj — plansza (czysta logika, bez DOM): pola, przenoszenie, łączenie, zamiana, wolne pola, przeszkody
 // i wyjścia z zapchanej planszy. Przedmiot: { chain, level } (poziom od 1), puste pole: null. Przeszkody (krok 8.2)
 // leżą w osobnej warstwie `blocks` (ta sama długość): null albo { type, hits } — karteczka Pracu („note”) zasłania
-// pole razem z przedmiotem, telefon Pracu („phone”) i skrzynia Amic („crate”) zajmują puste pole.
-import { CHAINS, HYBRIDS } from "./config.js";
+// pole razem z przedmiotem, telefon Pracu („phone”), skrzynia Amic („crate”) i kanister Amic („canister”) zajmują
+// puste pole. Kózka (krok 8.2) to przedmiot { goat } — nie łączy się, można ją przenosić i używać.
+import { CHAINS, GOATS, HYBRIDS } from "./config.js";
 
 /** Rodzaje przeszkód: `covers` — leży na polu (przedmiot pod spodem zostaje), inaczej zajmuje puste pole. */
 export const BLOCKS = Object.freeze({
   note: Object.freeze({ covers: true }),
   phone: Object.freeze({ covers: false }),
   crate: Object.freeze({ covers: false }),
+  canister: Object.freeze({ covers: false }),
 });
+
+/** Czy przedmiot to kózka. */
+export const isGoat = (item) => Boolean(item && GOATS[item.goat]);
+
+/** Czy roślina może urosnąć o poziom (Dżoker, Sprężynka, Skoczek): nie hybryda i poniżej szczytu łańcucha. */
+export const canGrow = (item) =>
+  Boolean(item?.chain && CHAINS[item.chain] && !CHAINS[item.chain].hybrid && item.level < maxLevel(item.chain));
 
 /** Najwyższy poziom łańcucha. */
 export const maxLevel = (chain) => CHAINS[chain]?.levels.length ?? 0;
 
-/** Nazwa przedmiotu, np. „Kiełek”. */
-export const itemName = (item) => (item ? (CHAINS[item.chain]?.levels[item.level - 1] ?? "") : "");
+/** Nazwa przedmiotu, np. „Kiełek” albo „Kózka Skoczek”. */
+export const itemName = (item) =>
+  item ? (GOATS[item.goat]?.name ?? CHAINS[item.chain]?.levels[item.level - 1] ?? "") : "";
 
 /**
  * Nowa plansza `cols × rows` (opcjonalnie z polami i przeszkodami z zapisu — niepoprawne przedmioty i przeszkody
@@ -25,6 +35,7 @@ export function createBoard({ cols, rows, cells = null, blocks = null }) {
   const size = cols * rows;
   const list = Array.from({ length: size }, (_, index) => {
     const item = cells?.[index];
+    if (isGoat(item)) return { goat: item.goat };
     return item && CHAINS[item.chain] && item.level >= 1 && item.level <= maxLevel(item.chain)
       ? { chain: item.chain, level: Math.floor(item.level) }
       : null;
@@ -68,10 +79,10 @@ export function neighbors(board, index) {
 
 /** Czy dwa przedmioty się połączą (ten sam łańcuch i poziom, poniżej najwyższego). */
 export const canMerge = (a, b) =>
-  Boolean(a && b && a.chain === b.chain && a.level === b.level && a.level < maxLevel(a.chain));
+  Boolean(a && b && a.chain && a.chain === b.chain && a.level === b.level && a.level < maxLevel(a.chain));
 
 /** Czy przedmiot ma najwyższy poziom swojego łańcucha (hybryda — zawsze). */
-export const isTop = (item) => Boolean(item && item.level >= maxLevel(item.chain));
+export const isTop = (item) => Boolean(item?.chain && item.level >= maxLevel(item.chain));
 
 /**
  * Hybryda z dwóch różnych roślin najwyższego poziomu (kolejność dowolna) → identyfikator z `HYBRIDS` albo null.
@@ -164,7 +175,7 @@ export function mergeablePairs(board) {
   const counts = new Map();
   const tops = new Set();
   for (const [index, item] of board.cells.entries()) {
-    if (!item || board.blocks?.[index]) continue;
+    if (!item || isGoat(item) || board.blocks?.[index]) continue;
     if (isTop(item)) {
       tops.add(item.chain);
       continue;
@@ -196,7 +207,9 @@ export function exits(board) {
 
 /** Kopia pól do zapisu. */
 export const serializeCells = (board) =>
-  board.cells.map((item) => (item ? { chain: item.chain, level: item.level } : null));
+  board.cells.map((item) =>
+    isGoat(item) ? { goat: item.goat } : item ? { chain: item.chain, level: item.level } : null,
+  );
 
 /** Kopia przeszkód do zapisu. */
 export const serializeBlocks = (board) =>

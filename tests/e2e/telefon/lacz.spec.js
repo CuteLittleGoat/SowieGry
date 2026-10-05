@@ -1,7 +1,8 @@
 // Łącz i Hoduj (nowa Sowia Szklarnia — prototyp, Analiza 3, E8 kroki 8.0–8.1) na telefonach: przeciąganie
 // z uniesieniem nad palec i łączenie, zaznaczanie stuknięciem, Sowia doniczka, kompostownik (przeciągnięcie
 // i przycisk), hybrydy i nowe łańcuchy w doniczce, zamówienia sąsiadek (stuknięcie karty, przeciągnięcie rośliny na
-// kartę), odnawianie pomieszczeń szklarni (okno z portfela), przeszkody Pracu i Amic, pełna plansza, zapis w osobnym polu `preview` (emulator), plansza 7 × 9 z polami ≥ 44 px na najmniejszym
+// kartę), odnawianie pomieszczeń szklarni (okno z portfela), przeszkody Pracu i Amic, kózki-wzmacniacze, pełna
+// plansza, zapis w osobnym polu `preview` (emulator), plansza 7 × 9 z polami ≥ 44 px na najmniejszym
 // telefonie i telefon poziomo (plansza obrócona do 9 × 7, przyciski z boku).
 const { test, expect, waitForCloud, watchErrors } = require("../fixtures");
 const { cloudUrl, readDoc, seedDoc, uniqueProject } = require("../emulator");
@@ -79,6 +80,8 @@ test("Łącz i Hoduj: przeciągnięcie nasionka na nasionko — kiełek i liści
 test("Łącz i Hoduj: Sowia doniczka, kompostownik (przeciągnięcie i przycisk), pełne półki", async ({ page }) => {
   const errors = watchErrors(page);
   await openGame(page);
+  // Ładowanie doniczki wstrzymane — ładunek nie wraca w trakcie wolnego testu.
+  await game(page, "hold", true);
   const before = (await cells(page)).filter(Boolean).length;
   await page.locator("[data-pot]").click();
   await expect(page.locator("[data-charges]")).toHaveText("11/12");
@@ -239,7 +242,7 @@ test("Łącz i Hoduj: odnawianie pomieszczeń — okno z portfela, etapy za gwia
   expect(errors).toEqual([]);
 });
 
-test("Łącz i Hoduj: karteczka Pracu (roślina pod nią stoi, 3 stuknięcia ją odklejają), skrzynia Amic po 2 połączeniach obok", async ({
+test("Łącz i Hoduj: karteczka Pracu (roślina pod nią stoi, 3 stuknięcia ją odklejają), skrzynia Amic po 2 połączeniach obok (kózka w środku)", async ({
   page,
 }) => {
   const errors = watchErrors(page);
@@ -262,12 +265,52 @@ test("Łącz i Hoduj: karteczka Pracu (roślina pod nią stoi, 3 stuknięcia ją
   await drag(page, 30, 31);
   await expect(page.locator("[data-hint]")).toHaveText("Skrzynia Amic: jeszcze 1 połączenie obok");
   await drag(page, 38, 31);
-  await expect(page.locator("[data-hint]")).toHaveText("Skrzynia otwarta! +15 liści, +1 ⭐");
+  await expect(page.locator("[data-hint]")).toHaveText(/^Skrzynia otwarta! W środku Kózka .+\. \+5 liści, \+1 ⭐$/);
   board = await cells(page);
   expect(board[31]).toEqual({ chain: "monstera", level: 3 });
   expect((await game(page, "blocks"))[32]).toBeNull();
+  expect(board[32].goat).toBeTruthy();
   await expect(page.locator("[data-stars]")).toHaveText("1");
-  await expect(page.locator("[data-leaves]")).toHaveText("19");
+  await expect(page.locator("[data-leaves]")).toHaveText("9");
+  expect(errors).toEqual([]);
+});
+
+test("Łącz i Hoduj: kózki — Skoczek stuknięciem łączy pary, Dżoker przeciągnięty na roślinę, Taran rozbija kanister", async ({
+  page,
+}) => {
+  const errors = watchErrors(page);
+  await openGame(page);
+  // Skoczek: na starcie są pary nasionek (30, 31) i kiełków (38, 39) — stuknięcie łączy obie.
+  await game(page, "placeGoat", 0, "skoczek");
+  let point = await cellPoint(page, 0);
+  await page.mouse.click(point.x, point.y);
+  await expect(page.locator("[data-hint]")).toHaveText("Kózka Skoczek połączyła pary roślin (2)");
+  let board = await cells(page);
+  expect(board[0]).toBeNull();
+  expect(board.filter((item) => item?.level === 3)).toHaveLength(1);
+  // Dżoker przeciągnięty na Pileę (poziom 3) — Pilea rośnie do poziomu 4.
+  await game(page, "placeGoat", 49, "dzoker");
+  await game(page, "place", 50, 3, "pilea");
+  await drag(page, 49, 50);
+  await expect(page.locator("[data-hint]")).toHaveText("Kózka Dżoker pomogła roślinie urosnąć");
+  board = await cells(page);
+  expect(board[50]).toEqual({ chain: "pilea", level: 4 });
+  expect(board[49]).toBeNull();
+  // Taran: stuknięcie zaznacza go z podpowiedzią, stuknięcie kanistra go rozbija.
+  await game(page, "placeGoat", 56, "taran");
+  await game(page, "setBlock", 57, "canister");
+  point = await cellPoint(page, 56);
+  await page.mouse.click(point.x, point.y);
+  await expect(page.locator("[data-hint]")).toHaveText(
+    "Kózka Taran: przeciągnij ją na kanister, skrzynię, telefon albo karteczkę",
+  );
+  expect(await game(page, "selected")).toBe(56);
+  point = await cellPoint(page, 57);
+  await page.mouse.click(point.x, point.y);
+  await expect(page.locator("[data-hint]")).toHaveText("Kózka Taran rozbiła przeszkodę!");
+  expect((await game(page, "blocks"))[57]).toBeNull();
+  expect((await cells(page))[56]).toBeNull();
+  expect((await game(page, "state")).stats.goats).toBe(3);
   expect(errors).toEqual([]);
 });
 

@@ -215,7 +215,9 @@ export const PERKS = Object.freeze({
 // zamówień (gdy go nie ma); co `ringEvery` ruchów dzwoni i przykleja karteczkę na pole w promieniu `reach` (najpierw
 // pola z roślinami); karteczka znika po połączeniu obok albo po `noteTaps` stuknięciach; telefon — po `phoneHits`
 // połączeniach obok. Amic: od `crateFrom` zamówień doniczka z szansą `crateChance` kładzie skrzynię (najwyżej
-// `maxCrates` naraz); `crateHits` połączeń obok ją otwiera — w środku liście i gwiazdki.
+// `maxCrates` naraz); `crateHits` połączeń obok ją otwiera — w środku kózka (E8c2), liście i gwiazdki. Od
+// `canisterFrom` zamówień i potem co `canisterEvery` (gdy go nie ma) Amic stawia kanister — nieruchomy, usuwa go tylko
+// Kózka Taran.
 export const OBSTACLES = Object.freeze({
   phoneFrom: 4,
   phoneEvery: 4,
@@ -227,9 +229,55 @@ export const OBSTACLES = Object.freeze({
   crateChance: 0.06,
   maxCrates: 2,
   crateHits: 2,
-  crateLeaves: 15,
+  crateLeaves: 5,
   crateStars: 1,
+  canisterFrom: 8,
+  canisterEvery: 6,
 });
+
+// Kózki-wzmacniacze (krok 8.2, E8c2): przedmioty na planszy `{ goat }`. `use` — "tap" (stuknięcie uruchamia moc)
+// albo "drag" (przeciągnięcie na roślinę lub przeszkodę); `color` — chustka; `weight` — szansa przy losowaniu.
+export const GOATS = Object.freeze({
+  skoczek: Object.freeze({
+    name: "Kózka Skoczek",
+    color: "#4d9de0",
+    use: "tap",
+    weight: 3,
+    text: "skacze po półkach i łączy do 3 par takich samych roślin",
+  }),
+  zjadaczka: Object.freeze({
+    name: "Kózka Zjadaczka",
+    color: "#ff9d4d",
+    use: "tap",
+    weight: 2,
+    text: "zjada karteczki Pracu w swoim rzędzie i kolumnie",
+  }),
+  dzoker: Object.freeze({
+    name: "Kózka Dżoker",
+    color: "#9b6ddb",
+    use: "drag",
+    weight: 3,
+    text: "pasuje do każdej rośliny — połącz ją z dowolną, a roślina urośnie",
+  }),
+  sprezynka: Object.freeze({
+    name: "Kózka Sprężynka",
+    color: "#f4c542",
+    use: "tap",
+    weight: 2,
+    text: "podskakuje i podnosi o 1 poziom rośliny wokół siebie",
+  }),
+  taran: Object.freeze({
+    name: "Kózka Taran",
+    color: "#d9303e",
+    use: "drag",
+    weight: 1,
+    text: "przeciągnij ją na przeszkodę — usuwa kanister Amic, skrzynię, telefon albo karteczkę",
+  }),
+});
+
+// Kózki z zamówień: po zamówieniu, gdy `stats.orders % orderEvery === orderAt` (2., 6., 10.…); Skoczek łączy najwyżej
+// `jumpPairs` par.
+export const GOAT_RULES = Object.freeze({ orderEvery: 4, orderAt: 2, jumpPairs: 3 });
 
 // Dźwięk (uwaga właściciela L1): efekty wczytywane po pierwszym dotknięciu (tylko używane) i motyw szklarni.
 export const GAME_SOUNDS = Object.freeze([
@@ -243,6 +291,8 @@ export const GAME_SOUNDS = Object.freeze([
   "trafienie-pracu",
   "trafienie-amic",
   "zakup",
+  "koza-meee",
+  "powerup-start",
 ]);
 export const GREENHOUSE_MUSIC = "szklarnia";
 

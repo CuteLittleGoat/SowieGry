@@ -269,10 +269,37 @@ export function createBoardRenderer({ canvas, cols, rows }) {
     badge(cx, cy, s, String(OBSTACLES.crateHits - hits));
   }
 
+  // Kanister Amic: czerwony kanister z rączką, korkiem i zielonym pasem; nieruchomy (usuwa go tylko Kózka Taran).
+  function canister(cx, cy, s) {
+    const w = s * 0.52;
+    const h = s * 0.64;
+    const x = cx - w / 2;
+    const y = cy - h / 2 + s * 0.04;
+    context.fillStyle = "rgba(59, 47, 74, 0.18)";
+    roundRect(x + 2, y + 3, w, h, s * 0.08);
+    context.fillStyle = COLORS.amicCzerwony;
+    roundRect(x, y, w, h, s * 0.08);
+    context.fillStyle = "#a8242f";
+    roundRect(x + w * 0.12, y - s * 0.06, w * 0.42, s * 0.1, s * 0.04);
+    context.fillStyle = COLORS.kontur;
+    roundRect(x + w * 0.66, y - s * 0.08, w * 0.22, s * 0.1, s * 0.02);
+    context.fillStyle = COLORS.amicZielony;
+    context.fillRect(x, y + h * 0.42, w, h * 0.16);
+    context.strokeStyle = "rgba(255, 255, 255, 0.5)";
+    context.lineWidth = Math.max(1, s * 0.03);
+    context.beginPath();
+    context.moveTo(x + w * 0.2, y + h * 0.2);
+    context.lineTo(x + w * 0.8, y + h * 0.85);
+    context.moveTo(x + w * 0.8, y + h * 0.2);
+    context.lineTo(x + w * 0.2, y + h * 0.85);
+    context.stroke();
+  }
+
   function block(target, index, cx, cy, s, time, ringing) {
     if (target.type === "note") note(cx, cy, s, index, target.hits);
     else if (target.type === "phone") phone(cx, cy, s, time, target.hits, ringing);
     else if (target.type === "crate") crate(cx, cy, s, target.hits);
+    else if (target.type === "canister") canister(cx, cy, s);
   }
 
   function effects(dt) {

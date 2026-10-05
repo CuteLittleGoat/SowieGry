@@ -1,6 +1,6 @@
 // Łącz i Hoduj (nowa Sowia Szklarnia, Analiza 3, E8 — kroki 8.0–8.1): plansza 7 × 9, łączenie w łańcuchach,
 // hybrydy, Sowia doniczka, kompostownik, zamówienia sąsiadek, odnawianie pomieszczeń z ułatwieniami, przeszkody
-// Pracu i Amic, zapis stanu i to, że plansza nigdy nie blokuje się bez wyjścia.
+// Pracu i Amic, kózki-wzmacniacze, zapis stanu i to, że plansza nigdy nie blokuje się bez wyjścia.
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
@@ -25,6 +25,8 @@ import {
   COMPOST_LEAVES,
   HYBRIDS,
   MERGE_LEAVES,
+  GOAT_RULES,
+  GOATS,
   NEIGHBORS,
   OBSTACLES,
   ORDERS,
@@ -612,7 +614,143 @@ test("Pracu i Amic: telefon po zamówieniach dzwoni co 10 ruchów, połączenia 
   const stars = amic.state.stars;
   amic.move(32, 31);
   const open = amic.takeEvents().find((event) => event.type === "crateOpen");
-  assert.deepEqual(open, { type: "crateOpen", index: 30, leaves: OBSTACLES.crateLeaves, stars: OBSTACLES.crateStars });
+  assert.deepEqual(open, {
+    type: "crateOpen",
+    index: 30,
+    goat: "skoczek",
+    leaves: OBSTACLES.crateLeaves,
+    stars: OBSTACLES.crateStars,
+  });
   assert.equal(amic.state.stars, stars + OBSTACLES.crateStars);
   assert.equal(amic.state.blocks[30], null);
+  assert.deepEqual(amic.state.cells[30], { goat: "skoczek" }, "w skrzyni kózka");
+});
+
+test("kózki: przedmioty na planszy (nie łączą się, zapis), Taran na przeszkodzie, Dżoker z rośliną", () => {
+  assert.deepEqual(Object.keys(GOATS), ["skoczek", "zjadaczka", "dzoker", "sprezynka", "taran"]);
+  const board = createBoard({ ...BOARD, cells: [{ goat: "skoczek" }, { goat: "skoczek" }, { goat: "koza-x" }] });
+  assert.deepEqual(board.cells.slice(0, 3), [{ goat: "skoczek" }, { goat: "skoczek" }, null]);
+  assert.equal(itemName(board.cells[0]), "Kózka Skoczek");
+  assert.equal(mergeablePairs(board), 0, "kózki się nie łączą");
+  assert.equal(moveItem(board, 0, 1).type, "swap");
+  const game = createGame({ state: defaultState(0), random: queue(0) });
+  game.board.cells.fill(null);
+  // Taran na kanister: kanister znika, kózka zużyta.
+  game.board.cells[0] = { goat: "taran" };
+  game.board.blocks[5] = { type: "canister", hits: 0 };
+  assert.deepEqual(game.move(0, 5), { type: "goat" });
+  assert.equal(game.board.blocks[5], null);
+  assert.equal(game.board.cells[0], null);
+  assert.deepEqual(
+    game.takeEvents().map((event) => event.type),
+    ["canisterGone", "goatUsed"],
+  );
+  assert.equal(game.state.stats.goats, 1);
+  // Taran na skrzynię: skrzynia się otwiera (kózka w środku).
+  game.board.cells[1] = { goat: "taran" };
+  game.board.blocks[8] = { type: "crate", hits: 1 };
+  game.move(1, 8);
+  assert.ok(game.board.cells[8]?.goat, "z otwartej skrzyni wychodzi kózka");
+  // Bez przeszkody Taran po prostu się przenosi.
+  game.board.cells[2] = { goat: "taran" };
+  assert.equal(game.move(2, 3).type, "move");
+  // Dżoker na roślinę i roślina na Dżokera: roślina rośnie, liczy się jak połączenie.
+  game.board.cells[10] = { goat: "dzoker" };
+  game.board.cells[11] = { chain: "pilea", level: 2 };
+  const merges = game.state.stats.merges;
+  game.takeEvents();
+  game.move(10, 11);
+  assert.deepEqual(game.board.cells[11], { chain: "pilea", level: 3 });
+  assert.equal(game.board.cells[10], null);
+  assert.equal(game.state.stats.merges, merges + 1);
+  assert.ok(game.takeEvents().some((event) => event.type === "merge" && event.leaves === MERGE_LEAVES[3]));
+  game.board.cells[20] = { goat: "dzoker" };
+  game.board.cells[21] = { chain: "kaktus", level: 4 };
+  game.move(21, 20);
+  assert.deepEqual(game.board.cells[20], { chain: "kaktus", level: 5 });
+  // Dżoker ze szczytem łańcucha — tylko zamiana.
+  game.board.cells[30] = { goat: "dzoker" };
+  game.board.cells[31] = { chain: "kaktus", level: 5 };
+  assert.equal(game.move(30, 31).type, "swap");
+  // Zapis zachowuje kózki.
+  assert.deepEqual(loadState(JSON.parse(JSON.stringify(game.state)), 0).cells[31], { goat: "dzoker" });
+});
+
+test("kózki stukane: Skoczek łączy pary, Zjadaczka zjada karteczki w rzędzie i kolumnie, Sprężynka podnosi rośliny wokół", () => {
+  const game = createGame({ state: defaultState(0), random: queue(0) });
+  game.board.cells.fill(null);
+  // Skoczek: trzy pary (z czterech) — najwyżej `jumpPairs`.
+  game.board.cells[0] = { goat: "skoczek" };
+  for (const index of [10, 11, 20, 21, 30, 31, 40, 41]) game.board.cells[index] = seed(1);
+  assert.deepEqual(game.useGoat(0), { goat: "skoczek", count: GOAT_RULES.jumpPairs });
+  assert.equal(game.board.cells.filter((item) => item?.level === 2).length, 3);
+  assert.equal(game.board.cells[0], null);
+  // Bez par Skoczek czeka (nie znika).
+  game.board.cells.fill(null);
+  game.board.cells[0] = { goat: "skoczek" };
+  game.takeEvents();
+  assert.equal(game.useGoat(0), null);
+  assert.deepEqual(game.takeEvents(), [{ type: "goatIdle", index: 0, goat: "skoczek" }]);
+  assert.deepEqual(game.board.cells[0], { goat: "skoczek" });
+  // Zjadaczka na polu 24 (kolumna 3, rząd 3): karteczki w rzędzie 3 i kolumnie 3 znikają, inne zostają.
+  game.board.cells[24] = { goat: "zjadaczka" };
+  for (const index of [21, 27, 3, 59, 0 + 8]) game.board.blocks[index] = { type: "note", hits: 0 };
+  assert.deepEqual(game.useGoat(24), { goat: "zjadaczka", count: 4 });
+  assert.deepEqual(game.board.blocks[8], { type: "note", hits: 0 });
+  assert.equal(game.board.blocks[21], null);
+  // Sprężynka na polu 32: rośliny wokół rosną (hybryda, szczyt i roślina pod karteczką — nie).
+  game.board.cells[32] = { goat: "sprezynka" };
+  game.board.cells[24] = seed(1);
+  game.board.cells[25] = { chain: "pilea", level: 3 };
+  game.board.cells[31] = { chain: "monpilea", level: 1 };
+  game.board.cells[33] = seed(5);
+  game.board.cells[39] = seed(2);
+  game.board.blocks[39] = { type: "note", hits: 0 };
+  assert.deepEqual(game.useGoat(32), { goat: "sprezynka", count: 2 });
+  assert.deepEqual(game.board.cells[24], seed(2));
+  assert.deepEqual(game.board.cells[25], { chain: "pilea", level: 4 });
+  assert.deepEqual(game.board.cells[39], seed(2));
+  // Dżoker stuknięty — tylko podpowiedź.
+  game.board.cells[50] = { goat: "dzoker" };
+  game.takeEvents();
+  assert.equal(game.useGoat(50), null);
+  assert.deepEqual(game.takeEvents(), [{ type: "goatHint", index: 50, goat: "dzoker" }]);
+});
+
+test("kózki z zamówień, kanister Amic i Taran zawsze, gdy stoi kanister", () => {
+  const game = createGame({ state: defaultState(0), random: queue(0) });
+  game.board.cells.fill(null);
+  game.state.orders[0] = { neighbor: "puszczyk", chain: "monstera", level: 1, count: 1 };
+  game.board.cells[62] = seed(1);
+  game.state.stats.orders = GOAT_RULES.orderAt - 1;
+  game.deliver(0);
+  const goat = game.takeEvents().find((event) => event.type === "goat");
+  assert.equal(goat.from, "puszczyk");
+  assert.deepEqual(game.board.cells[goat.index], { goat: goat.goat });
+  // Kanister po 8. zamówieniu; kolejna kózka to Taran (bo stoi kanister, a Tarana nie ma).
+  game.board.cells.fill(null);
+  game.state.orders[0] = { neighbor: "puszczyk", chain: "monstera", level: 1, count: 1 };
+  game.board.cells[62] = seed(1);
+  game.state.stats.orders = OBSTACLES.canisterFrom - 1;
+  game.deliver(0);
+  const canister = game.takeEvents().find((event) => event.type === "canister");
+  assert.deepEqual(game.board.blocks[canister.index], { type: "canister", hits: 0 });
+  game.state.orders[0] = { neighbor: "puszczyk", chain: "monstera", level: 1, count: 1 };
+  game.board.cells[61] = seed(1);
+  game.state.stats.orders = GOAT_RULES.orderEvery + GOAT_RULES.orderAt - 1;
+  game.deliver(0);
+  assert.equal(game.takeEvents().find((event) => event.type === "goat").goat, "taran");
+  // Kanister nie daje wyjścia i nie znika od połączeń obok.
+  const board = createBoard(BOARD);
+  board.blocks[0] = { type: "canister", hits: 0 };
+  assert.equal(exits(board).empty, 62);
+  const amic = createGame({ state: defaultState(0), random: queue(0) });
+  amic.board.cells.fill(null);
+  amic.board.blocks[0] = { type: "canister", hits: 0 };
+  for (let round = 0; round < 3; round += 1) {
+    amic.board.cells[1] = seed(1);
+    amic.board.cells[2] = seed(1);
+    amic.move(2, 1);
+  }
+  assert.deepEqual(amic.board.blocks[0], { type: "canister", hits: 0 });
 });

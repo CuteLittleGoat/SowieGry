@@ -1,10 +1,12 @@
 // Łącz i Hoduj — stan gry (wersja 2) i silnik (czysta logika, bez DOM): Sowia doniczka z ładunkami, ruchy
 // z łączeniem, kompostownik, zamówienia sowich sąsiadek, liście monstery, gwiazdki odnowy, odnawianie pomieszczeń
-// szklarni z ułatwieniami, przeszkody Pracu i Amic, statystyki i zdarzenia dla interfejsu.
+// szklarni z ułatwieniami, przeszkody Pracu i Amic, kózki-wzmacniacze, statystyki i zdarzenia dla interfejsu.
 import {
   BOARD,
   CHAINS,
   COMPOST_LEAVES,
+  GOAT_RULES,
+  GOATS,
   HYBRIDS,
   MERGE_LEAVES,
   NEIGHBORS,
@@ -17,9 +19,11 @@ import {
   START_ITEMS,
 } from "./config.js";
 import {
+  canGrow,
   cellPosition,
   createBoard,
   emptyCells,
+  isGoat,
   maxLevel,
   moveItem,
   neighbors,
@@ -220,7 +224,7 @@ export function defaultState(now = Date.now(), random = Math.random) {
     renovation: 0,
     pot: { charges: POT.max, progress: 0 },
     orders: fillOrders(null, { orders: 0, merges: 0 }, random),
-    stats: { merges: 0, spawns: 0, composted: 0, best: 2, moves: 0, hybrids: 0, orders: 0 },
+    stats: { merges: 0, spawns: 0, composted: 0, best: 2, moves: 0, hybrids: 0, orders: 0, goats: 0 },
   };
 }
 
@@ -255,13 +259,15 @@ export function loadState(raw, now = Date.now(), random = Math.random) {
 
 /**
  * createGame({ state, random }) → { state, board, update(dt), tapPot(), move(from, to), compost(index),
- * orderCells(slot, prefer), tapBlock(index), deliver(slot, prefer), renovate(), potMax(), takeEvents() }. Zdarzenia: spawn { index, item }, potEmpty,
+ * orderCells(slot, prefer), tapBlock(index), useGoat(index), deliver(slot, prefer), renovate(), potMax(), takeEvents() }. Zdarzenia: spawn { index, item }, potEmpty,
  * boardFull, move { from, to }, swap { from, to }, merge { from, to, item, leaves, top },
  * hybrid { from, to, item, leaves }, unlock { chain, name }, compost { index, item, leaves },
  * order { slot, order, cells, leaves, stars }, newOrder { slot, order }, orderMissing { slot, order },
  * renovate { room, step, name, roomDone }, renovateMissing { room, need }; przeszkody: crate { index },
  * phone { index }, note { index, from }, noteTap { index, left }, noteGone { index }, blockHit { index, block, left },
- * phoneGone { index }, crateOpen { index, leaves, stars }, blockInfo { index, block }.
+ * phoneGone { index }, crateOpen { index, goat, leaves, stars }, blockInfo { index, block }, canister { index },
+ * canisterGone { index }; kózki: goat { index, goat, from }, goatUsed { index, goat, count }, goatIdle { index, goat },
+ * goatHint { index, goat }, grow { index, item }.
  */
 export function createGame({ state = defaultState(), random = Math.random } = {}) {
   const board = createBoard({ ...BOARD, cells: state.cells, blocks: state.blocks });
@@ -307,7 +313,7 @@ export function createGame({ state = defaultState(), random = Math.random } = {}
     return index;
   }
 
-  // Połączenie na polu `index`: karteczki obok znikają, telefon i skrzynie obok dostają uderzenie.
+  // Połączenie na polu `index`: karteczki obok znikają, telefon i skrzynie obok dostają uderzenie (kanister — nic).
   function hitAround(index) {
     for (const other of neighbors(board, index)) {
       const block = board.blocks[other];
@@ -317,6 +323,8 @@ export function createGame({ state = defaultState(), random = Math.random } = {}
         emit("noteGone", { index: other });
         continue;
       }
+      // Kanister Amic nie reaguje na połączenia (usuwa go tylko Kózka Taran).
+      if (block.type === "canister") continue;
       block.hits += 1;
       const need = block.type === "phone" ? OBSTACLES.phoneHits : OBSTACLES.crateHits;
       if (block.hits < need) {
@@ -327,11 +335,171 @@ export function createGame({ state = defaultState(), random = Math.random } = {}
       if (block.type === "phone") {
         state.phoneMoves = 0;
         emit("phoneGone", { index: other });
-      } else {
-        state.leaves += OBSTACLES.crateLeaves;
-        state.stars += OBSTACLES.crateStars;
-        emit("crateOpen", { index: other, leaves: OBSTACLES.crateLeaves, stars: OBSTACLES.crateStars });
-      }
+      } else openCrate(other);
+    }
+  }
+
+  // Otwarta skrzynia Amic: w jej miejscu kózka, do tego liście i gwiazdki.
+  function openCrate(index) {
+    board.blocks[index] = null;
+    const goat = pickGoat();
+    board.cells[index] = { goat };
+    state.leaves += OBSTACLES.crateLeaves;
+    state.stars += OBSTACLES.crateStars;
+    emit("crateOpen", { index, goat, leaves: OBSTACLES.crateLeaves, stars: OBSTACLES.crateStars });
+  }
+
+  // ---------- Kózki ----------
+
+  /** Losowanie kózki: przy kanistrze bez Tarana na planszy — Taran, inaczej według wag `GOATS`. */
+  function pickGoat() {
+    const ram = board.cells.some((item) => item?.goat === "taran");
+    if (count("canister") && !ram) return "taran";
+    const list = Object.entries(GOATS);
+    let roll = random() * list.reduce((sum, [, goat]) => sum + goat.weight, 0);
+    for (const [id, goat] of list) {
+      roll -= goat.weight;
+      if (roll < 0) return id;
+    }
+    return list.at(-1)[0];
+  }
+
+  // Roślina, która może urosnąć o poziom (nie hybryda, poniżej szczytu, bez przeszkody).
+  const growable = (index) => canGrow(board.cells[index]) && !board.blocks[index];
+
+  // Połączenie zaliczone graczowi: liście, statystyki, zdarzenie i przeszkody obok.
+  function scoreMerge(from, to, item) {
+    const leaves = MERGE_LEAVES[item.level] || 0;
+    state.leaves += leaves;
+    state.stats.merges += 1;
+    state.stats.best = Math.max(state.stats.best, item.level);
+    emit("merge", { from, to, item, leaves, top: item.level >= maxLevel(item.chain) });
+    hitAround(to);
+  }
+
+  function used(index, goat, amount = 1) {
+    state.stats.goats += 1;
+    emit("goatUsed", { index, goat, count: amount });
+  }
+
+  // Kózka Taran na przeszkodzie: przeszkoda znika (skrzynia się otwiera).
+  function ram(index) {
+    const block = board.blocks[index];
+    if (block.type === "crate") {
+      openCrate(index);
+      return;
+    }
+    board.blocks[index] = null;
+    if (block.type === "note") emit("noteGone", { index });
+    else if (block.type === "phone") {
+      state.phoneMoves = 0;
+      emit("phoneGone", { index });
+    } else emit("canisterGone", { index });
+  }
+
+  // Przeciągnięcie z kózką: Taran na przeszkodę, Dżoker na roślinę albo roślina na Dżokera → { type: "goat" }.
+  function goatMove(from, to) {
+    const source = board.cells[from];
+    const target = board.cells[to];
+    if (board.blocks[from]) return null;
+    if (source?.goat === "taran" && board.blocks[to]) {
+      board.cells[from] = null;
+      ram(to);
+      used(from, "taran");
+      return { type: "goat" };
+    }
+    const jokerOnPlant = source?.goat === "dzoker" && growable(to);
+    const plantOnJoker = target?.goat === "dzoker" && growable(from);
+    if (!jokerOnPlant && !plantOnJoker) return null;
+    const plant = jokerOnPlant ? target : source;
+    const item = { chain: plant.chain, level: plant.level + 1 };
+    board.cells[to] = item;
+    board.cells[from] = null;
+    scoreMerge(from, to, item);
+    used(jokerOnPlant ? from : to, "dzoker");
+    return { type: "goat" };
+  }
+
+  // Skoczek: do `jumpPairs` losowych par takich samych roślin łączy się (wynik na późniejszym polu pary).
+  function jump() {
+    const groups = new Map();
+    board.cells.forEach((item, index) => {
+      if (!growable(index)) return;
+      const key = `${item.chain}:${item.level}`;
+      groups.set(key, [...(groups.get(key) || []), index]);
+    });
+    const pairs = [];
+    for (const list of groups.values())
+      for (let at = 0; at + 1 < list.length; at += 2) pairs.push([list[at], list[at + 1]]);
+    let done = 0;
+    while (pairs.length && done < GOAT_RULES.jumpPairs) {
+      const [a, b] = pairs.splice(Math.min(pairs.length - 1, Math.floor(random() * pairs.length)), 1)[0];
+      const item = { chain: board.cells[b].chain, level: board.cells[b].level + 1 };
+      board.cells[b] = item;
+      board.cells[a] = null;
+      scoreMerge(a, b, item);
+      done += 1;
+    }
+    return done;
+  }
+
+  // Zjadaczka: karteczki w rzędzie i kolumnie kózki znikają.
+  function eat(index) {
+    const at = cellPosition(board, index);
+    let done = 0;
+    board.blocks.forEach((block, other) => {
+      if (block?.type !== "note") return;
+      const { col, row } = cellPosition(board, other);
+      if (col !== at.col && row !== at.row) return;
+      board.blocks[other] = null;
+      emit("noteGone", { index: other });
+      done += 1;
+    });
+    return done;
+  }
+
+  // Sprężynka: rośliny na 8 polach wokół kózki rosną o poziom (bez liści za połączenie).
+  function spring(index) {
+    const at = cellPosition(board, index);
+    let done = 0;
+    board.cells.forEach((item, other) => {
+      const { col, row } = cellPosition(board, other);
+      if (other === index || Math.max(Math.abs(col - at.col), Math.abs(row - at.row)) > 1 || !growable(other)) return;
+      const grown = { chain: item.chain, level: item.level + 1 };
+      board.cells[other] = grown;
+      state.stats.best = Math.max(state.stats.best, grown.level);
+      emit("grow", { index: other, item: grown });
+      done += 1;
+    });
+    return done;
+  }
+
+  /** Stuknięcie kózki: moc (Skoczek, Zjadaczka, Sprężynka) albo podpowiedź (Dżoker i Taran — przeciąga się je). */
+  function useGoat(index) {
+    const item = board.cells[index];
+    if (!isGoat(item) || board.blocks[index]) return null;
+    const kind = item.goat;
+    if (GOATS[kind].use !== "tap") {
+      emit("goatHint", { index, goat: kind });
+      return null;
+    }
+    const unlocked = potChains(state.stats.merges).length;
+    const done = kind === "skoczek" ? jump() : kind === "zjadaczka" ? eat(index) : spring(index);
+    if (!done) {
+      emit("goatIdle", { index, goat: kind });
+      return null;
+    }
+    board.cells[index] = null;
+    used(index, kind, done);
+    announceUnlocks(unlocked);
+    sync();
+    return { goat: kind, count: done };
+  }
+
+  // Nowe łańcuchy w doniczce po przekroczeniu progu połączeń.
+  function announceUnlocks(before) {
+    for (const entry of potChains(state.stats.merges).slice(before)) {
+      emit("unlock", { chain: entry.chain, name: CHAINS[entry.chain].name });
     }
   }
 
@@ -393,18 +561,13 @@ export function createGame({ state = defaultState(), random = Math.random } = {}
   }
 
   function move(from, to) {
-    const result = moveItem(board, from, to);
+    if (from === to || to < 0 || to >= board.cells.length) return { type: "none" };
+    const unlocked = potChains(state.stats.merges).length;
+    const result = goatMove(from, to) || moveItem(board, from, to);
     if (result.type === "none") return result;
     state.stats.moves += 1;
-    const unlocked = potChains(state.stats.merges).length;
-    if (result.type === "merge") {
-      const leaves = MERGE_LEAVES[result.item.level] || 0;
-      state.leaves += leaves;
-      state.stats.merges += 1;
-      state.stats.best = Math.max(state.stats.best, result.item.level);
-      emit("merge", { from, to, item: result.item, leaves, top: result.item.level >= maxLevel(result.item.chain) });
-      hitAround(to);
-    } else if (result.type === "hybrid") {
+    if (result.type === "merge") scoreMerge(from, to, result.item);
+    else if (result.type === "hybrid") {
       const base = HYBRIDS[result.item.chain].leaves;
       const leaves = hasPerk(state, "cross") ? Math.round(base * PERKS.hybridFactor) : base;
       state.leaves += leaves;
@@ -412,7 +575,7 @@ export function createGame({ state = defaultState(), random = Math.random } = {}
       state.stats.hybrids += 1;
       emit("hybrid", { from, to, item: result.item, leaves });
       hitAround(to);
-    } else emit(result.type, { from, to });
+    } else if (result.type !== "goat") emit(result.type, { from, to });
     // Telefon Pracu dzwoni co `ringEvery` ruchów.
     if (count("phone")) {
       state.phoneMoves += 1;
@@ -421,10 +584,7 @@ export function createGame({ state = defaultState(), random = Math.random } = {}
         ring();
       }
     }
-    // Nowy łańcuch w doniczce po przekroczeniu progu połączeń.
-    for (const entry of potChains(state.stats.merges).slice(unlocked)) {
-      emit("unlock", { chain: entry.chain, name: CHAINS[entry.chain].name });
-    }
+    announceUnlocks(unlocked);
     sync();
     return result;
   }
@@ -467,6 +627,26 @@ export function createGame({ state = defaultState(), random = Math.random } = {}
     // Pracu Pracu przychodzi z telefonem po kilku zamówieniach (gdy telefonu nie ma).
     const since = state.stats.orders - OBSTACLES.phoneFrom;
     if (since >= 0 && since % OBSTACLES.phoneEvery === 0 && !count("phone")) placePhone();
+    // Amic stawia kanister (nieruchomy — usuwa go tylko Kózka Taran).
+    const sinceCanister = state.stats.orders - OBSTACLES.canisterFrom;
+    if (sinceCanister >= 0 && sinceCanister % OBSTACLES.canisterEvery === 0 && !count("canister")) {
+      const free = emptyCells(board);
+      if (free.length) {
+        const index = pick(free);
+        board.blocks[index] = { type: "canister", hits: 0 };
+        emit("canister", { index });
+      }
+    }
+    // Sąsiadka w podzięce przysyła kózkę.
+    if (state.stats.orders % GOAT_RULES.orderEvery === GOAT_RULES.orderAt) {
+      const free = emptyCells(board);
+      if (free.length) {
+        const index = pick(free);
+        const goat = pickGoat();
+        board.cells[index] = { goat };
+        emit("goat", { index, goat, from: order.neighbor });
+      }
+    }
     sync();
     return reward;
   }
@@ -498,6 +678,7 @@ export function createGame({ state = defaultState(), random = Math.random } = {}
     orderCells: (slot, prefer = -1) =>
       state.orders[slot] ? orderCells(board.cells, state.orders[slot], prefer, board.blocks) : null,
     tapBlock,
+    useGoat,
     deliver,
     renovate,
     potMax: () => potMax(state),

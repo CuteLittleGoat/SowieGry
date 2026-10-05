@@ -1,7 +1,23 @@
 // Łącz i Hoduj — rysunki roślin (kształty na płótnie, bez obrazków): cztery łańcuchy po 5 poziomów (Monstera, Pilea,
-// Paproć, Kaktus) i hybrydy. Wspólne dla planszy (`render.js`) i kart zamówień sąsiadek (`main.js`).
+// Paproć, Kaktus) i hybrydy; kózki-wzmacniacze (obrazek kózki ze Sowiego Świata z chustką i znaczkiem mocy).
+// Wspólne dla planszy (`render.js`) i kart zamówień sąsiadek (`main.js`).
 import { COLORS, font } from "../shared/world/tokens.js";
-import { CHAINS } from "./config.js";
+import { CHAINS, GOATS } from "./config.js";
+
+// Kózka ze Sowiego Świata (assets/svg/kozki/koza.svg, 128 × 128) — wczytywana raz, przy pierwszym rysowaniu.
+const GOAT_SVG = new URL("../assets/svg/kozki/koza.svg", import.meta.url).href;
+// Chustka kózki (jak nakładki koza-<rodzaj>.svg) w układzie 128 × 128.
+const SCARF = "M82 52 C90 62 98 67 107 68 L105 78 C101 79 98 81 96 83 L80 100 L73 66 Z";
+let goatImage = null;
+let scarfPath = null;
+
+function goatPicture() {
+  if (!goatImage && typeof Image !== "undefined") {
+    goatImage = new Image();
+    goatImage.src = GOAT_SVG;
+  }
+  return goatImage?.complete && goatImage.naturalWidth ? goatImage : null;
+}
 
 /**
  * createPlantPainter(context) → { item(target, cx, cy, s, time = 0, label = true) } — rysuje przedmiot
@@ -286,7 +302,113 @@ export function createPlantPainter(context) {
   }
 
   /** Przedmiot w środku (cx, cy) na polu wielkości `s`: ziemia albo doniczka i roślina swojego łańcucha. */
+  // Znaczek mocy kózki w kółku (środek 86, 80; układ 128 × 128).
+  function goatIcon(kind) {
+    context.strokeStyle = COLORS.kontur;
+    context.fillStyle = COLORS.kontur;
+    context.lineWidth = 2.6;
+    context.lineCap = "round";
+    context.lineJoin = "round";
+    context.beginPath();
+    if (kind === "skoczek") {
+      // Łuk skoku ze strzałką.
+      context.arc(86, 84, 6, Math.PI, Math.PI * 1.95);
+      context.stroke();
+      context.beginPath();
+      context.moveTo(89, 80);
+      context.lineTo(92, 84);
+      context.lineTo(95, 80);
+      context.stroke();
+    } else if (kind === "zjadaczka") {
+      // Karteczka z ugryzieniem.
+      context.fillStyle = "#ffe680";
+      context.fillRect(80, 74, 12, 12);
+      context.strokeRect(80, 74, 12, 12);
+      context.fillStyle = COLORS.bialy;
+      context.beginPath();
+      context.arc(92, 74, 4, 0, Math.PI * 2);
+      context.fill();
+    } else if (kind === "dzoker") {
+      // Gwiazdka.
+      for (let point = 0; point < 10; point += 1) {
+        const angle = -Math.PI / 2 + (point * Math.PI) / 5;
+        const r = point % 2 ? 3.2 : 7;
+        context.lineTo(86 + Math.cos(angle) * r, 80 + Math.sin(angle) * r);
+      }
+      context.closePath();
+      context.fillStyle = GOATS.dzoker.color;
+      context.fill();
+      context.stroke();
+    } else if (kind === "sprezynka") {
+      // Sprężyna.
+      context.strokeStyle = COLORS.zlotoCiemne;
+      context.moveTo(80, 86);
+      context.lineTo(92, 84);
+      context.lineTo(80, 81);
+      context.lineTo(92, 78);
+      context.lineTo(80, 75);
+      context.lineTo(92, 73);
+      context.stroke();
+    } else {
+      // Taran: podwójna strzałka naprzód.
+      for (const dx of [-3, 3]) {
+        context.beginPath();
+        context.moveTo(82 + dx, 74);
+        context.lineTo(88 + dx, 80);
+        context.lineTo(82 + dx, 86);
+        context.stroke();
+      }
+    }
+  }
+
+  /** Kózka-wzmacniacz: poświata w kolorze chustki, kózka (obrazek albo zastępczy kształt), chustka i znaczek mocy. */
+  function goat(kind, cx, cy, s, time) {
+    const info = GOATS[kind];
+    const size = s * 0.98;
+    const bob = Math.sin(time * 3 + cx * 0.1) * s * 0.02;
+    context.fillStyle = info.color;
+    context.globalAlpha = 0.25;
+    context.beginPath();
+    context.arc(cx, cy, s * 0.46, 0, Math.PI * 2);
+    context.fill();
+    context.globalAlpha = 1;
+    context.save();
+    context.translate(cx - size / 2, cy - size / 2 + bob);
+    context.scale(size / 128, size / 128);
+    const picture = goatPicture();
+    if (picture) context.drawImage(picture, 0, 0, 128, 128);
+    else {
+      context.fillStyle = COLORS.koza;
+      context.beginPath();
+      context.ellipse(58, 77, 30, 21, 0, 0, Math.PI * 2);
+      context.ellipse(101, 52, 17, 20, 0, 0, Math.PI * 2);
+      context.fill();
+    }
+    if (!scarfPath && typeof Path2D !== "undefined") scarfPath = new Path2D(SCARF);
+    if (scarfPath) {
+      context.fillStyle = info.color;
+      context.strokeStyle = COLORS.kontur;
+      context.lineWidth = 3.5;
+      context.lineJoin = "round";
+      context.fill(scarfPath);
+      context.stroke(scarfPath);
+    }
+    context.fillStyle = COLORS.bialy;
+    context.strokeStyle = COLORS.kontur;
+    context.lineWidth = 3;
+    context.beginPath();
+    context.arc(86, 80, 11, 0, Math.PI * 2);
+    context.fill();
+    context.stroke();
+    goatIcon(kind);
+    context.restore();
+  }
+
   function item(target, cx, cy, s, time = 0, label = true) {
+    if (GOATS[target.goat]) {
+      goat(target.goat, cx, cy, s, time);
+      return;
+    }
     const { chain, level } = target;
     const hybrid = Boolean(CHAINS[chain]?.hybrid);
     const top = hybrid || level >= (CHAINS[chain]?.levels.length ?? 5);
