@@ -192,7 +192,9 @@ test("Łącz i Hoduj: zamówienia sąsiadek — stuknięcie gotowej karty, podpo
   await game(page, "setOrder", 2, "monstera", 1, 1);
   await dragToOrder(page, 31, 2);
   board = await cells(page);
-  expect(board[31]).toBeNull();
+  // Pole 31 jest wolne po oddaniu nasionka — drugie zamówienie przywołuje kózkę (GOAT_RULES.orderAt), która
+  // może wskoczyć na losowe wolne pole, także to; nasionka już na nim nie ma.
+  expect(board[31]?.chain ?? null).toBeNull();
   expect(board[30]).toEqual({ chain: "monstera", level: 1 });
   await expect(page.locator("[data-stars]")).toHaveText("2");
   // Roślina, której sąsiadka nie chce — zostaje na półce.
