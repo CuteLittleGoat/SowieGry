@@ -1,15 +1,15 @@
 # Łącz i Hoduj — instrukcja
 
-**Łącz i Hoduj** to nowa wersja gry **Sowia Szklarnia** — spokojna gra logiczna na półkach szklarni. Na razie to
-**prototyp** (wersja próbna): otwierasz go z menu głównego przyciskiem **„Wypróbuj nową wersję: Łącz i Hoduj”** na
-karcie Sowiej Szklarni albo pod adresem `LaczIHoduj/`. Dawna Sowia Szklarnia działa dalej bez zmian — prototyp
-zapisuje swój postęp osobno i niczego w niej nie rusza.
+**Łącz i Hoduj** to nowa wersja gry **Sowia Szklarnia** — spokojna gra logiczna na półkach szklarni. Otwierasz ją
+z menu głównego przyciskiem **Graj** na karcie **Łącz i Hoduj** (ze znaczkiem „Nowe!”). Stary adres `SowiaSzklarnia/`
+sam przenosi do nowej gry.
 
 ## Pierwsze wejście: pakiet startowy i samouczek
 
 Jeśli grałeś w dawną Sowią Szklarnię, przy pierwszym wejściu dostaniesz **pakiet startowy**: liście (część zebranych
 wtedy liści, najwyżej 2000), od razu **odnowione pierwsze pomieszczenia** (tyle, ile rodzajów pomieszczeń zbudowałeś —
-najwyżej 3), a za odkryte hybrydy **gwiazdki** i **Kózkę Dżoker**. Dawna gra zostaje bez zmian.
+najwyżej 3), a za odkryte hybrydy **gwiazdki** i **Kózkę Dżoker**. Postęp z wersji próbnej (przycisk „Wypróbuj nową
+wersję”) zostaje — wtedy pakietu już nie ma, bo był przyznany wcześniej.
 
 Na początku **samouczek** w chmurce nad planszą prowadzi przez 5 kroków: połączenie nasionek, Sowią doniczkę, oddanie
 zamówienia, gwiazdki i pomocników. Kroki z ruchem zaliczają się same, pozostałe — przyciskiem **Dalej**; **✕** pomija
@@ -177,13 +177,13 @@ rusza po pierwszym dotknięciu ekranu. Głośność muzyki i efektów ustawisz w
 
 Gra zapisuje się automatycznie w chmurze (ten sam profil, hasło `huhu` przy pierwszym wejściu na nowym urządzeniu):
 po każdym połączeniu i komposcie (po 2 sekundach), co 20 sekund gry oraz od razu, gdy przełączysz się na inną
-aplikację albo zamkniesz stronę. Postęp prototypu jest zapisany **osobno** od dawnej Sowiej Szklarni.
+aplikację albo zamkniesz stronę. W menu głównym (zakładka **Sowa** → **Rekordy** przy Łącz i Hoduj) widać odnowione
+pomieszczenia, oddane zamówienia, hybrydy i rekord Basenu Humbaka.
 
 ## Telefon pionowo, poziomo i komputer
 
 Na telefonie trzymanym pionowo plansza zajmuje całą szerokość ekranu — nawet na najmniejszym (320 × 568) każde pole
-ma co najmniej 44 px, więc wygodnie trafia się palcem. Na wysokim telefonie plansza stoi na środku ekranu, a na niskim
-notka o prototypie chowa się, żeby zostało więcej miejsca na półki.
+ma co najmniej 44 px, więc wygodnie trafia się palcem. Na wysokim telefonie plansza stoi na środku ekranu.
 
 Gdy obrócisz telefon **poziomo**, plansza staje się szersza niż wyższa (9 kolumn × 7 rzędów), a zamówienia oraz
 przyciski Sowiej doniczki i kompostu przechodzą na prawą stronę. Układ roślin obraca się razem z planszą — rośliny, które stały obok
@@ -198,6 +198,6 @@ Na komputerze plansza stoi na środku, a rośliny przesuwa się myszą tak samo 
 - **Delete** — kompostuje zaznaczoną roślinę (albo tę pod kursorem),
 - **D** — Sowia doniczka, **Escape** — odznaczenie.
 
-## Co dalej
+## Stary adres
 
-Gra jest w podglądzie — czeka na akceptację właściciela, potem zastąpi dawną Sowią Szklarnię.
+Dawny adres Sowiej Szklarni (`SowiaSzklarnia/`) sam przenosi do Łącz i Hoduj (z zachowaniem parametrów adresu).

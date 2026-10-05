@@ -46,12 +46,15 @@ const games = [
     core: false,
   },
   {
+    // Łącz i Hoduj (E8, zastąpiła Sowią Szklarnię): stuknięcie Sowiej doniczki daje nasionko.
     id: "szklarnia",
-    name: "Sowia Szklarnia",
-    path: "/SowiaSzklarnia/",
-    marker: "#greenhouseCanvas",
-    action: "#clickButton",
-    started: "window.SowieIdleGame.snapshot().stats.clicks === 1",
+    name: "Łącz i Hoduj",
+    path: "/LaczIHoduj/",
+    marker: "[data-canvas]",
+    action: "[data-pot]",
+    started: "window.LaczIHoduj.state().stats.spawns >= 1",
+    ready: "window.LaczIHoduj?.ready?.() === true",
+    core: false,
   },
 ];
 
@@ -116,21 +119,3 @@ for (const game of games) {
     expect(errors).toEqual([]);
   });
 }
-
-test("gry używają wspólnego menedżera powiadomień", async ({ page }) => {
-  // Wspólny menedżer powiadomień mają już tylko dawne gry idle (SowieCore).
-  const errors = await openGame(
-    page,
-    games.find((game) => game.id === "szklarnia"),
-  );
-  await page.evaluate(() => window.SowieCore.toast({ text: "Test", amount: 1, mergeKey: "audit" }));
-  await page.evaluate(() => window.SowieCore.toast({ text: "Test", amount: 2, mergeKey: "audit" }));
-  // Dawna Szklarnia może przy starcie trzymać komunikaty w kolejce (np. za oknem „Sowa doglądała szklarni”) —
-  // liczy się jeden scalony wpis (widoczny albo w kolejce).
-  const merged = await page.evaluate(() => {
-    const { visible, queued } = window.SowieNotifications.getState();
-    return [...visible, ...queued].filter((text) => text.startsWith("Test"));
-  });
-  expect(merged).toEqual(["Test ×2 — łącznie +3"]);
-  expect(errors).toEqual([]);
-});

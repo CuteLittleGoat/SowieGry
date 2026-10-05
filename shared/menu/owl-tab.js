@@ -26,10 +26,12 @@ const IDLE_SUMMARY = {
     ["prestiges", "Wielkie Przesadzania"],
     ["zone", "Rozdział"],
   ],
+  // Łącz i Hoduj (od E8e): podsumowanie zapisywane przez saveGameState.
   szklarnia: [
-    ["lifetimeLeaves", "Liście w całej grze"],
-    ["rooms", "Pomieszczenia"],
-    ["hybrids", "Odkryte hybrydy"],
+    ["rooms", "Odnowione pomieszczenia"],
+    ["orders", "Zamówienia sąsiadek"],
+    ["hybrids", "Hybrydy"],
+    ["poolBest", "Rekord Basenu Humbaka"],
   ],
 };
 

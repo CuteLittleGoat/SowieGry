@@ -17,7 +17,7 @@ body {
 .lacz {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  grid-template-rows: auto auto minmax(0, 1fr) auto auto;
+  grid-template-rows: auto auto minmax(0, 1fr) auto;
   gap: 6px;
   height: 100dvh;
   max-width: 560px;
@@ -227,12 +227,6 @@ body {
   box-shadow: 0 0 0 4px var(--monstera);
 }
 
-.lacz-preview {
-  margin: 0;
-  font-size: 12px;
-  opacity: 0.8;
-}
-
 /* Wąski telefon: mniejsze marginesy boczne (7 pól po 44 px) i węższy przycisk Menu (miejsce na zamówienia). */
 @media (max-width: 340px) {
   .lacz {
@@ -258,10 +252,6 @@ body {
 
 /* Niski ekran (np. 320 × 568): bez notki o prototypie i z mniejszymi napisami — więcej miejsca na planszę. */
 @media (max-height: 600px) {
-  .lacz-preview {
-    display: none;
-  }
-
   .lacz-hint {
     font-size: 13px;
   }
@@ -320,10 +310,6 @@ body {
 
   .lacz-bar .sowie-ui-button {
     font-size: 14px;
-  }
-
-  .lacz-preview {
-    display: none;
   }
 }
 

@@ -5,11 +5,9 @@ import { test } from "node:test";
 
 const read = (path) => readFile(path, "utf8");
 
-// Obecne gry na starym interfejsie (SowieCore, wspólny menedżer powiadomień, okno Rekordów).
-const legacyGamePages = ["SowiaSzklarnia/index.html"];
-// Wszystkie gry z rejestru: Sowia Ucieczka (E4, moduły ES na Sowim Silniku; zastąpiła SowaRunner), Sowie Tory
-// (E5, zastąpiły Sowa3), Sowa w Chmurach (E6, zastąpiła SowaJumper), Sowie Ogrody (E7, nowa odsłona w tym samym
-// folderze — moduł ogrod/main.js), podgląd Łącz i Hoduj (E8) oraz obecne gry.
+// Wszystkie gry z rejestru (od E8e żadna nie jest na starym interfejsie SowieCore): Sowia Ucieczka (E4, zastąpiła
+// SowaRunner), Sowie Tory (E5, zastąpiły Sowa3), Sowa w Chmurach (E6, zastąpiła SowaJumper), Łącz i Hoduj (E8,
+// zastąpiła Sowią Szklarnię) — moduł main.js — oraz Sowie Ogrody (E7, nowa odsłona w tym samym folderze).
 const newGamePages = [
   "SowiaUcieczka/index.html",
   "SowieTory/index.html",
@@ -18,7 +16,7 @@ const newGamePages = [
 ];
 // Nowa odsłona Sowich Ogrodów (od E7e główna strona folderu): moduł ogrod/main.js.
 const previewPages = ["SowieOgrody/index.html"];
-const gamePages = [...newGamePages, ...previewPages, ...legacyGamePages];
+const gamePages = [...newGamePages, ...previewPages];
 
 test("centralny rejestr zawiera dokładnie pięć gier", async () => {
   const platform = await read("shared/sowie-platform.js");
@@ -55,10 +53,9 @@ test("wszystkie gry ładują platformę; obecne gry — wspólny menedżer powia
   for (const path of previewPages) {
     assert.match(await read(path), /<script type="module" src="ogrod\/main\.js"><\/script>/, path);
   }
-  for (const path of legacyGamePages) {
-    const html = await read(path);
-    assert.match(html, /shared\/notification-manager\.js/, `${path} nie ładuje wspólnych powiadomień`);
-    assert.doesNotMatch(html, /Sowa3\/notification-manager\.js/, `${path} zależy od katalogu innej gry`);
+  // Żadna gra nie ładuje już dawnych modułów SowieCore (od E8e).
+  for (const path of gamePages) {
+    assert.doesNotMatch(await read(path), /sowie-core\.js|notification-manager\.js|game-guides\.js|records\.js/, path);
   }
 });
 
@@ -79,7 +76,6 @@ async function projectScripts() {
     "SowaWChmurach",
     "LaczIHoduj",
     "SowieOgrody",
-    "SowiaSzklarnia",
   ];
   const files = ["sw.js"];
   async function walk(folder) {
@@ -137,9 +133,8 @@ test("każda strona ładuje config, platformę, SowieCloud i ekran hasła w tej 
       positions,
       `${path}: zła kolejność skryptów`,
     );
-    // Obecne gry: SowieCloud przed SowieCore. Menu, Sowia Ucieczka i Sowie Tory (bez SowieCore): przed Akademią.
-    const later = legacyGamePages.includes(path) ? "shared/sowie-core.js" : "shared/sowie-academy.js";
-    assert.ok(positions[3] < html.indexOf(later), `${path}: SowieCloud musi być przed ${later}`);
+    // Menu i gry (bez SowieCore): ekran hasła przed Akademią.
+    assert.ok(positions[3] < html.indexOf("shared/sowie-academy.js"), `${path}: SowieCloud musi być przed Akademią`);
     if (path === "index.html") assert.ok(html.indexOf("shared/owl-gallery.js") < html.indexOf("shared/menu/menu.js"));
   }
 });
@@ -175,40 +170,24 @@ test("kod SowieGry pisze tylko w kolekcji sowiegry i jej podkolekcjach", async (
   }
 });
 
-test("każda obecna gra ma okno Rekordów zasilane przez SowieCloud", async () => {
-  const records = await read("shared/records.js");
-  assert.match(records, /cloud\.history\(gameId, 10\)/);
-  assert.match(records, /top10/);
-  assert.match(records, /dailyBest/);
-  // Sowia Ucieczka: rekordy na ekranie tytułowym i wyników oraz w menu (zakładka „Sowa”).
-  for (const path of legacyGamePages) {
-    const html = await read(path);
-    assert.ok(
-      html.indexOf("shared/records.js") > html.indexOf("shared/game-guides.js"),
-      `${path}: brak records.js po game-guides.js`,
-    );
-  }
-});
-
-test("gry idle korzystają ze stabilnego panelu, obsługi modali i zapisu SowieCloud", async () => {
-  // Nowe Sowie Ogrody (E7e): zapis stanu v3 przez saveGameState, bez dawnych skryptów i stabilnego panelu.
+test("gry idle zapisują stan przez SowieCloud (saveGameState z wersją i podsumowaniem)", async () => {
+  // Nowe Sowie Ogrody (E7e) i Łącz i Hoduj (E8e): stan w polu `state`, bez dawnych skryptów i stabilnego panelu.
   const garden = await read("SowieOgrody/ogrod/main.js");
   assert.match(garden, /cloud\.saveGameState\(GAME_ID, state, \{ immediate, saveVersion: SAVE_VERSION, summary \}\)/);
   assert.match(garden, /cloud\?\.loadGameState\?\.\(GAME_ID\)/);
-  await assert.rejects(read("SowieOgrody/script.js"));
-  await assert.rejects(read("SowieOgrody/style.css"));
-  assert.doesNotMatch(await read("SowieOgrody/index.html"), /stable-panel|modal-accessibility|sowie-core/);
-  for (const [path, script, gameId] of [["SowiaSzklarnia/index.html", "SowiaSzklarnia/script.js", "szklarnia"]]) {
-    const html = await read(path);
-    assert.match(html, /shared\/stable-panel\.js/);
-    assert.match(html, /shared\/modal-accessibility\.js/);
-    const source = await read(script);
-    assert.match(source, new RegExp(`const GAME_ID = "${gameId}"`));
-    assert.match(source, /cloud\.loadGameState\(GAME_ID\)/);
-    assert.match(source, /cloud\.saveGameState\(GAME_ID/);
-    assert.match(source, /window\.SowieIdleGame = /);
-    assert.doesNotMatch(source, /now % 7000/);
+  const merge = await read("LaczIHoduj/main.js");
+  assert.match(merge, /cloud\.saveGameState\(GAME_ID, state, \{ immediate, saveVersion: SAVE_VERSION, summary \}\)/);
+  for (const removed of [
+    "SowieOgrody/script.js",
+    "SowieOgrody/style.css",
+    "SowiaSzklarnia/script.js",
+    "SowiaSzklarnia/style.css",
+    "shared/stable-panel.js",
+  ]) {
+    await assert.rejects(read(removed), removed);
   }
+  assert.doesNotMatch(await read("SowieOgrody/index.html"), /stable-panel|modal-accessibility|sowie-core/);
+  assert.doesNotMatch(await read("LaczIHoduj/index.html"), /stable-panel|modal-accessibility|sowie-core/);
 });
 
 test("projekt respektuje reduced motion", async () => {
@@ -222,6 +201,7 @@ const REPLACED_GAMES = [
   ["SowaRunner", "SowiaUcieczka", "Sowia Ucieczka"],
   ["Sowa3", "SowieTory", "Sowie Tory"],
   ["SowaJumper", "SowaWChmurach", "Sowa w Chmurach"],
+  ["SowiaSzklarnia", "LaczIHoduj", "Łącz i Hoduj"],
 ];
 
 for (const [oldFolder, newFolder, name] of REPLACED_GAMES) {

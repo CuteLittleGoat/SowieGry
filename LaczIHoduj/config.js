@@ -5,7 +5,8 @@
 // Identyfikator w bazie (stały — reguły Firestore) i wersja stanu nowej gry (dawna Szklarnia zapisuje wersję 1).
 export const GAME_ID = "szklarnia";
 export const SAVE_VERSION = 2;
-// Podgląd zapisuje stan w osobnym polu dokumentu gry — pole `state` (wersja 1) zostaje dla dawnej Szklarni.
+// Pole zapisu z czasu podglądu (E8a–E8d; stan v2 obok `state` v1 dawnej Szklarni). Od podmiany (E8e) gra zapisuje
+// stan w polu `state` (saveVersion 2), a `preview` przenosi tam przy pierwszym wejściu.
 export const PREVIEW_FIELD = "preview";
 
 // Plansza: kolumny × rzędy (pole na telefonie co najmniej 44 px).

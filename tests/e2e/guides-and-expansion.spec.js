@@ -1,10 +1,8 @@
 const { test, expect, waitForCloud } = require("./fixtures");
 
-// Dawna Sowia Szklarnia (dok z instrukcją, Akademią i panelem mechaniki). Przebudowane gry mają własne instrukcje,
-// zadania i kontrakty — testy w tests/e2e/telefon/ (ucieczka, tory, chmury, ogrody-nowe, lacz).
-const games = [
-  { id: "szklarnia", path: "/SowiaSzklarnia/", title: "Sowia Szklarnia", feature: "Album cech i cele laboratorium" },
-];
+// Instrukcje gier w menu i Sowia Akademia. Od E8e wszystkie gry są przebudowane — mają własne „Jak grać?”, zadania
+// i kontrakty (testy w tests/e2e/telefon/: ucieczka, tory, chmury, ogrody-nowe, lacz); dawny dok z instrukcją,
+// Akademią i panelem rozszerzeń nie jest już ładowany przez żadną grę.
 
 function watchErrors(page) {
   const errors = [];
@@ -44,27 +42,6 @@ test("menu oferuje osobną instrukcję każdej gry i zadania Sowiej Akademii", a
   await expect(page.getByRole("dialog")).toBeHidden();
   expect(errors).toEqual([]);
 });
-
-for (const game of games) {
-  test(`${game.title} udostępnia instrukcję, Akademię i panel nowej mechaniki`, async ({ page }) => {
-    const errors = watchErrors(page);
-    await page.goto(`${game.path}?seed=${game.id}-guide&testNow=1783656000000`, { waitUntil: "load" });
-
-    await expect(page.locator(`[data-game-guide-fab="${game.id}"]`)).toBeVisible();
-    await expect(page.locator("[data-academy-fab]")).toBeVisible();
-    await expect(page.getByRole("button", { name: game.feature })).toBeVisible();
-
-    await page.locator(`[data-game-guide-fab="${game.id}"]`).click();
-    await expect(page.getByRole("dialog")).toContainText(`Instrukcja — ${game.title}`);
-    await page.getByRole("button", { name: "Rozumiem" }).click();
-
-    await page.getByRole("button", { name: game.feature }).click();
-    await expect(page.getByRole("dialog")).toContainText(/wyzwanie dnia|kontrakty|album cech/i);
-    await page.getByRole("button", { name: "Zamknij" }).click();
-
-    expect(errors).toEqual([]);
-  });
-}
 
 test("Sowia Akademia nalicza misję tylko raz i zachowuje nagrody", async ({ page }) => {
   const errors = watchErrors(page);

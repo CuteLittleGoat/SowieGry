@@ -197,7 +197,8 @@ test("instrukcje obecnych gier: każda gra z rejestru ma przewodnik (treść z d
     const guide = guideFor(id);
     // Analiza 2, rozdz. 4.1: 4–6 kart; przebudowane gry mają więcej mechanik — do 8 kart (zaakceptowane podglądy).
     assert.ok(guide.cards.length >= 4 && guide.cards.length <= 8, id);
-    assert.equal(guide.cards[0].title, "Cel gry");
+    // Łącz i Hoduj (gra logiczna) zaczyna od karty „Łączenie” — samej zasady gry; pozostałe od „Cel gry”.
+    assert.equal(guide.cards[0].title, id === "szklarnia" ? "Łączenie" : "Cel gry");
     assert.ok(
       guide.cards.some((card) => card.gesture),
       `${id}: karta sterowania z gestem`,
@@ -211,7 +212,9 @@ test("instrukcje obecnych gier: każda gra z rejestru ma przewodnik (treść z d
   assert.equal(guideFor("sowa3").id, "sowa3");
   assert.equal(guideFor("jumper").title, "Sowa w Chmurach");
   assert.equal(guideFor("jumper").id, "jumper");
-  assert.match(guideFor("szklarnia").cards[1].text, /SIO! SIO!/);
+  // „szklarnia” to od E8e Łącz i Hoduj, „ogrody” od E7e — nowa odsłona Sowich Ogrodów.
+  assert.equal(guideFor("szklarnia").title, "Łącz i Hoduj");
+  assert.equal(guideFor("ogrody").cards.length, 7);
   // Klasyczny skrypt gier nie ma już własnej kopii treści.
   const legacy = readFileSync(new URL("../../shared/game-guides.js", import.meta.url), "utf8");
   assert.doesNotMatch(legacy, /summary:/);

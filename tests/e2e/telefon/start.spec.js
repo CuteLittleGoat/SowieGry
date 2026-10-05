@@ -7,7 +7,7 @@ const pages = [
   { name: "Sowa w Chmurach", path: "/SowaWChmurach/", marker: "[data-stage] canvas" },
   { name: "Sowie Tory", path: "/SowieTory/", marker: "[data-stage] canvas" },
   { name: "Sowie Ogrody", path: "/SowieOgrody/", marker: "[data-canvas]" },
-  { name: "Sowia Szklarnia", path: "/SowiaSzklarnia/", marker: "#greenhouseCanvas" },
+  { name: "Łącz i Hoduj", path: "/LaczIHoduj/", marker: "[data-canvas]" },
 ];
 
 for (const entry of pages) {
@@ -48,6 +48,15 @@ test("stary adres SowaJumper przekierowuje do Sowy w Chmurach z parametrami", as
   await page.goto("/SowaJumper/?seed=przekierowanie", { waitUntil: "load" });
   await expect(page).toHaveURL(/\/SowaWChmurach\/\?seed=przekierowanie$/);
   await expect(page.getByRole("heading", { name: "Sowa w Chmurach" })).toBeVisible({ timeout: 15_000 });
+  expect(errors).toEqual([]);
+});
+
+// Sowią Szklarnię zastąpiła gra Łącz i Hoduj (E8e): stary adres prowadzi do nowej gry z parametrami adresu.
+test("stary adres Sowiej Szklarni przekierowuje do Łącz i Hoduj z parametrami", async ({ page }) => {
+  const errors = watchErrors(page);
+  await page.goto("/SowiaSzklarnia/?seed=przekierowanie", { waitUntil: "load" });
+  await expect(page).toHaveURL(/\/LaczIHoduj\/\?seed=przekierowanie$/);
+  await expect(page.getByRole("heading", { name: "Łącz i Hoduj" })).toBeVisible({ timeout: 15_000 });
   expect(errors).toEqual([]);
 });
 

@@ -1,5 +1,5 @@
-// Łącz i Hoduj — strona gry (prototyp, kroki 8.0–8.1): wczytanie i zapis stanu (pole `preview` dokumentu
-// `sowiegry_gry/szklarnia` — dawna Szklarnia zostaje bez zmian), pętla, przeciąganie roślin z uniesieniem nad palec,
+// Łącz i Hoduj — strona gry „szklarnia” (od E8e zamiast dawnej Sowiej Szklarni): wczytanie i zapis stanu (pole `state`
+// dokumentu `sowiegry_gry/szklarnia`, saveVersion 2; zapis z czasu podglądu — pole `preview` — przenoszony), pętla, przeciąganie roślin z uniesieniem nad palec,
 // zaznaczanie stuknięciem (bez przeciągania), Sowia doniczka, kompostownik, hybrydy, nowe łańcuchy w doniczce,
 // zamówienia sąsiadek (oddanie stuknięciem karty albo przeciągnięciem rośliny na kartę), okno odnawiania pomieszczeń
 // szklarni (stuknięcie portfela), przeszkody Pracu i Amic (stuknięcie przeszkody), kózki-wzmacniacze (stuknięcie albo
@@ -25,6 +25,7 @@ import {
   POT,
   PREVIEW_FIELD,
   ROOMS,
+  SAVE_VERSION,
 } from "./config.js";
 import { createGame, defaultState, loadState, neighborOf, renovation } from "./game.js";
 import { createPool } from "./pool.js";
@@ -35,7 +36,6 @@ import { createBoardRenderer, drawOrderCard, LIFT } from "./render.js";
 const SAVE_EVERY = 20;
 // Metryki dla Sowiej Akademii (misje dnia i tygodnia, zdjęcia Galerii) — co 5 s gry.
 const PROGRESS_EVERY = 5;
-const IMPORTANT_DELAY = 2000;
 // Przeciąganie zaczyna się po przesunięciu palca o tyle pikseli (krótsze — stuknięcie).
 const DRAG_START = 8;
 
@@ -52,15 +52,19 @@ const starsNode = root.querySelector("[data-stars]");
 const roomsButton = root.querySelector("[data-rooms]");
 const poolButton = root.querySelector("[data-pool]");
 const tutorialNode = root.querySelector("[data-tutorial]");
-// Instrukcja „Jak grać?” (shared/meta/guides-data.js).
-const GUIDE_ID = "lacz";
+const GUIDE_ID = GAME_ID; // instrukcja „szklarnia” w shared/meta/guides-data.js
 const orderButtons = [...root.querySelectorAll("[data-order]")];
 // Ostatnio narysowana karta zamówienia (zamówienie i rozmiar) — rysujemy tylko po zmianie.
 const drawnOrders = orderButtons.map(() => "");
 
 const renderer = createBoardRenderer({ canvas, cols: BOARD.cols, rows: BOARD.rows });
 const toasts = createToasts({ root, isInGame: () => true });
-window.SowieNotifications ||= { notify: (message) => toasts.show(message) };
+// Komunikaty Sowiej Akademii i Galerii Sów (wołają toast({ title, detail, reward })).
+window.SowieNotifications ||= {
+  toast({ title = "", detail = "", reward = "" } = {}) {
+    toasts.show([title, detail, reward].filter(Boolean).join(" · "), { kind: "reward", duration: 3200 });
+  },
+};
 
 let game = createGame({ state: defaultState() });
 let ready = false;
@@ -97,13 +101,17 @@ function play(name, options) {
 // ---------- Zapis ----------
 
 function save({ immediate = false, flush = false } = {}) {
-  if (!ready || !cloud?.updateGame) return;
-  game.state.savedAt = Date.now();
-  cloud.updateGame(
-    GAME_ID,
-    { [PREVIEW_FIELD]: JSON.stringify(game.state) },
-    immediate ? { delayMs: IMPORTANT_DELAY } : undefined,
-  );
+  if (!ready || !cloud?.saveGameState) return;
+  const { state } = game;
+  state.savedAt = Date.now();
+  // Podsumowanie do profilu (menu: karta i okno „Rekordy”): odnowione pomieszczenia, hybrydy, zamówienia, rekord basenu.
+  const summary = {
+    rooms: renovation(state.renovation).finished.length,
+    hybrids: state.stats.hybrids,
+    orders: state.stats.orders,
+    poolBest: state.poolBest,
+  };
+  cloud.saveGameState(GAME_ID, state, { immediate, saveVersion: SAVE_VERSION, summary });
   if (flush) cloud.flush?.();
 }
 
@@ -1058,31 +1066,34 @@ async function start() {
   await cloud?.ready;
   await cloud?.loadGame?.(GAME_ID);
   const doc = cloud?.game?.(GAME_ID) || {};
-  let raw = null;
-  if (typeof doc[PREVIEW_FIELD] === "string") {
+  const parse = (text) => {
+    if (typeof text !== "string") return null;
     try {
-      raw = JSON.parse(doc[PREVIEW_FIELD]);
+      return JSON.parse(text);
     } catch {
-      raw = null;
+      return null;
     }
-  }
+  };
+  // Stan gry: zapis z czasu podglądu (`preview`), inaczej pole `state` w wersji 2. Pole `state` w innej wersji to
+  // dawna Szklarnia (v1) — z niej tylko pakiet startowy.
+  let raw = parse(doc[PREVIEW_FIELD]);
+  const fromPreview = Boolean(raw);
+  const stored = parse(doc.state);
+  const old = stored && Number(stored.version) !== SAVE_VERSION ? stored : null;
+  if (!raw && !old) raw = stored;
   game = createGame({ state: loadState(raw, Date.now()) });
-  // Pakiet startowy z postępu dawnej Szklarni (pole `state`) — raz (znacznik `starter` w stanie nowej gry).
-  if (!game.state.starter) {
-    let old = doc.state;
-    if (typeof old === "string") {
-      try {
-        old = JSON.parse(old);
-      } catch {
-        old = null;
-      }
-    }
-    game.applyStarter(old);
+  // Pakiet startowy z postępu dawnej Szklarni — raz (znacznik `starter` w stanie nowej gry).
+  if (!game.state.starter) game.applyStarter(old);
+  // Zapis z czasu podglądu staje się stanem gry; pole `preview` znika (ten sam zapis do bazy).
+  if (fromPreview) {
+    cloud.updateGame(GAME_ID, (gameDoc) => {
+      delete gameDoc[PREVIEW_FIELD];
+    });
   }
   // Menu („Powtórz samouczki we wszystkich grach”) ustawia w dokumencie gry `tutorialDone: false`.
   if (doc.tutorialDone === false) game.state.tutorialDone = false;
   ready = true;
-  if (!raw) save({ immediate: true });
+  if (!raw || fromPreview) save({ immediate: true });
   progress.emit(EVENTS.VISIT, { gameId: GAME_ID });
   handleEvents();
   if (!game.state.tutorialDone) startTutorial();

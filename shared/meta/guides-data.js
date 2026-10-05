@@ -1,6 +1,6 @@
 // Instrukcje gier — jedno źródło dla menu („Jak grać”) i menu pauzy (Analiza 2, rozdz. 4.1 i 4.3).
-// Etap E2d: struktura i karta „Poznaj Sowi Świat”. Treść obecnych gier przenosi tu E3 (z shared/game-guides.js),
-// a nowe gry dopisują swoje karty w E4–E8.
+// Etap E2d: struktura i karta „Poznaj Sowi Świat”. Od E3 treść gier (z dawnego shared/game-guides.js), od E4–E8
+// przewodniki przebudowanych gier pod identyfikatorami gier z rejestru.
 //
 // Struktura przewodnika:
 //   { id, title, summary, cards: [karta, …] }
@@ -309,10 +309,9 @@ export const GUIDES = Object.freeze({
       },
     ],
   },
-  // Łącz i Hoduj — nowa Sowia Szklarnia (E8d, podgląd LaczIHoduj/; poza GUIDE_ORDER — po podmianie w E8e zastąpi
-  // przewodnik `szklarnia`).
-  lacz: {
-    id: "lacz",
+  // Łącz i Hoduj (LaczIHoduj/, Analiza 3 E8) — od podmiany (E8e) gra „szklarnia”.
+  szklarnia: {
+    id: "szklarnia",
     title: "Łącz i Hoduj",
     summary:
       "Spokojna gra logiczna na półkach szklarni: łącz takie same rośliny w coraz większe, oddawaj je sowim sąsiadkom i odnawiaj pomieszczenia.",
@@ -361,46 +360,6 @@ export const GUIDES = Object.freeze({
         text: "Co 5 zamówień humbak zaprasza do 45-sekundowej rundy: szybkie połączenia mnożą punkty, a szczyt łańcucha robi plusk. Pobij swój rekord!",
         sprite: "humbak",
         tip: "Gwiazdki i kózki z basenu trafiają do szklarni.",
-      },
-    ],
-  },
-  // Obecne gry (treść przeniesiona z shared/game-guides.js w E3). Po przebudowie każdej gry podmieniamy jej karty.
-  szklarnia: {
-    id: "szklarnia",
-    title: "Sowia Szklarnia",
-    summary:
-      "Botaniczna gra idle o budowaniu pomieszczeń, sadzeniu roślin, badaniach i tworzeniu hybryd. Kozy próbują podjadać kolekcję, więc trzeba je regularnie przeganiać.",
-    cards: [
-      {
-        id: "cel",
-        title: "Cel gry",
-        text: "Rozbuduj szklarnię, odkryj hybrydy, skompletuj album cech i utrzymuj wysoką radość sowy.",
-        sprite: "lisc-teczowy",
-      },
-      {
-        id: "sterowanie",
-        title: "Sterowanie",
-        text: "Zakładki służą do budowy, sadzenia, krzyżowania, badań i zarządzania kozami. „Podlej wszystko” wzmacnia rośliny, jeśli masz dość wody, a „SIO! SIO!” przegania aktywną kozę i może dać nagrodę.",
-        gesture: "tap",
-        sprite: "kozka-sprezynka-skok",
-      },
-      {
-        id: "zasoby",
-        title: "Woda i nasiona",
-        text: "Rozwijaj produkcję wody i nasion równolegle z liśćmi.",
-        sprite: "plusk",
-      },
-      {
-        id: "krzyzowanie",
-        title: "Krzyżowanie",
-        text: "Dojrzałe rośliny są potrzebne do krzyżowania.",
-        sprite: "lisc-zloty",
-      },
-      {
-        id: "laboratorium",
-        title: "Cele laboratorium",
-        text: "Przycisk z gwiazdką pokazuje cele laboratorium i odkryte cechy.",
-        sprite: "sowa-radosc",
       },
     ],
   },

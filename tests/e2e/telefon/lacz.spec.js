@@ -1,8 +1,9 @@
-// Łącz i Hoduj (nowa Sowia Szklarnia — prototyp, Analiza 3, E8 kroki 8.0–8.1) na telefonach: przeciąganie
+// Łącz i Hoduj (gra „szklarnia”, od E8e zamiast Sowiej Szklarni; Analiza 3, E8) na telefonach: przeciąganie
 // z uniesieniem nad palec i łączenie, zaznaczanie stuknięciem, Sowia doniczka, kompostownik (przeciągnięcie
 // i przycisk), hybrydy i nowe łańcuchy w doniczce, zamówienia sąsiadek (stuknięcie karty, przeciągnięcie rośliny na
 // kartę), odnawianie pomieszczeń szklarni (okno z portfela), przeszkody Pracu i Amic, kózki-wzmacniacze, Basen
-// Humbaka, pełna plansza, zapis w osobnym polu `preview` (emulator), plansza 7 × 9 z polami ≥ 44 px na najmniejszym
+// Humbaka, pełna plansza, zapis w polu `state` (wersja 2) z pakietem startowym z dawnej Szklarni i przeniesieniem zapisu
+// z czasu podglądu (`preview`, emulator), plansza 7 × 9 z polami ≥ 44 px na najmniejszym
 // telefonie i telefon poziomo (plansza obrócona do 9 × 7, przyciski z boku).
 const { test, expect, waitForCloud, watchErrors } = require("../fixtures");
 const { cloudUrl, readDoc, seedDoc, uniqueProject } = require("../emulator");
@@ -445,7 +446,7 @@ test("Łącz i Hoduj: klawiatura — strzałki i Enter łączą, D — doniczka,
   expect(errors).toEqual([]);
 });
 
-test("Łącz i Hoduj: zapis w polu `preview` — dawna Szklarnia (pole `state`) bez zmian, pakiet startowy z niej, plansza wraca po wejściu (emulator)", async ({
+test("Łącz i Hoduj: pakiet startowy z dawnej Szklarni (stan v1), zapis w polu `state` (wersja 2), plansza wraca po wejściu (emulator)", async ({
   page,
 }, testInfo) => {
   const project = uniqueProject(testInfo);
@@ -479,9 +480,13 @@ test("Łącz i Hoduj: zapis w polu `preview` — dawna Szklarnia (pole `state`) 
   await game(page, "save");
   await page.evaluate(() => window.SowieCloud.flush());
   const doc = await readDoc(project, "sowiegry/profil/sowiegry_gry/szklarnia");
-  expect(doc.state).toBe(old);
-  const saved = JSON.parse(doc.preview);
+  // Stan nowej gry zastępuje dawny (v1) w polu `state`; podsumowanie trafia do profilu.
+  const saved = JSON.parse(doc.state);
   expect(saved.version).toBe(2);
+  expect(doc.saveVersion).toBe(2);
+  expect(doc.preview).toBeUndefined();
+  const profile = await readDoc(project, "sowiegry/profil");
+  expect(profile.records.szklarnia).toMatchObject({ rooms: 2, orders: 0, poolBest: 0 });
   expect(saved.cells[31]).toEqual({ chain: "monstera", level: 2 });
   expect(saved.stats.merges).toBe(1);
   expect(saved.starter).toBe(true);
@@ -497,6 +502,36 @@ test("Łącz i Hoduj: zapis w polu `preview` — dawna Szklarnia (pole `state`) 
   await expect(again.getByText(/Pakiet startowy/)).toHaveCount(0);
   expect(errors).toEqual([]);
   expect(errorsAgain).toEqual([]);
+});
+
+test("Łącz i Hoduj: zapis z czasu podglądu (`preview`) staje się stanem gry, stary adres Sowiej Szklarni przekierowuje (emulator)", async ({
+  page,
+}, testInfo) => {
+  const project = uniqueProject(testInfo);
+  // Zapis podglądu (stan v2 z pakietem startowym już przyznanym, 37 liści) — wzięty z gry bez emulatora (pamięć).
+  await openGame(page, "/LaczIHoduj/?seed=podglad");
+  const preview = await page.evaluate(() => ({ ...window.LaczIHoduj.state(), leaves: 37, starter: true }));
+  // Obok dawny stan Szklarni (v1) — przy zapisie z podglądu pakiet startowy nie wraca.
+  await seedDoc(project, "sowiegry/profil/sowiegry_gry/szklarnia", {
+    state: JSON.stringify({ version: 1, leaves: 900, lifetimeLeaves: 9000, rooms: [{ id: "r1", type: "grow" }] }),
+    saveVersion: 1,
+    preview: JSON.stringify(preview),
+  });
+  const other = await page.context().newPage();
+  await page.close();
+  const errors = watchErrors(other);
+  await openGame(other, cloudUrl("/SowiaSzklarnia/", project));
+  await expect(other).toHaveURL(/\/LaczIHoduj\/\?/);
+  await expect(other.locator("[data-leaves]")).toHaveText("37");
+  await expect(other.getByText(/Pakiet startowy/)).toHaveCount(0);
+  await other.evaluate(() => window.SowieCloud.flush());
+  await expect
+    .poll(async () => {
+      const doc = await readDoc(project, "sowiegry/profil/sowiegry_gry/szklarnia");
+      return [doc.preview === undefined, JSON.parse(doc.state).leaves, doc.saveVersion];
+    })
+    .toEqual([true, 37, 2]);
+  expect(errors).toEqual([]);
 });
 
 test.describe("Łącz i Hoduj — najmniejszy telefon (320 × 568)", () => {

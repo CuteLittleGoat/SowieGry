@@ -29,7 +29,7 @@ export const MENU_GAMES = Object.freeze({
   },
   szklarnia: {
     station: "Szklarnia",
-    description: "Buduj szklarnię, krzyżuj rośliny i przeganiaj łakome kozy.",
+    description: "Łącz rośliny na półkach szklarni i spełniaj zamówienia sowich sąsiadek.",
     biome: [COLORS.wodaJasna, COLORS.monsteraJasna],
   },
 });

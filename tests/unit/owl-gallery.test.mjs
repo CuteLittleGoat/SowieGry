@@ -37,8 +37,6 @@ const photoFiles = [
   "sowa-29-norkowa-na-lace.jpg",
   "sowa-30-wiosenna-rodzina.jpg",
 ];
-// Obecne gry (Galeria z owl-gallery.css); Sowia Ucieczka ładuje owl-gallery.js bez okna (zdjęcia z nagród).
-const gameIndexes = ["SowiaSzklarnia/index.html"];
 
 test("folder Obrazki zawiera trzydzieści poprawnych, zoptymalizowanych plików JPEG", () => {
   for (const filename of photoFiles) {
@@ -81,11 +79,12 @@ test("menu i wszystkie gry ładują skrypt galerii; gry także jej okno (style)"
     "SowieTory/index.html",
     "SowaWChmurach/index.html",
     "LaczIHoduj/index.html",
-    ...gameIndexes,
+    "SowieOgrody/index.html",
   ]) {
     assert.match(read(file), /owl-gallery\.js/, file);
+    // Okno Galerii z owl-gallery.css miały tylko dawne gry; dziś Galeria jest w zakładce menu głównego.
+    assert.doesNotMatch(read(file), /owl-gallery\.css/, file);
   }
-  for (const file of gameIndexes) assert.match(read(file), /owl-gallery\.css/, file);
   // Menu ma własną zakładkę „Galeria” (shared/menu/gallery.js) zamiast okna z owl-gallery.css.
   assert.doesNotMatch(read("index.html"), /owl-gallery\.css/);
   assert.match(read("shared/menu/gallery.js"), /thumbUrl\(photo, 400\)/);

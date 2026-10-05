@@ -76,7 +76,7 @@
       alt: "Portret puchacza o intensywnym spojrzeniu.",
       photographer: "petraryan",
       sourceUrl: "https://www.pexels.com/photo/33228723/",
-      requirement: "Zbuduj 4 pomieszczenia w Sowiej Szklarni.",
+      requirement: "Odnów 4 pomieszczenia w Łącz i Hoduj.",
       goals: [["szklarniaRooms", 4]],
     },
     {
@@ -216,7 +216,7 @@
       alt: "Młoda sowa wyglądająca ciekawie spomiędzy gałęzi.",
       photographer: "Twórca w serwisie Pexels",
       sourceUrl: "https://www.pexels.com/photo/31330685/",
-      requirement: "Posiadaj 6 roślin w Sowiej Szklarni.",
+      requirement: "Miej 6 roślin na półkach w Łącz i Hoduj.",
       goals: [["szklarniaPlants", 6]],
     },
     {
@@ -226,7 +226,7 @@
       alt: "Młoda sowa siedząca na gałęzi w jasnym lesie.",
       photographer: "Twórca w serwisie Pexels",
       sourceUrl: "https://www.pexels.com/photo/23654832/",
-      requirement: "Przegoń 3 kozy w Sowiej Szklarni.",
+      requirement: "Użyj 3 kózek-pomocnic w Łącz i Hoduj.",
       goals: [["szklarniaGoats", 3]],
     },
     {
@@ -236,7 +236,7 @@
       alt: "Puchata młoda uszatka stojąca na leśnej ziemi.",
       photographer: "Twórca w serwisie Pexels",
       sourceUrl: "https://www.pexels.com/photo/19065545/",
-      requirement: "Odkryj pierwszą hybrydę w Sowiej Szklarni.",
+      requirement: "Wyhoduj pierwszą hybrydę w Łącz i Hoduj.",
       goals: [["szklarniaHybrids", 1]],
     },
     {
@@ -306,7 +306,7 @@
       alt: "Kilka uroczych sów siedzących razem pośród wiosennych gałęzi.",
       photographer: "Twórca w serwisie Pexels",
       sourceUrl: "https://www.pexels.com/photo/31922777/",
-      requirement: "Osiągnij 8. poziom Akademii, zdobądź 80 piórek i zbuduj 5 pomieszczeń Szklarni.",
+      requirement: "Osiągnij 8. poziom Akademii, zdobądź 80 piórek i odnów 5 pomieszczeń w Łącz i Hoduj.",
       goals: [["level", 8], ["feathers", 80], ["szklarniaRooms", 5]],
     },
   ]);

@@ -14,9 +14,9 @@
     { id: "ogrody-clicks", game: "ogrody", metric: "ogrodyClicks", type: "delta", target: 30, label: "Zbierz liście ręcznie 30 razy" },
     { id: "ogrody-buys", game: "ogrody", metric: "ogrodyBuys", type: "delta", target: 8, label: "Kup 8 roślin lub ulepszeń w Ogrodach" },
     { id: "ogrody-watering", game: "ogrody", metric: "ogrodyWatering", type: "delta", target: 3, label: "Podlej ogród 3 razy" },
-    { id: "szklarnia-rooms", game: "szklarnia", metric: "szklarniaRooms", type: "max", target: 4, label: "Posiadaj 4 pomieszczenia w Szklarni" },
-    { id: "szklarnia-goats", game: "szklarnia", metric: "szklarniaGoats", type: "delta", target: 2, label: "Przegoń 2 kozy w Szklarni" },
-    { id: "szklarnia-hybrid", game: "szklarnia", metric: "szklarniaHybrids", type: "max", target: 1, label: "Odkryj hybrydę w Szklarni" },
+    { id: "szklarnia-rooms", game: "szklarnia", metric: "szklarniaRooms", type: "max", target: 4, label: "Odnów 4 pomieszczenia w Łącz i Hoduj" },
+    { id: "szklarnia-goats", game: "szklarnia", metric: "szklarniaGoats", type: "delta", target: 2, label: "Użyj 2 kózek w Łącz i Hoduj" },
+    { id: "szklarnia-hybrid", game: "szklarnia", metric: "szklarniaHybrids", type: "max", target: 1, label: "Wyhoduj hybrydę w Łącz i Hoduj" },
   ]);
 
   const listeners = new Set();

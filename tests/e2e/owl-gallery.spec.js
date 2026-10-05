@@ -137,24 +137,3 @@ test("osiągnięcia Akademii z Firestore trwale odblokowują komplet trzydziestu
   expect(profile.academy.xp).toBeGreaterThanOrEqual(6000);
   expect(errors).toEqual([]);
 });
-
-// Dawne gry idle mają przycisk Galerii w doku; przebudowane gry — Galerię w zakładce menu głównego.
-test("Galeria Sów jest dostępna bezpośrednio z każdej obecnej gry", async ({ page }) => {
-  const errors = watchRuntimeErrors(page);
-  const paths = ["/SowiaSzklarnia/"];
-
-  for (const [index, path] of paths.entries()) {
-    await page.goto(`${path}?seed=gallery-game-${index}&testNow=1783656000000`, { waitUntil: "load" });
-    await waitForCloud(page);
-    const opener = page.locator("[data-gallery-fab]");
-    await expect(opener).toBeVisible({ timeout: 15_000 });
-    await opener.click();
-    const dialog = page.getByRole("dialog", { name: "🖼️ Galeria Sów" });
-    await expect(dialog).toBeVisible();
-    await expect(dialog.locator("[data-gallery-photo]")).toHaveCount(30);
-    await page.keyboard.press("Escape");
-    await expect(dialog).toBeHidden();
-  }
-
-  expect(errors).toEqual([]);
-});

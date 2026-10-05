@@ -35,7 +35,7 @@ test("zakładka „Gry”: pięć kart z rejestru, „Graj” otwiera grę", asy
   await openMenu(page);
   await expect(page.getByRole("tab", { name: "Gry" })).toHaveAttribute("aria-selected", "true");
   const cards = page.locator(".game-card");
-  for (const name of ["Sowia Ucieczka", "Sowa w Chmurach", "Sowie Tory", "Sowie Ogrody", "Sowia Szklarnia"]) {
+  for (const name of ["Sowia Ucieczka", "Sowa w Chmurach", "Sowie Tory", "Sowie Ogrody", "Łącz i Hoduj"]) {
     await expect(cards.filter({ hasText: name })).toHaveCount(1);
   }
   // Rekord z profilu (tu: jeszcze bez gry) zastępuje szkielet karty po wczytaniu chmury.
@@ -52,12 +52,14 @@ test("zakładka „Gry”: pięć kart z rejestru, „Graj” otwiera grę", asy
   // Sowa w Chmurach zastąpiła SowaJumper (E6f): karta „jumper” prowadzi do nowej gry i ma znaczek „Nowe!”.
   await expect(page.locator('[data-play="jumper"]')).toHaveAttribute("href", "SowaWChmurach/");
   await expect(page.locator('[data-game="jumper"] .game-card-new')).toHaveText("Nowe!");
-  await expect(page.locator("[data-preview]")).toHaveCount(1);
+  // Od E8e wszystkie gry są przebudowane — żadna karta nie ma już przycisku wersji podglądowej.
+  await expect(page.locator("[data-preview]")).toHaveCount(0);
   // Nowa odsłona Sowich Ogrodów zastąpiła dawną grę (E7e) w tym samym folderze: „Nowe!”, bez podglądu.
   await expect(page.locator('[data-play="ogrody"]')).toHaveAttribute("href", "SowieOgrody/");
   await expect(page.locator('[data-game="ogrody"] .game-card-new')).toHaveText("Nowe!");
-  await expect(page.locator('[data-preview="szklarnia"]')).toHaveAttribute("href", "LaczIHoduj/");
-  await expect(page.locator('[data-preview="szklarnia"]')).toContainText("Wypróbuj nową wersję: Łącz i Hoduj");
+  // Łącz i Hoduj zastąpiła Sowią Szklarnię (E8e): karta „szklarnia” prowadzi do nowej gry i ma znaczek „Nowe!”.
+  await expect(page.locator('[data-play="szklarnia"]')).toHaveAttribute("href", "LaczIHoduj/");
+  await expect(page.locator('[data-game="szklarnia"] .game-card-new')).toHaveText("Nowe!");
   // Ilustracje rysują postacie z atlasu.
   await page.waitForFunction(() => window.SowieMenu.atlas.ready() && window.SowieMenu.frames() > 3);
 
@@ -148,7 +150,9 @@ test("instrukcje: „Jak grać?” na karcie i zakładka z kartami wszystkich gi
   // Karty sterowania mają animowaną demonstrację gestu: po jednej w obecnych grach i po trzy w Sowiej Ucieczce
   // (skok — stuknięcie, szybowanie — przytrzymanie, ślizg — przesunięcie w dół) i Sowich Torach (zmiana toru,
   // skok — przesunięcie w górę, ślizg — w dół).
-  await expect(panel.locator(".sowie-gesture-demo")).toHaveCount(9);
+  // Od E8e Łącz i Hoduj ma dwie (przeciągnięcie — łączenie, stuknięcie — doniczka).
+  await expect(panel.locator(".sowie-gesture-demo")).toHaveCount(10);
+  await expect(panel.locator("#jak-grac-szklarnia .sowie-gesture-demo")).toHaveCount(2);
   await expect(panel.locator("#jak-grac-runner .sowie-gesture-demo")).toHaveCount(3);
   await expect(panel.locator("#jak-grac-sowa3 .sowie-gesture-demo")).toHaveCount(3);
   expect(errors).toEqual([]);

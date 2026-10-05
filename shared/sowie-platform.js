@@ -53,15 +53,15 @@
       saveVersion: 3,
       rebuilt: true,
     },
+    // Łącz i Hoduj (E8) zastąpiła Sowią Szklarnię: ten sam identyfikator i dokument gry; SowiaSzklarnia/ przekierowuje.
     {
       id: "szklarnia",
-      name: "Sowia Szklarnia",
-      path: "SowiaSzklarnia/",
+      name: "Łącz i Hoduj",
+      path: "LaczIHoduj/",
       icon: "🏡",
       kind: "idle",
-      saveVersion: 1,
-      // Nowa gra w podglądzie (E8): „Łącz i Hoduj” w folderze LaczIHoduj/ (stan podglądu w polu `preview`).
-      preview: Object.freeze({ path: "LaczIHoduj/", name: "Łącz i Hoduj" }),
+      saveVersion: 2,
+      rebuilt: true,
     },
   ]);
 
