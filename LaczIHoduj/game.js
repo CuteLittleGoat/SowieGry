@@ -1,6 +1,6 @@
 // Łącz i Hoduj — stan gry (wersja 2) i silnik (czysta logika, bez DOM): Sowia doniczka z ładunkami, ruchy
 // z łączeniem, kompostownik, zamówienia sowich sąsiadek, liście monstery, gwiazdki odnowy, odnawianie pomieszczeń
-// szklarni z ułatwieniami, statystyki i zdarzenia dla interfejsu.
+// szklarni z ułatwieniami, przeszkody Pracu i Amic, statystyki i zdarzenia dla interfejsu.
 import {
   BOARD,
   CHAINS,
@@ -8,6 +8,7 @@ import {
   HYBRIDS,
   MERGE_LEAVES,
   NEIGHBORS,
+  OBSTACLES,
   ORDERS,
   PERKS,
   POT,
@@ -15,7 +16,19 @@ import {
   SAVE_VERSION,
   START_ITEMS,
 } from "./config.js";
-import { createBoard, maxLevel, moveItem, removeItem, serializeCells, spawnItem, spawnNear } from "./board.js";
+import {
+  cellPosition,
+  createBoard,
+  emptyCells,
+  maxLevel,
+  moveItem,
+  neighbors,
+  removeItem,
+  serializeBlocks,
+  serializeCells,
+  spawnItem,
+  spawnNear,
+} from "./board.js";
 
 /** Łańcuchy doniczki dostępne przy danej liczbie połączeń (`stats.merges`). */
 export const potChains = (merges) => POT.chains.filter((entry) => merges >= entry.unlock);
@@ -164,14 +177,15 @@ export function orderReward(order, done = 0) {
 
 /**
  * Pola z przedmiotami do oddania (`count` sztuk tego samego łańcucha i poziomu; najpierw pole `prefer`, np.
- * przeciągnięte) albo null, gdy na planszy jest ich za mało.
+ * przeciągnięte; bez przedmiotów pod karteczkami z `blocks`) albo null, gdy na planszy jest ich za mało.
  */
-export function orderCells(cells, order, prefer = -1) {
+export function orderCells(cells, order, prefer = -1, blocks = null) {
   const same = (item) => item && item.chain === order.chain && item.level === order.level;
+  const free = (index) => same(cells[index]) && !blocks?.[index];
   const found = [];
-  if (prefer >= 0 && same(cells[prefer])) found.push(prefer);
+  if (prefer >= 0 && free(prefer)) found.push(prefer);
   for (let index = 0; index < cells.length && found.length < order.count; index += 1) {
-    if (index !== prefer && same(cells[index])) found.push(index);
+    if (index !== prefer && free(index)) found.push(index);
   }
   return found.length >= order.count ? found.slice(0, order.count) : null;
 }
@@ -199,6 +213,8 @@ export function defaultState(now = Date.now(), random = Math.random) {
     createdAt: now,
     savedAt: now,
     cells: serializeCells(board),
+    blocks: serializeBlocks(board),
+    phoneMoves: 0,
     leaves: 0,
     stars: 0,
     renovation: 0,
@@ -214,10 +230,13 @@ export function loadState(raw, now = Date.now(), random = Math.random) {
   const base = defaultState(now, random);
   const stats = { ...base.stats, ...(raw.stats || {}) };
   const done = Math.min(RENOVATION_STEPS, Math.max(0, Math.floor(number(raw.renovation))));
+  const board = createBoard({ ...BOARD, cells: raw.cells, blocks: raw.blocks });
   const state = {
     ...base,
     ...raw,
-    cells: serializeCells(createBoard({ ...BOARD, cells: raw.cells })),
+    cells: serializeCells(board),
+    blocks: serializeBlocks(board),
+    phoneMoves: Math.min(OBSTACLES.ringEvery - 1, Math.max(0, Math.floor(number(raw.phoneMoves)))),
     leaves: number(raw.leaves),
     renovation: done,
     pot: {
@@ -236,19 +255,102 @@ export function loadState(raw, now = Date.now(), random = Math.random) {
 
 /**
  * createGame({ state, random }) → { state, board, update(dt), tapPot(), move(from, to), compost(index),
- * orderCells(slot, prefer), deliver(slot, prefer), renovate(), potMax(), takeEvents() }. Zdarzenia: spawn { index, item }, potEmpty,
+ * orderCells(slot, prefer), tapBlock(index), deliver(slot, prefer), renovate(), potMax(), takeEvents() }. Zdarzenia: spawn { index, item }, potEmpty,
  * boardFull, move { from, to }, swap { from, to }, merge { from, to, item, leaves, top },
  * hybrid { from, to, item, leaves }, unlock { chain, name }, compost { index, item, leaves },
  * order { slot, order, cells, leaves, stars }, newOrder { slot, order }, orderMissing { slot, order },
- * renovate { room, step, name, roomDone }, renovateMissing { room, need }.
+ * renovate { room, step, name, roomDone }, renovateMissing { room, need }; przeszkody: crate { index },
+ * phone { index }, note { index, from }, noteTap { index, left }, noteGone { index }, blockHit { index, block, left },
+ * phoneGone { index }, crateOpen { index, leaves, stars }, blockInfo { index, block }.
  */
 export function createGame({ state = defaultState(), random = Math.random } = {}) {
-  const board = createBoard({ ...BOARD, cells: state.cells });
+  const board = createBoard({ ...BOARD, cells: state.cells, blocks: state.blocks });
   const events = [];
   const emit = (type, data = {}) => events.push({ type, ...data });
   const sync = () => {
     state.cells = serializeCells(board);
+    state.blocks = serializeBlocks(board);
   };
+  const count = (type) => board.blocks.filter((block) => block?.type === type).length;
+  const pick = (list) => list[Math.min(list.length - 1, Math.floor(random() * list.length))];
+
+  // ---------- Przeszkody ----------
+
+  // Pracu Pracu zostawia telefon na losowym wolnym polu.
+  function placePhone() {
+    const free = emptyCells(board);
+    if (!free.length) return -1;
+    const index = pick(free);
+    board.blocks[index] = { type: "phone", hits: 0 };
+    state.phoneMoves = 0;
+    emit("phone", { index });
+    return index;
+  }
+
+  // Telefon dzwoni: karteczka na polu w promieniu `reach` (najpierw pola z roślinami bez karteczki, potem wolne).
+  function ring() {
+    const phone = board.blocks.findIndex((block) => block?.type === "phone");
+    if (phone < 0) return -1;
+    const at = cellPosition(board, phone);
+    const near = board.cells
+      .map((_, index) => index)
+      .filter((index) => {
+        const { col, row } = cellPosition(board, index);
+        return Math.max(Math.abs(col - at.col), Math.abs(row - at.row)) <= OBSTACLES.reach && !board.blocks[index];
+      });
+    const planted = near.filter((index) => board.cells[index]);
+    const list = planted.length ? planted : near;
+    if (!list.length) return -1;
+    const index = pick(list);
+    board.blocks[index] = { type: "note", hits: 0 };
+    emit("note", { index, from: phone });
+    return index;
+  }
+
+  // Połączenie na polu `index`: karteczki obok znikają, telefon i skrzynie obok dostają uderzenie.
+  function hitAround(index) {
+    for (const other of neighbors(board, index)) {
+      const block = board.blocks[other];
+      if (!block) continue;
+      if (block.type === "note") {
+        board.blocks[other] = null;
+        emit("noteGone", { index: other });
+        continue;
+      }
+      block.hits += 1;
+      const need = block.type === "phone" ? OBSTACLES.phoneHits : OBSTACLES.crateHits;
+      if (block.hits < need) {
+        emit("blockHit", { index: other, block: block.type, left: need - block.hits });
+        continue;
+      }
+      board.blocks[other] = null;
+      if (block.type === "phone") {
+        state.phoneMoves = 0;
+        emit("phoneGone", { index: other });
+      } else {
+        state.leaves += OBSTACLES.crateLeaves;
+        state.stars += OBSTACLES.crateStars;
+        emit("crateOpen", { index: other, leaves: OBSTACLES.crateLeaves, stars: OBSTACLES.crateStars });
+      }
+    }
+  }
+
+  /** Stuknięcie przeszkody: karteczka — odklejanie (`noteTaps` stuknięć), inne — podpowiedź. */
+  function tapBlock(index) {
+    const block = board.blocks[index];
+    if (!block) return null;
+    if (block.type !== "note") {
+      emit("blockInfo", { index, block: block.type });
+      return block.type;
+    }
+    block.hits += 1;
+    if (block.hits >= OBSTACLES.noteTaps) {
+      board.blocks[index] = null;
+      emit("noteGone", { index });
+    } else emit("noteTap", { index, left: OBSTACLES.noteTaps - block.hits });
+    sync();
+    return block.type;
+  }
 
   function update(dt) {
     chargePot(state, dt);
@@ -259,6 +361,20 @@ export function createGame({ state = defaultState(), random = Math.random } = {}
     if (state.pot.charges < 1) {
       emit("potEmpty");
       return -1;
+    }
+    // Amic: czasem skrzynia zamiast nasionka (od kilku zamówień, najwyżej dwie naraz).
+    if (state.stats.orders >= OBSTACLES.crateFrom && count("crate") < OBSTACLES.maxCrates) {
+      if (random() < OBSTACLES.crateChance) {
+        const free = emptyCells(board);
+        if (free.length) {
+          const index = pick(free);
+          board.blocks[index] = { type: "crate", hits: 0 };
+          state.pot.charges -= 1;
+          sync();
+          emit("crate", { index });
+          return index;
+        }
+      }
     }
     const chain = pickChain(state.stats.merges, random);
     // Zraszalnia: czasem od razu kiełek; Kozi Zakątek: nasionko obok takiego samego.
@@ -287,6 +403,7 @@ export function createGame({ state = defaultState(), random = Math.random } = {}
       state.stats.merges += 1;
       state.stats.best = Math.max(state.stats.best, result.item.level);
       emit("merge", { from, to, item: result.item, leaves, top: result.item.level >= maxLevel(result.item.chain) });
+      hitAround(to);
     } else if (result.type === "hybrid") {
       const base = HYBRIDS[result.item.chain].leaves;
       const leaves = hasPerk(state, "cross") ? Math.round(base * PERKS.hybridFactor) : base;
@@ -294,7 +411,16 @@ export function createGame({ state = defaultState(), random = Math.random } = {}
       state.stats.merges += 1;
       state.stats.hybrids += 1;
       emit("hybrid", { from, to, item: result.item, leaves });
+      hitAround(to);
     } else emit(result.type, { from, to });
+    // Telefon Pracu dzwoni co `ringEvery` ruchów.
+    if (count("phone")) {
+      state.phoneMoves += 1;
+      if (state.phoneMoves >= OBSTACLES.ringEvery) {
+        state.phoneMoves = 0;
+        ring();
+      }
+    }
     // Nowy łańcuch w doniczce po przekroczeniu progu połączeń.
     for (const entry of potChains(state.stats.merges).slice(unlocked)) {
       emit("unlock", { chain: entry.chain, name: CHAINS[entry.chain].name });
@@ -320,7 +446,7 @@ export function createGame({ state = defaultState(), random = Math.random } = {}
   function deliver(slot, prefer = -1) {
     const order = state.orders[slot];
     if (!order) return null;
-    const cells = orderCells(board.cells, order, prefer);
+    const cells = orderCells(board.cells, order, prefer, board.blocks);
     if (!cells) {
       emit("orderMissing", { slot, order });
       return null;
@@ -338,6 +464,10 @@ export function createGame({ state = defaultState(), random = Math.random } = {}
       ...others,
     ]);
     emit("newOrder", { slot, order: state.orders[slot] });
+    // Pracu Pracu przychodzi z telefonem po kilku zamówieniach (gdy telefonu nie ma).
+    const since = state.stats.orders - OBSTACLES.phoneFrom;
+    if (since >= 0 && since % OBSTACLES.phoneEvery === 0 && !count("phone")) placePhone();
+    sync();
     return reward;
   }
 
@@ -366,7 +496,8 @@ export function createGame({ state = defaultState(), random = Math.random } = {}
     move,
     compost,
     orderCells: (slot, prefer = -1) =>
-      state.orders[slot] ? orderCells(board.cells, state.orders[slot], prefer) : null,
+      state.orders[slot] ? orderCells(board.cells, state.orders[slot], prefer, board.blocks) : null,
+    tapBlock,
     deliver,
     renovate,
     potMax: () => potMax(state),

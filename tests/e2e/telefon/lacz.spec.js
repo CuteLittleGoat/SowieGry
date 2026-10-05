@@ -1,7 +1,7 @@
 // Łącz i Hoduj (nowa Sowia Szklarnia — prototyp, Analiza 3, E8 kroki 8.0–8.1) na telefonach: przeciąganie
 // z uniesieniem nad palec i łączenie, zaznaczanie stuknięciem, Sowia doniczka, kompostownik (przeciągnięcie
 // i przycisk), hybrydy i nowe łańcuchy w doniczce, zamówienia sąsiadek (stuknięcie karty, przeciągnięcie rośliny na
-// kartę), odnawianie pomieszczeń szklarni (okno z portfela), pełna plansza, zapis w osobnym polu `preview` (emulator), plansza 7 × 9 z polami ≥ 44 px na najmniejszym
+// kartę), odnawianie pomieszczeń szklarni (okno z portfela), przeszkody Pracu i Amic, pełna plansza, zapis w osobnym polu `preview` (emulator), plansza 7 × 9 z polami ≥ 44 px na najmniejszym
 // telefonie i telefon poziomo (plansza obrócona do 9 × 7, przyciski z boku).
 const { test, expect, waitForCloud, watchErrors } = require("../fixtures");
 const { cloudUrl, readDoc, seedDoc, uniqueProject } = require("../emulator");
@@ -236,6 +236,38 @@ test("Łącz i Hoduj: odnawianie pomieszczeń — okno z portfela, etapy za gwia
   await expect(page.locator("[data-stars]")).toHaveText("0");
   await expect(page.locator("[data-charges]")).toHaveText("12/14");
   expect((await game(page, "state")).renovation).toBe(3);
+  expect(errors).toEqual([]);
+});
+
+test("Łącz i Hoduj: karteczka Pracu (roślina pod nią stoi, 3 stuknięcia ją odklejają), skrzynia Amic po 2 połączeniach obok", async ({
+  page,
+}) => {
+  const errors = watchErrors(page);
+  await openGame(page);
+  await game(page, "setBlock", 30, "note");
+  await drag(page, 30, 31);
+  let board = await cells(page);
+  expect(board[30]).toEqual({ chain: "monstera", level: 1 });
+  expect(board[31]).toEqual({ chain: "monstera", level: 1 });
+  const point = await cellPoint(page, 30);
+  await page.mouse.click(point.x, point.y);
+  await expect(page.locator("[data-hint]")).toHaveText("Odklejasz karteczkę… jeszcze 2 stuknięcia");
+  await page.mouse.click(point.x, point.y);
+  await expect(page.locator("[data-hint]")).toHaveText("Odklejasz karteczkę… jeszcze 1 stuknięcie");
+  await page.mouse.click(point.x, point.y);
+  await expect(page.locator("[data-hint]")).toHaveText("Karteczka odklejona!");
+  expect((await game(page, "blocks"))[30]).toBeNull();
+  // Skrzynia obok pola 31: dwa połączenia na polu 31 ją otwierają.
+  await game(page, "setBlock", 32, "crate");
+  await drag(page, 30, 31);
+  await expect(page.locator("[data-hint]")).toHaveText("Skrzynia Amic: jeszcze 1 połączenie obok");
+  await drag(page, 38, 31);
+  await expect(page.locator("[data-hint]")).toHaveText("Skrzynia otwarta! +15 liści, +1 ⭐");
+  board = await cells(page);
+  expect(board[31]).toEqual({ chain: "monstera", level: 3 });
+  expect((await game(page, "blocks"))[32]).toBeNull();
+  await expect(page.locator("[data-stars]")).toHaveText("1");
+  await expect(page.locator("[data-leaves]")).toHaveText("19");
   expect(errors).toEqual([]);
 });
 

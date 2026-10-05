@@ -1,6 +1,6 @@
 // Łącz i Hoduj (nowa Sowia Szklarnia, Analiza 3, E8 — kroki 8.0–8.1): plansza 7 × 9, łączenie w łańcuchach,
-// hybrydy, Sowia doniczka, kompostownik, zamówienia sąsiadek, odnawianie pomieszczeń z ułatwieniami, zapis stanu
-// i to, że plansza nigdy nie blokuje się bez wyjścia.
+// hybrydy, Sowia doniczka, kompostownik, zamówienia sąsiadek, odnawianie pomieszczeń z ułatwieniami, przeszkody
+// Pracu i Amic, zapis stanu i to, że plansza nigdy nie blokuje się bez wyjścia.
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
@@ -26,6 +26,7 @@ import {
   HYBRIDS,
   MERGE_LEAVES,
   NEIGHBORS,
+  OBSTACLES,
   ORDERS,
   PERKS,
   POT,
@@ -141,21 +142,32 @@ test("plansza nigdy nie blokuje się bez wyjścia: pełna i bez par wciąż ma k
   const levels = [1, 2, 3, 4, 5];
   // Pełna plansza bez żadnej pary do połączenia: po jednym przedmiocie z poziomów 1–4 i reszta Złotych Monster.
   game.board.cells = game.board.cells.map((_, index) => seed(index < 4 ? levels[index] : 5));
-  assert.deepEqual(exits(game.board), { merges: 0, empty: 0, compost: 63 });
+  assert.deepEqual(exits(game.board), { merges: 0, empty: 0, compost: 63, notes: 0 });
   assert.equal(game.tapPot(), -1);
   // Wyjście: kompost zwalnia pole, a doniczka znowu kładzie nasionko — teraz jest para (dwa nasionka).
   game.compost(10);
   const spawned = game.tapPot();
   assert.equal(spawned, 10);
   assert.equal(exits(game.board).merges, 1);
-  // Losowe plansze: zawsze jest jakieś wyjście (połączenie, wolne pole albo kompost).
+  // Pełna plansza pod samymi karteczkami Pracu: bez kompostu, ale karteczki odkleja się stuknięciami.
+  const covered = createBoard(BOARD);
+  covered.cells = covered.cells.map(() => seed(5));
+  covered.blocks = covered.blocks.map(() => ({ type: "note", hits: 0 }));
+  assert.deepEqual(exits(covered), { merges: 0, empty: 0, compost: 0, notes: 63 });
+  // Losowe plansze (także z karteczkami, telefonami i skrzyniami): zawsze jest jakieś wyjście.
   let value = 1;
   const random = () => (value = (value * 16807) % 2147483647) / 2147483647;
   for (let round = 0; round < 200; round += 1) {
     const board = createBoard(BOARD);
     board.cells = board.cells.map(() => (random() < 0.85 ? seed(1 + Math.floor(random() * 5)) : null));
+    board.blocks = board.cells.map((item) => {
+      const roll = random();
+      if (roll < 0.2) return { type: "note", hits: 0 };
+      if (!item && roll < 0.4) return { type: roll < 0.3 ? "phone" : "crate", hits: 0 };
+      return null;
+    });
     const way = exits(board);
-    assert.ok(way.merges > 0 || way.empty > 0 || way.compost > 0, `runda ${round}`);
+    assert.ok(way.merges > 0 || way.empty > 0 || way.compost > 0 || way.notes > 0, `runda ${round}`);
   }
 });
 
@@ -511,4 +523,96 @@ test("ułatwienia pomieszczeń: doniczka, kiełki, kózki, kompost, hybrydy, zam
   const awake = { ...JSON.parse(JSON.stringify(at("pollen"))), savedAt: 0 };
   awake.pot = { charges: 0, progress: 0 };
   assert.equal(loadState(awake, 10_000).pot.charges, 0);
+});
+
+test("przeszkody na planszy: karteczka zamraża roślinę, telefon i skrzynia zajmują pole, zapis warstwy", () => {
+  const board = createBoard({
+    ...BOARD,
+    cells: [seed(1), seed(1), null, seed(2)],
+    blocks: [{ type: "note", hits: 1 }, null, { type: "crate" }, { type: "phone" }, { type: "palma" }],
+  });
+  assert.deepEqual(board.blocks.slice(0, 5), [{ type: "note", hits: 1 }, null, { type: "crate", hits: 0 }, null, null]);
+  assert.deepEqual(board.cells[3], seed(2), "przeszkoda zajmująca pole z rośliną znika, roślina zostaje");
+  assert.equal(moveItem(board, 0, 1).type, "none", "roślina pod karteczką się nie rusza");
+  assert.equal(moveItem(board, 1, 0).type, "none", "na karteczkę nic nie spada");
+  assert.equal(moveItem(board, 1, 2).type, "none", "ani na skrzynię");
+  assert.equal(emptyCells(board).includes(2), false);
+  assert.equal(mergeablePairs(board), 0, "nasionko pod karteczką się nie liczy");
+  assert.equal(exits(board).notes, 1);
+  const game = createGame({
+    state: { ...defaultState(0), cells: board.cells, blocks: board.blocks },
+    random: queue(0),
+  });
+  assert.equal(game.compost(0), null, "pod karteczką — bez kompostu");
+  game.state.orders[0] = { neighbor: "puszczyk", chain: "monstera", level: 1, count: 1 };
+  assert.deepEqual(game.orderCells(0), [1], "do zamówienia tylko nasionko bez karteczki");
+  // Stuknięcia odklejają karteczkę (3 razy; jedno już było).
+  assert.equal(game.tapBlock(0), "note");
+  assert.deepEqual(game.takeEvents(), [{ type: "noteTap", index: 0, left: 1 }]);
+  game.tapBlock(0);
+  assert.deepEqual(game.takeEvents(), [{ type: "noteGone", index: 0 }]);
+  assert.equal(game.state.blocks[0], null);
+  assert.equal(game.tapBlock(2), "crate");
+  assert.deepEqual(game.takeEvents(), [{ type: "blockInfo", index: 2, block: "crate" }]);
+  // Zapis i wczytanie zachowują warstwę przeszkód i licznik telefonu.
+  const loaded = loadState(JSON.parse(JSON.stringify({ ...game.state, phoneMoves: 7 })), 0);
+  assert.deepEqual(loaded.blocks[2], { type: "crate", hits: 0 });
+  assert.equal(loaded.phoneMoves, 7);
+  assert.equal(loadState({ ...loaded, phoneMoves: 99 }, 0).phoneMoves, OBSTACLES.ringEvery - 1);
+});
+
+test("Pracu i Amic: telefon po zamówieniach dzwoni co 10 ruchów, połączenia obok usuwają przeszkody, skrzynie z doniczki", () => {
+  const game = createGame({ state: defaultState(0), random: queue(0) });
+  game.board.cells.fill(null);
+  game.state.stats.orders = OBSTACLES.phoneFrom - 1;
+  game.state.orders[0] = { neighbor: "puszczyk", chain: "monstera", level: 1, count: 1 };
+  game.board.cells[62] = seed(1);
+  game.deliver(0);
+  const phone = game.takeEvents().find((event) => event.type === "phone");
+  assert.ok(phone, "telefon Pracu po 4. zamówieniu");
+  assert.deepEqual(game.board.blocks[phone.index], { type: "phone", hits: 0 });
+  // Dziesięć ruchów (przenoszenie tam i z powrotem) — dzwonek i karteczka obok telefonu na polu z rośliną.
+  game.board.blocks.fill(null);
+  game.board.blocks[24] = { type: "phone", hits: 0 };
+  game.board.cells[10] = seed(3);
+  game.board.cells[40] = seed(4);
+  for (let step = 0; step < OBSTACLES.ringEvery - 1; step += 1) game.move(step % 2 ? 41 : 40, step % 2 ? 40 : 41);
+  assert.equal(game.state.phoneMoves, OBSTACLES.ringEvery - 1);
+  game.takeEvents();
+  game.move(41, 40);
+  const note = game.takeEvents().find((event) => event.type === "note");
+  assert.deepEqual(note, { type: "note", index: 10, from: 24 }, "karteczka na roślinie w promieniu 2");
+  assert.equal(game.state.phoneMoves, 0);
+  // Połączenie obok: karteczka znika, telefon dostaje uderzenie; drugie połączenie wyłącza telefon.
+  game.board.cells[17] = seed(1);
+  game.board.cells[16] = seed(1);
+  game.move(16, 17);
+  let events = game.takeEvents();
+  assert.ok(events.some((event) => event.type === "noteGone" && event.index === 10));
+  assert.ok(events.some((event) => event.type === "blockHit" && event.index === 24 && event.left === 1));
+  game.board.cells[23] = seed(2);
+  game.move(17, 23);
+  events = game.takeEvents();
+  assert.ok(events.some((event) => event.type === "phoneGone" && event.index === 24));
+  assert.equal(game.state.blocks[24], null);
+  // Skrzynia Amic z doniczki (od 3 zamówień): dwa połączenia obok ją otwierają — liście i gwiazdka.
+  const amic = createGame({ state: { ...defaultState(0) }, random: queue(0, 0) });
+  amic.board.cells.fill(null);
+  amic.state.stats.orders = OBSTACLES.crateFrom;
+  const crate = amic.tapPot();
+  assert.deepEqual(amic.board.blocks[crate], { type: "crate", hits: 0 });
+  assert.equal(amic.state.pot.charges, POT.max - 1);
+  assert.equal(amic.takeEvents()[0].type, "crate");
+  amic.board.blocks.fill(null);
+  amic.board.blocks[30] = { type: "crate", hits: 0 };
+  amic.board.cells[31] = seed(1);
+  amic.board.cells[32] = seed(1);
+  amic.move(32, 31);
+  amic.board.cells[32] = seed(2);
+  const stars = amic.state.stars;
+  amic.move(32, 31);
+  const open = amic.takeEvents().find((event) => event.type === "crateOpen");
+  assert.deepEqual(open, { type: "crateOpen", index: 30, leaves: OBSTACLES.crateLeaves, stars: OBSTACLES.crateStars });
+  assert.equal(amic.state.stars, stars + OBSTACLES.crateStars);
+  assert.equal(amic.state.blocks[30], null);
 });

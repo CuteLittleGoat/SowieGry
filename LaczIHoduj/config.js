@@ -211,8 +211,39 @@ export const PERKS = Object.freeze({
   commandFactor: 1.5,
 });
 
+// Przeszkody (krok 8.2, E8c1). Pracu Pracu: telefon pojawia się po `phoneFrom` zamówieniach i potem co `phoneEvery`
+// zamówień (gdy go nie ma); co `ringEvery` ruchów dzwoni i przykleja karteczkę na pole w promieniu `reach` (najpierw
+// pola z roślinami); karteczka znika po połączeniu obok albo po `noteTaps` stuknięciach; telefon — po `phoneHits`
+// połączeniach obok. Amic: od `crateFrom` zamówień doniczka z szansą `crateChance` kładzie skrzynię (najwyżej
+// `maxCrates` naraz); `crateHits` połączeń obok ją otwiera — w środku liście i gwiazdki.
+export const OBSTACLES = Object.freeze({
+  phoneFrom: 4,
+  phoneEvery: 4,
+  ringEvery: 10,
+  reach: 2,
+  noteTaps: 3,
+  phoneHits: 2,
+  crateFrom: 3,
+  crateChance: 0.06,
+  maxCrates: 2,
+  crateHits: 2,
+  crateLeaves: 15,
+  crateStars: 1,
+});
+
 // Dźwięk (uwaga właściciela L1): efekty wczytywane po pierwszym dotknięciu (tylko używane) i motyw szklarni.
-export const GAME_SOUNDS = Object.freeze(["klik", "ladowanie", "polaczenie", "lisc", "rekord", "slizg"]);
+export const GAME_SOUNDS = Object.freeze([
+  "klik",
+  "ladowanie",
+  "polaczenie",
+  "lisc",
+  "rekord",
+  "slizg",
+  "dzwonek",
+  "trafienie-pracu",
+  "trafienie-amic",
+  "zakup",
+]);
 export const GREENHOUSE_MUSIC = "szklarnia";
 
 // Nowa gra: kilka przedmiotów na start (indeks pola, poziom), żeby od razu było co łączyć.

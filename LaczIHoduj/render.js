@@ -1,7 +1,8 @@
 // Łącz i Hoduj — rysowanie planszy na płótnie (piksele CSS): szklarnia z półkami, pola, rośliny (rysunki
-// z `plants.js`), zaznaczenie, przedmiot uniesiony nad palcem przy przeciąganiu z podświetleniem pola, na które
-// spadnie, „pyknięcia” po połączeniu i napisy „+N”.
+// z `plants.js`), przeszkody Pracu i Amic (karteczki, telefon, skrzynie), zaznaczenie, przedmiot uniesiony nad palcem
+// przy przeciąganiu z podświetleniem pola, na które spadnie, „pyknięcia” po połączeniu i napisy „+N”.
 import { COLORS, font } from "../shared/world/tokens.js";
+import { OBSTACLES } from "./config.js";
 import { createPlantPainter } from "./plants.js";
 
 // Uniesienie przeciąganego przedmiotu nad palec (w polach) — widać, gdzie spadnie.
@@ -132,6 +133,148 @@ export function createBoardRenderer({ canvas, cols, rows }) {
     }
   }
 
+  // Znaczek z liczbą (ile jeszcze połączeń obok) w prawym dolnym rogu przeszkody.
+  function badge(cx, cy, s, text) {
+    const x = cx + s * 0.3;
+    const y = cy + s * 0.28;
+    context.fillStyle = COLORS.bialy;
+    context.beginPath();
+    context.arc(x, y, s * 0.13, 0, Math.PI * 2);
+    context.fill();
+    context.fillStyle = COLORS.kontur;
+    context.font = font(Math.max(9, Math.round(s * 0.18)));
+    context.textAlign = "center";
+    context.textBaseline = "middle";
+    context.fillText(text, x, y + 1);
+    context.textBaseline = "alphabetic";
+  }
+
+  // Karteczka Pracu: żółta kartka (lekko obrócona) z cieniem, paskiem kleju, linijkami i czerwoną pieczątką „P”;
+  // po stuknięciach coraz większy zagięty róg.
+  function note(cx, cy, s, index, hits) {
+    const w = s * 0.78;
+    context.save();
+    context.translate(cx, cy);
+    context.rotate((((index * 37) % 11) - 5) * 0.02);
+    context.fillStyle = "rgba(59, 47, 74, 0.18)";
+    roundRect(-w / 2 + 2, -w / 2 + 3, w, w, 4);
+    context.fillStyle = "#ffe680";
+    roundRect(-w / 2, -w / 2, w, w, 4);
+    context.fillStyle = "#f5c842";
+    context.fillRect(-w / 2, -w / 2, w, w * 0.16);
+    context.strokeStyle = "rgba(59, 47, 74, 0.35)";
+    context.lineWidth = Math.max(1, s * 0.03);
+    for (const [y, end] of [
+      [-0.05, 0.3],
+      [0.1, 0.3],
+      [0.25, 0.1],
+    ]) {
+      context.beginPath();
+      context.moveTo(-w * 0.3, w * y);
+      context.lineTo(w * end, w * y);
+      context.stroke();
+    }
+    context.fillStyle = COLORS.pracu;
+    context.beginPath();
+    context.arc(w * 0.28, -w * 0.24, w * 0.13, 0, Math.PI * 2);
+    context.fill();
+    context.fillStyle = COLORS.bialy;
+    context.font = font(Math.max(8, Math.round(w * 0.18)));
+    context.textAlign = "center";
+    context.textBaseline = "middle";
+    context.fillText("P", w * 0.28, -w * 0.23);
+    context.textBaseline = "alphabetic";
+    if (hits > 0) {
+      const fold = w * (0.12 + 0.1 * hits);
+      context.fillStyle = "#e9c94a";
+      context.beginPath();
+      context.moveTo(w / 2, w / 2 - fold);
+      context.lineTo(w / 2 - fold, w / 2);
+      context.lineTo(w / 2 - fold, w / 2 - fold);
+      context.fill();
+    }
+    context.restore();
+  }
+
+  // Telefon Pracu: czerwony aparat ze słuchawką i tarczą; przed dzwonkiem trzęsie się i „fale” dźwięku.
+  function phone(cx, cy, s, time, hits, ringing) {
+    context.save();
+    context.translate(cx, cy);
+    if (ringing) context.rotate(Math.sin(time * 40) * 0.12);
+    context.fillStyle = COLORS.pracu;
+    roundRect(-s * 0.3, -s * 0.12, s * 0.6, s * 0.36, s * 0.08);
+    context.fillStyle = "#b8303f";
+    roundRect(-s * 0.34, -s * 0.27, s * 0.68, s * 0.14, s * 0.07);
+    context.fillStyle = COLORS.bialy;
+    context.beginPath();
+    context.arc(0, s * 0.06, s * 0.11, 0, Math.PI * 2);
+    context.fill();
+    context.fillStyle = COLORS.pracu;
+    context.beginPath();
+    context.arc(0, s * 0.06, s * 0.04, 0, Math.PI * 2);
+    context.fill();
+    context.restore();
+    if (ringing) {
+      context.strokeStyle = COLORS.pracu;
+      context.lineWidth = Math.max(1.5, s * 0.04);
+      for (const side of [-1, 1]) {
+        for (const r of [0.08, 0.14]) {
+          context.beginPath();
+          context.arc(
+            cx + side * s * 0.36,
+            cy - s * 0.12,
+            s * r,
+            side > 0 ? -0.8 : Math.PI - 0.8,
+            side > 0 ? 0.8 : Math.PI + 0.8,
+          );
+          context.stroke();
+        }
+      }
+    }
+    badge(cx, cy, s, String(OBSTACLES.phoneHits - hits));
+  }
+
+  // Skrzynia Amic: drewniana skrzynia z deskami i zielono-czerwonym pasem; pęknięcia po uderzeniach.
+  function crate(cx, cy, s, hits) {
+    const w = s * 0.74;
+    const x = cx - w / 2;
+    const y = cy - w / 2;
+    context.fillStyle = "rgba(59, 47, 74, 0.18)";
+    roundRect(x + 2, y + 3, w, w, 5);
+    context.fillStyle = "#c08a52";
+    roundRect(x, y, w, w, 5);
+    context.strokeStyle = "#8a5a3b";
+    context.lineWidth = Math.max(1, s * 0.03);
+    for (const part of [1 / 3, 2 / 3]) {
+      context.beginPath();
+      context.moveTo(x, y + w * part);
+      context.lineTo(x + w, y + w * part);
+      context.stroke();
+    }
+    context.fillStyle = COLORS.amicZielony;
+    context.fillRect(cx - w * 0.12, y, w * 0.12, w);
+    context.fillStyle = COLORS.amicCzerwony;
+    context.fillRect(cx, y, w * 0.12, w);
+    context.strokeStyle = COLORS.kontur;
+    context.lineWidth = Math.max(1, s * 0.025);
+    for (let crack = 0; crack < hits; crack += 1) {
+      const sx = x + w * (0.2 + crack * 0.45);
+      context.beginPath();
+      context.moveTo(sx, y + w * 0.1);
+      context.lineTo(sx + w * 0.08, y + w * 0.3);
+      context.lineTo(sx - w * 0.02, y + w * 0.45);
+      context.lineTo(sx + w * 0.06, y + w * 0.62);
+      context.stroke();
+    }
+    badge(cx, cy, s, String(OBSTACLES.crateHits - hits));
+  }
+
+  function block(target, index, cx, cy, s, time, ringing) {
+    if (target.type === "note") note(cx, cy, s, index, target.hits);
+    else if (target.type === "phone") phone(cx, cy, s, time, target.hits, ringing);
+    else if (target.type === "crate") crate(cx, cy, s, target.hits);
+  }
+
   function effects(dt) {
     context.textAlign = "center";
     for (const popup of popups) {
@@ -164,10 +307,11 @@ export function createBoardRenderer({ canvas, cols, rows }) {
       if (popups.length > 10) popups.shift();
     },
     /**
-     * draw({ cells, selected, drag: { from, x, y, target, kind } | null, time, dt }) — `kind` pola docelowego:
-     * "merge" (zielone), "move" / "swap" (niebieskie), "compost" (bez podświetlenia pola).
+     * draw({ cells, blocks, ringing, selected, drag: { from, x, y, target, kind } | null, time, dt }) — `kind` pola
+     * docelowego: "merge" (zielone), "move" / "swap" (niebieskie), "compost" (bez podświetlenia pola); `blocks` —
+     * warstwa przeszkód, `ringing` — telefon Pracu zaraz zadzwoni.
      */
-    draw({ cells, selected = -1, drag = null, time = 0, dt = 0 }) {
+    draw({ cells, blocks = null, ringing = false, selected = -1, drag = null, time = 0, dt = 0 }) {
       if (!size.width) resize();
       context.setTransform(size.ratio, 0, 0, size.ratio, 0, 0);
       context.clearRect(0, 0, size.width, size.height);
@@ -195,6 +339,11 @@ export function createBoardRenderer({ canvas, cols, rows }) {
         context.scale(scale, scale);
         item(target, 0, 0, s, time);
         context.restore();
+      });
+      blocks?.forEach((target, index) => {
+        if (!target) return;
+        const center = cellCenter(index);
+        block(target, index, center.x, center.y, s, time, ringing);
       });
       if (selected >= 0 && !drag) {
         const rect = cellRect(selected);

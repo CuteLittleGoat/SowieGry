@@ -79,6 +79,21 @@ ułatwienie:
 | 🌙 Kącik Drzemki      | 4 (6 etapów)     | doniczka ładuje się też wtedy, gdy gra jest zamknięta          |
 | 🦉 Sowie Centrum      | 5 (6 etapów)     | zamówienia dają o połowę więcej liści                          |
 
+## Przeszkody: Pracu Pracu i Amic
+
+Po kilku zamówieniach do szklarni zaglądają psotnicy:
+
+- **Telefon Pracu** 📞 (czerwony aparat) — Pracu Pracu zostawia go na wolnej półce. **Co 10 ruchów dzwoni** (przed
+  dzwonkiem trzęsie się) i przykleja **karteczkę** na roślinę w pobliżu. Żeby go wyłączyć, **połącz rośliny obok niego
+  2 razy** (liczba w rogu pokazuje, ile połączeń jeszcze brakuje).
+- **Karteczka Pracu** 📝 (żółta kartka z czerwonym „P”) zasłania pole: roślina pod nią nie da się przesunąć, połączyć,
+  skompostować ani oddać sąsiadce, a na karteczkę nic nie spadnie. Znika, gdy **połączysz rośliny na polu obok**, albo
+  gdy **stukniesz ją 3 razy** (odklejasz ją po kawałku).
+- **Skrzynia Amic** 📦 (drewniana, z zielono-czerwonym pasem) — czasem zamiast nasionka z Sowiej doniczki. Zajmuje
+  pole; **2 połączenia obok** ją otwierają, a w środku jest nagroda: **15 liści i 1 gwiazdka** ⭐.
+
+Stuknięcie telefonu albo skrzyni podpowiada, co zrobić.
+
 ## Sowia doniczka
 
 Przycisk **🌱 Sowia doniczka** na dole kładzie **nasionko** na losowym wolnym polu. Doniczka ma **12 ładunków**
@@ -102,7 +117,8 @@ Dzięki kompostowi plansza nigdy nie zablokuje się na dobre — zawsze możesz 
 ## Dźwięk
 
 W szklarni gra spokojna muzyka, a każdy ruch ma swój dźwięk: podniesienie rośliny, odstawienie na półkę, połączenie
-(im wyższy poziom, tym wyższy ton; szczyt łańcucha i hybryda dostają fanfarę), nasionko z Sowiej doniczki i kompost. Dźwięk
+(im wyższy poziom, tym wyższy ton; szczyt łańcucha i hybryda dostają fanfarę), dzwonek telefonu Pracu, trafienia
+w przeszkody i otwarcie skrzyni, nasionko z Sowiej doniczki i kompost. Dźwięk
 rusza po pierwszym dotknięciu ekranu. Głośność muzyki i efektów ustawisz w menu głównym (zakładka **Sowa** →
 **Ustawienia**).
 
@@ -126,5 +142,5 @@ Na komputerze plansza stoi na środku, a rośliny przesuwa się myszą tak samo 
 
 ## Co dalej
 
-Gra wciąż rośnie. W kolejnych krokach dojdą: przeszkody Pracu Pracu i Amic, kózki-pomocnice, Basen Humbaka z rekordem,
+Gra wciąż rośnie. W kolejnych krokach dojdą: kanister Amic, kózki-pomocnice, Basen Humbaka z rekordem,
 pakiet startowy z postępu dawnej Szklarni i samouczek (z przyciskiem do jego powtórzenia).

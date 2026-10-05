@@ -2,7 +2,7 @@
 // `sowiegry_gry/szklarnia` — dawna Szklarnia zostaje bez zmian), pętla, przeciąganie roślin z uniesieniem nad palec,
 // zaznaczanie stuknięciem (bez przeciągania), Sowia doniczka, kompostownik, hybrydy, nowe łańcuchy w doniczce,
 // zamówienia sąsiadek (oddanie stuknięciem karty albo przeciągnięciem rośliny na kartę), okno odnawiania pomieszczeń
-// szklarni (stuknięcie portfela), komunikaty i haki testowe.
+// szklarni (stuknięcie portfela), przeszkody Pracu i Amic (stuknięcie przeszkody), komunikaty i haki testowe.
 import { connectAudioSettings, createAudio } from "../shared/engine/audio.js";
 import { EVENTS, progress } from "../shared/meta/progress.js";
 import { createToasts, openModal } from "../shared/ui/index.js";
@@ -15,6 +15,7 @@ import {
   GAME_ID,
   GAME_SOUNDS,
   GREENHOUSE_MUSIC,
+  OBSTACLES,
   POT,
   PREVIEW_FIELD,
   ROOMS,
@@ -227,6 +228,75 @@ function handleEvents() {
           key: "gwiazdki",
         });
         break;
+      case "phone":
+        renderer.pop(event.index);
+        play("dzwonek", { volume: 0.7 });
+        hint("Pracu Pracu zostawił telefon na półce!");
+        toasts.show("Telefon Pracu co 10 ruchów dzwoni i przykleja karteczkę — połącz rośliny obok niego 2 razy", {
+          kind: "warn",
+          key: "pracu-telefon",
+          priority: 2,
+        });
+        save({ immediate: true });
+        break;
+      case "note":
+        if (event.index === selected) selected = -1;
+        renderer.pop(event.index);
+        play("dzwonek", { volume: 0.6 });
+        play("trafienie-pracu", { volume: 0.5 });
+        hint("Dryń! Karteczka Pracu na półce — połącz rośliny obok albo stuknij ją 3 razy");
+        break;
+      case "noteTap":
+        play("klik", { pitch: 1.3, volume: 0.6 });
+        hint(`Odklejasz karteczkę… jeszcze ${event.left} ${event.left === 1 ? "stuknięcie" : "stuknięcia"}`);
+        break;
+      case "noteGone":
+        renderer.pop(event.index);
+        play("klik", { pitch: 1.6, volume: 0.7 });
+        hint("Karteczka odklejona!");
+        save({ immediate: true });
+        break;
+      case "blockHit":
+        renderer.pop(event.index);
+        play(event.block === "phone" ? "trafienie-pracu" : "trafienie-amic", { volume: 0.7 });
+        hint(
+          event.block === "phone"
+            ? `Telefon Pracu: jeszcze ${event.left} połączenie obok`
+            : `Skrzynia Amic: jeszcze ${event.left} połączenie obok`,
+        );
+        break;
+      case "phoneGone":
+        play("rekord", { volume: 0.7 });
+        hint("Telefon Pracu wyłączony — cisza w szklarni!");
+        toasts.show("Telefon Pracu wyłączony!", { kind: "reward", key: "pracu-koniec" });
+        save({ immediate: true });
+        break;
+      case "crate":
+        renderer.pop(event.index);
+        play("trafienie-amic", { volume: 0.7 });
+        hint("Amic postawił skrzynię na półce!");
+        toasts.show("Skrzynia Amic — połącz rośliny obok niej 2 razy, a się otworzy (w środku nagroda)", {
+          kind: "info",
+          key: "amic-skrzynia",
+        });
+        save({ immediate: true });
+        break;
+      case "crateOpen": {
+        const center = renderer.cellCenter(event.index);
+        renderer.popup(`+${event.leaves}`, center.x, center.y - 10, COLORS.zloto, 20);
+        play("zakup", { volume: 0.8 });
+        hint(`Skrzynia otwarta! +${event.leaves} liści, +${event.stars} ⭐`);
+        save({ immediate: true });
+        break;
+      }
+      case "blockInfo":
+        play("klik", { pitch: 0.8, volume: 0.5 });
+        hint(
+          event.block === "phone"
+            ? "Telefon Pracu — połącz rośliny obok niego, żeby go wyłączyć"
+            : "Skrzynia Amic — połącz rośliny obok niej, żeby ją otworzyć",
+        );
+        break;
       case "unlock":
         toasts.show(`Nowa roślina w Sowiej doniczce: ${event.name}!`, {
           kind: "reward",
@@ -395,6 +465,9 @@ function dropOnOrder(index, slot) {
   play("klik", { pitch: 0.6, volume: 0.5 });
 }
 
+// Czy z pola da się wziąć roślinę (jest i nie leży pod karteczką).
+const movable = (index) => Boolean(game.board.cells[index]) && !game.board.blocks[index];
+
 // Pole, na które spadnie uniesiony przedmiot (pod przedmiotem, nie pod palcem).
 function dropTarget(point) {
   return renderer.cellAt(point.x, point.y - renderer.layout().size * LIFT);
@@ -418,19 +491,23 @@ canvas.addEventListener("pointerdown", (event) => {
   if (!ready) return;
   const point = localPoint(event);
   const index = renderer.cellAt(point.x, point.y);
-  press = { index, start: point, point, dragging: false, compost: false, order: -1, id: event.pointerId };
-  if (index >= 0 && game.board.cells[index]) canvas.setPointerCapture?.(event.pointerId);
+  press = { index, start: point, point, dragging: false, moved: false, compost: false, order: -1, id: event.pointerId };
+  if (index >= 0 && movable(index)) canvas.setPointerCapture?.(event.pointerId);
 });
 
 canvas.addEventListener("pointermove", (event) => {
   if (!press || event.pointerId !== press.id) return;
   press.point = localPoint(event);
-  if (!press.dragging && game.board.cells[press.index]) {
+  // Przesunięcie o co najmniej DRAG_START: z rośliną — przeciąganie, bez niej — już nie stuknięcie.
+  if (!press.dragging && !press.moved) {
     const distance = Math.hypot(press.point.x - press.start.x, press.point.y - press.start.y);
     if (distance >= DRAG_START) {
-      press.dragging = true;
-      selected = -1;
-      play("klik", { pitch: 1.2, volume: 0.6 });
+      press.moved = true;
+      if (movable(press.index)) {
+        press.dragging = true;
+        selected = -1;
+        play("klik", { pitch: 1.2, volume: 0.6 });
+      }
     }
   }
   if (press.dragging) {
@@ -458,9 +535,17 @@ function finishPress(event, cancelled = false) {
     }
     return;
   }
-  // Stuknięcie: zaznaczenie rośliny, potem stuknięcie w pole docelowe (to samo — odznaczenie).
+  // Stuknięcie: zaznaczenie rośliny, potem stuknięcie w pole docelowe (to samo — odznaczenie); przeszkoda —
+  // odklejanie karteczki albo podpowiedź. Palec przesunięty bez rośliny — nic.
   const index = current.index;
-  if (index < 0) return;
+  if (index < 0 || current.moved) return;
+  if (game.board.blocks[index]) {
+    selected = -1;
+    game.tapBlock(index);
+    handleEvents();
+    updateHud();
+    return;
+  }
   if (selected < 0) {
     if (game.board.cells[index]) {
       selected = index;
@@ -507,7 +592,9 @@ function dragView() {
   if (!press?.dragging) return null;
   // Nad kompostownikiem albo kartą zamówienia — bez podświetlenia pola.
   const away = press.compost || press.order >= 0;
-  const target = away ? -1 : dropTarget(press.point);
+  const spot = away ? -1 : dropTarget(press.point);
+  // Na przeszkodę nic nie spada — bez podświetlenia.
+  const target = spot >= 0 && game.board.blocks[spot] ? -1 : spot;
   const source = game.board.cells[press.index];
   const other = target >= 0 && target !== press.index ? game.board.cells[target] : null;
   const kind = away ? "compost" : canMerge(source, other) || hybridOf(source, other) ? "merge" : "move";
@@ -525,7 +612,16 @@ function frame(time) {
       save();
     }
   }
-  renderer.draw({ cells: game.board.cells, selected, drag: dragView(), time: time / 1000, dt });
+  renderer.draw({
+    cells: game.board.cells,
+    blocks: game.board.blocks,
+    ringing:
+      game.board.blocks.some((block) => block?.type === "phone") && game.state.phoneMoves >= OBSTACLES.ringEvery - 2,
+    selected,
+    drag: dragView(),
+    time: time / 1000,
+    dt,
+  });
   hudTimer += dt;
   if (hudTimer >= 0.2 || !dt) {
     hudTimer = 0;
@@ -604,6 +700,11 @@ window.LaczIHoduj = Object.freeze({
   },
   move: (from, to) => moveTo(from, to).type,
   orders: () => JSON.parse(JSON.stringify(game.state.orders)),
+  blocks: () => JSON.parse(JSON.stringify(game.board.blocks)),
+  setBlock: (index, type, hits = 0) => {
+    game.board.blocks[index] = type ? { type, hits } : null;
+    game.state.blocks = game.board.blocks.map((block) => (block ? { ...block } : null));
+  },
   setStars: (stars) => {
     game.state.stars = stars;
     updateHud();
