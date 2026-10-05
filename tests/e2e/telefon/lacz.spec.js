@@ -283,6 +283,12 @@ test("Łącz i Hoduj: odnawianie pomieszczeń — okno z portfela, etapy za gwia
   await expect(page.locator("[data-stars]")).toHaveText("0");
   await expect(page.locator("[data-charges]")).toHaveText("12/14");
   expect((await game(page, "state")).renovation).toBe(3);
+  // Sowia Akademia: odnowione pomieszczenia jako „pomieszczenia w Szklarni” (raport co 5 s gry albo hakiem).
+  await game(page, "reportProgress");
+  const metrics = await page.evaluate(() => window.SowieAcademy.snapshot().metrics);
+  expect(metrics.szklarniaRooms).toBe(1);
+  expect(metrics.szklarniaVisits).toBeGreaterThanOrEqual(1);
+  expect(metrics.szklarniaPlants).toBe(5);
   expect(errors).toEqual([]);
 });
 

@@ -160,6 +160,11 @@ poziom 5 — 25; Monpilea i Alopaproć — 50, Złotolistka — 150). Możesz:
 
 Dzięki kompostowi plansza nigdy nie zablokuje się na dobre — zawsze możesz zrobić miejsce.
 
+## Sowia Akademia i Galeria
+
+Postęp w Łącz i Hoduj liczy się do zadań Sowiej Akademii i zdjęć Galerii, tak jak w dawnej Szklarni: odnowione
+pomieszczenia liczą się jako pomieszczenia Szklarni, a do tego rośliny na półkach, użyte kózki i odkryte hybrydy.
+
 ## Dźwięk
 
 W szklarni gra spokojna muzyka, a każdy ruch ma swój dźwięk: podniesienie rośliny, odstawienie na półkę, połączenie

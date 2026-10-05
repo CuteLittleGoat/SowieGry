@@ -33,6 +33,8 @@ import { createBoardRenderer, drawOrderCard, LIFT } from "./render.js";
 
 // Zapis: co 20 s gry, po połączeniu po 2 s, przy zejściu do tła od razu.
 const SAVE_EVERY = 20;
+// Metryki dla Sowiej Akademii (misje dnia i tygodnia, zdjęcia Galerii) — co 5 s gry.
+const PROGRESS_EVERY = 5;
 const IMPORTANT_DELAY = 2000;
 // Przeciąganie zaczyna się po przesunięciu palca o tyle pikseli (krótsze — stuknięcie).
 const DRAG_START = 8;
@@ -66,6 +68,7 @@ let selected = -1;
 let press = null;
 let lastFrame = 0;
 let saveTimer = 0;
+let progressTimer = 0;
 let hudTimer = 0;
 // Testy e2e: logika wstrzymana w klatkach (hak `hold`).
 let testHold = false;
@@ -102,6 +105,21 @@ function save({ immediate = false, flush = false } = {}) {
     immediate ? { delayMs: IMPORTANT_DELAY } : undefined,
   );
   if (flush) cloud.flush?.();
+}
+
+// ---------- Sowia Akademia ----------
+
+// Most SowieProgress → SowieAcademy (te same metryki co dawna Szklarnia: pomieszczenia — tu odnowione, rośliny — tu
+// rośliny na półkach, kozy — tu użyte kózki, hybrydy); Akademia zapisuje tylko zmienione wartości.
+function reportProgress() {
+  const { state } = game;
+  progress.emit(EVENTS.IDLE, {
+    gameId: GAME_ID,
+    rooms: renovation(state.renovation).finished.length,
+    plants: state.cells.filter((item) => item?.chain).length,
+    goats: state.stats.goats,
+    hybrids: state.stats.hybrids,
+  });
 }
 
 // ---------- Interfejs ----------
@@ -989,6 +1007,11 @@ function frame(time) {
       saveTimer = 0;
       save();
     }
+    progressTimer += dt;
+    if (progressTimer >= PROGRESS_EVERY) {
+      progressTimer = 0;
+      reportProgress();
+    }
   }
   renderer.draw({
     cells: active().cells,
@@ -1146,4 +1169,5 @@ window.LaczIHoduj = Object.freeze({
   },
   music: () => audio?.currentMusic?.() ?? null,
   save: () => save({ flush: true }),
+  reportProgress: () => reportProgress(),
 });
