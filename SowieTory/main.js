@@ -26,8 +26,7 @@ import { WHALE } from "./whale.js";
 const cloud = window.SowieCloud;
 const params = new URLSearchParams(location.search);
 const AUDIO_BASE = new URL("../assets/audio/", import.meta.url).href;
-// Instrukcja wersji podglądowej (shared/meta/guides-data.js); po podmianie (E5f) — klucz gry „sowa3”.
-const GUIDE_ID = "sowietory";
+const GUIDE_ID = GAME_ID; // instrukcja „sowa3” w shared/meta/guides-data.js
 // Diagnostyka i zrzuty: ?plansza=1…4 zaczyna bieg od wybranej planszy kampanii.
 const START_STAGE = Math.min(STAGES.length - 1, Math.max(0, (Number.parseInt(params.get("plansza"), 10) || 1) - 1));
 

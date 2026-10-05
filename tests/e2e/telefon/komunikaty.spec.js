@@ -1,10 +1,7 @@
 // Komunikaty w obecnych grach zręcznościowych: w trakcie gry najwyżej 1 naraz, u góry ekranu — nie zasłaniają sowy.
 const { test, expect, waitForCloud, watchErrors } = require("../fixtures");
 
-const GAMES = [
-  { name: "SowaJumper", path: "/SowaJumper/?seed=komunikaty", playing: "state.scene === 'playing'" },
-  { name: "Sowa3", path: "/Sowa3/?seed=komunikaty", playing: "state.mode === 'run'" },
-];
+const GAMES = [{ name: "SowaJumper", path: "/SowaJumper/?seed=komunikaty", playing: "state.scene === 'playing'" }];
 
 for (const game of GAMES) {
   test(`${game.name}: w trakcie gry 1 komunikat u góry ekranu`, async ({ page }) => {
@@ -70,5 +67,32 @@ test("Sowia Ucieczka: w trakcie gry 1 komunikat u góry ekranu", async ({ page }
   expect(box.x + box.width).toBeLessThanOrEqual(viewport.width);
   // Kolejne komunikaty czekają i pokazują się po kolei.
   await expect(page.locator(".sowie-toast-chip", { hasText: "Kózka Magnes" })).toBeVisible({ timeout: 8000 });
+  expect(errors).toEqual([]);
+});
+
+// Sowie Tory (E5, zastąpiły Sowa3): komunikaty z shared/ui/toasts.js — w biegu 1 naraz, u góry planszy.
+test("Sowie Tory: w trakcie gry 1 komunikat u góry ekranu", async ({ page }) => {
+  const errors = watchErrors(page);
+  await page.goto("/SowieTory/?seed=komunikaty&plansza=2", { waitUntil: "load" });
+  await waitForCloud(page);
+  await page.waitForFunction(() => window.SowieTory?.ready?.());
+  await page.locator("[data-start]").click();
+  await expect.poll(() => page.evaluate(() => window.SowieTory.screen())).toBe("playing");
+
+  // Kózka i Gorączka Monster naraz: widać pierwszy komunikat, drugi czeka w kolejce.
+  await page.evaluate(() => {
+    window.SowieTory.goat("turbo");
+    window.SowieTory.fever();
+  });
+  const toasts = page.locator(".sowie-toast-chip:not(.is-leaving)");
+  await expect(toasts).toHaveCount(1);
+  await expect(toasts.first()).toContainText("Kózia jazda!");
+
+  const viewport = page.viewportSize();
+  const box = await toasts.first().boundingBox();
+  expect(box.y + box.height).toBeLessThan(viewport.height * 0.45);
+  expect(box.x).toBeGreaterThanOrEqual(0);
+  expect(box.x + box.width).toBeLessThanOrEqual(viewport.width);
+  await expect(page.locator(".sowie-toast-chip", { hasText: "Gorączka Monster!" })).toBeVisible({ timeout: 8000 });
   expect(errors).toEqual([]);
 });

@@ -56,7 +56,7 @@
       alt: "Sowa obserwująca otoczenie z wysokiego punktu.",
       photographer: "Erik Karits",
       sourceUrl: "https://www.pexels.com/photo/10586311/",
-      requirement: "Osiągnij combo 8 w Sowa3.",
+      requirement: "Osiągnij combo 8 w Sowich Torach.",
       goals: [["sowa3Combo", 8]],
     },
     {
@@ -156,7 +156,7 @@
       alt: "Młoda brązowa sowa ukryta pośród zielonych liści.",
       photographer: "Twórca w serwisie Pexels",
       sourceUrl: "https://www.pexels.com/photo/23490342/",
-      requirement: "Zdobądź 1500 punktów w Sowa3.",
+      requirement: "Zdobądź 1500 punktów w Sowich Torach.",
       goals: [["sowa3Score", 1500]],
     },
     {
@@ -166,7 +166,7 @@
       alt: "Młoda sowa spokojnie obserwująca las z gałęzi.",
       photographer: "Twórca w serwisie Pexels",
       sourceUrl: "https://www.pexels.com/photo/15994322/",
-      requirement: "Ukończ przynajmniej jedną trasę w Sowa3.",
+      requirement: "Ukończ kampanię Sowich Torów.",
       goals: [["sowa3Finishes", 1]],
     },
     {
@@ -296,7 +296,7 @@
       alt: "Mała sowa ziemna stojąca w słonecznej trawie.",
       photographer: "Twórca w serwisie Pexels",
       sourceUrl: "https://www.pexels.com/photo/5651223/",
-      requirement: "Osiągnij combo 12 w Sowa3 i wykonaj pierwsze przesadzanie Ogrodów.",
+      requirement: "Osiągnij combo 12 w Sowich Torach i wykonaj pierwsze przesadzanie Ogrodów.",
       goals: [["sowa3Combo", 12], ["ogrodyPrestiges", 1]],
     },
     {

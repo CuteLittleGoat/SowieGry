@@ -7,18 +7,13 @@ const root = process.cwd();
 const read = (file) => fs.readFileSync(path.join(root, file), "utf8");
 
 // Obecne gry na starym interfejsie (Sowia Ucieczka ma własne zadania, wyzwanie dnia i instrukcję).
-const gameIndexes = [
-  "SowaJumper/index.html",
-  "Sowa3/index.html",
-  "SowieOgrody/index.html",
-  "SowiaSzklarnia/index.html",
-];
+const gameIndexes = ["SowaJumper/index.html", "SowieOgrody/index.html", "SowiaSzklarnia/index.html"];
 
 test("katalog instrukcji (shared/meta/guides-data.js) obejmuje pięć gier i „Poznaj Sowi Świat”", async () => {
   const { GUIDES } = await import("../../shared/meta/guides-data.js");
-  // `sowietory` — przewodnik nowej wersji Sowa3 w podglądzie (SowieTory/); po podmianie zastąpi `sowa3`;
-  // `chmury` — tak samo Sowa w Chmurach (SowaWChmurach/) zamiast `jumper`; `ogrod` — nowa odsłona Sowich Ogrodów
-  // (SowieOgrody/nowa.html) zamiast `ogrody`; `lacz` — Łącz i Hoduj (LaczIHoduj/) zamiast `szklarnia`.
+  // `sowa3` to Sowie Tory (E5f). Podglądy przed podmianą: `chmury` — Sowa w Chmurach (SowaWChmurach/) zamiast
+  // `jumper`; `ogrod` — nowa odsłona Sowich Ogrodów (SowieOgrody/nowa.html) zamiast `ogrody`; `lacz` — Łącz i Hoduj
+  // (LaczIHoduj/) zamiast `szklarnia`.
   assert.deepEqual(Object.keys(GUIDES).sort(), [
     "chmury",
     "jumper",
@@ -27,11 +22,10 @@ test("katalog instrukcji (shared/meta/guides-data.js) obejmuje pięć gier i „
     "ogrody",
     "runner",
     "sowa3",
-    "sowietory",
     "swiat",
     "szklarnia",
   ]);
-  for (const id of ["runner", "jumper", "chmury", "sowa3", "sowietory", "ogrod", "ogrody", "szklarnia", "lacz"]) {
+  for (const id of ["runner", "jumper", "chmury", "sowa3", "ogrod", "ogrody", "szklarnia", "lacz"]) {
     assert.ok(GUIDES[id].summary && GUIDES[id].cards.length >= 4, id);
   }
   assert.match(read("shared/game-guides.js"), /meta\/guides-data\.js/);
@@ -65,15 +59,14 @@ test("Akademia ma wersjonowany zapis i idempotentne nagrody", () => {
   assert.match(source, /daily\.metrics/);
 });
 
-test("rozszerzenia zawierają mechanikę dla każdej obecnej gry (SowaRunner zastąpiła Sowia Ucieczka)", () => {
+test("rozszerzenia zawierają mechanikę dla każdej obecnej gry (bez gier podmienionych na nowe)", () => {
   const source = read("shared/gameplay-expansion.js");
-  assert.doesNotMatch(source, /initializeRunner|sowarunner/);
+  // SowaRunner zastąpiła Sowia Ucieczka, a Sowa3 — Sowie Tory (własne zadania, combo i instrukcje).
+  assert.doesNotMatch(source, /initializeRunner|sowarunner|initializeSowa3|"sowa3"/);
   assert.match(source, /initializeJumper/);
-  assert.match(source, /initializeSowa3/);
   assert.match(source, /initializeGardens/);
   assert.match(source, /initializeGreenhouse/);
   assert.match(source, /Precyzyjne lądowania/);
-  assert.match(source, /Combo liści/);
   assert.match(source, /Kontrakty/);
   assert.match(source, /Album cech/);
 });

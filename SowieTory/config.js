@@ -128,7 +128,7 @@ export const FEVER = Object.freeze({
   rainClear: 2.5, // m wolne od przeszkody w torze
 });
 
-// Dodatkowe życie (smaczek obecnej Sowa3): serduszko-doniczka co 600–900 m w odstępie między wzorami; przy pełnych
+// Dodatkowe życie (smaczek dawnej Sowa3): serduszko-doniczka co 600–900 m w odstępie między wzorami; przy pełnych
 // życiach +150 pkt („Maks żyć”).
 export const EXTRA_LIFE = Object.freeze({ every: Object.freeze([600, 900]), fullBonus: 150, height: 0.9 });
 

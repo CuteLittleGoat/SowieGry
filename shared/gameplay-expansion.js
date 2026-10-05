@@ -19,7 +19,6 @@
   function detectFromPath() {
     const path = location.pathname.toLowerCase();
     if (path.includes("sowajumper")) return "jumper";
-    if (path.includes("sowa3")) return "sowa3";
     if (path.includes("sowieogrody")) return "ogrody";
     if (path.includes("sowiaszklarnia")) return "szklarnia";
     return null;
@@ -226,45 +225,6 @@
     }, 100);
   }
 
-  function initializeSowa3() {
-    attachFeatureButton("Combo i wyzwanie dnia Sowa3");
-    let previousMode = null;
-    let previousScore = 0;
-    let previousLives = null;
-    let combo = 0;
-    let bestCombo = 0;
-
-    featureRenderer = () => `${dailyPanel("Przejedź codzienną, deterministyczną trasę i uzyskaj najwyższy wynik bez zmiany układu losowego.")}
-      <article class="sowie-feature-card"><h3>Combo liści</h3><p>Każdy kolejny liść bez kolizji zwiększa combo. Co trzeci poziom combo podnosi premię za następne liście.</p><strong>Najlepsze combo: ${bestCombo}</strong></article>`;
-
-    window.setInterval(() => {
-      try {
-        if (typeof state === "undefined" || !state || typeof state.score !== "number") return;
-        if (previousLives !== null && state.lives < previousLives) combo = 0;
-        if (state.mode === "run") {
-          const delta = state.score - previousScore;
-          if (delta >= 44 && delta <= 85) {
-            combo += 1;
-            bestCombo = Math.max(bestCombo, combo);
-            const bonus = Math.floor(combo / 3) * 12;
-            state.score += bonus;
-            academy?.record?.("sowa3", "sowa3Combo", bestCombo, "max");
-          }
-          previousScore = state.score;
-          setHud(`⚡ Combo: ${combo} · mnożnik: x${(1 + Math.floor(combo / 3) * 0.25).toFixed(2)}`);
-        } else previousScore = state.score;
-        if (state.mode === "finish" && previousMode !== "finish") academy?.record?.("sowa3", "sowa3Finishes", 1, "add");
-        if (state.mode === "over" && previousMode !== "over") {
-          academy?.record?.("sowa3", "sowa3Score", Number(state.score || 0), "max");
-        }
-        previousLives = state.lives;
-        previousMode = state.mode;
-      } catch (_error) {
-        // Główna gra może jeszcze przygotowywać stan.
-      }
-    }, 120);
-  }
-
   function initializeGardens() {
     attachFeatureButton("Kontrakty ogrodnicze");
     let expansion = { claimed: {}, baseline: { clicks: 0, buys: 0, watering: 0 } };
@@ -403,9 +363,8 @@
   } else initialize();
 
   function initialize() {
-    // SowaRunner zastąpiła Sowia Ucieczka (moduły ES, własne zadania i wyzwanie dnia) — bez tego skryptu.
+    // SowaRunner zastąpiła Sowia Ucieczka, a Sowa3 — Sowie Tory (moduły ES, własne zadania) — bez tego skryptu.
     if (gameId === "jumper") initializeJumper();
-    else if (gameId === "sowa3") initializeSowa3();
     else if (gameId === "ogrody") initializeGardens();
     else if (gameId === "szklarnia") initializeGreenhouse();
   }

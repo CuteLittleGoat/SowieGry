@@ -1,10 +1,9 @@
 const { test, expect, waitForCloud } = require("./fixtures");
 
-// Obecne gry (dok z instrukcją, Akademią i panelem mechaniki). Sowia Ucieczka (runner) ma własną instrukcję,
-// zadania biegu i wyzwanie dnia — testy w tests/e2e/telefon/ucieczka.spec.js.
+// Obecne gry (dok z instrukcją, Akademią i panelem mechaniki). Sowia Ucieczka (runner) i Sowie Tory (sowa3) mają
+// własne instrukcje, zadania i combo — testy w tests/e2e/telefon/ucieczka.spec.js i tory.spec.js.
 const games = [
   { id: "jumper", path: "/SowaJumper/", title: "SowaJumper", feature: "Precyzja i wyzwanie dnia SowaJumper" },
-  { id: "sowa3", path: "/Sowa3/", title: "Sowa3", feature: "Combo i wyzwanie dnia Sowa3" },
   { id: "ogrody", path: "/SowieOgrody/", title: "Sowie Ogrody", feature: "Kontrakty ogrodnicze" },
   { id: "szklarnia", path: "/SowiaSzklarnia/", title: "Sowia Szklarnia", feature: "Album cech i cele laboratorium" },
 ];
@@ -39,6 +38,12 @@ test("menu oferuje osobną instrukcję każdej gry i zadania Sowiej Akademii", a
   await page.keyboard.press("Escape");
   await expect(page.getByRole("dialog")).toBeHidden();
   await expect(page.locator('[data-guide="runner"]')).toBeFocused();
+
+  await page.locator('[data-guide="sowa3"]').click();
+  await expect(page.getByRole("dialog")).toContainText("Jak grać — Sowie Tory");
+  await expect(page.getByRole("dialog")).toContainText("Zmiana toru");
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("dialog")).toBeHidden();
   expect(errors).toEqual([]);
 });
 

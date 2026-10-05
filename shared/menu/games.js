@@ -152,7 +152,40 @@ const SCENES = {
     atlas.draw(context, "pracu-telefon-magda", w / 2 + approach * 0.7, 0.55 + approach * 0.9, {
       width: 0.3 + approach * 0.7,
     });
+    // Lewy tor: teczka Pracu z łukiem liści nad nią (znak, że trzeba skoczyć).
+    const near = ((time + 1.2) % 2.4) / 2.4;
+    const scale = 0.25 + near * 0.75;
+    const leftX = w / 2 - 0.34 - near * 0.48;
+    const leftY = 0.55 + near * 0.9;
+    atlas.draw(context, "pracu-teczka", leftX, leftY, { width: 0.45 * scale });
+    for (let index = -1; index <= 1; index += 1) {
+      atlas.draw(
+        context,
+        "lisc-zielony",
+        leftX + index * 0.22 * scale,
+        leftY - (0.5 - Math.abs(index) * 0.18) * scale,
+        {
+          width: 0.22 * scale,
+        },
+      );
+    }
+    // Meta przy horyzoncie: humbak wynurza się z basenu (finał każdej planszy).
+    atlas.draw(context, "humbak", w / 2, 0.24 + Math.sin(time * 1.6) * 0.03, { width: 0.75 });
     atlas.draw(context, "amic-dystrybutor", w - 0.55, 2.1, { width: 0.9 });
+    // Kózka przeskakuje łukiem z lewego toru na prawy przed sową i z powrotem.
+    const leap = (time % 3) / 3;
+    const across = leap < 0.5 ? leap * 2 : 2 - leap * 2;
+    const height = Math.sin(Math.PI * ((leap * 2) % 1)) * 0.45;
+    atlas.draw(
+      context,
+      height > 0.05 ? "kozka-sprezynka-skok" : "kozka-sprezynka",
+      w / 2 - 0.9 + across * 1.8,
+      1.75 - height,
+      {
+        width: 0.6,
+        flipX: leap >= 0.5,
+      },
+    );
     state.owl.set("bieg");
     drawOwl(context, atlas, w / 2 - 0.1, 2.25, { state: state.owl.state(), size: 0.95, cosmetic: state.cosmetic });
   },

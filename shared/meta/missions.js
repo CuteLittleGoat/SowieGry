@@ -9,7 +9,7 @@ export const MISSION_LABELS = Object.freeze({
   leaves20: "Zbierz 20 liści monster",
   extraLife: "Zdobądź dodatkowe życie",
   nearMiss3: "Wykonaj 3 uniki „O włos!”",
-  chaosFinish: "Ukończ etap na poziomie Chaos",
+  chaosFinish: "Ukończ kampanię Sowich Torów na poziomie Chaos",
   combo4: "Osiągnij combo ×4",
   runner1000: "Przebiegnij 1000 m w Sowiej Ucieczce",
   jumper250: "Osiągnij 250 m w SowaJumper",
@@ -19,7 +19,8 @@ export const MISSION_LABELS = Object.freeze({
  * Zdarzenie → zmiany profilu (czysta funkcja):
  * { missions: [[klucz, wartość, "add" | "max"]], stats: [[klucz, wartość, "add" | "max"]] }.
  * Liście → leaves20 i stats.leaves; „O włos!” → nearMiss3 i stats.nearMisses; combo → stats.maxCombo, od ×4 combo4;
- * odzyskane życie (np. Chmura Pracu się oddala) → extraLife i stats.extraLives; koniec biegu → runner1000 / jumper250.
+ * odzyskane życie (np. Chmura Pracu się oddala) → extraLife i stats.extraLives; koniec biegu → runner1000 / jumper250;
+ * ukończona kampania (Sowie Tory, `finished`) → stats.finishes, a na poziomie Chaos (`difficulty`) także chaosFinish.
  */
 export function profileUpdates(type, detail = {}) {
   const missions = [];
@@ -39,6 +40,10 @@ export function profileUpdates(type, detail = {}) {
     stats.push(["extraLives", 1, "add"]);
     missions.push(["extraLife", 1, "add"]);
   } else if (type === EVENTS.RUN_ENDED) {
+    if (detail.finished) {
+      stats.push(["finishes", 1, "add"]);
+      if (detail.difficulty === "chaos") missions.push(["chaosFinish", 1, "add"]);
+    }
     if (detail.gameId === "runner" && Number(detail.distance) > 0) {
       missions.push(["runner1000", Math.floor(Number(detail.distance)), "max"]);
     }

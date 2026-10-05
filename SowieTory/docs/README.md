@@ -1,8 +1,8 @@
 # Sowie Tory — instrukcja
 
-**Sowie Tory** to nowa wersja gry **Sowa3** (etap E5 przebudowy SowieGry). Na razie jest to **wersja podglądowa**:
-otwierasz ją z menu głównego przyciskiem **„Wypróbuj nową wersję: Sowie Tory”** na karcie Sowa3 albo pod adresem
-`SowieTory/`. Rekordy liczą się tak samo jak w Sowa3 (wspólny profil w chmurze).
+**Sowie Tory** to nowa wersja gry **Sowa3**. Otwierasz ją z menu głównego przyciskiem **Graj** na karcie
+**Sowie Tory** (ze znaczkiem „Nowe!”). Stary adres `Sowa3/` sam przenosi do nowej gry, a Twoje rekordy i top 10
+z dawnej Sowa3 zostały — to teraz rekordy kampanii Sowich Torów.
 
 ## Cel gry
 
@@ -46,7 +46,7 @@ go na ekranie tytułowym przyciskiem **Nieskończony** (obok **Kampania**; wybó
 w pętli — po stacji Amic znowu Biedronka, a każde kolejne okrążenie jest szybsze (pasek planszy pokazuje np.
 „1/4 · Biedronka · okr. 2”). Finał z basenem, Humbacze Tory i gwiazdki są po każdej planszy; obejrzany finał
 skraca się sam. Bieg trwa, dopóki masz życia. Tryb Nieskończony ma **osobny rekord i top 10** — w menu głównym
-(zakładka Sowa → Rekordy → Sowa3) przełączasz **Kampania / Nieskończony**.
+(zakładka Sowa → Rekordy → Sowie Tory) przełączasz **Kampania / Nieskończony**.
 
 ## Kózki, Gorączka Monster i serduszka
 
@@ -172,6 +172,9 @@ Amic) — sposób omijania się nie zmienia. Przeszkody pojawiają się z mgły 
 Wybrany poziom zapamiętuje się w chmurze. Rekord każdego poziomu widać na ekranie tytułowym, a po biegu —
 na ekranie wyników (z miejscem w top 10). Ekran wyników pokazuje też ukończone plansze, zdobyte gwiazdki (na 12),
 dystans, najlepsze combo, „O włos!”, uniki przed dzikami, złapane kózki i liczbę trafień.
+
+Sowie Tory posuwają też **misje garderoby** sowy (zakładka Sowa w menu): liście, „O włos!”, combo ×4, dodatkowe
+życie, a **ukończenie kampanii na poziomie Chaos** daje Kapelusz ogrodnika.
 
 ## Na telefonie
 

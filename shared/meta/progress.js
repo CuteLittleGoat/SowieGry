@@ -183,7 +183,12 @@ export function createProgress({ getAcademy = () => globalThis.SowieAcademy, now
     endRun(result = {}) {
       if (!run) throw new Error("Bieg nie został rozpoczęty (beginRun)");
       const finished = run;
-      const detail = { bestCombo: finished.bestCombo || undefined, ...result, gameId: finished.gameId };
+      const detail = {
+        bestCombo: finished.bestCombo || undefined,
+        difficulty: finished.difficulty || undefined,
+        ...result,
+        gameId: finished.gameId,
+      };
       api.emit(EVENTS.RUN_ENDED, detail);
       const after = taskProgress(getAcademy()?.snapshot?.());
       const tasks = after.map((task) => {

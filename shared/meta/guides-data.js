@@ -169,48 +169,9 @@ export const GUIDES = Object.freeze({
       },
     ],
   },
+  // Sowie Tory (SowieTory/, Analiza 3 E5) — od podmiany (E5f) gra „sowa3”.
   sowa3: {
     id: "sowa3",
-    title: "Sowa3",
-    summary:
-      "Trzytorowy runner, w którym sowa pędzi przez kolejne plansze. Zmieniaj tor, zbieraj liście i unikaj obiektów nadciągających z głębi ekranu.",
-    cards: [
-      {
-        id: "cel",
-        title: "Cel gry",
-        text: "Ukończ wszystkie plansze, osiągnij wysoki wynik i utrzymaj jak najdłuższe combo liści.",
-        sprite: "sowa-bieg-5",
-      },
-      {
-        id: "sterowanie",
-        title: "Sterowanie",
-        text: "Na telefonie przesuń palcem w lewo lub w prawo albo dotknij lewej lub prawej części ekranu. Na klawiaturze: ←/→ albo A/D.",
-        gesture: "swipe-right",
-        sprite: "sowa-bieg-2",
-      },
-      {
-        id: "horyzont",
-        title: "Patrz na horyzont",
-        text: "Obserwuj horyzont, a nie samą sowę — daje to więcej czasu na reakcję.",
-        sprite: "pracu-telefon-magda",
-      },
-      {
-        id: "combo",
-        title: "Combo liści",
-        text: "Kolejne liście bez kolizji zwiększają combo i premię punktową.",
-        sprite: "lisc-zloty",
-      },
-      {
-        id: "plansze",
-        title: "Plansze",
-        text: "Każda plansza ma własne przeszkody i rytm, a na końcu etapu sowa wskakuje do basenu.",
-        sprite: "plusk",
-      },
-    ],
-  },
-  // Sowie Tory — nowa wersja Sowa3 w podglądzie (SowieTory/, Analiza 3 E5); po podmianie (E5f) zastąpi klucz `sowa3`.
-  sowietory: {
-    id: "sowietory",
     title: "Sowie Tory",
     summary:
       "Sowa biegnie w głąb ekranu po trzech torach przez sklep Biedronka, festiwal roślin, blokowisko PRL i stację Amic. Na mecie każdej planszy wskakuje do basenu i zmienia się w humbaka.",

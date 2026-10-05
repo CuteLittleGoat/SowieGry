@@ -195,7 +195,8 @@ test("instrukcje obecnych gier: każda gra z rejestru ma przewodnik (treść z d
   assert.deepEqual(GUIDE_ORDER, ["swiat", ...ids]);
   for (const id of ids) {
     const guide = guideFor(id);
-    assert.ok(guide.cards.length >= 4 && guide.cards.length <= 6, id);
+    // Analiza 2, rozdz. 4.1: 4–6 kart; przebudowane gry mają więcej mechanik — do 8 kart (zaakceptowane podglądy).
+    assert.ok(guide.cards.length >= 4 && guide.cards.length <= 8, id);
     assert.equal(guide.cards[0].title, "Cel gry");
     assert.ok(
       guide.cards.some((card) => card.gesture),
@@ -205,6 +206,9 @@ test("instrukcje obecnych gier: każda gra z rejestru ma przewodnik (treść z d
   // „runner” to od E4 Sowia Ucieczka.
   assert.equal(guideFor("runner").title, "Sowia Ucieczka");
   assert.match(guideFor("runner").summary, /Chmurą Pracu/);
+  // „sowa3” to od E5f Sowie Tory.
+  assert.equal(guideFor("sowa3").title, "Sowie Tory");
+  assert.equal(guideFor("sowa3").id, "sowa3");
   assert.match(guideFor("szklarnia").cards[1].text, /SIO! SIO!/);
   // Klasyczny skrypt gier nie ma już własnej kopii treści.
   const legacy = readFileSync(new URL("../../shared/game-guides.js", import.meta.url), "utf8");

@@ -28,16 +28,16 @@
       // Nowa wersja w podglądzie (E6): ten sam identyfikator i te same rekordy.
       preview: Object.freeze({ path: "SowaWChmurach/", name: "Sowa w Chmurach" }),
     },
+    // Sowie Tory (E5) zastąpiły Sowa3: ten sam identyfikator i te same rekordy; Sowa3/ przekierowuje.
     {
       id: "sowa3",
-      name: "Sowa3",
-      path: "Sowa3/",
+      name: "Sowie Tory",
+      path: "SowieTory/",
       icon: "🛣️",
       kind: "arcade",
       dailyMetric: "score",
-      // Nowa wersja w podglądzie (E5): ten sam identyfikator i te same rekordy.
-      preview: Object.freeze({ path: "SowieTory/", name: "Sowie Tory" }),
-      // Sowie Tory: kampania i tryb Nieskończony (po kampanii) mają osobne rekordy i top 10.
+      rebuilt: true,
+      // Kampania i tryb Nieskończony (po kampanii) mają osobne rekordy i top 10.
       modes: Object.freeze([
         Object.freeze({ id: "kampania", label: "Kampania" }),
         Object.freeze({ id: "nieskonczony", label: "Nieskończony" }),

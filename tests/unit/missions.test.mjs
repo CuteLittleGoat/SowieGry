@@ -117,3 +117,37 @@ test("SowieProgress.linkProfile: zapis tylko po włączeniu przez grę; ukończo
   assert.equal(cloud.profile().missions.nearMiss3.progress, 1);
   assert.equal(cloud.profile().stats.extraLives, 1);
 });
+
+test("Sowie Tory: ukończona kampania liczy się do stats.finishes, a na poziomie Chaos kończy misję chaosFinish", () => {
+  assert.deepEqual(profileUpdates(EVENTS.RUN_ENDED, { gameId: "sowa3", finished: true, difficulty: "arcade" }), {
+    missions: [],
+    stats: [["finishes", 1, "add"]],
+  });
+  assert.deepEqual(profileUpdates(EVENTS.RUN_ENDED, { gameId: "sowa3", finished: false, difficulty: "chaos" }), {
+    missions: [],
+    stats: [],
+  });
+  const cloud = fakeCloud();
+  cloud.profile().missions.chaosFinish = { progress: 0, target: 1, done: false, reward: "gardenerHat" };
+  const progress = createProgress({ getAcademy: () => null });
+  const done = [];
+  progress.linkProfile({
+    getCloud: () => cloud,
+    getPlatform: () => ({ COSMETICS: { gardenerHat: { label: "Kapelusz ogrodnika" } } }),
+    onMission: (item) => done.push(item),
+  });
+  // Poziom z beginRun trafia do run:ended (gra podaje tylko wynik i `finished`).
+  progress.beginRun("sowa3", { difficulty: "chaos" });
+  const summary = progress.endRun({ score: 5200, distance: 4100, finished: true });
+  assert.equal(summary.difficulty, "chaos");
+  assert.deepEqual(done, [
+    {
+      key: "chaosFinish",
+      label: "Ukończ kampanię Sowich Torów na poziomie Chaos",
+      reward: "gardenerHat",
+      rewardLabel: "Kapelusz ogrodnika",
+    },
+  ]);
+  assert.equal(cloud.profile().stats.finishes, 1);
+  assert.ok(cloud.profile().cosmetics.unlocked.includes("gardenerHat"));
+});

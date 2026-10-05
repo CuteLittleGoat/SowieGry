@@ -1,4 +1,4 @@
-// Sowie Tory (wersja podglądowa nowej Sowa3, Analiza 3, E5) na telefonach: start, przesunięcia palcem (tor, skok,
+// Sowie Tory (gra „sowa3”, od E5f zamiast Sowa3; Analiza 3, E5) na telefonach: start, przesunięcia palcem (tor, skok,
 // ślizg), stuknięcia przy bokach, klawiatura, pauza, koniec biegu z wynikami i zapis rekordu „sowa3” w chmurze.
 const { test, expect, swipe: swipeFrom, waitForCloud, watchErrors } = require("../fixtures");
 const { cloudUrl, readDoc, seedDoc, uniqueProject } = require("../emulator");
@@ -27,7 +27,7 @@ test("Sowie Tory: przesunięcia zmieniają tor, w górę — skok, w dół — �
   const errors = watchErrors(page);
   await openGame(page);
   await expect(page.getByRole("heading", { name: "Sowie Tory" })).toBeVisible();
-  await expect(page.locator("[data-preview]")).toContainText("Wersja podglądowa");
+  await expect(page.locator("[data-preview]")).toHaveCount(0);
   await page.locator("[data-start]").click();
   await expect(page.locator("[data-title]")).toBeHidden();
   expect(await page.evaluate(() => window.SowieTory.screen())).toBe("playing");

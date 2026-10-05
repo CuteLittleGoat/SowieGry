@@ -20,7 +20,17 @@ const games = [
     action: "keyboard",
     started: "state.scene === 'playing'",
   },
-  { id: "sowa3", name: "Sowa3", path: "/Sowa3/", marker: "#game", action: "keyboard", started: "state.mode === 'run'" },
+  {
+    // Sowie Tory (E5, zastąpiły Sowa3): moduły ES, bez SowieCore; przycisk „Graj” na ekranie tytułowym.
+    id: "sowa3",
+    name: "Sowie Tory",
+    path: "/SowieTory/",
+    marker: "[data-stage] canvas",
+    action: "[data-start]",
+    started: "window.SowieTory.screen() === 'playing'",
+    ready: "window.SowieTory?.ready?.() === true",
+    core: false,
+  },
   {
     id: "ogrody",
     name: "Sowie Ogrody",

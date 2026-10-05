@@ -13,7 +13,6 @@
   function detectGameId() {
     const path = location.pathname.toLowerCase();
     if (path.includes("sowajumper")) return "jumper";
-    if (path.includes("sowa3")) return "sowa3";
     if (path.includes("sowieogrody")) return "ogrody";
     if (path.includes("sowiaszklarnia")) return "szklarnia";
     return null;

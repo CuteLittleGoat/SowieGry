@@ -6,14 +6,9 @@ import { test } from "node:test";
 const read = (path) => readFile(path, "utf8");
 
 // Obecne gry na starym interfejsie (SowieCore, wspólny menedżer powiadomień, okno Rekordów).
-const legacyGamePages = [
-  "SowaJumper/index.html",
-  "Sowa3/index.html",
-  "SowieOgrody/index.html",
-  "SowiaSzklarnia/index.html",
-];
-// Wszystkie gry z rejestru: Sowia Ucieczka (E4, moduły ES na Sowim Silniku; zastąpiła SowaRunner), podglądy
-// Sowich Torów (E5, nowa wersja Sowa3) i Sowy w Chmurach (E6, nowa wersja SowaJumper) oraz obecne gry.
+const legacyGamePages = ["SowaJumper/index.html", "SowieOgrody/index.html", "SowiaSzklarnia/index.html"];
+// Wszystkie gry z rejestru: Sowia Ucieczka (E4, moduły ES na Sowim Silniku; zastąpiła SowaRunner), Sowie Tory
+// (E5, zastąpiły Sowa3), podglądy Sowy w Chmurach (E6) i Łącz i Hoduj (E8) oraz obecne gry.
 const newGamePages = [
   "SowiaUcieczka/index.html",
   "SowieTory/index.html",
@@ -83,7 +78,6 @@ async function projectScripts() {
     "SowaWChmurach",
     "LaczIHoduj",
     "SowaJumper",
-    "Sowa3",
     "SowieOgrody",
     "SowiaSzklarnia",
   ];
@@ -219,13 +213,22 @@ test("projekt respektuje reduced motion", async () => {
   assert.match(css, /sowie-reduced-effects/);
 });
 
-test("SowaRunner/ to tylko przekierowanie do Sowiej Ucieczki (stare pliki gry i p5.js usunięte)", async () => {
-  assert.deepEqual((await readdir("SowaRunner")).sort(), ["docs", "index.html"]);
-  const html = await read("SowaRunner/index.html");
-  assert.match(html, /<meta http-equiv="refresh" content="0; url=\.\.\/SowiaUcieczka\/"/);
-  assert.match(html, /location\.replace\(`\.\.\/SowiaUcieczka\/\$\{location\.search\}\$\{location\.hash\}`\)/);
-  assert.doesNotMatch(html, /<script src=/, "strona przekierowania nie ładuje skryptów (ani SowieCloud)");
-  const platform = await read("shared/sowie-platform.js");
-  assert.match(platform, /name: "Sowia Ucieczka",\s*path: "SowiaUcieczka\/"/);
-  assert.doesNotMatch(platform, /path: "SowaRunner\/"/);
-});
+// Podmienione gry: stary folder to tylko przekierowanie (z parametrami adresu) do nowej gry z rejestru.
+const REPLACED_GAMES = [
+  ["SowaRunner", "SowiaUcieczka", "Sowia Ucieczka"],
+  ["Sowa3", "SowieTory", "Sowie Tory"],
+];
+
+for (const [oldFolder, newFolder, name] of REPLACED_GAMES) {
+  test(`${oldFolder}/ to tylko przekierowanie do gry ${name} (stare pliki gry usunięte)`, async () => {
+    assert.deepEqual((await readdir(oldFolder)).sort(), ["docs", "index.html"]);
+    const html = await read(`${oldFolder}/index.html`);
+    assert.ok(html.includes(`<meta http-equiv="refresh" content="0; url=../${newFolder}/"`), oldFolder);
+    assert.ok(html.includes(`location.replace(\`../${newFolder}/\${location.search}\${location.hash}\`)`), oldFolder);
+    assert.doesNotMatch(html, /<script src=/, "strona przekierowania nie ładuje skryptów (ani SowieCloud)");
+    const platform = await read("shared/sowie-platform.js");
+    assert.ok(platform.includes(`name: "${name}",\n      path: "${newFolder}/"`), `rejestr: ${name}`);
+    assert.ok(!platform.includes(`path: "${oldFolder}/"`), `rejestr nadal wskazuje ${oldFolder}/`);
+    assert.ok(!platform.includes(`preview: Object.freeze({ path: "${newFolder}/"`), `${name} nadal jako podgląd`);
+  });
+}

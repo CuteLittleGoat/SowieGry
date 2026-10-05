@@ -1,7 +1,7 @@
 // Zdarzenia SowieProgress (osobny moduł: używa ich też shared/meta/missions.js bez cyklicznego importu).
 export const EVENTS = Object.freeze({
   RUN_STARTED: "run:started", // { gameId, difficulty, daily }
-  RUN_ENDED: "run:ended", // { gameId, score, distance?, height?, finished?, bestChain?, bestStreak?, bestCombo? }
+  RUN_ENDED: "run:ended", // { gameId, score, difficulty?, distance?, height?, finished?, bestChain?, bestStreak?, bestCombo? }
   LEAF: "leaf:collected", // { kind: "zielony" | "zloty" | "teczowy", count = 1, points }
   GOAT: "goat:caught", // { kind: "sprezynka" | "tarcza" | "magnes" | "turbo" | "podwajaczka" }
   HIT: "hit", // { by: "pracu" | "amic", variant }

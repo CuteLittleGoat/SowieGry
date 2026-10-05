@@ -5,7 +5,7 @@ const pages = [
   { name: "Menu główne", path: "/", marker: ".game-card" },
   { name: "Sowia Ucieczka", path: "/SowiaUcieczka/", marker: "[data-stage] canvas" },
   { name: "SowaJumper", path: "/SowaJumper/", marker: "#game" },
-  { name: "Sowa3", path: "/Sowa3/", marker: "#game" },
+  { name: "Sowie Tory", path: "/SowieTory/", marker: "[data-stage] canvas" },
   { name: "Sowie Ogrody", path: "/SowieOgrody/", marker: "#gardenCanvas" },
   { name: "Sowia Szklarnia", path: "/SowiaSzklarnia/", marker: "#greenhouseCanvas" },
 ];
@@ -27,6 +27,18 @@ test("stary adres SowaRunner przekierowuje do Sowiej Ucieczki z parametrami", as
   await expect(page).toHaveURL(/\/SowiaUcieczka\/\?daily=1$/);
   await expect(page.getByRole("heading", { name: "Sowia Ucieczka" })).toBeVisible({ timeout: 15_000 });
   await expect(page.locator("[data-daily-note]")).toBeVisible();
+  expect(errors).toEqual([]);
+});
+
+// Sowa3 zastąpiły Sowie Tory (E5f): stary adres prowadzi do nowej gry z parametrami (tu: plansza 2).
+test("stary adres Sowa3 przekierowuje do Sowich Torów z parametrami", async ({ page }) => {
+  const errors = watchErrors(page);
+  await page.goto("/Sowa3/?plansza=2&seed=przekierowanie", { waitUntil: "load" });
+  await expect(page).toHaveURL(/\/SowieTory\/\?plansza=2&seed=przekierowanie$/);
+  await expect(page.getByRole("heading", { name: "Sowie Tory" })).toBeVisible({ timeout: 15_000 });
+  await page.waitForFunction(() => window.SowieTory?.ready?.(), null, { timeout: 15_000 });
+  await page.locator("[data-start]").click();
+  await expect(page.locator(".tory-progress")).toContainText("2/4");
   expect(errors).toEqual([]);
 });
 

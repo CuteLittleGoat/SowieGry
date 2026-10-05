@@ -109,7 +109,7 @@ test("ustawienia zapisują się w profilu, pokazują stan zapisu i pozwalają wy
 }, testInfo) => {
   const project = uniqueProject(testInfo);
   const errors = watchErrors(page);
-  await page.goto(cloudUrl("/Sowa3/?seed=settings", project), { waitUntil: "load" });
+  await page.goto(cloudUrl("/SowaJumper/?seed=settings", project), { waitUntil: "load" });
   await waitForCloud(page);
   await page.getByRole("button", { name: "Ustawienia", exact: true }).click();
   const dialog = page.getByRole("dialog", { name: "Ustawienia" });

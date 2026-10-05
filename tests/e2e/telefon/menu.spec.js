@@ -35,7 +35,7 @@ test("zakładka „Gry”: pięć kart z rejestru, „Graj” otwiera grę", asy
   await openMenu(page);
   await expect(page.getByRole("tab", { name: "Gry" })).toHaveAttribute("aria-selected", "true");
   const cards = page.locator(".game-card");
-  for (const name of ["Sowia Ucieczka", "SowaJumper", "Sowa3", "Sowie Ogrody", "Sowia Szklarnia"]) {
+  for (const name of ["Sowia Ucieczka", "SowaJumper", "Sowie Tory", "Sowie Ogrody", "Sowia Szklarnia"]) {
     await expect(cards.filter({ hasText: name })).toHaveCount(1);
   }
   // Rekord z profilu (tu: jeszcze bez gry) zastępuje szkielet karty po wczytaniu chmury.
@@ -45,11 +45,11 @@ test("zakładka „Gry”: pięć kart z rejestru, „Graj” otwiera grę", asy
   // a przycisku wersji podglądowej już nie ma.
   await expect(page.locator('[data-play="runner"]')).toHaveAttribute("href", "SowiaUcieczka/");
   await expect(page.locator('[data-game="runner"] .game-card-new')).toHaveText("Nowe!");
-  // Sowie Tory (E5) w podglądzie: karta Sowa3 prowadzi do obecnej gry i ma przycisk nowej wersji.
-  await expect(page.locator('[data-play="sowa3"]')).toHaveAttribute("href", "Sowa3/");
-  await expect(page.locator("[data-preview]")).toHaveCount(4);
-  await expect(page.locator('[data-preview="sowa3"]')).toHaveAttribute("href", "SowieTory/");
-  await expect(page.locator('[data-preview="sowa3"]')).toContainText("Wypróbuj nową wersję: Sowie Tory");
+  // Sowie Tory zastąpiły Sowa3 (E5f): karta „sowa3” prowadzi do nowej gry i ma znaczek „Nowe!”.
+  await expect(page.locator('[data-play="sowa3"]')).toHaveAttribute("href", "SowieTory/");
+  await expect(page.locator('[data-game="sowa3"] .game-card-new')).toHaveText("Nowe!");
+  await expect(page.locator('[data-preview="sowa3"]')).toHaveCount(0);
+  await expect(page.locator("[data-preview]")).toHaveCount(3);
   // Sowa w Chmurach (E6) w podglądzie: karta SowaJumper prowadzi do obecnej gry i ma przycisk nowej wersji.
   await expect(page.locator('[data-play="jumper"]')).toHaveAttribute("href", "SowaJumper/");
   await expect(page.locator('[data-preview="jumper"]')).toHaveAttribute("href", "SowaWChmurach/");
@@ -97,9 +97,7 @@ test("rekord osobisty na karcie pochodzi z profilu w chmurze (emulator)", async 
   expect(errors).toEqual([]);
 });
 
-test("rekordy gry z trybami (Sowa3 / Sowie Tory): Kampania i Nieskończony osobno (emulator)", async ({
-  page,
-}, testInfo) => {
+test("rekordy gry z trybami (Sowie Tory): Kampania i Nieskończony osobno (emulator)", async ({ page }, testInfo) => {
   const project = uniqueProject(testInfo);
   await seedDoc(project, "sowiegry/profil", {
     schemaVersion: 1,
@@ -118,7 +116,7 @@ test("rekordy gry z trybami (Sowa3 / Sowie Tory): Kampania i Nieskończony osobn
   await expect(page.locator('[data-game="sowa3"] [data-record]')).toHaveText(/Rekord: 4\s?100 pkt/);
   await page.getByRole("tab", { name: "Sowa" }).click();
   await page.locator('[data-records="sowa3"]').click();
-  const records = page.getByRole("dialog", { name: /Rekordy — Sowa3/ });
+  const records = page.getByRole("dialog", { name: /Rekordy — Sowie Tory/ });
   await expect(records.getByRole("button", { name: "Kampania" })).toHaveAttribute("aria-pressed", "true");
   await expect(records.locator("[data-best]")).toHaveText(/4\s?100 pkt/);
   await expect(records).toContainText("Top 10 — Kampania, Arcade");
@@ -149,10 +147,12 @@ test("instrukcje: „Jak grać?” na karcie i zakładka z kartami wszystkich gi
   const panel = page.locator("#jak-grac");
   await expect(panel.locator(".menu-guide")).toHaveCount(6);
   await expect(panel.locator(".menu-guide").first()).toContainText("Poznaj Sowi Świat");
-  // Karty sterowania mają animowaną demonstrację gestu: po jednej w obecnych grach i trzy w Sowiej Ucieczce
-  // (skok — stuknięcie, szybowanie — przytrzymanie, ślizg — przesunięcie w dół).
-  await expect(panel.locator(".sowie-gesture-demo")).toHaveCount(7);
+  // Karty sterowania mają animowaną demonstrację gestu: po jednej w obecnych grach i po trzy w Sowiej Ucieczce
+  // (skok — stuknięcie, szybowanie — przytrzymanie, ślizg — przesunięcie w dół) i Sowich Torach (zmiana toru,
+  // skok — przesunięcie w górę, ślizg — w dół).
+  await expect(panel.locator(".sowie-gesture-demo")).toHaveCount(9);
   await expect(panel.locator("#jak-grac-runner .sowie-gesture-demo")).toHaveCount(3);
+  await expect(panel.locator("#jak-grac-sowa3 .sowie-gesture-demo")).toHaveCount(3);
   expect(errors).toEqual([]);
 });
 

@@ -1,5 +1,5 @@
 // Sowie Tory — działka z basenem ogrodowym (finał planszy, Analiza 2, rozdz. 3.2), w stylu Sowiego Świata.
-// Wygląd z obecnej Sowa3 przerysowany: szara, pionowo ryflowana ścianka, szeroki niebieski rant, jasna turkusowa
+// Wygląd z dawnej Sowa3 przerysowany: szara, pionowo ryflowana ścianka, szeroki niebieski rant, jasna turkusowa
 // woda z delikatnymi falami, trawa, płot, drzewa i krzewy, przy bokach koza na leżaku i grill.
 // Rekwizyty w metrach (jak props.js: kontekst w punkcie na ziemi, 1 jednostka = 1 m, y w górę ujemne);
 // basen w pikselach — renderer podaje elipsę z rzutni perspektywicznej.

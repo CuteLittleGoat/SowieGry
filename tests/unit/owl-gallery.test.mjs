@@ -38,12 +38,7 @@ const photoFiles = [
   "sowa-30-wiosenna-rodzina.jpg",
 ];
 // Obecne gry (Galeria z owl-gallery.css); Sowia Ucieczka ładuje owl-gallery.js bez okna (zdjęcia z nagród).
-const gameIndexes = [
-  "SowaJumper/index.html",
-  "Sowa3/index.html",
-  "SowieOgrody/index.html",
-  "SowiaSzklarnia/index.html",
-];
+const gameIndexes = ["SowaJumper/index.html", "SowieOgrody/index.html", "SowiaSzklarnia/index.html"];
 
 test("folder Obrazki zawiera trzydzieści poprawnych, zoptymalizowanych plików JPEG", () => {
   for (const filename of photoFiles) {

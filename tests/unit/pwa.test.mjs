@@ -12,7 +12,6 @@ const pages = [
   "SowaWChmurach/index.html",
   "LaczIHoduj/index.html",
   "SowaJumper/index.html",
-  "Sowa3/index.html",
   "SowieOgrody/index.html",
   "SowiaSzklarnia/index.html",
   "lab/index.html",
