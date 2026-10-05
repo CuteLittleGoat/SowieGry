@@ -297,6 +297,19 @@ export const POOL = Object.freeze({
   starScore: 1000,
 });
 
+// Pakiet startowy z postępu dawnej Sowiej Szklarni (krok 8.3, E8d; pole `state` dokumentu, wersja 1) — raz, przy
+// pierwszym wejściu do nowej gry: liście (najlepsze `lifetimeLeaves` / `leavesDivisor`, najwyżej `maxLeaves`),
+// odnowione pierwsze pomieszczenia (tyle, ile rodzajów pomieszczeń zbudowano, najwyżej `maxRooms`), gwiazdki
+// (`starsPerHybrid` za odkrytą hybrydę, najwyżej `maxStars`) i Kózka Dżoker, gdy była jakaś hybryda.
+export const STARTER = Object.freeze({
+  leavesDivisor: 20,
+  maxLeaves: 2000,
+  maxRooms: 3,
+  starsPerHybrid: 2,
+  maxStars: 6,
+  hybridIds: Object.freeze(["monpilea", "alopaproc", "goldleaf"]),
+});
+
 // Dźwięk (uwaga właściciela L1): efekty wczytywane po pierwszym dotknięciu (tylko używane) i motyw szklarni.
 export const GAME_SOUNDS = Object.freeze([
   "klik",

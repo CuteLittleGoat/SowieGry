@@ -3,10 +3,12 @@
 // zaznaczanie stuknięciem (bez przeciągania), Sowia doniczka, kompostownik, hybrydy, nowe łańcuchy w doniczce,
 // zamówienia sąsiadek (oddanie stuknięciem karty albo przeciągnięciem rośliny na kartę), okno odnawiania pomieszczeń
 // szklarni (stuknięcie portfela), przeszkody Pracu i Amic (stuknięcie przeszkody), kózki-wzmacniacze (stuknięcie albo
-// przeciągnięcie), Basen Humbaka (runda bonusowa na osobnej planszy), komunikaty i haki testowe.
+// przeciągnięcie), Basen Humbaka (runda bonusowa na osobnej planszy), pakiet startowy z dawnej Szklarni, samouczek
+// pierwszego wejścia (z powtórzeniem), „Jak grać?”, komunikaty i haki testowe.
 import { connectAudioSettings, createAudio } from "../shared/engine/audio.js";
 import { EVENTS, progress } from "../shared/meta/progress.js";
-import { createToasts, openModal } from "../shared/ui/index.js";
+import { guideFor } from "../shared/meta/guides-data.js";
+import { createToasts, openModal, renderGuide } from "../shared/ui/index.js";
 import { COLORS } from "../shared/world/tokens.js";
 import { canGrow, canMerge, hybridOf, isGoat, itemName } from "./board.js";
 import {
@@ -26,6 +28,7 @@ import {
 } from "./config.js";
 import { createGame, defaultState, loadState, neighborOf, renovation } from "./game.js";
 import { createPool } from "./pool.js";
+import { createTutorial } from "./tutorial.js";
 import { createBoardRenderer, drawOrderCard, LIFT } from "./render.js";
 
 // Zapis: co 20 s gry, po połączeniu po 2 s, przy zejściu do tła od razu.
@@ -46,6 +49,9 @@ const compostButton = root.querySelector("[data-compost]");
 const starsNode = root.querySelector("[data-stars]");
 const roomsButton = root.querySelector("[data-rooms]");
 const poolButton = root.querySelector("[data-pool]");
+const tutorialNode = root.querySelector("[data-tutorial]");
+// Instrukcja „Jak grać?” (shared/meta/guides-data.js).
+const GUIDE_ID = "lacz";
 const orderButtons = [...root.querySelectorAll("[data-order]")];
 // Ostatnio narysowana karta zamówienia (zamówienie i rozmiar) — rysujemy tylko po zmianie.
 const drawnOrders = orderButtons.map(() => "");
@@ -69,6 +75,10 @@ let audio = null;
 let roomsModal = null;
 // Runda w Basenie Humbaka (createPool) albo null — wtedy przeciąganie i doniczka działają na planszy basenu.
 let pool = null;
+
+// Samouczek (createTutorial) albo null; pominięty — bez gratulacji na końcu.
+let tutorial = null;
+let tutorialSkipped = false;
 
 // Plansza, na której się teraz gra (szklarnia albo basen).
 const active = () => (pool ? pool.board : game.board);
@@ -154,6 +164,7 @@ function updateHud() {
     `Pomieszczenia szklarni — ${state.stars} gwiazdek odnowy, ${state.leaves.toLocaleString("pl-PL")} liści`,
   );
   updateOrders();
+  tutorial?.update(state);
 }
 
 function handleEvents() {
@@ -400,6 +411,19 @@ function handleEvents() {
         showPoolResult(event);
         save({ immediate: true });
         break;
+      case "starter": {
+        const done = event.rooms
+          ? ` Odnowione pomieszczenia: ${ROOMS.slice(0, event.rooms)
+              .map((room) => room.name)
+              .join(", ")}.`
+          : "";
+        toasts.show(
+          `Pakiet startowy z dawnej Szklarni: +${event.leaves} liści${event.stars ? `, +${event.stars} ⭐` : ""}${event.goats ? ", Kózka Dżoker" : ""}.${done}`,
+          { kind: "reward", key: "pakiet", priority: 3 },
+        );
+        save({ immediate: true });
+        break;
+      }
       case "unlock":
         toasts.show(`Nowa roślina w Sowiej doniczce: ${event.name}!`, {
           kind: "reward",
@@ -427,6 +451,66 @@ function handleEvents() {
         break;
     }
   }
+}
+
+// ---------- Samouczek i „Jak grać?” ----------
+
+function showTutorial(item) {
+  tutorialNode.hidden = !item;
+  if (!item) return;
+  tutorialNode.querySelector("[data-tutorial-step]").textContent = `Samouczek · krok ${item.step} z ${item.steps}`;
+  const demo = tutorialNode.querySelector(".sowie-gesture-demo");
+  demo.hidden = !item.gesture;
+  if (item.gesture) demo.dataset.gesture = item.gesture;
+  tutorialNode.querySelector("[data-tutorial-text]").textContent = item.text;
+  tutorialNode.querySelector("[data-tutorial-next]").hidden = !item.next;
+}
+
+function tutorialFinished() {
+  tutorial = null;
+  if (!tutorialSkipped) {
+    play("rekord", { pitch: 1.2, volume: 0.6 });
+    toasts.show("Świetnie! Szklarnia jest Twoja — miłego łączenia!", {
+      kind: "success",
+      key: "samouczek-koniec",
+      priority: 3,
+    });
+  }
+  if (!game.state.tutorialDone) {
+    game.state.tutorialDone = true;
+    save({ immediate: true });
+  }
+  // Prośba z menu („Powtórz samouczki we wszystkich grach” — `tutorialDone: false` w dokumencie gry) spełniona.
+  if (cloud?.game?.(GAME_ID)?.tutorialDone === false) cloud.updateGame?.(GAME_ID, { tutorialDone: true });
+}
+
+function startTutorial() {
+  tutorialSkipped = false;
+  tutorial = createTutorial({ state: game.state, onStep: showTutorial, onDone: tutorialFinished });
+}
+
+tutorialNode.querySelector("[data-tutorial-next]").addEventListener("click", () => tutorial?.next(game.state));
+tutorialNode.querySelector("[data-tutorial-skip]").addEventListener("click", () => {
+  tutorialSkipped = true;
+  tutorial?.skip();
+});
+
+function openGuide() {
+  openModal({
+    title: `Jak grać — ${guideFor(GUIDE_ID).title}`,
+    content: renderGuide(guideFor(GUIDE_ID)),
+    className: "is-guide",
+    actions: [
+      {
+        label: "Zagraj samouczek",
+        onClick: (close) => {
+          close();
+          startTutorial();
+        },
+      },
+      { label: "Zamknij", primary: true, onClick: (close) => close() },
+    ],
+  });
 }
 
 // ---------- Basen Humbaka ----------
@@ -594,6 +678,22 @@ function openRooms() {
   roomsModal = openModal({
     title: "Pomieszczenia szklarni",
     content: roomsContent(),
+    actions: [
+      {
+        label: "Jak grać?",
+        onClick: (close) => {
+          close();
+          openGuide();
+        },
+      },
+      {
+        label: "Powtórz samouczek",
+        onClick: (close) => {
+          close();
+          startTutorial();
+        },
+      },
+    ],
     onClose: () => {
       roomsModal = null;
     },
@@ -883,9 +983,25 @@ async function start() {
     }
   }
   game = createGame({ state: loadState(raw, Date.now()) });
+  // Pakiet startowy z postępu dawnej Szklarni (pole `state`) — raz (znacznik `starter` w stanie nowej gry).
+  if (!game.state.starter) {
+    let old = doc.state;
+    if (typeof old === "string") {
+      try {
+        old = JSON.parse(old);
+      } catch {
+        old = null;
+      }
+    }
+    game.applyStarter(old);
+  }
+  // Menu („Powtórz samouczki we wszystkich grach”) ustawia w dokumencie gry `tutorialDone: false`.
+  if (doc.tutorialDone === false) game.state.tutorialDone = false;
   ready = true;
   if (!raw) save({ immediate: true });
   progress.emit(EVENTS.VISIT, { gameId: GAME_ID });
+  handleEvents();
+  if (!game.state.tutorialDone) startTutorial();
   updateHud();
 }
 
@@ -944,6 +1060,7 @@ window.LaczIHoduj = Object.freeze({
     pool.update(POOL.seconds + 1);
     handleEvents();
   },
+  tutorial: () => tutorial?.progress() ?? null,
   setStars: (stars) => {
     game.state.stars = stars;
     updateHud();

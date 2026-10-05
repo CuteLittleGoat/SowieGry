@@ -390,6 +390,61 @@ export const GUIDES = Object.freeze({
       },
     ],
   },
+  // Łącz i Hoduj — nowa Sowia Szklarnia (E8d, podgląd LaczIHoduj/; poza GUIDE_ORDER — po podmianie w E8e zastąpi
+  // przewodnik `szklarnia`).
+  lacz: {
+    id: "lacz",
+    title: "Łącz i Hoduj",
+    summary:
+      "Spokojna gra logiczna na półkach szklarni: łącz takie same rośliny w coraz większe, oddawaj je sowim sąsiadkom i odnawiaj pomieszczenia.",
+    cards: [
+      {
+        id: "laczenie",
+        title: "Łączenie",
+        text: "Przeciągnij roślinę na taką samą — połączą się w roślinę następnego poziomu. Roślina unosi się nad palcem, a zielone pole pokazuje, że się połączą.",
+        gesture: "swipe-right",
+        sprite: "lisc-zielony",
+      },
+      {
+        id: "doniczka",
+        title: "Sowia doniczka i kompost",
+        text: "Doniczka daje nasionka (ładunek wraca co kilka sekund), a kompost zwalnia miejsce na półkach.",
+        gesture: "tap",
+        sprite: "lisc-zloty",
+      },
+      {
+        id: "hybrydy",
+        title: "Łańcuchy i hybrydy",
+        text: "Monstera, Pilea, Paproć i Kaktus mają po 5 poziomów. Dwie różne rośliny na szczycie łańcucha dają hybrydę.",
+        sprite: "lisc-teczowy",
+      },
+      {
+        id: "zamowienia",
+        title: "Zamówienia i pomieszczenia",
+        text: "Trzy sąsiadki proszą o rośliny. Za zamówienia dostajesz liście i gwiazdki, a za gwiazdki odnawiasz 10 pomieszczeń — każde daje ułatwienie.",
+        sprite: "sowa-radosc",
+      },
+      {
+        id: "pracu-amic",
+        title: "Pracu Pracu i Amic",
+        text: "Telefon Pracu przykleja karteczki na rośliny — połącz rośliny obok albo stuknij karteczkę 3 razy. Skrzynię Amic otwierają 2 połączenia obok, a kanister usuwa tylko Kózka Taran.",
+        sprite: "pracu-telefon",
+      },
+      {
+        id: "kozki",
+        title: "Kózki-pomocnice",
+        text: "Skoczek łączy pary, Zjadaczka zjada karteczki, Dżoker pasuje do każdej rośliny, Sprężynka podnosi rośliny wokół, a Taran rozbija przeszkody.",
+        sprite: "kozka-sprezynka",
+      },
+      {
+        id: "humbak",
+        title: "Basen Humbaka",
+        text: "Co 5 zamówień humbak zaprasza do 45-sekundowej rundy: szybkie połączenia mnożą punkty, a szczyt łańcucha robi plusk. Pobij swój rekord!",
+        sprite: "humbak",
+        tip: "Gwiazdki i kózki z basenu trafiają do szklarni.",
+      },
+    ],
+  },
   ogrody: {
     id: "ogrody",
     title: "Sowie Ogrody",

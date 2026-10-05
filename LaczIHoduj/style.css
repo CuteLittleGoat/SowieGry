@@ -434,3 +434,62 @@ body {
 .lacz-compost:disabled {
   opacity: 0.5;
 }
+
+/* Samouczek: chmurka nad górą planszy (plansza pod nią działa — klikalne są tylko przyciski). */
+.lacz-tutorial {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  left: 6px;
+  z-index: 3;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 6px 6px 8px;
+  border: 3px solid var(--monstera);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 4px 12px rgba(59, 47, 74, 0.2);
+  pointer-events: none;
+}
+
+.lacz-tutorial[hidden],
+.lacz-tutorial [hidden] {
+  display: none;
+}
+
+.lacz-tutorial .sowie-gesture-demo {
+  grid-column: 1;
+  width: 44px;
+  height: 44px;
+}
+
+.lacz-tutorial [data-tutorial-next] {
+  grid-column: 3;
+}
+
+.lacz-tutorial-skip {
+  grid-column: 4;
+}
+
+.lacz-tutorial-text {
+  grid-column: 2;
+  display: grid;
+  gap: 1px;
+  font-size: 13px;
+  line-height: 1.25;
+}
+
+.lacz-tutorial-step {
+  font-size: 11px;
+  color: var(--monstera-ciemna);
+}
+
+.lacz-tutorial .sowie-ui-button {
+  min-width: 44px;
+  min-height: 44px;
+  padding: 4px 12px;
+  font-size: 14px;
+  pointer-events: auto;
+}

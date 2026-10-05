@@ -204,6 +204,50 @@ test("Łącz i Hoduj: zamówienia sąsiadek — stuknięcie gotowej karty, podpo
   expect(errors).toEqual([]);
 });
 
+test("Łącz i Hoduj: samouczek — kroki z akcją zaliczają się same, „Dalej” i pominięcie; powtórzenie i „Jak grać?” z okna pomieszczeń", async ({
+  page,
+}) => {
+  const errors = watchErrors(page);
+  await openGame(page);
+  const bubble = page.locator("[data-tutorial]");
+  await expect(bubble).toBeVisible();
+  await expect(bubble).toContainText("Samouczek · krok 1 z 5");
+  await expect(bubble).toContainText("Przeciągnij nasionko na takie samo");
+  await drag(page, 30, 31);
+  await expect(bubble).toContainText("krok 2 z 5");
+  await page.locator("[data-pot]").click();
+  await expect(bubble).toContainText("krok 3 z 5");
+  // Krok zamówienia: stuknięcie gotowej karty (kiełki są na półkach).
+  await game(page, "setOrder", 0, "monstera", 2, 1);
+  await page.locator('[data-order="0"]').click();
+  await expect(bubble).toContainText("krok 4 z 5");
+  await bubble.getByRole("button", { name: "Dalej" }).click();
+  await expect(bubble).toContainText("krok 5 z 5");
+  await bubble.getByRole("button", { name: "Dalej" }).click();
+  await expect(bubble).toBeHidden();
+  await expect(page.getByText("Świetnie! Szklarnia jest Twoja — miłego łączenia!")).toBeVisible();
+  expect((await game(page, "state")).tutorialDone).toBe(true);
+  // Powtórzenie z okna pomieszczeń, potem pominięcie (✕).
+  await page.locator("[data-rooms]").click();
+  await page
+    .getByRole("dialog", { name: "Pomieszczenia szklarni" })
+    .getByRole("button", { name: "Powtórz samouczek" })
+    .click();
+  await expect(bubble).toContainText("krok 1 z 5");
+  await bubble.getByRole("button", { name: "Pomiń samouczek" }).click();
+  await expect(bubble).toBeHidden();
+  // „Jak grać?” — przewodnik Łącz i Hoduj z kartami.
+  await page.locator("[data-rooms]").click();
+  await page.getByRole("dialog", { name: "Pomieszczenia szklarni" }).getByRole("button", { name: "Jak grać?" }).click();
+  const guide = page.getByRole("dialog", { name: "Jak grać — Łącz i Hoduj" });
+  await expect(guide).toBeVisible();
+  await expect(guide.locator(".sowie-guide-card")).toHaveCount(7);
+  await expect(guide).toContainText("Basen Humbaka");
+  await guide.locator("[data-modal-actions]").getByRole("button", { name: "Zamknij" }).click();
+  await expect(guide).toBeHidden();
+  expect(errors).toEqual([]);
+});
+
 test("Łącz i Hoduj: odnawianie pomieszczeń — okno z portfela, etapy za gwiazdki, Doniczarnia powiększa doniczkę", async ({
   page,
 }) => {
@@ -361,14 +405,36 @@ test("Łącz i Hoduj: Basen Humbaka — zaproszenie, runda na wodzie (darmowa do
   expect(errors).toEqual([]);
 });
 
-test("Łącz i Hoduj: zapis w polu `preview` — dawna Szklarnia (pole `state`) bez zmian, plansza wraca po wejściu (emulator)", async ({
+test("Łącz i Hoduj: zapis w polu `preview` — dawna Szklarnia (pole `state`) bez zmian, pakiet startowy z niej, plansza wraca po wejściu (emulator)", async ({
   page,
 }, testInfo) => {
   const project = uniqueProject(testInfo);
-  const old = JSON.stringify({ leaves: 1234, rooms: [{ id: "r1" }], plants: [] });
+  const old = JSON.stringify({
+    leaves: 1234,
+    lifetimeLeaves: 4000,
+    rooms: [
+      { id: "r1", type: "potting" },
+      { id: "r2", type: "grow" },
+      { id: "r3", type: "grow" },
+    ],
+    discovered: ["monstera", "pilea", "monpilea"],
+    stats: { hybrids: 1 },
+    plants: [],
+  });
   await seedDoc(project, "sowiegry/profil/sowiegry_gry/szklarnia", { state: old, saveVersion: 1 });
   const errors = watchErrors(page);
   await openGame(page, cloudUrl("/LaczIHoduj/", project));
+  // Pakiet startowy: 4000 / 20 = 200 liści, odnowione Doniczarnia i Sala Upraw (dwa rodzaje pomieszczeń),
+  // 2 gwiazdki i Kózka Dżoker za hybrydę.
+  await expect(
+    page.getByText(
+      "Pakiet startowy z dawnej Szklarni: +200 liści, +2 ⭐, Kózka Dżoker. Odnowione pomieszczenia: Doniczarnia, Sala Upraw.",
+    ),
+  ).toBeVisible();
+  await expect(page.locator("[data-leaves]")).toHaveText("200");
+  await expect(page.locator("[data-stars]")).toHaveText("2");
+  await expect(page.locator("[data-charges]")).toHaveText("14/14");
+  expect((await cells(page)).filter((item) => item?.goat === "dzoker")).toHaveLength(1);
   await drag(page, 30, 31);
   await game(page, "save");
   await page.evaluate(() => window.SowieCloud.flush());
@@ -378,13 +444,17 @@ test("Łącz i Hoduj: zapis w polu `preview` — dawna Szklarnia (pole `state`) 
   expect(saved.version).toBe(2);
   expect(saved.cells[31]).toEqual({ chain: "monstera", level: 2 });
   expect(saved.stats.merges).toBe(1);
+  expect(saved.starter).toBe(true);
+  expect(saved.renovation).toBe(6);
 
   const again = await page.context().newPage();
   await page.close();
   const errorsAgain = watchErrors(again);
   await openGame(again, cloudUrl("/LaczIHoduj/", project));
   expect((await again.evaluate(() => window.LaczIHoduj.cells()))[31]).toEqual({ chain: "monstera", level: 2 });
-  await expect(again.locator("[data-leaves]")).toHaveText("1");
+  await expect(again.locator("[data-leaves]")).toHaveText("201");
+  // Pakiet tylko raz.
+  await expect(again.getByText(/Pakiet startowy/)).toHaveCount(0);
   expect(errors).toEqual([]);
   expect(errorsAgain).toEqual([]);
 });

@@ -18,6 +18,7 @@ import {
   ROOMS,
   SAVE_VERSION,
   START_ITEMS,
+  STARTER,
 } from "./config.js";
 import {
   canGrow,
@@ -101,6 +102,26 @@ export function chargePot(state, dt) {
     pot.charges += 1;
   }
   if (pot.charges >= max) pot.progress = 0;
+}
+
+/**
+ * Pakiet startowy z dawnego stanu Sowiej Szklarni (`state`, wersja 1) → { leaves, rooms, renovation, stars, goats }
+ * albo null (brak dawnego stanu). `rooms` — liczba pierwszych pomieszczeń do odnowienia, `renovation` — ich etapy.
+ */
+export function starterPack(old) {
+  if (!old || typeof old !== "object" || Array.isArray(old)) return null;
+  const lifetime = Math.max(number(old.lifetimeLeaves), number(old.leaves), 0);
+  const types = new Set((Array.isArray(old.rooms) ? old.rooms : []).map((room) => room?.type).filter(Boolean));
+  const found = (Array.isArray(old.discovered) ? old.discovered : []).filter((id) => STARTER.hybridIds.includes(id));
+  const hybrids = Math.max(Math.floor(number(old.stats?.hybrids)), found.length, 0);
+  const rooms = Math.min(STARTER.maxRooms, types.size, ROOMS.length);
+  return {
+    leaves: Math.min(STARTER.maxLeaves, Math.floor(lifetime / STARTER.leavesDivisor)),
+    rooms,
+    renovation: ROOMS.slice(0, rooms).reduce((sum, entry) => sum + entry.steps.length, 0),
+    stars: Math.min(STARTER.maxStars, hybrids * STARTER.starsPerHybrid),
+    goats: hybrids > 0 ? 1 : 0,
+  };
 }
 
 /**
@@ -234,6 +255,8 @@ export function defaultState(now = Date.now(), random = Math.random) {
     phoneMoves: 0,
     poolReady: false,
     poolBest: 0,
+    tutorialDone: false,
+    starter: false,
     leaves: 0,
     stars: 0,
     renovation: 0,
@@ -264,6 +287,8 @@ export function loadState(raw, now = Date.now(), random = Math.random) {
     },
     stars: Math.max(0, number(raw.stars)),
     poolReady: raw.poolReady === true,
+    tutorialDone: raw.tutorialDone === true,
+    starter: raw.starter === true,
     poolBest: Math.max(0, Math.floor(number(raw.poolBest))),
     orders: fillOrders(raw.orders, stats, random),
     stats,
@@ -277,7 +302,7 @@ export function loadState(raw, now = Date.now(), random = Math.random) {
 /**
  * createGame({ state, random }) → { state, board, update(dt), tapPot(), move(from, to), compost(index),
  * orderCells(slot, prefer), tapBlock(index), useGoat(index), deliver(slot, prefer), renovate(), finishPool(score),
- * potMax(), takeEvents() }. Zdarzenia: spawn { index, item }, potEmpty,
+ * applyStarter(old), potMax(), takeEvents() }. Zdarzenia: spawn { index, item }, potEmpty,
  * boardFull, move { from, to }, swap { from, to }, merge { from, to, item, leaves, top },
  * hybrid { from, to, item, leaves }, unlock { chain, name }, compost { index, item, leaves },
  * order { slot, order, cells, leaves, stars }, newOrder { slot, order }, orderMissing { slot, order },
@@ -286,7 +311,7 @@ export function loadState(raw, now = Date.now(), random = Math.random) {
  * phoneGone { index }, crateOpen { index, goat, leaves, stars }, blockInfo { index, block }, canister { index },
  * canisterGone { index }; kózki: goat { index, goat, from }, goatUsed { index, goat, count }, goatIdle { index, goat },
  * goatHint { index, goat }, grow { index, item }; Basen Humbaka: poolReady, poolDone { score, best, record, goats,
- * leaves, stars }.
+ * leaves, stars }; starter { leaves, rooms, renovation, stars, goats }.
  */
 export function createGame({ state = defaultState(), random = Math.random } = {}) {
   const board = createBoard({ ...BOARD, cells: state.cells, blocks: state.blocks });
@@ -716,6 +741,25 @@ export function createGame({ state = defaultState(), random = Math.random } = {}
     return { ...reward, record, goats };
   }
 
+  // Pakiet startowy z dawnej Szklarni — tylko raz (znacznik `starter`), odnowa nie cofa się poniżej obecnej.
+  function applyStarter(old) {
+    if (state.starter) return null;
+    const pack = starterPack(old);
+    state.starter = true;
+    if (!pack) return null;
+    state.leaves += pack.leaves;
+    state.stars += pack.stars;
+    state.renovation = Math.max(state.renovation, pack.renovation);
+    state.pot.charges = Math.min(potMax(state), Math.max(state.pot.charges, potMax(state)));
+    for (let count = 0; count < pack.goats; count += 1) {
+      const free = emptyCells(board);
+      if (free.length) board.cells[pick(free)] = { goat: "dzoker" };
+    }
+    sync();
+    emit("starter", pack);
+    return pack;
+  }
+
   return {
     state,
     board,
@@ -730,6 +774,7 @@ export function createGame({ state = defaultState(), random = Math.random } = {}
     deliver,
     renovate,
     finishPool,
+    applyStarter,
     potMax: () => potMax(state),
     takeEvents: () => events.splice(0, events.length),
   };

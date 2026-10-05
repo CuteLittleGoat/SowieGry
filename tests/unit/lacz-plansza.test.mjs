@@ -1,6 +1,7 @@
 // Łącz i Hoduj (nowa Sowia Szklarnia, Analiza 3, E8 — kroki 8.0–8.1): plansza 7 × 9, łączenie w łańcuchach,
 // hybrydy, Sowia doniczka, kompostownik, zamówienia sąsiadek, odnawianie pomieszczeń z ułatwieniami, przeszkody
-// Pracu i Amic, kózki-wzmacniacze, Basen Humbaka, zapis stanu i to, że plansza nigdy nie blokuje się bez wyjścia.
+// Pracu i Amic, kózki-wzmacniacze, Basen Humbaka, pakiet startowy z dawnej Szklarni, samouczek, zapis stanu i to, że
+// plansza nigdy nie blokuje się bez wyjścia.
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
@@ -51,10 +52,12 @@ import {
   orderReward,
   pickChain,
   poolReward,
+  starterPack,
   potChains,
   validOrder,
 } from "../../LaczIHoduj/game.js";
 import { createPool, mergePoints } from "../../LaczIHoduj/pool.js";
+import { TUTORIAL_STEPS, createTutorial } from "../../LaczIHoduj/tutorial.js";
 
 const seed = (level) => ({ chain: "monstera", level });
 const queue =
@@ -832,4 +835,81 @@ test("Basen Humbaka w grze: zaproszenie co 5 zamówień, rekord, nagroda i zapis
   assert.equal(loadState(saved, 0).poolBest, 700);
   assert.equal(loadState({ ...saved, poolReady: "tak", poolBest: -3 }, 0).poolReady, false);
   assert.equal(loadState({ ...saved, poolReady: "tak", poolBest: -3 }, 0).poolBest, 0);
+});
+
+test("pakiet startowy z dawnej Szklarni: liście, pierwsze pomieszczenia, gwiazdki i kózka — tylko raz", () => {
+  assert.equal(starterPack(null), null);
+  assert.equal(starterPack("x"), null);
+  assert.deepEqual(starterPack({ leaves: 25, rooms: [{ type: "potting" }] }), {
+    leaves: 1,
+    rooms: 1,
+    renovation: ROOMS[0].steps.length,
+    stars: 0,
+    goats: 0,
+  });
+  const rich = {
+    leaves: 900,
+    lifetimeLeaves: 99_000,
+    rooms: ["potting", "grow", "water", "cross", "nap"].map((type) => ({ type })),
+    discovered: ["monstera", "monpilea", "alopaproc", "goldleaf"],
+    stats: { hybrids: 2 },
+  };
+  assert.deepEqual(starterPack(rich), {
+    leaves: 2000,
+    rooms: 3,
+    renovation: ROOMS[0].steps.length + ROOMS[1].steps.length + ROOMS[2].steps.length,
+    stars: 6,
+    goats: 1,
+  });
+  const game = createGame({ state: defaultState(0), random: queue(0) });
+  assert.equal(game.state.starter, false);
+  const pack = game.applyStarter(rich);
+  assert.equal(game.state.starter, true);
+  assert.equal(game.state.leaves, 2000);
+  assert.equal(game.state.stars, 6);
+  assert.equal(game.state.renovation, 10);
+  assert.equal(game.state.pot.charges, POT.max + PERKS.potBonus, "pełna, powiększona doniczka");
+  assert.equal(game.board.cells.filter((item) => item?.goat === "dzoker").length, 1);
+  assert.deepEqual(game.takeEvents().at(-1), { type: "starter", ...pack });
+  assert.equal(game.applyStarter(rich), null, "drugi raz — nic");
+  assert.equal(game.state.leaves, 2000);
+  // Bez dawnego stanu: znacznik ustawiony, bez nagrody; zapis i wczytanie zachowują znacznik i samouczek.
+  const fresh = createGame({ state: defaultState(0), random: queue(0) });
+  assert.equal(fresh.applyStarter(undefined), null);
+  assert.equal(fresh.state.starter, true);
+  const loaded = loadState(JSON.parse(JSON.stringify({ ...fresh.state, tutorialDone: true })), 0);
+  assert.equal(loaded.starter, true);
+  assert.equal(loaded.tutorialDone, true);
+  assert.equal(loadState({ ...loaded, tutorialDone: "tak" }, 0).tutorialDone, false);
+});
+
+test("samouczek: 5 kroków — akcje zaliczają się same (od wejścia w krok), „Dalej” w krokach informacyjnych, pominięcie", () => {
+  assert.equal(TUTORIAL_STEPS.length, 5);
+  const state = defaultState(0);
+  const shown = [];
+  let done = 0;
+  const tutorial = createTutorial({ state, onStep: (step) => shown.push(step?.id ?? null), onDone: () => (done += 1) });
+  assert.deepEqual(tutorial.progress().step, 1);
+  tutorial.next(state);
+  assert.equal(tutorial.progress().id, "polacz", "krok z akcją nie przechodzi przyciskiem");
+  state.stats.merges += 1;
+  tutorial.update(state);
+  assert.equal(tutorial.progress().id, "doniczka");
+  state.stats.merges += 1;
+  tutorial.update(state);
+  assert.equal(tutorial.progress().id, "doniczka", "liczy się doniczka, nie kolejne połączenia");
+  state.stats.spawns += 1;
+  tutorial.update(state);
+  assert.equal(tutorial.progress().id, "zamowienie");
+  tutorial.next(state);
+  assert.equal(tutorial.progress().id, "gwiazdki", "zamówienie można pominąć przyciskiem");
+  tutorial.next(state);
+  tutorial.next(state);
+  assert.equal(tutorial.progress(), null);
+  assert.equal(done, 1);
+  assert.deepEqual(shown, ["polacz", "doniczka", "zamowienie", "gwiazdki", "pomocnicy", null]);
+  const skipped = createTutorial({ state, onDone: () => (done += 1) });
+  skipped.skip();
+  skipped.skip();
+  assert.equal(done, 2);
 });

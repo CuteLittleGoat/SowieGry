@@ -5,6 +5,18 @@
 karcie Sowiej Szklarni albo pod adresem `LaczIHoduj/`. Dawna Sowia Szklarnia działa dalej bez zmian — prototyp
 zapisuje swój postęp osobno i niczego w niej nie rusza.
 
+## Pierwsze wejście: pakiet startowy i samouczek
+
+Jeśli grałeś w dawną Sowią Szklarnię, przy pierwszym wejściu dostaniesz **pakiet startowy**: liście (część zebranych
+wtedy liści, najwyżej 2000), od razu **odnowione pierwsze pomieszczenia** (tyle, ile rodzajów pomieszczeń zbudowałeś —
+najwyżej 3), a za odkryte hybrydy **gwiazdki** i **Kózkę Dżoker**. Dawna gra zostaje bez zmian.
+
+Na początku **samouczek** w chmurce nad planszą prowadzi przez 5 kroków: połączenie nasionek, Sowią doniczkę, oddanie
+zamówienia, gwiazdki i pomocników. Kroki z ruchem zaliczają się same, pozostałe — przyciskiem **Dalej**; **✕** pomija
+samouczek. Powtórzysz go w oknie pomieszczeń (stuknij liczniki liści i gwiazdek) przyciskiem **Powtórz samouczek** —
+tam jest też **Jak grać?** z krótką instrukcją. Samouczek wraca też po wybraniu w menu „Powtórz samouczki we wszystkich
+grach”.
+
 ## Cel gry
 
 Na półkach szklarni (7 kolumn × 9 rzędów) stoją rośliny. **Dwie takie same rośliny połączone razem dają roślinę
@@ -176,5 +188,4 @@ Na komputerze plansza stoi na środku, a rośliny przesuwa się myszą tak samo 
 
 ## Co dalej
 
-Gra wciąż rośnie. W kolejnych krokach dojdą: pakiet startowy z postępu dawnej Szklarni i samouczek (z przyciskiem do
-jego powtórzenia).
+Gra wciąż rośnie. Na komputerze dojdzie jeszcze sterowanie klawiaturą.

@@ -52,7 +52,7 @@ export function cosmeticHint(key, missions = {}, defaults = {}) {
 }
 
 // Gry z samouczkiem (identyfikatory w bazie): Sowia Ucieczka, Sowie Tory (sowa3), Sowa w Chmurach (jumper), nowe Ogrody.
-export const TUTORIAL_GAMES = Object.freeze(["runner", "sowa3", "jumper", "ogrody"]);
+export const TUTORIAL_GAMES = Object.freeze(["runner", "sowa3", "jumper", "ogrody", "szklarnia"]);
 
 export function createOwlTab({ root, cloud, platform, academy, audio, atlas, onCosmetic = () => {} }) {
   const profile = () => cloud?.profile?.() || {};
@@ -320,7 +320,7 @@ export function createOwlTab({ root, cloud, platform, academy, audio, atlas, onC
     openModal({
       title: "Powtórzyć samouczki?",
       content:
-        "Przy następnym wejściu do Sowiej Ucieczki, Sowich Torów, Sowy w Chmurach i nowych Sowich Ogrodów samouczek pokaże się jeszcze raz. Postęp i rekordy zostają.",
+        "Przy następnym wejściu do Sowiej Ucieczki, Sowich Torów, Sowy w Chmurach, nowych Sowich Ogrodów i Łącz i Hoduj samouczek pokaże się jeszcze raz. Postęp i rekordy zostają.",
       actions: [
         { label: "Anuluj", onClick: (close) => close() },
         {
