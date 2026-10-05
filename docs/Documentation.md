@@ -28,9 +28,9 @@ shared/
   cute-ui.css             (zmienne kolorów, ekran hasła i nakładki chmury, ograniczenie ruchu)
   pwa.js                  (rejestracja service workera)
   engine/                 (Sowi Silnik — moduły ES: pętla, widok, kamera, gesty, sceny, powłoka telefonu, atlas grafik…)
-  world/                  (Sowi Świat — tokeny kolorów, czcionka, Sówka, katalog grafik postaci)
+  world/                  (Sowi Świat — tokeny kolorów, czcionka, Sówka, gatunki sów, katalog grafik postaci)
   ui/                     (wspólny interfejs gier: HUD, komunikaty, okna, menu pauzy, ekran wyników, ui.css)
-  meta/                   (SowieProgress — zdarzenia; academy.js — Sowia Akademia; guides-data.js — instrukcje)
+  meta/                   (SowieProgress — zdarzenia; academy.js — Sowia Akademia; shop.js — Sowi Butik; missions.js — misje garderoby; guides-data.js — instrukcje)
   menu/                   (menu główne — moduły ES: zakładki Gry, Jak grać, Galeria, Sowa; menu.css)
 SowiaUcieczka/            (Sowia Ucieczka — przebudowany SowaRunner, moduły ES na Sowim Silniku; docs/)
 SowieTory/                (Sowie Tory — przebudowana Sowa3 (E5), moduły ES na Sowim Silniku; docs/)
@@ -158,7 +158,7 @@ Nowe menu (Analiza 2, rozdz. 4.1) zastąpiło `shared/main-menu.js`, `shared/mai
 5. **Sowi Butik** (od E9c; `section[data-owl-card="butik"]`, dopiero po wczytaniu chmury i z Akademią) — nagłówek „Sowi Butik” z saldem `small[data-shop-feathers]` „🪶 N piórek”, opis („Piórka zdobywasz za zadania dnia i tygodnia oraz osiągnięcia. Gatunek sowy zmienia tylko jej wygląd.”) i trzy listy `ul.menu-list.menu-shop` (nagłówki `h4` 17 px): **Gatunki sów** (7 wierszy `li.menu-shop-row[data-shop-item="species:<id>"]`: głowa sowy w kolorach gatunku — `speciesSwatch(colors)`, inline SVG 44 × 44: uszka `dark`, głowa `body` r = 17, brzuszek `belly`, tarcza twarzy `face`, białe oczy z źrenicami, dziobek `beak`, kontur `#3b2f4a` — nazwa i opis; posiadany: chip `[data-species]` „Wybrana” / „Wybierz” z `aria-pressed`; nieposiadany: przycisk zakupu), **Stroje** (tylko jeszcze nieposiadane z cennika: ikona `COSMETICS[klucz].icon` 28 px, nazwa, „Sowa nosi go we wszystkich grach.”, przycisk zakupu; wszystkie kupione — „Masz już wszystkie stroje!”) i **Kózki** (🐐 „Dłuższe działanie kózek”, `small[data-goat-level]` „W Sowiej Ucieczce, Sowich Torach i Sowie w Chmurach. Teraz: ×1,2 (poziom 1 z 3).”, przycisk następnego poziomu albo „Najwyżej!”). Przycisk zakupu `.menu-button.is-buy[data-buy="<id>"]` „🪶 cena” (`aria-label` „Kup: <nazwa> za N piórek”, nieaktywny przy za małym saldzie); za niski poziom Akademii — nieaktywny przycisk z kłódką „Poziom N”. Stuknięcie → okno „Kupić w Sowim Butiku?” („<Nazwa> za N piórek (masz M).”, „Anuluj” / „Kup”) → `buy(id)` → `onShop({ ok, reason, id, label })`, przebudowa zakładki, fokus na wierszu; wybór gatunku → `selectSpecies` → `onShop({ ok: true, id: "select:<id>" })` i przebudowa;
 6. **rekordy** — dla każdej gry nazwa, `recordText` (przed wczytaniem „…”) i przycisk „Rekordy” `[data-records]` → okno „Rekordy — <nazwa>”: gry zręcznościowe — przy grze z trybami (`GAME_REGISTRY[].modes`, od E5d2 `sowa3`) najpierw chipy trybów (`[data-mode]`, „Tryb gry”, domyślnie pierwszy — „Kampania”, potem „Nieskończony”; rekordy i top 10 z `records(gra, poziom, tryb)` / `topRuns(gra, poziom, tryb)`, nagłówek „Top 10 — <tryb>, <poziom>”), chipy Chill / Arcade / Chaos (domyślnie Arcade), „Najlepszy wynik”, „Dystans” (Sowia Ucieczka) / „Wysokość” (Sowa w Chmurach), „Rozgrywki”, „Top 10 — <poziom>” z `SowieCloud.topRuns(gra, poziom)` (odczyt `sowiegry_gry/<gra>`; „Wczytuję…”, błąd — „Nie udało się wczytać wyników…”, pusto — „Brak rozgrywek na tym poziomie…”; wiersz: wynik, dystans / wysokość, data `pl-PL`); gry idle — „Liście w całej grze”, „Wielkie Przesadzania” / „Pomieszczenia”, „Strefa” / „Odkryte hybrydy”;
 7. miejsce na **kartę instalacji** (`[data-install-slot="sowa"]`);
-8. **ustawienia** (`#ustawienia`, `tabindex="-1"`): suwaki „Głośność ogólna”, „Muzyka”, „Efekty dźwiękowe” (`.sowie-ui-slider`, `[data-volume]`, nieaktywne do wczytania dźwięku — `updateAudio()` włącza je bez przebudowy zakładki); przełączniki `.sowie-ui-toggle[data-setting]`: „Efekty (wstrząsy, cząsteczki)” (`reducedEffects` odwrotnie + klasa `sowie-reduced-effects`), „Wibracje” (`vibration`; dopisek „Ten telefon nie obsługuje wibracji.”, gdy brak `navigator.vibrate`), „Tryb Przytulny (wolniej, bez końca gry)” (`cozy`, dopisek „Zadziała w nowych wersjach gier.”), „Komentarze sowy” (`quips`); stan zapisu (`[data-save-state]`, długi opis); **„Powtórz samouczki we wszystkich grach”** (`[data-tutorials-reset]`, ikona `restart`; uwaga właściciela G1) → okno „Powtórzyć samouczki?” („Przy następnym wejściu do Sowiej Ucieczki, Sowich Torów, Sowy w Chmurach, nowych Sowich Ogrodów i Łącz i Hoduj samouczek pokaże się jeszcze raz. Postęp i rekordy zostają.”) z „Anuluj” i „Powtórz” → `loadGame` dokumentów gier z `TUTORIAL_GAMES = ["runner", "sowa3", "jumper", "ogrody", "szklarnia"]` (eksport `owl-tab.js`; najpierw wczytanie, żeby w pamięci nie został niepełny dokument), potem `updateGame(id, { tutorialDone: false })` dla każdej i `flush()`; napis przycisku „Samouczki wrócą przy następnym wejściu ✓” (gry z `tutorialDone: false` pokazują samouczek; nowe Ogrody i Łącz i Hoduj kasują wtedy `tutorialDone` w stanie i po samouczku zapisują `true`; dawna Sowia Szklarnia pole ignoruje); **„Wyloguj to urządzenie”** (`[data-logout]`) → okno „Wylogować to urządzenie?” („Postęp zostaje w chmurze…”) z „Anuluj” i „Wyloguj” → `SowieCloud.lock()` (wysyła kolejkę, zapomina hasło na tym urządzeniu, przeładowuje stronę — pojawia się ekran hasła).
+8. **ustawienia** (`#ustawienia`, `tabindex="-1"`): suwaki „Głośność ogólna”, „Muzyka”, „Efekty dźwiękowe” (`.sowie-ui-slider`, `[data-volume]`, nieaktywne do wczytania dźwięku — `updateAudio()` włącza je bez przebudowy zakładki); przełączniki `.sowie-ui-toggle[data-setting]`: „Efekty (wstrząsy, cząsteczki)” (`reducedEffects` odwrotnie + klasa `sowie-reduced-effects`), „Wibracje” (`vibration`; dopisek „Ten telefon nie obsługuje wibracji.”, gdy brak `navigator.vibrate`), „Tryb Przytulny (wolniej, bez końca gry)” (`cozy`, dopisek „Na poziomie Chill w Sowiej Ucieczce, Sowich Torach i Sowie w Chmurach.” — do E9e „Zadziała w nowych wersjach gier.”), „Komentarze sowy” (`quips`); stan zapisu (`[data-save-state]`, długi opis); **„Powtórz samouczki we wszystkich grach”** (`[data-tutorials-reset]`, ikona `restart`; uwaga właściciela G1) → okno „Powtórzyć samouczki?” („Przy następnym wejściu do Sowiej Ucieczki, Sowich Torów, Sowy w Chmurach, nowych Sowich Ogrodów i Łącz i Hoduj samouczek pokaże się jeszcze raz. Postęp i rekordy zostają.”) z „Anuluj” i „Powtórz” → `loadGame` dokumentów gier z `TUTORIAL_GAMES = ["runner", "sowa3", "jumper", "ogrody", "szklarnia"]` (eksport `owl-tab.js`; najpierw wczytanie, żeby w pamięci nie został niepełny dokument), potem `updateGame(id, { tutorialDone: false })` dla każdej i `flush()`; napis przycisku „Samouczki wrócą przy następnym wejściu ✓” (gry z `tutorialDone: false` pokazują samouczek; nowe Ogrody i Łącz i Hoduj kasują wtedy `tutorialDone` w stanie i po samouczku zapisują `true`; dawna Sowia Szklarnia pole ignoruje); **„Wyloguj to urządzenie”** (`[data-logout]`) → okno „Wylogować to urządzenie?” („Postęp zostaje w chmurze…”) z „Anuluj” i „Wyloguj” → `SowieCloud.lock()` (wysyła kolejkę, zapomina hasło na tym urządzeniu, przeładowuje stronę — pojawia się ekran hasła).
 
 Zapis ustawień: `updateProfile(profil.settings ← zmiany, { delayMs: 1000 })`; suwak: `setVolume` w silniku + `volumeMaster/Music/Sfx`, a suwak muzyki / efektów ustawia też `settings.music` / `settings.sfx` na „> 0” (obecne gry czytają te przełączniki).
 
@@ -625,7 +625,7 @@ Dokumenty gier: `sowiegry/profil/sowiegry_gry/{runner|jumper|sowa3|ogrody|szklar
 
 ## Kosmetyki
 
-Dostępne warianty: brak, kokardka, okulary, wianek, kapelusz ogrodnika, czapka z daszkiem, szalik, plecak, ślad bąbelków. Na start odblokowane: brak i kokardka. Kosmetyki nie wpływają na hitboxy ani parametry mechaniczne.
+Dostępne warianty: brak, kokardka, okulary, wianek, kapelusz ogrodnika, czapka z daszkiem, szalik, plecak, ślad bąbelków oraz od E9c (tylko w Sowim Butiku) korona, muszka, słuchawki i czapka z pomponem. Na start odblokowane: brak i kokardka; pozostałe dawne — misją albo w Butiku, nowe — w Butiku. Do tego gatunek sowy (Sówka i 6 gatunków z Butiku, `shared/world/species.js`). Kosmetyki i gatunki nie wpływają na hitboxy ani parametry mechaniczne (jedyne ulepszenie rozgrywki z Butiku to dłuższe działanie kózek).
 
 ## Misje
 
@@ -1185,11 +1185,28 @@ Każda nakładka zatrzymuje propagację zdarzeń klawiatury, wskaźnika, dotyku,
 
 - `Analizy/ANALIZA_1_Firestore_zapis_postepu.md` — przeniesienie zapisu postępu do Firestore (model danych, hasło, reguły).
 - `Analizy/ANALIZA_2_Przebudowa_gier.md` — przebudowa gier, menu główne, telefon jako główne urządzenie.
-- `Analizy/ANALIZA_3_Plan_prac.md` — kolejność prac (etapy E0–E9).
+- `Analizy/ANALIZA_3_Plan_prac.md` — kolejność prac (etapy E0–E10) i tabela stanu.
+- `Analizy/UWAGI_WLASCICIELA.md` — uwagi właściciela z testów i decyzje (np. zgoda na podmiany, propozycja wymagań Galerii E9d).
 - Nieaktualne dokumenty starego układu (`docs/AUDYT_MERGE_CUTE_POLISH.md`, `docs/PLAN_ROZWOJU_CUTE_POLISH.md`, `docs/WDROZENIE_CUTE_POLISH.md`) usunięto po akceptacji właściciela (E0.4, porządki po E2).
 
-## Dług techniczny
+## Wydajność — przegląd końcowy (E9e, Analiza 3 zadanie 9.6)
 
-Gry nadal korzystają z części modułów opakowujących funkcje globalne. Wspólna warstwa została wydzielona, ale pełne scalenie każdego silnika do `game.js`, `config.js` i jawnego systemu hooków pozostaje osobnym etapem refaktoru.
+Pomiar 2026-10-05 w Chromium bez GPU (kontener testowy, profil Pixel 7, `?cloud=memory`, lokalny serwer; spowolnienie procesora przez CDP `Emulation.setCPUThrottlingRate`):
 
-Nie należy usuwać obecnych modułów przed wykonaniem testów regresji.
+| Strona          | Pliki | Rozmiar (bez zdjęć)        | Gotowe (CPU ×4) |
+| --------------- | ----- | -------------------------- | --------------- |
+| Menu            | 143   | 517 KB, **218 KB po gzip** | 0,65 s          |
+| Sowia Ucieczka  | 162   | 623 KB                     | 1,47 s          |
+| Sowie Tory      | 166   | 679 KB, 276 KB po gzip     | 1,55 s          |
+| Sowa w Chmurach | 162   | 621 KB                     | 1,14 s          |
+| Sowie Ogrody    | 150   | 692 KB                     | 1,17 s          |
+| Łącz i Hoduj    | 38    | 606 KB                     | 1,10 s          |
+
+Budżet menu z Analizy 2 (rozdz. 4.1: bez zdjęć < 300 KB, gotowe do dotyku < 1,5 s) jest spełniony; największe pliki to `assets/audio/audio.json` (36 KB po gzip) i dwie czcionki Fredoka (po 15 KB). Zdjęcia Galerii nie są pobierane przy starcie (miniatury WebP dopiero w zakładce „Galeria”). Kolejne wejścia obsługuje service worker z pamięci podręcznej.
+
+Płynność w trakcie gry (4 s, klatki `requestAnimationFrame`): CPU ×1 — Sowia Ucieczka 60 kl./s, Sowie Tory 55, Sowa w Chmurach 60; CPU ×4 — 56 / 23 / 45 kl./s. Profil procesora Sowich Torów (4 s gry): kod JavaScript gry poniżej 10% czasu (najwięcej rysowanie scenografii — `props.js`), reszta to rasteryzacja płótna w programie (kontener nie ma GPU). Na telefonie płótno 2D jest przyspieszane sprzętowo, a Sowie Tory i tak obniżają rozdzielczość (DPR 2 → 1,5 → 1), gdy bieg przez 3 s ma mniej niż 50 kl./s. Wniosek: bez zmian w kodzie; w razie zgłoszeń z konkretnego telefonu — pamięć podręczna obrazów scenografii (rysowanie wektorów raz do płótna pomocniczego).
+
+## Dług techniczny i decyzje E9
+
+- **9.5 odłożone:** kod kasujący stare klucze `localStorage` (`SowieCloud`, lista z Analizy 1, rozdz. 12) i strony-przekierowania w `SowaRunner/`, `Sowa3/`, `SowaJumper/`, `SowiaSzklarnia/`, `SowieOgrody/nowa.html` zostają. Warunek z planu („gdy od E1 minęły 1–2 miesiące”) nie jest spełniony — E1 wdrożono pod koniec września 2026; do usunięcia nie wcześniej niż w listopadzie 2026, po potwierdzeniu, że nikt nie korzysta ze starych adresów (zakładki, ikony na ekranie telefonu).
+- Klasyczne skrypty `sowie-platform.js`, `sowie-cloud.js`, `password-gate.js`, `pwa.js` i `owl-gallery.js` zostają skryptami (nie modułami ES) — wykonują się przed modułami i udostępniają `window.SowieCloud` itd.; przepisanie na moduły nie daje korzyści przy obecnym rozmiarze.

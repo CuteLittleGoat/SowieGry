@@ -297,7 +297,7 @@ export function createOwlTab({
         ${slider("sfx", "Efekty dźwiękowe")}
         ${toggle("Efekty (wstrząsy, cząsteczki)", "effects", !current.reducedEffects)}
         ${toggle("Wibracje", "vibration", current.vibration !== false, engine && !engine.canVibrate() ? "Ten telefon nie obsługuje wibracji." : "")}
-        ${toggle("Tryb Przytulny (wolniej, bez końca gry)", "cozy", Boolean(current.cozy), "Zadziała w nowych wersjach gier.")}
+        ${toggle("Tryb Przytulny (wolniej, bez końca gry)", "cozy", Boolean(current.cozy), "Na poziomie Chill w Sowiej Ucieczce, Sowich Torach i Sowie w Chmurach.")}
         ${toggle("Komentarze sowy", "quips", current.quips !== false)}
       </div>
       <p class="menu-save-state" data-save-state>${status.long}</p>
