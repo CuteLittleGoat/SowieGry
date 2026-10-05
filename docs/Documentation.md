@@ -876,7 +876,7 @@ Fizyka, kamera i czas reakcji ≥ 1,1 s, przeszkody, 37 wzorów (każdy do przej
 
 ### CI (`.github/workflows/js-check.yml`)
 
-Uruchamiany przy `push` na `main` i `audit/**` oraz przy `pull_request`, limit 40 minut. Kroki: checkout, Node 22, Java 21 (Temurin), cache emulatora, `npm install`, `npx playwright install --with-deps chromium webkit`, składnia, lint, formatowanie, HTML, testy jednostkowe, testy reguł i przeglądarkowe na emulatorze (z `DEBUG=pw:browser` — wyjście procesów przeglądarek w logu, diagnostyka zawieszeń WebKit), raport Playwright (zawsze) i `test-results` + `firestore-debug.log` (przy błędzie).
+Uruchamiany przy `push` na `main` i `audit/**` oraz przy `pull_request`, limit 60 minut (od 2026-10-05: ok. 1000 testów przeglądarkowych trwa ponad 35 minut, a limit 40 minut przerywał przebiegi E8c3–E8d3 tuż przed końcem). Kroki: checkout, Node 22, Java 21 (Temurin), cache emulatora, `npm install`, `npx playwright install --with-deps chromium webkit`, składnia, lint, formatowanie, HTML, testy jednostkowe, testy reguł i przeglądarkowe na emulatorze (z `DEBUG=pw:browser` — wyjście procesów przeglądarek w logu, diagnostyka zawieszeń WebKit), raport Playwright (zawsze) i `test-results` + `firestore-debug.log` (przy błędzie).
 
 ### Test uruchomieniowy w przeglądarce
 

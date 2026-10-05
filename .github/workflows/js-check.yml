@@ -13,7 +13,8 @@ permissions:
 jobs:
   quality:
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+    # Ok. 1000 testów (Chromium i WebKit na profilach telefonów) trwa ponad 35 minut — zapas na powtórki.
+    timeout-minutes: 60
     steps:
       - name: Checkout
         uses: actions/checkout@v4
