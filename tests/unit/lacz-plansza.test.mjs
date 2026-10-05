@@ -1,6 +1,6 @@
 // Łącz i Hoduj (nowa Sowia Szklarnia, Analiza 3, E8 — kroki 8.0–8.1): plansza 7 × 9, łączenie w łańcuchach,
 // hybrydy, Sowia doniczka, kompostownik, zamówienia sąsiadek, odnawianie pomieszczeń z ułatwieniami, przeszkody
-// Pracu i Amic, kózki-wzmacniacze, zapis stanu i to, że plansza nigdy nie blokuje się bez wyjścia.
+// Pracu i Amic, kózki-wzmacniacze, Basen Humbaka, zapis stanu i to, że plansza nigdy nie blokuje się bez wyjścia.
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
@@ -31,6 +31,7 @@ import {
   OBSTACLES,
   ORDERS,
   PERKS,
+  POOL,
   POT,
   ROOMS,
   SAVE_VERSION,
@@ -49,9 +50,11 @@ import {
   orderLevels,
   orderReward,
   pickChain,
+  poolReward,
   potChains,
   validOrder,
 } from "../../LaczIHoduj/game.js";
+import { createPool, mergePoints } from "../../LaczIHoduj/pool.js";
 
 const seed = (level) => ({ chain: "monstera", level });
 const queue =
@@ -753,4 +756,80 @@ test("kózki z zamówień, kanister Amic i Taran zawsze, gdy stoi kanister", () 
     amic.move(2, 1);
   }
   assert.deepEqual(amic.board.blocks[0], { type: "canister", hits: 0 });
+});
+
+test("Basen Humbaka: runda 45 s, punkty z mnożnikiem za szybkie połączenia, plusk na szczycie, darmowa doniczka", () => {
+  const pool = createPool({ merges: 0, random: queue(0) });
+  assert.equal(pool.state.time, POOL.seconds);
+  assert.equal(pool.board.cells.filter(Boolean).length, POOL.startItems);
+  assert.ok(pool.board.cells.filter(Boolean).every((item) => item.chain === "monstera" && item.level <= 2));
+  pool.board.cells.fill(null);
+  // Połączenia: 2 → 20 pkt; drugie w oknie mnożnika — ×1,5.
+  pool.board.cells[0] = seed(1);
+  pool.board.cells[1] = seed(1);
+  pool.board.cells[2] = seed(1);
+  pool.board.cells[3] = seed(1);
+  pool.move(0, 1);
+  assert.equal(pool.state.score, mergePoints(2));
+  pool.update(1);
+  pool.move(2, 3);
+  assert.equal(pool.state.combo, 1 + POOL.comboStep);
+  assert.equal(pool.state.score, mergePoints(2) + mergePoints(2, 1.5));
+  // Po przerwie dłuższej niż okno mnożnik wraca do 1.
+  pool.update(POOL.comboWindow + 0.1);
+  assert.equal(pool.state.combo, 1);
+  // Szczyt łańcucha: plusk — roślina znika, premia.
+  pool.board.cells[10] = seed(4);
+  pool.board.cells[11] = seed(4);
+  const before = pool.state.score;
+  pool.takeEvents();
+  pool.move(10, 11);
+  assert.equal(pool.board.cells[11], null);
+  assert.equal(pool.state.score, before + mergePoints(5) + POOL.splashPoints);
+  assert.deepEqual(
+    pool.takeEvents().map((event) => event.type),
+    ["merge", "splash"],
+  );
+  // Darmowa doniczka (bez ładunków) i koniec rundy.
+  for (let count = 0; count < 20; count += 1) assert.ok(pool.spawn() >= 0);
+  pool.update(POOL.seconds);
+  assert.equal(pool.state.over, true);
+  assert.deepEqual(pool.takeEvents().at(-1), { type: "end", score: pool.state.score });
+  assert.equal(pool.spawn(), -1);
+  assert.equal(pool.move(1, 2).type, "none");
+  // Nagroda.
+  assert.deepEqual(poolReward(0), { goats: 1, leaves: 0, stars: 1 });
+  assert.deepEqual(poolReward(650), { goats: 2, leaves: 65, stars: 1 });
+  assert.deepEqual(poolReward(1300), { goats: 3, leaves: 130, stars: 2 });
+});
+
+test("Basen Humbaka w grze: zaproszenie co 5 zamówień, rekord, nagroda i zapis", () => {
+  const game = createGame({ state: defaultState(0), random: queue(0) });
+  game.board.cells.fill(null);
+  game.state.stats.orders = POOL.every - 1;
+  game.state.orders[1] = { neighbor: "plomykowka", chain: "monstera", level: 1, count: 1 };
+  game.board.cells[62] = seed(1);
+  game.deliver(1);
+  assert.ok(game.takeEvents().some((event) => event.type === "poolReady"));
+  assert.equal(game.state.poolReady, true);
+  const first = game.finishPool(700);
+  assert.equal(first.record, true);
+  assert.equal(first.goats.length, 2);
+  assert.ok(first.goats.every(({ index, goat }) => game.board.cells[index]?.goat === goat));
+  assert.equal(game.state.poolBest, 700);
+  assert.equal(game.state.poolReady, false);
+  assert.equal(game.state.stats.pools, 1);
+  assert.equal(game.state.leaves, ORDERS.leaves[1] + 70);
+  const second = game.finishPool(300);
+  assert.equal(second.record, false);
+  assert.equal(game.state.poolBest, 700);
+  const events = game.takeEvents().filter((event) => event.type === "poolDone");
+  assert.equal(events.length, 2);
+  assert.equal(events[1].best, 700);
+  // Zapis: zaproszenie i rekord zostają; niepoprawne wartości — domyślne.
+  const saved = JSON.parse(JSON.stringify({ ...game.state, poolReady: true }));
+  assert.equal(loadState(saved, 0).poolReady, true);
+  assert.equal(loadState(saved, 0).poolBest, 700);
+  assert.equal(loadState({ ...saved, poolReady: "tak", poolBest: -3 }, 0).poolReady, false);
+  assert.equal(loadState({ ...saved, poolReady: "tak", poolBest: -3 }, 0).poolBest, 0);
 });

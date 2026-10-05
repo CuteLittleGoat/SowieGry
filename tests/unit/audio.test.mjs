@@ -19,7 +19,7 @@ import {
 } from "../../shared/engine/audio.js";
 import { GAME_SOUNDS as CHMURY_SOUNDS } from "../../SowaWChmurach/config.js";
 import { BAY_MUSIC, GAME_SOUNDS as OGRODY_SOUNDS, GARDEN_MUSIC } from "../../SowieOgrody/ogrod/config.js";
-import { GAME_SOUNDS as LACZ_SOUNDS, GREENHOUSE_MUSIC } from "../../LaczIHoduj/config.js";
+import { GAME_SOUNDS as LACZ_SOUNDS, GREENHOUSE_MUSIC, POOL_MUSIC } from "../../LaczIHoduj/config.js";
 import { GAME_SOUNDS as TORY_SOUNDS } from "../../SowieTory/config.js";
 import { STAGES as TORY_STAGES } from "../../SowieTory/stages.js";
 
@@ -132,7 +132,7 @@ test("Sowie Ogrody (nowa odsłona): motyw ogrodu (8 taktów, pętla, 48 kb/s), e
   assert.ok(total < 800 * 1024, `Sowie Ogrody: ${total} B`);
 });
 
-test("Łącz i Hoduj: motyw szklarni (8 taktów, pętla, 76 BPM), efekty w manifeście i budżet poniżej 800 KB", () => {
+test("Łącz i Hoduj: motyw szklarni (8 taktów, pętla, 76 BPM), motyw basenu, efekty w manifeście i budżet poniżej 800 KB", () => {
   const theme = manifest.music[GREENHOUSE_MUSIC];
   assert.equal(GREENHOUSE_MUSIC, "szklarnia");
   assert.ok(theme?.loop && theme.bpm === 76);
@@ -141,7 +141,13 @@ test("Łącz i Hoduj: motyw szklarni (8 taktów, pętla, 76 BPM), efekty w manif
   assert.ok(readFileSync(join(audioRoot, "LICENSES.md"), "utf8").includes(theme.file), "licencja");
   for (const name of LACZ_SOUNDS) assert.ok(manifest.sfx[name], name);
   assert.equal(new Set(LACZ_SOUNDS).size, LACZ_SOUNDS.length);
-  const total = LACZ_SOUNDS.reduce((sum, name) => sum + manifest.sfx[name].bytes, 0) + theme.bytes;
+  // Basen Humbaka gra wspólny motyw humbaka.
+  assert.equal(POOL_MUSIC, "humbak");
+  assert.ok(manifest.music[POOL_MUSIC]?.loop);
+  const total =
+    LACZ_SOUNDS.reduce((sum, name) => sum + manifest.sfx[name].bytes, 0) +
+    theme.bytes +
+    manifest.music[POOL_MUSIC].bytes;
   assert.ok(total < 800 * 1024, `Łącz i Hoduj: ${total} B`);
 });
 

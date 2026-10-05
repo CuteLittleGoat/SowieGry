@@ -184,6 +184,7 @@ body {
 /* Gniazdo planszy: zajmuje resztę wysokości; płótno (rozmiar ustawia render.js — siatka z ramką) stoi na środku
    (na wysokim telefonie wolne miejsce rozkłada się nad i pod planszą). */
 .lacz-board {
+  position: relative;
   display: grid;
   place-items: center;
   min-width: 0;
@@ -384,4 +385,52 @@ body {
 
 .lacz-room.is-locked {
   opacity: 0.6;
+}
+
+/* Zaproszenie do Basenu Humbaka: przycisk nad dołem planszy z pulsującą poświatą (przycisk stoi w miejscu). */
+.lacz-pool {
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  z-index: 2;
+  min-height: 48px;
+  white-space: nowrap;
+  box-shadow: 0 4px 14px rgba(59, 47, 74, 0.25);
+  /* Wyśrodkowanie osobną właściwością translate — wciśnięty przycisk (transform z :active) nie odskakuje w bok. */
+  translate: -50% 0;
+  animation: lacz-pool-pulse 1.6s ease-in-out infinite;
+}
+
+.lacz-pool[hidden] {
+  display: none;
+}
+
+@keyframes lacz-pool-pulse {
+  50% {
+    box-shadow:
+      0 4px 14px rgba(59, 47, 74, 0.25),
+      0 0 0 8px rgba(92, 200, 232, 0.45);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lacz-pool {
+    animation: none;
+  }
+}
+
+/* Runda w Basenie Humbaka: zamówienia i portfel nieczynne, kompost wyłączony. */
+.lacz.is-pool .lacz-orders,
+.lacz.is-pool .lacz-wallet {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+.lacz.is-pool .lacz-hint {
+  font-weight: 700;
+  color: var(--woda-ciemna);
+}
+
+.lacz-compost:disabled {
+  opacity: 0.5;
 }

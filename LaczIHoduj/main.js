@@ -3,7 +3,7 @@
 // zaznaczanie stuknięciem (bez przeciągania), Sowia doniczka, kompostownik, hybrydy, nowe łańcuchy w doniczce,
 // zamówienia sąsiadek (oddanie stuknięciem karty albo przeciągnięciem rośliny na kartę), okno odnawiania pomieszczeń
 // szklarni (stuknięcie portfela), przeszkody Pracu i Amic (stuknięcie przeszkody), kózki-wzmacniacze (stuknięcie albo
-// przeciągnięcie), komunikaty i haki testowe.
+// przeciągnięcie), Basen Humbaka (runda bonusowa na osobnej planszy), komunikaty i haki testowe.
 import { connectAudioSettings, createAudio } from "../shared/engine/audio.js";
 import { EVENTS, progress } from "../shared/meta/progress.js";
 import { createToasts, openModal } from "../shared/ui/index.js";
@@ -18,11 +18,14 @@ import {
   GOATS,
   GREENHOUSE_MUSIC,
   OBSTACLES,
+  POOL,
+  POOL_MUSIC,
   POT,
   PREVIEW_FIELD,
   ROOMS,
 } from "./config.js";
 import { createGame, defaultState, loadState, neighborOf, renovation } from "./game.js";
+import { createPool } from "./pool.js";
 import { createBoardRenderer, drawOrderCard, LIFT } from "./render.js";
 
 // Zapis: co 20 s gry, po połączeniu po 2 s, przy zejściu do tła od razu.
@@ -42,6 +45,7 @@ const chargesNode = root.querySelector("[data-charges]");
 const compostButton = root.querySelector("[data-compost]");
 const starsNode = root.querySelector("[data-stars]");
 const roomsButton = root.querySelector("[data-rooms]");
+const poolButton = root.querySelector("[data-pool]");
 const orderButtons = [...root.querySelectorAll("[data-order]")];
 // Ostatnio narysowana karta zamówienia (zamówienie i rozmiar) — rysujemy tylko po zmianie.
 const drawnOrders = orderButtons.map(() => "");
@@ -63,6 +67,11 @@ let testHold = false;
 let audio = null;
 // Otwarte okno pomieszczeń (odświeżane po każdym etapie odnowy) albo null.
 let roomsModal = null;
+// Runda w Basenie Humbaka (createPool) albo null — wtedy przeciąganie i doniczka działają na planszy basenu.
+let pool = null;
+
+// Plansza, na której się teraz gra (szklarnia albo basen).
+const active = () => (pool ? pool.board : game.board);
 
 function play(name, options) {
   try {
@@ -122,10 +131,17 @@ function updateOrders() {
 
 function updateHud() {
   const { state } = game;
+  poolButton.hidden = !(ready && state.poolReady && !pool);
+  if (pool) {
+    const { time, score, combo } = pool.state;
+    hint(
+      `🐋 Basen Humbaka: ${Math.ceil(time)} s · ${score} pkt${combo > 1 ? ` · ×${combo.toLocaleString("pl-PL")}` : ""}`,
+    );
+  }
   leavesNode.textContent = state.leaves.toLocaleString("pl-PL");
   starsNode.textContent = state.stars.toLocaleString("pl-PL");
   const max = game.potMax();
-  chargesNode.textContent = `${Math.floor(state.pot.charges)}/${max}`;
+  chargesNode.textContent = pool ? "∞" : `${Math.floor(state.pot.charges)}/${max}`;
   potButton.setAttribute(
     "aria-label",
     `Sowia doniczka — nasionko na wolne pole, ładunki ${Math.floor(state.pot.charges)} z ${max}`,
@@ -141,6 +157,7 @@ function updateHud() {
 }
 
 function handleEvents() {
+  if (pool) handlePoolEvents();
   for (const event of game.takeEvents()) {
     switch (event.type) {
       case "spawn":
@@ -369,6 +386,20 @@ function handleEvents() {
         renderer.pop(event.index);
         play("rekord", { volume: 0.7 });
         break;
+      case "poolReady":
+        play("humbak-piesn", { volume: 0.6 });
+        toasts.show("Humbak zaprasza do Basenu Humbaka! Stuknij „🐋 Basen Humbaka” nad półkami", {
+          kind: "reward",
+          key: "basen-zaproszenie",
+          priority: 2,
+        });
+        break;
+      case "poolDone":
+        if (event.record) play("rekord", { volume: 0.8 });
+        for (const { index } of event.goats) renderer.pop(index);
+        showPoolResult(event);
+        save({ immediate: true });
+        break;
       case "unlock":
         toasts.show(`Nowa roślina w Sowiej doniczce: ${event.name}!`, {
           kind: "reward",
@@ -397,6 +428,96 @@ function handleEvents() {
     }
   }
 }
+
+// ---------- Basen Humbaka ----------
+
+function handlePoolEvents() {
+  for (const event of pool.takeEvents()) {
+    switch (event.type) {
+      case "spawn":
+        renderer.pop(event.index);
+        play("lisc", { pitch: 1.25, volume: 0.6 });
+        break;
+      case "full":
+        play("klik", { pitch: 0.6, volume: 0.5 });
+        toasts.show("Basen pełny — połącz rośliny!", { kind: "warn", key: "basen-pelny" });
+        break;
+      case "merge": {
+        renderer.pop(event.to);
+        const center = renderer.cellCenter(event.to);
+        renderer.popup(`+${event.points}`, center.x, center.y - 10, COLORS.bialy, 18 + Math.round(event.combo * 2));
+        play("polaczenie", { pitch: 0.9 + event.item.level * 0.1 });
+        break;
+      }
+      case "splash": {
+        const center = renderer.cellCenter(event.index);
+        renderer.popup(`Plusk! +${event.points}`, center.x, center.y - 24, COLORS.zloto, 20);
+        play("humbak-plusk", { volume: 0.8 });
+        break;
+      }
+      case "end":
+        endPool();
+        return;
+      default:
+        break;
+    }
+  }
+}
+
+function startPool() {
+  if (!ready || pool || !game.state.poolReady) return;
+  pool = createPool({ merges: game.state.stats.merges });
+  selected = -1;
+  roomsModal?.close();
+  root.classList.add("is-pool");
+  compostButton.disabled = true;
+  play("bonus-start", { volume: 0.8 });
+  audio?.playMusic(POOL_MUSIC)?.catch?.(() => {});
+  toasts.show(
+    `Basen Humbaka! ${POOL.seconds} sekund: łącz rośliny, szybkie połączenia mnożą punkty, a szczyt łańcucha robi plusk`,
+    { kind: "info", key: "basen" },
+  );
+  updateHud();
+}
+
+function endPool() {
+  const { score } = pool.state;
+  pool = null;
+  selected = -1;
+  root.classList.remove("is-pool");
+  compostButton.disabled = false;
+  audio?.playMusic(GREENHOUSE_MUSIC)?.catch?.(() => {});
+  hint("Witaj z powrotem w szklarni!");
+  game.finishPool(score);
+  handleEvents();
+  updateHud();
+}
+
+// Wynik rundy: okno z punktami, rekordem i nagrodą.
+function showPoolResult(event) {
+  const body = element("div", "lacz-rooms");
+  body.append(
+    element(
+      "p",
+      "lacz-rooms-stars",
+      event.record
+        ? `Wynik: ${event.score} pkt — nowy rekord! 🏆`
+        : `Wynik: ${event.score} pkt (rekord: ${event.best} pkt)`,
+    ),
+    element(
+      "p",
+      "lacz-room-note",
+      `Nagroda: kózki na półkach (${event.goats.length}), +${event.leaves} liści, +${event.stars} ⭐`,
+    ),
+  );
+  openModal({
+    title: "Basen Humbaka",
+    content: body,
+    actions: [{ label: "Wracam do szklarni", primary: true, onClick: (close) => close() }],
+  });
+}
+
+poolButton.addEventListener("click", startPool);
 
 // ---------- Pomieszczenia szklarni ----------
 
@@ -469,7 +590,7 @@ function refreshRooms() {
 }
 
 function openRooms() {
-  if (!ready || roomsModal) return;
+  if (!ready || roomsModal || pool) return;
   roomsModal = openModal({
     title: "Pomieszczenia szklarni",
     content: roomsContent(),
@@ -538,7 +659,7 @@ function dropOnOrder(index, slot) {
 }
 
 // Czy z pola da się wziąć roślinę (jest i nie leży pod karteczką).
-const movable = (index) => Boolean(game.board.cells[index]) && !game.board.blocks[index];
+const movable = (index) => Boolean(active().cells[index]) && !active().blocks[index];
 
 // Pole, na które spadnie uniesiony przedmiot (pod przedmiotem, nie pod palcem).
 function dropTarget(point) {
@@ -546,7 +667,7 @@ function dropTarget(point) {
 }
 
 function moveTo(from, to) {
-  const result = game.move(from, to);
+  const result = pool ? pool.move(from, to) : game.move(from, to);
   handleEvents();
   updateHud();
   return result;
@@ -583,9 +704,10 @@ canvas.addEventListener("pointermove", (event) => {
     }
   }
   if (press.dragging) {
-    press.compost = overCompost(event);
+    // W basenie nie ma kompostu ani zamówień.
+    press.compost = !pool && overCompost(event);
     compostButton.classList.toggle("is-target", press.compost);
-    press.order = press.compost ? -1 : orderAt(event);
+    press.order = press.compost || pool ? -1 : orderAt(event);
     showOrderTarget(press.order);
   }
 });
@@ -598,8 +720,8 @@ function finishPress(event, cancelled = false) {
   showOrderTarget(-1);
   if (cancelled) return;
   if (current.dragging) {
-    const slot = orderAt(event);
-    if (overCompost(event)) compostAt(current.index);
+    const slot = pool ? -1 : orderAt(event);
+    if (!pool && overCompost(event)) compostAt(current.index);
     else if (slot >= 0) dropOnOrder(current.index, slot);
     else {
       const target = dropTarget(localPoint(event));
@@ -611,9 +733,9 @@ function finishPress(event, cancelled = false) {
   // odklejanie karteczki albo podpowiedź. Palec przesunięty bez rośliny — nic.
   const index = current.index;
   if (index < 0 || current.moved) return;
-  if (game.board.blocks[index]) {
+  if (active().blocks[index]) {
     // Zaznaczona Kózka Taran stuknięciem przeszkody ją rozbija.
-    if (game.board.cells[selected]?.goat === "taran") moveTo(selected, index);
+    if (active().cells[selected]?.goat === "taran") moveTo(selected, index);
     else {
       game.tapBlock(index);
       handleEvents();
@@ -623,18 +745,18 @@ function finishPress(event, cancelled = false) {
     return;
   }
   // Kózka bez zaznaczenia: stukana — moc od razu; przeciągana (Dżoker, Taran) — zaznaczenie i podpowiedź.
-  if (selected < 0 && isGoat(game.board.cells[index])) {
-    if (GOATS[game.board.cells[index].goat].use !== "tap") selected = index;
+  if (selected < 0 && isGoat(active().cells[index])) {
+    if (GOATS[active().cells[index].goat].use !== "tap") selected = index;
     game.useGoat(index);
     handleEvents();
     updateHud();
     return;
   }
   if (selected < 0) {
-    if (game.board.cells[index]) {
+    if (active().cells[index]) {
       selected = index;
       play("klik", { pitch: 1.2, volume: 0.6 });
-      hint(`${itemName(game.board.cells[index])} — stuknij pole albo kompost`);
+      if (!pool) hint(`${itemName(active().cells[index])} — stuknij pole albo kompost`);
     }
     return;
   }
@@ -647,7 +769,8 @@ canvas.addEventListener("pointercancel", (event) => finishPress(event, true));
 
 potButton.addEventListener("click", () => {
   if (!ready) return;
-  game.tapPot();
+  if (pool) pool.spawn();
+  else game.tapPot();
   handleEvents();
   updateHud();
 });
@@ -655,13 +778,13 @@ potButton.addEventListener("click", () => {
 // Karta zamówienia: stuknięcie oddaje rośliny (gotowe zamówienie) albo podpowiada, czego chce sąsiadka.
 orderButtons.forEach((button, slot) => {
   button.addEventListener("click", () => {
-    if (!ready) return;
+    if (!ready || pool) return;
     deliverOrder(slot, selected);
   });
 });
 
 compostButton.addEventListener("click", () => {
-  if (!ready) return;
+  if (!ready || pool) return;
   if (selected >= 0) {
     compostAt(selected);
     selected = -1;
@@ -677,11 +800,12 @@ function dragView() {
   // Nad kompostownikiem albo kartą zamówienia — bez podświetlenia pola.
   const away = press.compost || press.order >= 0;
   const spot = away ? -1 : dropTarget(press.point);
-  const source = game.board.cells[press.index];
+  const board = active();
+  const source = board.cells[press.index];
   // Na przeszkodę nic nie spada (bez podświetlenia) — poza Kózką Taran, która ją rozbija.
-  const ramming = source?.goat === "taran" && spot >= 0 && Boolean(game.board.blocks[spot]);
-  const target = spot >= 0 && game.board.blocks[spot] && !ramming ? -1 : spot;
-  const other = target >= 0 && target !== press.index ? game.board.cells[target] : null;
+  const ramming = source?.goat === "taran" && spot >= 0 && Boolean(board.blocks[spot]);
+  const target = spot >= 0 && board.blocks[spot] && !ramming ? -1 : spot;
+  const other = target >= 0 && target !== press.index ? board.cells[target] : null;
   // Kózka Dżoker pasuje do każdej rośliny, która może urosnąć.
   const joker = (source?.goat === "dzoker" && canGrow(other)) || (other?.goat === "dzoker" && canGrow(source));
   const kind = away
@@ -696,7 +820,10 @@ function frame(time) {
   const dt = lastFrame ? Math.min(0.25, (time - lastFrame) / 1000) : 0;
   lastFrame = time;
   if (ready && !testHold) {
-    game.update(dt);
+    if (pool) {
+      pool.update(dt);
+      handleEvents();
+    } else game.update(dt);
     saveTimer += dt;
     if (saveTimer >= SAVE_EVERY) {
       saveTimer = 0;
@@ -704,10 +831,13 @@ function frame(time) {
     }
   }
   renderer.draw({
-    cells: game.board.cells,
-    blocks: game.board.blocks,
+    cells: active().cells,
+    blocks: active().blocks,
+    theme: pool ? "pool" : "greenhouse",
     ringing:
-      game.board.blocks.some((block) => block?.type === "phone") && game.state.phoneMoves >= OBSTACLES.ringEvery - 2,
+      !pool &&
+      game.board.blocks.some((block) => block?.type === "phone") &&
+      game.state.phoneMoves >= OBSTACLES.ringEvery - 2,
     selected,
     drag: dragView(),
     time: time / 1000,
@@ -799,6 +929,20 @@ window.LaczIHoduj = Object.freeze({
   setBlock: (index, type, hits = 0) => {
     game.board.blocks[index] = type ? { type, hits } : null;
     game.state.blocks = game.board.blocks.map((block) => (block ? { ...block } : null));
+  },
+  pool: () => (pool ? JSON.parse(JSON.stringify({ ...pool.state, cells: pool.board.cells })) : null),
+  setPoolReady: (on = true) => {
+    game.state.poolReady = Boolean(on);
+    updateHud();
+  },
+  startPool: () => startPool(),
+  poolPlace: (index, level, chain = POT.chain) => {
+    if (pool) pool.board.cells[index] = level ? { chain, level } : null;
+  },
+  endPool: () => {
+    if (!pool) return;
+    pool.update(POOL.seconds + 1);
+    handleEvents();
   },
   setStars: (stars) => {
     game.state.stars = stars;

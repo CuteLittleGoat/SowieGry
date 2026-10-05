@@ -1,8 +1,8 @@
 // Łącz i Hoduj (nowa Sowia Szklarnia — prototyp, Analiza 3, E8 kroki 8.0–8.1) na telefonach: przeciąganie
 // z uniesieniem nad palec i łączenie, zaznaczanie stuknięciem, Sowia doniczka, kompostownik (przeciągnięcie
 // i przycisk), hybrydy i nowe łańcuchy w doniczce, zamówienia sąsiadek (stuknięcie karty, przeciągnięcie rośliny na
-// kartę), odnawianie pomieszczeń szklarni (okno z portfela), przeszkody Pracu i Amic, kózki-wzmacniacze, pełna
-// plansza, zapis w osobnym polu `preview` (emulator), plansza 7 × 9 z polami ≥ 44 px na najmniejszym
+// kartę), odnawianie pomieszczeń szklarni (okno z portfela), przeszkody Pracu i Amic, kózki-wzmacniacze, Basen
+// Humbaka, pełna plansza, zapis w osobnym polu `preview` (emulator), plansza 7 × 9 z polami ≥ 44 px na najmniejszym
 // telefonie i telefon poziomo (plansza obrócona do 9 × 7, przyciski z boku).
 const { test, expect, waitForCloud, watchErrors } = require("../fixtures");
 const { cloudUrl, readDoc, seedDoc, uniqueProject } = require("../emulator");
@@ -311,6 +311,53 @@ test("Łącz i Hoduj: kózki — Skoczek stuknięciem łączy pary, Dżoker prze
   expect((await game(page, "blocks"))[57]).toBeNull();
   expect((await cells(page))[56]).toBeNull();
   expect((await game(page, "state")).stats.goats).toBe(3);
+  expect(errors).toEqual([]);
+});
+
+test("Łącz i Hoduj: Basen Humbaka — zaproszenie, runda na wodzie (darmowa doniczka, punkty), wynik i nagroda", async ({
+  page,
+}) => {
+  const errors = watchErrors(page);
+  await openGame(page);
+  const invite = page.locator("[data-pool]");
+  await expect(invite).toBeHidden();
+  await game(page, "setPoolReady", true);
+  await expect(invite).toBeVisible();
+  const box = await invite.boundingBox();
+  expect(box.height).toBeGreaterThanOrEqual(44);
+  await invite.click();
+  await expect(invite).toBeHidden();
+  await expect(page.locator("[data-lacz]")).toHaveClass(/is-pool/);
+  await expect(page.locator("[data-charges]")).toHaveText("∞");
+  await expect(page.locator("[data-compost]")).toBeDisabled();
+  await expect(page.locator("[data-hint]")).toContainText("🐋 Basen Humbaka:");
+  const main = await cells(page);
+  // Połączenie dwóch kiełków w basenie: punkty (poziom 3 → 45), plansza szklarni bez zmian.
+  await game(page, "hold", true);
+  await game(page, "poolPlace", 0, 2);
+  await game(page, "poolPlace", 1, 2);
+  await drag(page, 0, 1);
+  const state = await game(page, "pool");
+  expect(state.score).toBe(45);
+  expect(state.cells[1]).toEqual({ chain: "monstera", level: 3 });
+  expect(await cells(page)).toEqual(main);
+  // Darmowa doniczka: nasionko bez zużycia ładunku.
+  const filled = state.cells.filter(Boolean).length;
+  await page.locator("[data-pot]").click();
+  expect((await game(page, "pool")).cells.filter(Boolean).length).toBe(filled + 1);
+  expect((await game(page, "state")).pot.charges).toBe(12);
+  // Koniec rundy: okno wyniku, rekord, kózka na półkach szklarni, zaproszenie zużyte.
+  await game(page, "endPool");
+  const dialog = page.getByRole("dialog", { name: "Basen Humbaka" });
+  await expect(dialog).toContainText("Wynik: 45 pkt — nowy rekord! 🏆");
+  await expect(dialog).toContainText("Nagroda: kózki na półkach (1), +4 liści, +1 ⭐");
+  await dialog.getByRole("button", { name: "Wracam do szklarni" }).click();
+  await expect(page.locator("[data-lacz]")).not.toHaveClass(/is-pool/);
+  const after = await game(page, "state");
+  expect(after.poolBest).toBe(45);
+  expect(after.poolReady).toBe(false);
+  expect(after.cells.filter((item) => item?.goat)).toHaveLength(1);
+  await expect(invite).toBeHidden();
   expect(errors).toEqual([]);
 });
 

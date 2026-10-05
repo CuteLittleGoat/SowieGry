@@ -113,6 +113,21 @@ Dżokera i Tarana możesz też **stuknąć** (zaznaczą się), a potem stuknąć
 do zrobienia (np. Skoczek bez par), czeka na półce. Jeśli stoi kanister, a nie masz Tarana, następna kózka na pewno
 będzie Taranem.
 
+## Basen Humbaka
+
+Co **5 zamówień** humbak zaprasza do basenu — nad półkami pojawia się przycisk **🐋 Basen Humbaka — zagraj!**
+(zaproszenie czeka, aż z niego skorzystasz). Basen to **45-sekundowa runda** na osobnej planszy z wodą:
+
+- są tylko rośliny (bez przeszkód), a **Sowia doniczka jest darmowa** — stukaj ile chcesz (licznik pokazuje „∞”);
+- każde połączenie daje **punkty** (im wyższy poziom, tym więcej), a **szybkie połączenia po sobie** (w ciągu 2,5 s)
+  podbijają mnożnik do ×3;
+- roślina, która dojdzie do **szczytu łańcucha**, robi **plusk** i znika z premią +150 pkt (zwalnia miejsce);
+- czas, punkty i mnożnik widać nad planszą; szklarnia czeka bez zmian.
+
+Po rundzie okno pokazuje wynik i **rekord osobisty**, a nagroda trafia do szklarni: **kózki** na półkach (1, za 600 pkt —
+2, za 1200 pkt — 3), liście (wynik / 10) i gwiazdki (1, od 1000 pkt — 2). Jeśli zamkniesz grę w trakcie rundy, runda
+przepada, ale zaproszenie zostaje.
+
 ## Sowia doniczka
 
 Przycisk **🌱 Sowia doniczka** na dole kładzie **nasionko** na losowym wolnym polu. Doniczka ma **12 ładunków**
@@ -137,7 +152,7 @@ Dzięki kompostowi plansza nigdy nie zablokuje się na dobre — zawsze możesz 
 
 W szklarni gra spokojna muzyka, a każdy ruch ma swój dźwięk: podniesienie rośliny, odstawienie na półkę, połączenie
 (im wyższy poziom, tym wyższy ton; szczyt łańcucha i hybryda dostają fanfarę), dzwonek telefonu Pracu, trafienia
-w przeszkody, otwarcie skrzyni, meczenie kózek i ich moce, nasionko z Sowiej doniczki i kompost. Dźwięk
+w przeszkody, otwarcie skrzyni, meczenie kózek i ich moce; w Basenie Humbaka gra motyw humbaka i słychać pluski, nasionko z Sowiej doniczki i kompost. Dźwięk
 rusza po pierwszym dotknięciu ekranu. Głośność muzyki i efektów ustawisz w menu głównym (zakładka **Sowa** →
 **Ustawienia**).
 
@@ -161,5 +176,5 @@ Na komputerze plansza stoi na środku, a rośliny przesuwa się myszą tak samo 
 
 ## Co dalej
 
-Gra wciąż rośnie. W kolejnych krokach dojdą: Basen Humbaka z rekordem,
-pakiet startowy z postępu dawnej Szklarni i samouczek (z przyciskiem do jego powtórzenia).
+Gra wciąż rośnie. W kolejnych krokach dojdą: pakiet startowy z postępu dawnej Szklarni i samouczek (z przyciskiem do
+jego powtórzenia).

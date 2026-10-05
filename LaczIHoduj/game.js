@@ -13,6 +13,7 @@ import {
   OBSTACLES,
   ORDERS,
   PERKS,
+  POOL,
   POT,
   ROOMS,
   SAVE_VERSION,
@@ -100,6 +101,18 @@ export function chargePot(state, dt) {
     pot.charges += 1;
   }
   if (pot.charges >= max) pot.progress = 0;
+}
+
+/**
+ * Nagroda za wynik w Basenie Humbaka: { goats, leaves, stars } — kózki (1 + po jednej za progi `POOL.goatScores`),
+ * liście (wynik / 10), gwiazdki (1, od `POOL.starScore` — 2).
+ */
+export function poolReward(score) {
+  return {
+    goats: 1 + POOL.goatScores.filter((limit) => score >= limit).length,
+    leaves: Math.floor(score / 10),
+    stars: score >= POOL.starScore ? 2 : 1,
+  };
 }
 
 // ---------- Zamówienia sąsiadek ----------
@@ -219,12 +232,14 @@ export function defaultState(now = Date.now(), random = Math.random) {
     cells: serializeCells(board),
     blocks: serializeBlocks(board),
     phoneMoves: 0,
+    poolReady: false,
+    poolBest: 0,
     leaves: 0,
     stars: 0,
     renovation: 0,
     pot: { charges: POT.max, progress: 0 },
     orders: fillOrders(null, { orders: 0, merges: 0 }, random),
-    stats: { merges: 0, spawns: 0, composted: 0, best: 2, moves: 0, hybrids: 0, orders: 0, goats: 0 },
+    stats: { merges: 0, spawns: 0, composted: 0, best: 2, moves: 0, hybrids: 0, orders: 0, goats: 0, pools: 0 },
   };
 }
 
@@ -248,6 +263,8 @@ export function loadState(raw, now = Date.now(), random = Math.random) {
       progress: Math.min(1, Math.max(0, number(raw.pot?.progress))),
     },
     stars: Math.max(0, number(raw.stars)),
+    poolReady: raw.poolReady === true,
+    poolBest: Math.max(0, Math.floor(number(raw.poolBest))),
     orders: fillOrders(raw.orders, stats, random),
     stats,
     version: SAVE_VERSION,
@@ -259,7 +276,8 @@ export function loadState(raw, now = Date.now(), random = Math.random) {
 
 /**
  * createGame({ state, random }) → { state, board, update(dt), tapPot(), move(from, to), compost(index),
- * orderCells(slot, prefer), tapBlock(index), useGoat(index), deliver(slot, prefer), renovate(), potMax(), takeEvents() }. Zdarzenia: spawn { index, item }, potEmpty,
+ * orderCells(slot, prefer), tapBlock(index), useGoat(index), deliver(slot, prefer), renovate(), finishPool(score),
+ * potMax(), takeEvents() }. Zdarzenia: spawn { index, item }, potEmpty,
  * boardFull, move { from, to }, swap { from, to }, merge { from, to, item, leaves, top },
  * hybrid { from, to, item, leaves }, unlock { chain, name }, compost { index, item, leaves },
  * order { slot, order, cells, leaves, stars }, newOrder { slot, order }, orderMissing { slot, order },
@@ -267,7 +285,8 @@ export function loadState(raw, now = Date.now(), random = Math.random) {
  * phone { index }, note { index, from }, noteTap { index, left }, noteGone { index }, blockHit { index, block, left },
  * phoneGone { index }, crateOpen { index, goat, leaves, stars }, blockInfo { index, block }, canister { index },
  * canisterGone { index }; kózki: goat { index, goat, from }, goatUsed { index, goat, count }, goatIdle { index, goat },
- * goatHint { index, goat }, grow { index, item }.
+ * goatHint { index, goat }, grow { index, item }; Basen Humbaka: poolReady, poolDone { score, best, record, goats,
+ * leaves, stars }.
  */
 export function createGame({ state = defaultState(), random = Math.random } = {}) {
   const board = createBoard({ ...BOARD, cells: state.cells, blocks: state.blocks });
@@ -637,6 +656,11 @@ export function createGame({ state = defaultState(), random = Math.random } = {}
         emit("canister", { index });
       }
     }
+    // Co `POOL.every` zamówień humbak zaprasza do basenu (zaproszenie czeka, aż gracz z niego skorzysta).
+    if (state.stats.orders % POOL.every === 0 && !state.poolReady) {
+      state.poolReady = true;
+      emit("poolReady");
+    }
     // Sąsiadka w podzięce przysyła kózkę.
     if (state.stats.orders % GOAT_RULES.orderEvery === GOAT_RULES.orderAt) {
       const free = emptyCells(board);
@@ -668,6 +692,30 @@ export function createGame({ state = defaultState(), random = Math.random } = {}
     return result;
   }
 
+  // Koniec rundy w Basenie Humbaka: rekord, nagroda (kózki na wolnych polach, liście, gwiazdki), zaproszenie zużyte.
+  function finishPool(score) {
+    const value = Math.max(0, Math.floor(number(score)));
+    const reward = poolReward(value);
+    const record = value > state.poolBest;
+    state.poolBest = Math.max(state.poolBest, value);
+    state.poolReady = false;
+    state.stats.pools += 1;
+    state.leaves += reward.leaves;
+    state.stars += reward.stars;
+    const goats = [];
+    for (let count = 0; count < reward.goats; count += 1) {
+      const free = emptyCells(board);
+      if (!free.length) break;
+      const index = pick(free);
+      const goat = pickGoat();
+      board.cells[index] = { goat };
+      goats.push({ index, goat });
+    }
+    sync();
+    emit("poolDone", { score: value, best: state.poolBest, record, goats, leaves: reward.leaves, stars: reward.stars });
+    return { ...reward, record, goats };
+  }
+
   return {
     state,
     board,
@@ -681,6 +729,7 @@ export function createGame({ state = defaultState(), random = Math.random } = {}
     useGoat,
     deliver,
     renovate,
+    finishPool,
     potMax: () => potMax(state),
     takeEvents: () => events.splice(0, events.length),
   };

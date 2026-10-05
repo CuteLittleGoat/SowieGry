@@ -98,6 +98,34 @@ export function createBoardRenderer({ canvas, cols, rows }) {
     context.fill();
   }
 
+  // Basen Humbaka: woda z falami i jasne „lilie” zamiast półek.
+  function water(time) {
+    const { width, height } = size;
+    const pool = context.createLinearGradient(0, 0, 0, height);
+    pool.addColorStop(0, COLORS.wodaJasna);
+    pool.addColorStop(1, COLORS.woda);
+    context.fillStyle = pool;
+    context.fillRect(0, 0, width, height);
+    context.strokeStyle = "rgba(255, 255, 255, 0.45)";
+    context.lineWidth = 2;
+    for (let y = height * 0.08; y < height; y += height / 7) {
+      context.beginPath();
+      for (let x = 0; x <= width; x += 8) {
+        const wave = y + Math.sin(x * 0.05 + time * 1.5 + y) * 3;
+        if (x === 0) context.moveTo(x, wave);
+        else context.lineTo(x, wave);
+      }
+      context.stroke();
+    }
+    context.fillStyle = "rgba(255, 255, 255, 0.35)";
+    for (let index = 0; index < cols * rows; index += 1) {
+      const center = cellCenter(index);
+      context.beginPath();
+      context.arc(center.x, center.y, layout.size * 0.44, 0, Math.PI * 2);
+      context.fill();
+    }
+  }
+
   // Szklarnia: szybki w szkielecie, deski półek pod każdym rzędem, puste miejsca na doniczki.
   function background(time) {
     const { width, height } = size;
@@ -336,13 +364,24 @@ export function createBoardRenderer({ canvas, cols, rows }) {
     /**
      * draw({ cells, blocks, ringing, selected, drag: { from, x, y, target, kind } | null, time, dt }) — `kind` pola
      * docelowego: "merge" (zielone), "move" / "swap" (niebieskie), "compost" (bez podświetlenia pola); `blocks` —
-     * warstwa przeszkód, `ringing` — telefon Pracu zaraz zadzwoni.
+     * warstwa przeszkód, `ringing` — telefon Pracu zaraz zadzwoni, `theme` — "greenhouse" (półki) albo "pool"
+     * (Basen Humbaka — woda).
      */
-    draw({ cells, blocks = null, ringing = false, selected = -1, drag = null, time = 0, dt = 0 }) {
+    draw({
+      cells,
+      blocks = null,
+      ringing = false,
+      selected = -1,
+      drag = null,
+      time = 0,
+      dt = 0,
+      theme = "greenhouse",
+    }) {
       if (!size.width) resize();
       context.setTransform(size.ratio, 0, 0, size.ratio, 0, 0);
       context.clearRect(0, 0, size.width, size.height);
-      background(time);
+      if (theme === "pool") water(time);
+      else background(time);
       const s = layout.size;
       if (drag && drag.target >= 0 && drag.kind !== "compost") {
         const rect = cellRect(drag.target);

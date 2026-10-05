@@ -279,6 +279,24 @@ export const GOATS = Object.freeze({
 // `jumpPairs` par.
 export const GOAT_RULES = Object.freeze({ orderEvery: 4, orderAt: 2, jumpPairs: 3 });
 
+// Basen Humbaka (krok 8.2, E8c3): zaproszenie co `every` wykonanych zamówień; runda `seconds` s na planszy z wodą,
+// na start `startItems` roślin; punkty za połączenie: poziom² × `pointsPerLevel` × mnożnik; połączenie w ciągu
+// `comboWindow` s od poprzedniego podbija mnożnik o `comboStep` (najwyżej `maxCombo`); roślina na szczycie łańcucha
+// znika z pluskiem (+`splashPoints`). Nagroda: kózki (1 + po jednej za progi `goatScores`), liście (wynik / 10),
+// gwiazdki (od `starScore` — 2).
+export const POOL = Object.freeze({
+  every: 5,
+  seconds: 45,
+  startItems: 20,
+  pointsPerLevel: 5,
+  comboWindow: 2.5,
+  comboStep: 0.5,
+  maxCombo: 3,
+  splashPoints: 150,
+  goatScores: Object.freeze([600, 1200]),
+  starScore: 1000,
+});
+
 // Dźwięk (uwaga właściciela L1): efekty wczytywane po pierwszym dotknięciu (tylko używane) i motyw szklarni.
 export const GAME_SOUNDS = Object.freeze([
   "klik",
@@ -293,8 +311,13 @@ export const GAME_SOUNDS = Object.freeze([
   "zakup",
   "koza-meee",
   "powerup-start",
+  "bonus-start",
+  "humbak-plusk",
+  "humbak-piesn",
 ]);
 export const GREENHOUSE_MUSIC = "szklarnia";
+// Muzyka Basenu Humbaka (wspólny motyw humbaka z innych gier).
+export const POOL_MUSIC = "humbak";
 
 // Nowa gra: kilka przedmiotów na start (indeks pola, poziom), żeby od razu było co łączyć.
 export const START_ITEMS = Object.freeze([
