@@ -21,7 +21,7 @@ Wszystkie etapy planu E0–E10 są na gałęzi `main`, więc są też na stronie
 | E9d | nowe wymagania 5 zdjęć Galerii (osiągnięcia zamiast salda piórek) | 37e9b36 |
 | E9e | przegląd wydajności, dokumentacja, decyzja o 9.5 | 50e17ae |
 | E10 | wersja demo `demo.html` (własne menu z muzyką, bez hasła, bez zapisu, bez Galerii) | 6e58876 |
-| — | poprawki testów: Sowa w Chmurach (ratunek kózki), rekordy (WebKit), Sowi Butik (WebKit), pauza w Sowie w Chmurach (WebKit) | 40decd2, 61c4c50, 25dd4cd, ten commit |
+| — | poprawki testów: Sowa w Chmurach (ratunek kózki), rekordy (WebKit), Sowi Butik (WebKit), pauza w Sowie w Chmurach (WebKit) | 40decd2, 61c4c50, 25dd4cd, e7ab64a, ostatni commit |
 
 Każdy z tych commitów przed wypchnięciem przeszedł u mnie pełny `npm test` (składnia, ESLint, Prettier, HTML,
 testy jednostkowe, reguły Firestore i ok. 500 testów przeglądarkowych w Chromium na emulatorze). Nic nie było
@@ -71,8 +71,10 @@ o testy, które w WebKit zachowują się inaczej niż w Chromium.
 | e2d8d68 (E6f), 5c30411 (E7e), f66fb24 (E8e), 2437199 (E9a), 821cb70 (E9b) | ❌ | tylko test rekordów Sowy w Chmurach na 5 telefonach WebKit (4.3 a) |
 | 61c4c50 (poprawka testu rekordów) | ✅ | — |
 | 7015597 (E9c), 37e9b36 (E9d) | ❌ | tylko nowy test Sowiego Butiku na 4–5 telefonach WebKit (4.3 b) |
-| 50e17ae (E9e), 6e58876 (E10) | w toku / spodziewany ❌ | ten sam test Butiku (poprawka weszła później) |
-| 25dd4cd (poprawka testu Butiku) | w toku | spodziewany ✅ |
+| 50e17ae (E9e), 6e58876 (E10) | ❌ | ten sam test Butiku (poprawka weszła później) |
+| 25dd4cd (pierwsza poprawka testu Butiku) | ❌ | test Butiku na ostatnim kroku (powrót do Sówki) — druga poprawka w ostatnim commicie |
+| e7ab64a (ten plik, test pauzy) | spodziewany ❌ | ten sam ostatni krok testu Butiku |
+| ostatni commit (druga poprawka testu Butiku) | w toku | spodziewany ✅ (poza ewentualnymi zawieszeniami przeglądarki — 4.3 d) |
 
 Żaden z tych czerwonych przebiegów nie wynikał z błędu w grach — za każdym razem nie przechodził test, który
 w WebKit sprawdzał coś zbyt dosłownie albo za szybko.
@@ -84,12 +86,15 @@ przechodzi do menu, przy połączeniu z emulatorem Firestore. WebKit zgłasza pr
 Firestore jako błędy strony („…due to access control checks”), a test wymaga zera błędów. Ten sam problem był
 wcześniej w Sowich Torach — rozwiązanie identyczne: menu otwiera się w nowej karcie tego samego „telefonu”.
 
-**b) Sowi Butik (naprawione w 25dd4cd).** Test sprawdzał gatunek sowy po dokładnym kolorze jednego piksela sówki
-w profilu, i to raz, bez czekania na narysowanie. WebKit inaczej przelicza kolory obrazków SVG na płótnie, więc
-kolor nie pasował. Teraz test porównuje cały obrazek sówki: po zakupie Puszczyka musi się zmienić, po powrocie do
-Sówki — być taki sam jak na początku.
+**b) Sowi Butik (naprawione w dwóch krokach: 25dd4cd i ostatni commit).** Test sprawdzał gatunek sowy po dokładnym
+kolorze jednego piksela sówki w profilu, i to raz, bez czekania na narysowanie. WebKit inaczej przelicza kolory
+obrazków SVG na płótnie, więc kolor nie pasował. Pierwsza poprawka (25dd4cd) porównywała cały obrazek — zakup
+Puszczyka przechodził, ale po powrocie do Sówki WebKit rysował minimalnie inne piksele niż na początku. Teraz test
+liczy odsetek „ciepłych” pikseli (czerwony − niebieski > 60): rudobrązowa Sówka ma ich ok. 30%, szarobrązowy
+Puszczyk ok. 3% — test wymaga ponad 15% dla Sówki i poniżej 10% dla Puszczyka, więc drobne różnice rysowania nie
+mają znaczenia.
 
-**c) Pauza w Sowie w Chmurach (naprawione w tym commicie).** Rano (40decd2) po „Wznów” sowa nie ruszyła w ciągu
+**c) Pauza w Sowie w Chmurach (naprawione w e7ab64a).** Rano (40decd2) po „Wznów” sowa nie ruszyła w ciągu
 8 sekund od odliczania — WebKit w CI liczył czas gry wolniej niż rzeczywisty; przy powtórce przeglądarka na maszynie
 GitHuba się zawiesiła („Target crashed”). Test czeka teraz na koniec odliczania (do 15 s), a ruch sowy sprawdza,
 przewijając logikę gry o 0,5 s, zamiast czekać na klatki.
@@ -118,7 +123,7 @@ przechodzi.
 
 ## 5. Co dalej
 
-1. Poczekać na wynik CI dla 25dd4cd (poprawka testu Butiku) i — jeśli któryś test WebKit nie przejdzie także przy
+1. Poczekać na wynik CI dla ostatniego commita (druga poprawka testu Butiku) i — jeśli któryś test WebKit nie przejdzie także przy
    powtórce — poprawić go tak jak w 4.3 c i d.
 2. Twoje testy i uwagi → poprawki małymi commitami, każdy z zielonym `npm test`.
 3. Decyzja o wymaganiach Galerii (E9d) i ewentualnie o cenach w Butiku.

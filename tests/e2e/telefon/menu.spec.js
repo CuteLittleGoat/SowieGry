@@ -307,12 +307,22 @@ test("zakładka „Sowa”: osiągnięcia Sowiej Akademii z postępem i nagrodą
   expect(errors).toEqual([]);
 });
 
-// Obraz sówki w profilu (data URL płótna, gdy atlas jest gotowy) — porównujemy go przed i po zmianie gatunku. Bez
-// porównywania dokładnych kolorów pikseli: WebKit i Chromium różnie zarządzają kolorem obrazków SVG na płótnie.
-const profileOwl = (page) =>
+// Odsetek „ciepłych” pikseli sówki w profilu (czerwony − niebieski > 60) wśród nieprzezroczystych, gdy atlas jest
+// gotowy: rudobrązowa Sówka ok. 30%, szarobrązowy Puszczyk ok. 3%. Bez porównywania dokładnych pikseli — WebKit
+// inaczej zarządza kolorem obrazków SVG i przy ponownym rysowaniu daje minimalnie inne piksele.
+const profileOwlWarmShare = (page) =>
   page.evaluate(() => {
     const canvas = document.querySelector("[data-profile-owl]");
-    return window.SowieMenu?.atlas?.ready?.() && canvas?.width ? canvas.toDataURL() : null;
+    if (!window.SowieMenu?.atlas?.ready?.() || !canvas?.width) return null;
+    const data = canvas.getContext("2d").getImageData(0, 0, canvas.width, canvas.height).data;
+    let warm = 0;
+    let count = 0;
+    for (let index = 0; index < data.length; index += 4) {
+      if (data[index + 3] < 200) continue;
+      count += 1;
+      if (data[index] - data[index + 2] > 60) warm += 1;
+    }
+    return count > 500 ? (100 * warm) / count : null;
   });
 
 test("zakładka „Sowa”: Sowi Butik — gatunek sowy, dłuższe kózki i strój za piórka (E9c)", async ({ page }) => {
@@ -325,8 +335,7 @@ test("zakładka „Sowa”: Sowi Butik — gatunek sowy, dłuższe kózki i str�
   await expect(shop.locator('[data-species="sowka"]')).toHaveAttribute("aria-pressed", "true");
   await expect(shop.locator('[data-shop-item="species:uszatka"]')).toContainText("Poziom 3");
   await expect(page.locator('[data-owl-card="garderoba"]')).toContainText("W Sowim Butiku za 80 piórek");
-  await expect.poll(() => profileOwl(page)).not.toBeNull();
-  const sowka = await profileOwl(page);
+  await expect.poll(() => profileOwlWarmShare(page)).toBeGreaterThan(15); // Sówka
   const dialog = page.getByRole("dialog", { name: "Kupić w Sowim Butiku?" });
 
   // Gatunek: zakup z potwierdzeniem, od razu wybrany, sówka w profilu w kolorach Puszczyka.
@@ -336,8 +345,8 @@ test("zakładka „Sowa”: Sowi Butik — gatunek sowy, dłuższe kózki i str�
   await expect(page.getByText("Kupione: Puszczyk!")).toBeVisible();
   await expect(shop.locator('[data-species="puszczyk"]')).toHaveAttribute("aria-pressed", "true");
   await expect(shop.locator("[data-shop-feathers]")).toHaveText("🪶 60 piórek");
-  // Atlas przebudowany z kolorami Puszczyka — sówka w profilu wygląda inaczej.
-  await expect.poll(() => profileOwl(page)).not.toBe(sowka);
+  // Atlas przebudowany z kolorami Puszczyka — sówka w profilu jest szarobrązowa.
+  await expect.poll(() => profileOwlWarmShare(page)).toBeLessThan(10);
 
   // Dłuższe kózki: poziom 1 (×1,2); na poziom 2 (60 piórek) już nie starcza.
   await shop.locator('[data-buy="goat:1"]').click();
@@ -359,7 +368,7 @@ test("zakładka „Sowa”: Sowi Butik — gatunek sowy, dłuższe kózki i str�
   // Powrót do Sówki — bez zakupu.
   await shop.locator('[data-species="sowka"]').click();
   await expect(shop.locator('[data-species="sowka"]')).toHaveAttribute("aria-pressed", "true");
-  await expect.poll(() => profileOwl(page)).toBe(sowka);
+  await expect.poll(() => profileOwlWarmShare(page)).toBeGreaterThan(15);
   const profile = await page.evaluate(() => window.SowieCloud.profile());
   expect(profile.shop).toMatchObject({ goatLevel: 1, species: { owned: ["sowka", "puszczyk"], selected: "sowka" } });
   expect(Object.keys(profile.shop.purchases).sort()).toEqual(["goat:1", "outfit:bowTie", "species:puszczyk"]);
