@@ -14,6 +14,8 @@ async function openGame(page, url = "/SowiaUcieczka/?seed=ucieczka-e2e") {
 const state = (page) => page.evaluate(() => window.SowiaUcieczka.state());
 
 test("start, 5 s biegu z ziarnem i skok po stuknięciu w dowolnym miejscu", async ({ page }) => {
+  // Pierwszy test w WebKit w CI bywa wolny (atlas, wolne klatki — czas gry płynie wolniej niż rzeczywisty; CI 7350a96).
+  test.setTimeout(60_000);
   const errors = watchErrors(page);
   await openGame(page);
   await expect(page.getByRole("heading", { name: "Sowia Ucieczka" })).toBeVisible();
@@ -26,10 +28,9 @@ test("start, 5 s biegu z ziarnem i skok po stuknięciu w dowolnym miejscu", asyn
   const box = await page.locator("[data-stage]").boundingBox();
   await page.mouse.click(box.x + box.width / 2, box.y + box.height * 0.5);
   await expect.poll(async () => (await state(page)).owl.y).toBeLessThan(-0.5);
-  await page.waitForTimeout(5000);
-  const after = await state(page);
-  expect(after.distance).toBeGreaterThan(25);
-  expect(after.speed).toBeGreaterThan(6);
+  // Ok. 5 s biegu: czekamy na dystans, nie na czas rzeczywisty (przy wolnych klatkach gra „biegnie” wolniej).
+  await expect.poll(async () => (await state(page)).distance, { timeout: 25_000 }).toBeGreaterThan(25);
+  expect((await state(page)).speed).toBeGreaterThan(6);
   expect(errors).toEqual([]);
 });
 
