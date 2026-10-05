@@ -151,8 +151,7 @@ function collectionHtml(state, now) {
     <p class="ogrod-note">${kinds.map((plant) => `${escape(plant.name)} — etap ${plantStage(state.plants[plant.id])}/5`).join(" · ") || "Jeszcze pusto — kup pierwszą Monsterę."}</p>
     <h3 class="ogrod-subtitle">Statystyki</h3>
     <dl class="ogrod-stats">${rows.map(([label, value]) => `<div><dt>${label}</dt><dd>${value}</dd></div>`).join("")}</dl>
-    <button type="button" class="sowie-ui-button ogrod-tutorial-replay" data-tutorial-replay>Powtórz samouczek</button>
-    <p class="ogrod-note">Wersja podglądowa nowej odsłony. Postęp zapisuje się osobno — dawna gra (<a href="./">Sowie Ogrody</a>) zostaje bez zmian.</p>`;
+    <button type="button" class="sowie-ui-button ogrod-tutorial-replay" data-tutorial-replay>Powtórz samouczek</button>`;
 }
 
 /**

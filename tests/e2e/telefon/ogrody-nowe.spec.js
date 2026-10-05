@@ -1,10 +1,10 @@
-// Sowie Ogrody — nowa odsłona (podgląd SowieOgrody/nowa.html, Analiza 3 E7b) na telefonach: stukanie w ogród,
-// zakupy, cel rozdziału, zakładki panelu, konewka, przeniesienie dawnego postępu (stan v2 w emulatorze) z zapisem
-// w osobnym polu `preview`, postęp po powrocie z tła i układ na najmniejszym telefonie.
+// Sowie Ogrody — nowa odsłona (od E7e gra „ogrody” w SowieOgrody/index.html; Analiza 3 E7) na telefonach: stukanie
+// w ogród, zakupy, cel rozdziału, zakładki panelu, konewka, przeniesienie dawnego postępu (stan v2 w emulatorze)
+// i zapisu z czasu podglądu (pole `preview`) do pola `state`, postęp po powrocie z tła i układ na najmniejszym telefonie.
 const { test, expect, waitForCloud, watchErrors, setVisibility } = require("../fixtures");
 const { cloudUrl, readDoc, seedDoc, uniqueProject } = require("../emulator");
 
-async function openGarden(page, url = "/SowieOgrody/nowa.html") {
+async function openGarden(page, url = "/SowieOgrody/") {
   await page.goto(url, { waitUntil: "load" });
   await waitForCloud(page);
   await page.waitForFunction(() => window.SowieOgrody?.ready?.(), null, { timeout: 20_000 });
@@ -77,7 +77,7 @@ test("nowe Sowie Ogrody: Parapet ukończony → Balkon, konewka z zakładki Ulep
   expect(errors).toEqual([]);
 });
 
-test("nowe Sowie Ogrody: dawny postęp (stan v2) przechodzi bez strat, podgląd zapisuje osobno (emulator)", async ({
+test("nowe Sowie Ogrody: dawny postęp (stan v2) przechodzi bez strat i zapisuje się jako stan v3 (emulator)", async ({
   page,
 }, testInfo) => {
   const project = uniqueProject(testInfo);
@@ -99,7 +99,7 @@ test("nowe Sowie Ogrody: dawny postęp (stan v2) przechodzi bez strat, podgląd 
   const oldJson = JSON.stringify(old);
   await seedDoc(project, "sowiegry/profil/sowiegry_gry/ogrody", { state: oldJson, saveVersion: 2 });
   const errors = watchErrors(page);
-  await openGarden(page, cloudUrl("/SowieOgrody/nowa.html", project));
+  await openGarden(page, cloudUrl("/SowieOgrody/", project));
   const dialog = page.getByRole("dialog", { name: "Witaj w nowym ogrodzie!" });
   await expect(dialog).toBeVisible();
   await expect(dialog.locator("strong").first()).toHaveText("1 tys."); // zwrot za Urocze etykietki (1000 liści)
@@ -115,20 +115,57 @@ test("nowe Sowie Ogrody: dawny postęp (stan v2) przechodzi bez strat, podgląd 
   await page.evaluate(() => window.SowieOgrody.save());
   await page.evaluate(() => window.SowieCloud.flush());
   const doc = await readDoc(project, "sowiegry/profil/sowiegry_gry/ogrody");
-  expect(doc.state).toBe(oldJson);
-  const preview = JSON.parse(doc.preview);
-  expect(preview.version).toBe(3);
-  expect(preview.plants.paproc).toBe(4);
+  // Stan v3 zastępuje dawny v2 w polu `state` (saveVersion 3), podsumowanie trafia do profilu.
+  const saved = JSON.parse(doc.state);
+  expect(saved.version).toBe(3);
+  expect(saved.plants.paproc).toBe(4);
+  expect(doc.saveVersion).toBe(3);
+  expect(doc.preview).toBeUndefined();
+  const profile = await readDoc(project, "sowiegry/profil");
+  expect(profile.records.ogrody.zone).toBe("Balkon");
+  expect(profile.records.ogrody.lifetimeLeaves).toBeGreaterThanOrEqual(0);
 
-  // Ponowne wejście (nowa karta): stan z pola `preview`, bez okna przeniesienia.
+  // Ponowne wejście (nowa karta): stan v3 z pola `state`, bez okna przeniesienia.
   const again = await page.context().newPage();
   await page.close();
   const errorsAgain = watchErrors(again);
-  await openGarden(again, cloudUrl("/SowieOgrody/nowa.html", project));
+  await openGarden(again, cloudUrl("/SowieOgrody/", project));
   expect((await again.evaluate(() => window.SowieOgrody.state())).plants.paproc).toBe(4);
   await expect(again.getByRole("dialog", { name: "Witaj w nowym ogrodzie!" })).toHaveCount(0);
   expect(errors).toEqual([]);
   expect(errorsAgain).toEqual([]);
+});
+
+test("Sowie Ogrody: zapis z czasu podglądu (pole `preview`) staje się stanem gry, a stary adres nowa.html przekierowuje (emulator)", async ({
+  page,
+}, testInfo) => {
+  const project = uniqueProject(testInfo);
+  const fromPreview = {
+    version: 3,
+    leaves: 50,
+    runLeaves: 500,
+    lifetimeLeaves: 500,
+    plants: { monstera: 7 },
+    tutorialDone: true,
+  };
+  await seedDoc(project, "sowiegry/profil/sowiegry_gry/ogrody", {
+    state: JSON.stringify({ version: 2, stats: { clicks: 5 } }),
+    saveVersion: 2,
+    preview: JSON.stringify(fromPreview),
+  });
+  const errors = watchErrors(page);
+  await openGarden(page, cloudUrl("/SowieOgrody/nowa.html", project));
+  await expect(page).toHaveURL(/\/SowieOgrody\/\?/);
+  expect((await state(page)).plants.monstera).toBe(7);
+  await expect(page.getByRole("dialog", { name: "Witaj w nowym ogrodzie!" })).toHaveCount(0);
+  await page.evaluate(() => window.SowieCloud.flush());
+  await expect
+    .poll(async () => {
+      const doc = await readDoc(project, "sowiegry/profil/sowiegry_gry/ogrody");
+      return [doc.preview === undefined, JSON.parse(doc.state).plants?.monstera, doc.saveVersion];
+    })
+    .toEqual([true, 7, 3]);
+  expect(errors).toEqual([]);
 });
 
 test("nowe Sowie Ogrody: powrót z tła po 10 minutach — okno „Witaj z powrotem!” z tym, co urosło", async ({ page }) => {
@@ -278,12 +315,12 @@ test("nowe Sowie Ogrody: złota kózka (×3 na 30 s), Plusk-o-metr i Zatoka Humb
   expect(errors).toEqual([]);
 });
 
-test("nowe Sowie Ogrody: samouczek pierwszego wejścia (4 kroki), zapis w podglądzie i „Jak grać?” z „Zagraj samouczek” (emulator)", async ({
+test("nowe Sowie Ogrody: samouczek pierwszego wejścia (4 kroki), zapis w stanie gry i „Jak grać?” z „Zagraj samouczek” (emulator)", async ({
   page,
 }, testInfo) => {
   const project = uniqueProject(testInfo);
   const errors = watchErrors(page);
-  await openGarden(page, cloudUrl("/SowieOgrody/nowa.html", project));
+  await openGarden(page, cloudUrl("/SowieOgrody/", project));
   const bubble = page.locator("[data-tutorial]");
   // 1. Stuknięcia (podpowiedź nie zasłania ogrodu — stuknięcia przechodzą do płótna).
   await expect(bubble).toContainText("krok 1 z 4");
@@ -312,13 +349,13 @@ test("nowe Sowie Ogrody: samouczek pierwszego wejścia (4 kroki), zapis w podgl�
   expect(await page.evaluate(() => window.SowieOgrody.tutorial())).toBeNull();
   await page.evaluate(() => window.SowieCloud.flush());
   const doc = await readDoc(project, "sowiegry/profil/sowiegry_gry/ogrody");
-  expect(JSON.parse(doc.preview).tutorialDone).toBe(true);
+  expect(JSON.parse(doc.state).tutorialDone).toBe(true);
 
   // Ponowne wejście (nowa karta): bez samouczka; „Jak grać?” — instrukcja i „Zagraj samouczek”.
   const again = await page.context().newPage();
   await page.close();
   const errorsAgain = watchErrors(again);
-  await openGarden(again, cloudUrl("/SowieOgrody/nowa.html", project));
+  await openGarden(again, cloudUrl("/SowieOgrody/", project));
   await expect(again.locator("[data-tutorial]")).toBeHidden();
   await again.getByRole("button", { name: "Jak grać?" }).click();
   const guide = again.getByRole("dialog", { name: "Jak grać — Sowie Ogrody" });
@@ -344,7 +381,7 @@ test("nowe Sowie Ogrody: menu prosi o powtórzenie samouczka (`tutorialDone: fal
 }, testInfo) => {
   const project = uniqueProject(testInfo);
   const errors = watchErrors(page);
-  await openGarden(page, cloudUrl("/SowieOgrody/nowa.html", project));
+  await openGarden(page, cloudUrl("/SowieOgrody/", project));
   await page.locator("[data-tutorial]").getByRole("button", { name: "Pomiń samouczek" }).click();
   // To samo, co robi przycisk w menu (zakładka Sowa → „Powtórz samouczki we wszystkich grach”).
   await page.evaluate(() => {
@@ -352,13 +389,13 @@ test("nowe Sowie Ogrody: menu prosi o powtórzenie samouczka (`tutorialDone: fal
     return window.SowieCloud.flush();
   });
   const requested = await readDoc(project, "sowiegry/profil/sowiegry_gry/ogrody");
-  expect(JSON.parse(requested.preview).tutorialDone).toBe(true);
+  expect(JSON.parse(requested.state).tutorialDone).toBe(true);
   expect(requested.tutorialDone).toBe(false);
 
   const again = await page.context().newPage();
   await page.close();
   const errorsAgain = watchErrors(again);
-  await openGarden(again, cloudUrl("/SowieOgrody/nowa.html", project));
+  await openGarden(again, cloudUrl("/SowieOgrody/", project));
   const bubble = again.locator("[data-tutorial]");
   await expect(bubble).toContainText("krok 1 z 4");
   await bubble.getByRole("button", { name: "Pomiń samouczek" }).click();
@@ -366,7 +403,7 @@ test("nowe Sowie Ogrody: menu prosi o powtórzenie samouczka (`tutorialDone: fal
   await again.evaluate(() => window.SowieCloud.flush());
   const after = await readDoc(project, "sowiegry/profil/sowiegry_gry/ogrody");
   expect(after.tutorialDone).toBe(true);
-  expect(JSON.parse(after.preview).tutorialDone).toBe(true);
+  expect(JSON.parse(after.state).tutorialDone).toBe(true);
   expect(errors).toEqual([]);
   expect(errorsAgain).toEqual([]);
 });

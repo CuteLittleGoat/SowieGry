@@ -24,7 +24,7 @@ const IDLE_SUMMARY = {
   ogrody: [
     ["lifetimeLeaves", "Liście w całej grze"],
     ["prestiges", "Wielkie Przesadzania"],
-    ["zone", "Strefa"],
+    ["zone", "Rozdział"],
   ],
   szklarnia: [
     ["lifetimeLeaves", "Liście w całej grze"],

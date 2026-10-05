@@ -141,7 +141,7 @@ test("osiągnięcia Akademii z Firestore trwale odblokowują komplet trzydziestu
 // Dawne gry idle mają przycisk Galerii w doku; przebudowane gry — Galerię w zakładce menu głównego.
 test("Galeria Sów jest dostępna bezpośrednio z każdej obecnej gry", async ({ page }) => {
   const errors = watchRuntimeErrors(page);
-  const paths = ["/SowieOgrody/", "/SowiaSzklarnia/"];
+  const paths = ["/SowiaSzklarnia/"];
 
   for (const [index, path] of paths.entries()) {
     await page.goto(`${path}?seed=gallery-game-${index}&testNow=1783656000000`, { waitUntil: "load" });

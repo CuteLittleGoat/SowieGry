@@ -1,69 +1,99 @@
 <!doctype html>
 <html lang="pl">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>SowieGry — smoke test</title>
-  <script src="../shared/sowie-platform.js"></script>
-  <style>
-    body { margin: 0; padding: 24px; color: #eef8f1; background: #17211b; font: 15px/1.5 system-ui, sans-serif; }
-    h1 { margin-top: 0; }
-    .summary, .result { padding: 12px 14px; border-radius: 12px; background: #223129; }
-    .results { display: grid; gap: 10px; margin-top: 16px; }
-    .pass { border-left: 5px solid #68d391; }
-    .fail { border-left: 5px solid #fc8181; }
-    iframe { position: fixed; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
-  </style>
-</head>
-<body>
-  <h1>SowieGry — test uruchomieniowy</h1>
-  <p class="summary" id="summary">Sprawdzam pięć gier…</p>
-  <section class="results" id="results" aria-live="polite"></section>
-  <script>
-    const checks = {
-      runner: (frame) => frame.document.querySelector("canvas") && frame.SowieCore,
-      jumper: (frame) => frame.document.querySelector("#game") && frame.SowieCore,
-      sowa3: (frame) => frame.document.querySelector("#game") && frame.SowieCore,
-      ogrody: (frame) => frame.document.querySelector("#gardenCanvas") && frame.SowieIdleGame,
-      szklarnia: (frame) => frame.document.querySelector("#greenhouseCanvas") && frame.SowieIdleGame,
-    };
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>SowieGry — smoke test</title>
+    <script src="../shared/sowie-platform.js"></script>
+    <style>
+      body {
+        margin: 0;
+        padding: 24px;
+        color: #eef8f1;
+        background: #17211b;
+        font:
+          15px/1.5 system-ui,
+          sans-serif;
+      }
+      h1 {
+        margin-top: 0;
+      }
+      .summary,
+      .result {
+        padding: 12px 14px;
+        border-radius: 12px;
+        background: #223129;
+      }
+      .results {
+        display: grid;
+        gap: 10px;
+        margin-top: 16px;
+      }
+      .pass {
+        border-left: 5px solid #68d391;
+      }
+      .fail {
+        border-left: 5px solid #fc8181;
+      }
+      iframe {
+        position: fixed;
+        width: 1px;
+        height: 1px;
+        opacity: 0;
+        pointer-events: none;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>SowieGry — test uruchomieniowy</h1>
+    <p class="summary" id="summary">Sprawdzam pięć gier…</p>
+    <section class="results" id="results" aria-live="polite"></section>
+    <script>
+      const checks = {
+        runner: (frame) => frame.document.querySelector("canvas") && frame.SowieCore,
+        jumper: (frame) => frame.document.querySelector("#game") && frame.SowieCore,
+        sowa3: (frame) => frame.document.querySelector("#game") && frame.SowieCore,
+        ogrody: (frame) => frame.document.querySelector("#gardenCanvas") && frame.SowieIdleGame,
+        szklarnia: (frame) => frame.document.querySelector("#greenhouseCanvas") && frame.SowieIdleGame,
+      };
 
-    const results = document.getElementById("results");
-    const summary = document.getElementById("summary");
-    let completed = 0;
-    let passed = 0;
+      const results = document.getElementById("results");
+      const summary = document.getElementById("summary");
+      let completed = 0;
+      let passed = 0;
 
-    function finish(game, ok, details) {
-      const row = document.createElement("article");
-      row.className = `result ${ok ? "pass" : "fail"}`;
-      row.textContent = `${ok ? "PASS" : "FAIL"}: ${game.name}${details ? ` — ${details}` : ""}`;
-      results.appendChild(row);
-      completed += 1;
-      if (ok) passed += 1;
-      summary.textContent = completed === window.SowiePlatform.GAME_REGISTRY.length
-        ? `Zakończono: ${passed}/${completed} testów zaliczonych.`
-        : `Postęp: ${completed}/${window.SowiePlatform.GAME_REGISTRY.length}`;
-    }
+      function finish(game, ok, details) {
+        const row = document.createElement("article");
+        row.className = `result ${ok ? "pass" : "fail"}`;
+        row.textContent = `${ok ? "PASS" : "FAIL"}: ${game.name}${details ? ` — ${details}` : ""}`;
+        results.appendChild(row);
+        completed += 1;
+        if (ok) passed += 1;
+        summary.textContent =
+          completed === window.SowiePlatform.GAME_REGISTRY.length
+            ? `Zakończono: ${passed}/${completed} testów zaliczonych.`
+            : `Postęp: ${completed}/${window.SowiePlatform.GAME_REGISTRY.length}`;
+      }
 
-    for (const game of window.SowiePlatform.GAME_REGISTRY) {
-      const iframe = document.createElement("iframe");
-      iframe.title = `Test ${game.name}`;
-      // cloud=memory: test nigdy nie zapisuje do prawdziwej bazy.
-      iframe.src = `../${game.path}?seed=manual-smoke&testNow=1783656000000&cloud=memory`;
-      iframe.addEventListener("load", () => {
-        window.setTimeout(() => {
-          try {
-            const ok = Boolean(checks[game.id]?.(iframe.contentWindow));
-            finish(game, ok, ok ? "uruchomiona" : "brak oczekiwanego API lub elementu");
-          } catch (error) {
-            finish(game, false, error.message);
-          } finally {
-            iframe.remove();
-          }
-        }, 900);
-      });
-      document.body.appendChild(iframe);
-    }
-  </script>
-</body>
+      for (const game of window.SowiePlatform.GAME_REGISTRY) {
+        const iframe = document.createElement("iframe");
+        iframe.title = `Test ${game.name}`;
+        // cloud=memory: test nigdy nie zapisuje do prawdziwej bazy.
+        iframe.src = `../${game.path}?seed=manual-smoke&testNow=1783656000000&cloud=memory`;
+        iframe.addEventListener("load", () => {
+          window.setTimeout(() => {
+            try {
+              const ok = Boolean(checks[game.id]?.(iframe.contentWindow));
+              finish(game, ok, ok ? "uruchomiona" : "brak oczekiwanego API lub elementu");
+            } catch (error) {
+              finish(game, false, error.message);
+            } finally {
+              iframe.remove();
+            }
+          }, 900);
+        });
+        document.body.appendChild(iframe);
+      }
+    </script>
+  </body>
 </html>

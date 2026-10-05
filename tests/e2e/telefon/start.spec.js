@@ -6,7 +6,7 @@ const pages = [
   { name: "Sowia Ucieczka", path: "/SowiaUcieczka/", marker: "[data-stage] canvas" },
   { name: "Sowa w Chmurach", path: "/SowaWChmurach/", marker: "[data-stage] canvas" },
   { name: "Sowie Tory", path: "/SowieTory/", marker: "[data-stage] canvas" },
-  { name: "Sowie Ogrody", path: "/SowieOgrody/", marker: "#gardenCanvas" },
+  { name: "Sowie Ogrody", path: "/SowieOgrody/", marker: "[data-canvas]" },
   { name: "Sowia Szklarnia", path: "/SowiaSzklarnia/", marker: "#greenhouseCanvas" },
 ];
 

@@ -165,13 +165,18 @@ test("po powrocie z tła gra idle dolicza postęp offline i zapisuje stan", asyn
   const errors = watchErrors(page);
   await page.goto(cloudUrl("/SowieOgrody/?seed=tlo", project), { waitUntil: "load" });
   await waitForCloud(page);
-  await page.locator("#clickButton").tap();
+  await page.waitForFunction(() => window.SowieOgrody?.ready?.(), null, { timeout: 20_000 });
+  await page.evaluate(() => {
+    window.SowieOgrody.give(1000);
+    window.SowieOgrody.buy("monstera", 10);
+    window.SowieOgrody.tap(1);
+  });
 
-  // Przejście do innej aplikacji: stan trafia do bazy od razu.
+  // Przejście do innej aplikacji: stan (v3, pole `state`) trafia do bazy od razu.
   await setVisibility(page, "hidden");
   await expect
     .poll(async () => JSON.parse((await readDoc(project, "sowiegry/profil/sowiegry_gry/ogrody"))?.state || "{}"))
-    .toMatchObject({ stats: { clicks: 1 } });
+    .toMatchObject({ version: 3, plants: { monstera: 10 } });
 
   // 10 minut w tle, potem powrót.
   await page.evaluate(() => {
@@ -179,7 +184,8 @@ test("po powrocie z tła gra idle dolicza postęp offline i zapisuje stan", asyn
     Date.now = () => realNow() + 10 * 60 * 1000;
   });
   await setVisibility(page, "visible");
-  await expect(page.locator("#offlineModal")).toBeVisible();
-  await expect(page.locator("#offlineText")).toContainText("Sowa doglądała ogrodu");
+  const dialog = page.getByRole("dialog", { name: "Witaj z powrotem!" });
+  await expect(dialog).toBeVisible();
+  await expect(dialog).toContainText("Sowa doglądała ogrodu");
   expect(errors).toEqual([]);
 });

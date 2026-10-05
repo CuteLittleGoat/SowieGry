@@ -1,120 +1,19 @@
-<!doctype html>
-<html lang="pl" class="sowie-shell">
+<!DOCTYPE html>
+<html lang="pl">
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover" />
     <meta name="theme-color" content="#e7ffe6" />
-    <meta
-      name="description"
-      content="Sowie Ogrody — nowa odsłona: sadź rośliny od parapetu po arboretum, podlewaj konewką i rób Wielkie Przesadzanie."
-    />
-    <title>Sowie Ogrody (nowa odsłona) — SowieGry</title>
-    <link rel="manifest" href="../manifest.webmanifest" />
     <link rel="icon" href="../assets/icons/icon.svg" type="image/svg+xml" />
-    <link rel="apple-touch-icon" href="../assets/icons/apple-touch-icon.png" />
-    <meta name="mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-title" content="SowieGry" />
-    <script src="../config/firebase-config.js"></script>
-    <script src="../shared/sowie-platform.js"></script>
-    <script src="../shared/sowie-cloud.js"></script>
-    <script src="../shared/password-gate.js"></script>
-    <script src="../shared/pwa.js"></script>
-    <link rel="preload" href="../assets/fonts/fredoka-700.woff2" as="font" type="font/woff2" crossorigin />
-    <link rel="stylesheet" href="../shared/cute-ui.css" />
-    <link rel="stylesheet" href="../shared/world/tokens.css" />
-    <link rel="stylesheet" href="../shared/ui/ui.css" />
-    <link rel="stylesheet" href="ogrod/style.css" />
-    <script src="../shared/sowie-academy.js" defer></script>
-    <script src="../shared/owl-gallery.js" defer></script>
-    <script type="module" src="ogrod/main.js"></script>
+    <title>Sowie Ogrody — SowieGry</title>
+    <!-- Nowa odsłona Sowich Ogrodów (Analiza 3, E7) jest od E7e główną grą w tym folderze: dawny adres podglądu
+         prowadzi do ./ razem z parametrami adresu (np. ?seed=). Bez JavaScriptu — odświeżenie po 0 s. -->
+    <meta http-equiv="refresh" content="0; url=./" />
+    <script>
+      location.replace(`./${location.search}${location.hash}`);
+    </script>
   </head>
-  <body data-sowie-game="ogrody">
-    <main class="ogrod" data-ogrod aria-label="Sowie Ogrody">
-      <header class="ogrod-top">
-        <a class="sowie-ui-button is-quiet ogrod-back" href="../">Menu</a>
-        <button type="button" class="sowie-ui-button is-quiet ogrod-help" data-guide aria-label="Jak grać?">?</button>
-        <div class="ogrod-leaves" aria-live="off">
-          <strong data-leaves>0</strong>
-          <span data-lps>0 liści/s</span>
-        </div>
-        <button type="button" class="sowie-ui-button ogrod-water" data-water hidden>
-          <span>Podlej</span><span data-charges>0/3</span>
-        </button>
-      </header>
-      <section class="ogrod-goal" data-goal aria-live="polite"></section>
-      <div class="ogrod-garden">
-        <canvas data-canvas tabindex="0" aria-label="Ogród — stuknij, żeby zebrać liście"></canvas>
-        <div class="ogrod-tutorial" data-tutorial hidden role="status" aria-live="polite">
-          <span class="sowie-gesture-demo" aria-hidden="true"><span class="sowie-gesture-finger"></span></span>
-          <span class="ogrod-tutorial-text">
-            <span class="ogrod-tutorial-step" data-tutorial-step></span>
-            <span data-tutorial-text></span>
-          </span>
-          <button type="button" class="sowie-ui-button is-primary" data-tutorial-next hidden>Dalej</button>
-          <button
-            type="button"
-            class="sowie-ui-button is-quiet ogrod-tutorial-skip"
-            data-tutorial-skip
-            aria-label="Pomiń samouczek"
-          >
-            ✕
-          </button>
-        </div>
-        <div class="ogrod-splash" data-splash hidden>
-          <span>Plusk-o-metr</span>
-          <span class="ogrod-splash-bar"><i data-splash-fill></i></span>
-        </div>
-        <div class="ogrod-bay-hud" data-bay-hud hidden aria-live="polite">
-          <span data-bay-time>20 s</span><span data-bay-combo>combo ×0</span>
-        </div>
-        <div class="ogrod-alerts" data-alerts>
-          <button
-            type="button"
-            class="sowie-ui-button ogrod-alert is-pracu"
-            data-alert="pracu"
-            aria-label="Odrzuć telefon Pracu Pracu"
-            hidden
-          >
-            📵 Odrzuć
-          </button>
-          <button
-            type="button"
-            class="sowie-ui-button ogrod-alert is-truck"
-            data-alert="truck"
-            aria-label="Przegoń ciężarówkę Amic"
-            hidden
-          >
-            🚚 Przegoń <span data-truck-taps>0/3</span>
-          </button>
-          <button
-            type="button"
-            class="sowie-ui-button ogrod-alert is-goat"
-            data-alert="goat"
-            aria-label="Złap kózkę — złotą, zanim ucieknie"
-            hidden
-          >
-            🐐 Złap kózkę!
-          </button>
-          <button
-            type="button"
-            class="sowie-ui-button is-primary ogrod-alert is-bay"
-            data-alert="bay"
-            aria-label="Zatoka Humbaka — zagraj"
-            hidden
-          >
-            🐋 Zatoka Humbaka!
-          </button>
-        </div>
-      </div>
-      <section class="ogrod-sheet" aria-label="Panel ogrodu">
-        <nav class="ogrod-tabs" data-tabs role="tablist" aria-label="Zakładki"></nav>
-        <div class="ogrod-panel" data-panel></div>
-        <p class="ogrod-preview">
-          Wersja podglądowa nowej odsłony. Postęp zapisuje się osobno — dawna gra (<a href="./">Sowie Ogrody</a>)
-          zostaje bez zmian.
-        </p>
-      </section>
-    </main>
+  <body>
+    <p>Nowa odsłona to teraz po prostu <a href="./">Sowie Ogrody</a>.</p>
   </body>
 </html>

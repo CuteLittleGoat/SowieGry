@@ -55,9 +55,9 @@ test("samouczek: dawny ogród z Monsterą — krok zakupu zaliczony od razu; „
   assert.equal(skipped.progress(), null);
 });
 
-test("instrukcja „ogrod”: tytuł, opis i karty o celach, liściach, roślinach, konewce, zdarzeniach i przesadzaniu", () => {
-  const guide = guideFor("ogrod");
-  assert.equal(guide.id, "ogrod");
+test("instrukcja „ogrody” (od E7e; wcześniej „ogrod”): tytuł, opis i karty o celach, liściach, roślinach, konewce, zdarzeniach i przesadzaniu", () => {
+  const guide = guideFor("ogrody");
+  assert.equal(guide.id, "ogrody");
   assert.equal(guide.title, "Sowie Ogrody");
   assert.ok(guide.summary.length > 40);
   assert.deepEqual(
@@ -68,6 +68,7 @@ test("instrukcja „ogrod”: tytuł, opis i karty o celach, liściach, roślina
   for (const card of guide.cards) assert.ok(SPRITES[card.sprite], `${card.id}: ${card.sprite}`);
   assert.match(guide.cards.find((card) => card.id === "pracu-amic").text, /Tryb samolotowy|trzy razy/);
   assert.match(guide.cards.find((card) => card.id === "kozka-zatoka").text, /Zatoce Humbaka/);
-  // Podgląd — poza zakładką „Jak grać” w menu (tam dawne Sowie Ogrody do podmiany w E7e).
-  assert.ok(!GUIDE_ORDER.includes("ogrod"));
+  // Od E7e w zakładce „Jak grać” w menu (klucz gry „ogrody”); dawnego klucza „ogrod” już nie ma.
+  assert.ok(GUIDE_ORDER.includes("ogrody"));
+  assert.equal(guideFor("ogrod"), null);
 });

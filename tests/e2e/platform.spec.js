@@ -39,10 +39,8 @@ test.describe("pierwsze uruchomienie nowej wersji", () => {
   });
 });
 
-for (const idleGame of [
-  { id: "ogrody", path: "/SowieOgrody/" },
-  { id: "szklarnia", path: "/SowiaSzklarnia/" },
-]) {
+// Dawna gra idle na SowieIdleGame (nowe Sowie Ogrody — tests/e2e/telefon/ogrody-nowe.spec.js i chmura.spec.js).
+for (const idleGame of [{ id: "szklarnia", path: "/SowiaSzklarnia/" }]) {
   test(`${idleGame.id}: stan gry zapisuje się w Firestore i wraca po przeładowaniu`, async ({ page }, testInfo) => {
     const project = uniqueProject(testInfo);
     const errors = watchErrors(page);

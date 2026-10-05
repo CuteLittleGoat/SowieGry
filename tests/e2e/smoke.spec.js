@@ -35,12 +35,15 @@ const games = [
     core: false,
   },
   {
+    // Nowa odsłona Sowich Ogrodów (E7, od E7e w SowieOgrody/index.html): stuknięcie w ogród zbiera liście.
     id: "ogrody",
     name: "Sowie Ogrody",
     path: "/SowieOgrody/",
-    marker: "#gardenCanvas",
-    action: "#clickButton",
-    started: "window.SowieIdleGame.snapshot().stats.clicks === 1",
+    marker: "[data-canvas]",
+    action: "[data-canvas]",
+    started: "window.SowieOgrody.state().stats.taps >= 1",
+    ready: "window.SowieOgrody?.ready?.() === true",
+    core: false,
   },
   {
     id: "szklarnia",
@@ -118,11 +121,16 @@ test("gry używają wspólnego menedżera powiadomień", async ({ page }) => {
   // Wspólny menedżer powiadomień mają już tylko dawne gry idle (SowieCore).
   const errors = await openGame(
     page,
-    games.find((game) => game.id === "ogrody"),
+    games.find((game) => game.id === "szklarnia"),
   );
   await page.evaluate(() => window.SowieCore.toast({ text: "Test", amount: 1, mergeKey: "audit" }));
   await page.evaluate(() => window.SowieCore.toast({ text: "Test", amount: 2, mergeKey: "audit" }));
-  await expect(page.locator(".sowie-notification-stack .sowie-toast")).toHaveCount(1);
-  await expect(page.locator(".sowie-notification-stack .sowie-toast")).toContainText("łącznie +3");
+  // Dawna Szklarnia może przy starcie trzymać komunikaty w kolejce (np. za oknem „Sowa doglądała szklarni”) —
+  // liczy się jeden scalony wpis (widoczny albo w kolejce).
+  const merged = await page.evaluate(() => {
+    const { visible, queued } = window.SowieNotifications.getState();
+    return [...visible, ...queued].filter((text) => text.startsWith("Test"));
+  });
+  expect(merged).toEqual(["Test ×2 — łącznie +3"]);
   expect(errors).toEqual([]);
 });

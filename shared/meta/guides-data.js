@@ -255,10 +255,9 @@ export const GUIDES = Object.freeze({
       },
     ],
   },
-  // Nowa odsłona Sowich Ogrodów (E7d2, podgląd SowieOgrody/nowa.html; poza GUIDE_ORDER — po podmianie w E7e
-  // zastąpi przewodnik `ogrody`).
-  ogrod: {
-    id: "ogrod",
+  // Sowie Ogrody — nowa odsłona (SowieOgrody/, Analiza 3 E7) — od podmiany (E7e) gra „ogrody”.
+  ogrody: {
+    id: "ogrody",
     title: "Sowie Ogrody",
     summary:
       "Sowa ogrodniczka sadzi rośliny od parapetu po arboretum. Stukaj w ogród, kupuj rośliny i wykonuj cele rozdziałów — ogród rośnie także wtedy, gdy Cię nie ma.",
@@ -366,45 +365,6 @@ export const GUIDES = Object.freeze({
     ],
   },
   // Obecne gry (treść przeniesiona z shared/game-guides.js w E3). Po przebudowie każdej gry podmieniamy jej karty.
-  ogrody: {
-    id: "ogrody",
-    title: "Sowie Ogrody",
-    summary:
-      "Gra idle/incremental o rozwijaniu ogrodu. Zbieraj liście, kupuj rośliny, odblokowuj strefy, podlewaj i stopniowo automatyzuj produkcję.",
-    cards: [
-      {
-        id: "cel",
-        title: "Cel gry",
-        text: "Zbuduj coraz wydajniejszy ogród, wykonuj kontrakty i przeprowadzaj Wielkie Przesadzanie, aby zdobywać trwałe premie.",
-        sprite: "lisc-zielony",
-      },
-      {
-        id: "sterowanie",
-        title: "Sterowanie",
-        text: "Przycisk „Zbierz liście” daje natychmiastowy dochód. Zakładki służą do kupowania roślin, ulepszeń, automatyzacji i prestiżu, a przycisk z gwiazdką otwiera kontrakty ogrodnicze.",
-        gesture: "tap",
-        sprite: "sowa-stoi",
-      },
-      {
-        id: "rosliny",
-        title: "Najpierw rośliny",
-        text: "Najpierw kupuj rośliny z najlepszym stosunkiem produkcji do ceny.",
-        sprite: "zycie",
-      },
-      {
-        id: "podlewanie",
-        title: "Podlewanie",
-        text: "Podlewanie czasowo wzmacnia ogród.",
-        sprite: "plusk",
-      },
-      {
-        id: "offline",
-        title: "Ogród rośnie beze mnie",
-        text: "Gra zapisuje się automatycznie i nalicza część produkcji, gdy Cię nie ma.",
-        sprite: "sowa-mruga",
-      },
-    ],
-  },
   szklarnia: {
     id: "szklarnia",
     title: "Sowia Szklarnia",

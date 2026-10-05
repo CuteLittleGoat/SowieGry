@@ -6,17 +6,18 @@ import { test } from "node:test";
 const read = (path) => readFile(path, "utf8");
 
 // Obecne gry na starym interfejsie (SowieCore, wspólny menedżer powiadomień, okno Rekordów).
-const legacyGamePages = ["SowieOgrody/index.html", "SowiaSzklarnia/index.html"];
+const legacyGamePages = ["SowiaSzklarnia/index.html"];
 // Wszystkie gry z rejestru: Sowia Ucieczka (E4, moduły ES na Sowim Silniku; zastąpiła SowaRunner), Sowie Tory
-// (E5, zastąpiły Sowa3), Sowa w Chmurach (E6, zastąpiła SowaJumper), podgląd Łącz i Hoduj (E8) oraz obecne gry.
+// (E5, zastąpiły Sowa3), Sowa w Chmurach (E6, zastąpiła SowaJumper), Sowie Ogrody (E7, nowa odsłona w tym samym
+// folderze — moduł ogrod/main.js), podgląd Łącz i Hoduj (E8) oraz obecne gry.
 const newGamePages = [
   "SowiaUcieczka/index.html",
   "SowieTory/index.html",
   "SowaWChmurach/index.html",
   "LaczIHoduj/index.html",
 ];
-// Podgląd nowej odsłony Sowich Ogrodów (E7) w tym samym folderze: moduł ogrod/main.js.
-const previewPages = ["SowieOgrody/nowa.html"];
+// Nowa odsłona Sowich Ogrodów (od E7e główna strona folderu): moduł ogrod/main.js.
+const previewPages = ["SowieOgrody/index.html"];
 const gamePages = [...newGamePages, ...previewPages, ...legacyGamePages];
 
 test("centralny rejestr zawiera dokładnie pięć gier", async () => {
@@ -190,10 +191,14 @@ test("każda obecna gra ma okno Rekordów zasilane przez SowieCloud", async () =
 });
 
 test("gry idle korzystają ze stabilnego panelu, obsługi modali i zapisu SowieCloud", async () => {
-  for (const [path, script, gameId] of [
-    ["SowieOgrody/index.html", "SowieOgrody/script.js", "ogrody"],
-    ["SowiaSzklarnia/index.html", "SowiaSzklarnia/script.js", "szklarnia"],
-  ]) {
+  // Nowe Sowie Ogrody (E7e): zapis stanu v3 przez saveGameState, bez dawnych skryptów i stabilnego panelu.
+  const garden = await read("SowieOgrody/ogrod/main.js");
+  assert.match(garden, /cloud\.saveGameState\(GAME_ID, state, \{ immediate, saveVersion: SAVE_VERSION, summary \}\)/);
+  assert.match(garden, /cloud\?\.loadGameState\?\.\(GAME_ID\)/);
+  await assert.rejects(read("SowieOgrody/script.js"));
+  await assert.rejects(read("SowieOgrody/style.css"));
+  assert.doesNotMatch(await read("SowieOgrody/index.html"), /stable-panel|modal-accessibility|sowie-core/);
+  for (const [path, script, gameId] of [["SowiaSzklarnia/index.html", "SowiaSzklarnia/script.js", "szklarnia"]]) {
     const html = await read(path);
     assert.match(html, /shared\/stable-panel\.js/);
     assert.match(html, /shared\/modal-accessibility\.js/);
@@ -232,3 +237,13 @@ for (const [oldFolder, newFolder, name] of REPLACED_GAMES) {
     assert.ok(!platform.includes(`preview: Object.freeze({ path: "${newFolder}/"`), `${name} nadal jako podgląd`);
   });
 }
+
+test("SowieOgrody/nowa.html (dawny adres podglądu) przekierowuje do ./ z parametrami adresu", async () => {
+  const html = await read("SowieOgrody/nowa.html");
+  assert.ok(html.includes('<meta http-equiv="refresh" content="0; url=./"'));
+  assert.ok(html.includes("location.replace(`./${location.search}${location.hash}`)"));
+  assert.doesNotMatch(html, /<script src=/, "strona przekierowania nie ładuje skryptów (ani SowieCloud)");
+  const platform = await read("shared/sowie-platform.js");
+  assert.doesNotMatch(platform, /nowa\.html"/);
+  assert.match(platform, /id: "ogrody",[\s\S]*?saveVersion: 3,\s*rebuilt: true/);
+});

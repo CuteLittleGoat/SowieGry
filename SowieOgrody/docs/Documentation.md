@@ -1,10 +1,10 @@
 # Sowie Ogrody — dokumentacja techniczna
 
-## Nowa odsłona (etap E7, w budowie) — katalog `ogrod/`
+## Sowie Ogrody (etap E7) — katalog `ogrod/` i `index.html`
 
-Przebudowa według Analizy 2 (rozdz. 3.4) i Analizy 3 (E7): czytelne moduły ES zamiast `script.js`, rozdziały z celami, widoczny ogród, zdarzenia maskotek (telefon Pracu Pracu, ciężarówka Amic, złota kózka), „Zatoka Humbaka”, ekonomia sprawdzona symulatorem, dolny panel na telefonie, postęp offline. Folder gry się nie zmienia: podgląd powstanie jako `SowieOgrody/nowa.html` (E7b), a po akceptacji właściciela zastąpi `index.html`. Do tego czasu działa dawna gra (`index.html` + `script.js`, opis niżej) i to ona zapisuje stan w wersji 2.
+Przebudowa według Analizy 2 (rozdz. 3.4) i Analizy 3 (E7): czytelne moduły ES zamiast `script.js`, rozdziały z celami, widoczny ogród, zdarzenia maskotek (telefon Pracu Pracu, ciężarówka Amic, złota kózka), „Zatoka Humbaka”, ekonomia sprawdzona symulatorem, dolny panel na telefonie, postęp offline. Folder gry się nie zmienia: w E7b–E7d nowa odsłona była podglądem `SowieOgrody/nowa.html`, a od **E7e** (zgoda właściciela 2026-10-05) to `SowieOgrody/index.html`; dawna gra została usunięta (rozdział „Dawna gra (do E7e)” niżej), a `nowa.html` przekierowuje do `./`.
 
-Stan kroków: **E7d3** — kontrakty dnia (`ogrod/daily.js`: 25 stuknięć, 6 roślin, 2 podlania → XP i piórka Sowiej Akademii, karta w zakładce Kolekcja); **podgląd gotowy do akceptacji właściciela** (dalej E7e — podmiana). **E7d2** — samouczek pierwszego wejścia (`ogrod/tutorial.js`, 4 kroki bez zatrzymywania czasu) i „Jak grać?” (przycisk „?” w nagłówku, instrukcja `ogrod`, „Zagraj samouczek”). **E7d1** — dźwięk: efekty zdarzeń (stuknięcie, zakup, rozdział, telefon, ciężarówka, kózka, Zatoka) i muzyka ogrodu (`ogrod`, 84 BPM; w Zatoce pieśń humbaka). **E7c2** — zdarzenia na ekranie podglądu: telefon, cysterna Amic i złota kózka na płótnie (stuknięcie w nie), przyciski reakcji nad ogrodem, Plusk-o-metr, Zatoka Humbaka jako nakładka płótna (łapanie liści stuknięciami), komunikaty; zdarzenia włączone. **E7c1** — logika zdarzeń aktywnej gry (`ogrod/events.js`: telefon Pracu Pracu, ciężarówka Amic, złota kózka z 4 premiami, Plusk-o-metr i Zatoka Humbaka), symulator ze zdarzeniami (pierwsze Wielkie Przesadzanie po ok. 2 h 20 min); na stronie podglądu były wyłączone (`events: false`) do E7c2. **E7b** — strona podglądu `SowieOgrody/nowa.html` (`ogrod/main.js`, `render.js`, `panel.js`, `style.css`): ogród na płótnie (stuknięcie zbiera liście), HUD z liśćmi i konewką, cel rozdziału, dolny panel z 4 zakładkami, okna powitania i Wielkiego Przesadzania, zapis w osobnym polu `preview` dokumentu gry (dawna gra zostaje bez zmian), postęp offline (czas serwera) i po powrocie z tła; przycisk podglądu na karcie Sowich Ogrodów w menu. **E7a** — logika i dane: `config.js`, `economy.js`, `state.js` (stan v3 i migracja z v2), `garden.js` (silnik), testy i symulator tempa. Dalej: E7d — samouczek, instrukcja, muzyka, podgląd do akceptacji, E7e — podmiana.
+Stan kroków: **E7e** — podmiana: `index.html` = nowa odsłona (tytuł „Sowie Ogrody — SowieGry”, bez notki o podglądzie), zapis v3 w polu `state` przez `saveGameState` (`saveVersion: 3`, podsumowanie do profilu) z przeniesieniem pola `preview`, instrukcja pod kluczem gry `ogrody` (`GUIDE_ID = GAME_ID`), `SowieNotifications.toast` (komunikaty Akademii i Galerii — wcześniej gra miała tylko `notify`, więc ich nie pokazywała), rejestr `saveVersion: 3`, `rebuilt: true`. **E7d3** — kontrakty dnia (`ogrod/daily.js`: 25 stuknięć, 6 roślin, 2 podlania → XP i piórka Sowiej Akademii, karta w zakładce Kolekcja); **podgląd gotowy do akceptacji właściciela** (dalej E7e — podmiana). **E7d2** — samouczek pierwszego wejścia (`ogrod/tutorial.js`, 4 kroki bez zatrzymywania czasu) i „Jak grać?” (przycisk „?” w nagłówku, instrukcja `ogrod`, „Zagraj samouczek”). **E7d1** — dźwięk: efekty zdarzeń (stuknięcie, zakup, rozdział, telefon, ciężarówka, kózka, Zatoka) i muzyka ogrodu (`ogrod`, 84 BPM; w Zatoce pieśń humbaka). **E7c2** — zdarzenia na ekranie podglądu: telefon, cysterna Amic i złota kózka na płótnie (stuknięcie w nie), przyciski reakcji nad ogrodem, Plusk-o-metr, Zatoka Humbaka jako nakładka płótna (łapanie liści stuknięciami), komunikaty; zdarzenia włączone. **E7c1** — logika zdarzeń aktywnej gry (`ogrod/events.js`: telefon Pracu Pracu, ciężarówka Amic, złota kózka z 4 premiami, Plusk-o-metr i Zatoka Humbaka), symulator ze zdarzeniami (pierwsze Wielkie Przesadzanie po ok. 2 h 20 min); na stronie podglądu były wyłączone (`events: false`) do E7c2. **E7b** — strona podglądu `SowieOgrody/nowa.html` (`ogrod/main.js`, `render.js`, `panel.js`, `style.css`): ogród na płótnie (stuknięcie zbiera liście), HUD z liśćmi i konewką, cel rozdziału, dolny panel z 4 zakładkami, okna powitania i Wielkiego Przesadzania, zapis w osobnym polu `preview` dokumentu gry (dawna gra zostaje bez zmian), postęp offline (czas serwera) i po powrocie z tła; przycisk podglądu na karcie Sowich Ogrodów w menu. **E7a** — logika i dane: `config.js`, `economy.js`, `state.js` (stan v3 i migracja z v2), `garden.js` (silnik), testy i symulator tempa. Dalej: E7d — samouczek, instrukcja, muzyka, podgląd do akceptacji, E7e — podmiana.
 
 ### Pliki
 
@@ -20,9 +20,10 @@ SowieOgrody/ogrod/
   daily.js       kontrakty dnia (czysta logika): linia bazowa dnia, postęp, odbiór nagrody
   render.js      rysowanie ogrodu na płótnie (tło rozdziału, rośliny w doniczkach, sowa ogrodniczka, krople, napisy)
   panel.js       dolny panel: zakładki Rośliny, Ulepszenia, Prestiż, Kolekcja (DOM)
-  main.js        strona podglądu: wczytanie i zapis stanu, pętla, stuknięcia, HUD, cel, okna, haki testowe
-  style.css      wygląd strony podglądu (telefon pionowo i poziomo, komputer)
-SowieOgrody/nowa.html  strona podglądu nowej odsłony
+  main.js        strona gry: wczytanie i zapis stanu, pętla, stuknięcia, HUD, cel, okna, haki testowe
+  style.css      wygląd strony gry (telefon pionowo i poziomo, komputer)
+SowieOgrody/index.html  strona gry (od E7e; dawna nowa.html)
+SowieOgrody/nowa.html   przekierowanie do ./ (dawny adres podglądu)
 ```
 
 ### Checklista smaczków obecnej gry (krok 7.0)
@@ -116,10 +117,10 @@ Czysta logika, podpinana w `garden.js` (`createEvents({ state, now, random, emit
 - **Plusk-o-metr**: `addSplash(n)` — do 1 (poza Zatoką); przy dojściu do 1 zdarzenie `bayReady`.
 - **Zatoka Humbaka**: `startBay()` — przy pełnym Plusk-o-metrze (i bez trwającej): `splash = 0`, `bay = { time: 20, spawn, combo, bestCombo, caught, missed, reward, leaves: [], next }`, zdarzenie `bay`. W `update`: co 0,45 s liść z fontanny (`x = 0,5`, `y = 0,78`, `vx` = ±0,18 losowo, `vy` = −(1–1,35)), ruch z grawitacją 1,15; liść poniżej `y = 1,05` — `missed + 1` i combo od zera; po 20 s `bay = null`, `stats.bays + 1`, zdarzenie `bayEnd { caught, missed, reward, bestCombo }`. `catchLeaf(x, y, rx = 0,09, ry = 0,07)` — najbliższy liść w elipsie wokół stuknięcia (ułamki płótna): combo + 1, liście = produkcja bazowa × 3 s × `bayMultiplier(combo)`, zdarzenie `bayCatch { gain, combo, x, y }`; pudło → 0.
 
-### `nowa.html` — strona podglądu
+### `index.html` — strona gry (do E7e: `nowa.html`, strona podglądu)
 
-- `<html lang="pl" class="sowie-shell">`; `<head>`: `viewport` z `viewport-fit=cover`, `theme-color` `#e7ffe6`, opis, tytuł „Sowie Ogrody (nowa odsłona) — SowieGry”, manifest i ikony PWA; skrypty w kolejności `../config/firebase-config.js`, `../shared/sowie-platform.js`, `../shared/sowie-cloud.js`, `../shared/password-gate.js`, `../shared/pwa.js`; `preload` Fredoki; style `../shared/cute-ui.css`, `../shared/world/tokens.css`, `../shared/ui/ui.css`, `ogrod/style.css`; `../shared/sowie-academy.js` i `../shared/owl-gallery.js` z `defer`; moduł `ogrod/main.js`.
-- `<body data-sowie-game="ogrody">` → `main.ogrod[data-ogrod]` („Sowie Ogrody”): `header.ogrod-top` (odnośnik **Menu** `../`, od E7d2 przycisk `.ogrod-help[data-guide]` „?” (`aria-label` „Jak grać?”), `.ogrod-leaves` z `strong[data-leaves]` i `span[data-lps]`, przycisk `.ogrod-water[data-water]` „Podlej” z `span[data-charges]`, ukryty bez konewki); `section.ogrod-goal[data-goal]` (`aria-live="polite"`); `div.ogrod-garden` (od E7d2 na początku `div.ogrod-tutorial[data-tutorial]` (ukryty, `role="status"`, `aria-live="polite"`): `span.sowie-gesture-demo` z palcem, `span.ogrod-tutorial-text` z `span.ogrod-tutorial-step[data-tutorial-step]` i `span[data-tutorial-text]`, przycisk `[data-tutorial-next]` „Dalej” (ukryty), przycisk `.ogrod-tutorial-skip[data-tutorial-skip]` „✕” (`aria-label` „Pomiń samouczek”); od E7c2 także: `div.ogrod-splash[data-splash]` — „Plusk-o-metr” i `span.ogrod-splash-bar` z `i[data-splash-fill]`, ukryty; `div.ogrod-bay-hud[data-bay-hud]` (`aria-live="polite"`, ukryty) — `span[data-bay-time]` „20 s” i `span[data-bay-combo]` „combo ×0”; `div.ogrod-alerts[data-alerts]` z ukrytymi przyciskami `.sowie-ui-button.ogrod-alert`: `[data-alert="pracu"].is-pracu` „📵 Odrzuć” (`aria-label` „Odrzuć telefon Pracu Pracu”), `[data-alert="truck"].is-truck` „🚚 Przegoń” z `span[data-truck-taps]` „0/3” („Przegoń ciężarówkę Amic”), `[data-alert="goat"].is-goat` „🐐 Złap kózkę!” („Złap kózkę — złotą, zanim ucieknie”), `[data-alert="bay"].is-primary.is-bay` „🐋 Zatoka Humbaka!” („Zatoka Humbaka — zagraj”)) z `canvas[data-canvas]` (`tabindex="0"`, „Ogród — stuknij, żeby zebrać liście”); `section.ogrod-sheet` z `nav.ogrod-tabs[data-tabs]` (`role="tablist"`), `div.ogrod-panel[data-panel]` i notką „Wersja podglądowa nowej odsłony. Postęp zapisuje się osobno — dawna gra (Sowie Ogrody) zostaje bez zmian.”
+- `<html lang="pl" class="sowie-shell">`; `<head>`: `viewport` z `viewport-fit=cover`, `theme-color` `#e7ffe6`, opis, tytuł „Sowie Ogrody — SowieGry” (opis: „Sowie Ogrody — sadź rośliny od parapetu po arboretum, podlewaj konewką i rób Wielkie Przesadzanie.”), manifest i ikony PWA; skrypty w kolejności `../config/firebase-config.js`, `../shared/sowie-platform.js`, `../shared/sowie-cloud.js`, `../shared/password-gate.js`, `../shared/pwa.js`; `preload` Fredoki; style `../shared/cute-ui.css`, `../shared/world/tokens.css`, `../shared/ui/ui.css`, `ogrod/style.css`; `../shared/sowie-academy.js` i `../shared/owl-gallery.js` z `defer`; moduł `ogrod/main.js`.
+- `<body data-sowie-game="ogrody">` → `main.ogrod[data-ogrod]` („Sowie Ogrody”): `header.ogrod-top` (odnośnik **Menu** `../`, od E7d2 przycisk `.ogrod-help[data-guide]` „?” (`aria-label` „Jak grać?”), `.ogrod-leaves` z `strong[data-leaves]` i `span[data-lps]`, przycisk `.ogrod-water[data-water]` „Podlej” z `span[data-charges]`, ukryty bez konewki); `section.ogrod-goal[data-goal]` (`aria-live="polite"`); `div.ogrod-garden` (od E7d2 na początku `div.ogrod-tutorial[data-tutorial]` (ukryty, `role="status"`, `aria-live="polite"`): `span.sowie-gesture-demo` z palcem, `span.ogrod-tutorial-text` z `span.ogrod-tutorial-step[data-tutorial-step]` i `span[data-tutorial-text]`, przycisk `[data-tutorial-next]` „Dalej” (ukryty), przycisk `.ogrod-tutorial-skip[data-tutorial-skip]` „✕” (`aria-label` „Pomiń samouczek”); od E7c2 także: `div.ogrod-splash[data-splash]` — „Plusk-o-metr” i `span.ogrod-splash-bar` z `i[data-splash-fill]`, ukryty; `div.ogrod-bay-hud[data-bay-hud]` (`aria-live="polite"`, ukryty) — `span[data-bay-time]` „20 s” i `span[data-bay-combo]` „combo ×0”; `div.ogrod-alerts[data-alerts]` z ukrytymi przyciskami `.sowie-ui-button.ogrod-alert`: `[data-alert="pracu"].is-pracu` „📵 Odrzuć” (`aria-label` „Odrzuć telefon Pracu Pracu”), `[data-alert="truck"].is-truck` „🚚 Przegoń” z `span[data-truck-taps]` „0/3” („Przegoń ciężarówkę Amic”), `[data-alert="goat"].is-goat` „🐐 Złap kózkę!” („Złap kózkę — złotą, zanim ucieknie”), `[data-alert="bay"].is-primary.is-bay` „🐋 Zatoka Humbaka!” („Zatoka Humbaka — zagraj”)) z `canvas[data-canvas]` (`tabindex="0"`, „Ogród — stuknij, żeby zebrać liście”); `section.ogrod-sheet` z `nav.ogrod-tabs[data-tabs]` (`role="tablist"`), `div.ogrod-panel[data-panel]` (do E7e była tu też notka o wersji podglądowej `p.ogrod-preview`)
 
 ### `ogrod/style.css`
 
@@ -131,7 +132,7 @@ Czysta logika, podpinana w `garden.js` (`createEvents({ state, now, random, emit
 - Samouczek (E7d2): `.ogrod-tutorial` — absolutnie u góry ogrodu (6 px od krawędzi), nad innymi warstwami (`z-index: 2`), jeden wiersz: siatka `auto 1fr auto auto` ze stałymi kolumnami (gest — 1, tekst — 2, „Dalej” — 3, „✕” — 4; bez gestu pierwsza kolumna pusta), przerwa 8 px, `padding: 6px 6px 6px 8px`, ramka 3 px `monstera`, promień 16 px, tło `rgba(255,255,255,0.96)`, cień; `pointer-events: none` (stuknięcia przechodzą do ogrodu), przyciski `auto`, min. 44 × 44 px, `padding: 4px 12px`, 14 px („✕” 16 px bez wypełnienia); pokaz gestu 44 × 44 px; tekst 13 px (wiersz 1,25), nad nim „Samouczek · krok N z 4” 11 px `monstera-ciemna`; elementy `[hidden]` ukryte.
 - Zdarzenia (E7c2): `.ogrod-alerts` — absolutnie przy dolnej krawędzi ogrodu (8 px od boków i dołu), flex z zawijaniem, środek, przerwa 6 px, `pointer-events: none` (przyciski `auto`); `.ogrod-alert` — min. 44 px, `padding: 6px 10px`, 13 px, bez łamania, cień `0 3px 10px rgba(59,47,74,0.25)`; `.is-pracu` — tło `pracu`, biały tekst; `.is-truck` — tło `amic-czerwony`, biały; `.is-goat` — tło `zloto`, animacja `ogrod-pulse` 0,7 s tam i z powrotem (poświata `0 0 0 6px rgba(255,210,74,0.55)` — rozmiar przycisku się nie zmienia, łatwiej trafić; bez animacji przy ograniczeniu ruchu); `[hidden]` — ukryte. `.ogrod-splash` — prawy górny róg (8 px), 112 px, `padding: 4px 10px 6px`, promień 12 px, tło `rgba(255,255,255,0.85)`, 11 px; pasek `.ogrod-splash-bar` 6 px `woda-jasna` z wypełnieniem `woda` (`scaleX`, od lewej). `.ogrod-bay-hud` — u góry na środku (`translateX(-50%)`), flex z przerwą 12 px, `padding: 4px 14px`, pigułka, tło `rgba(255,255,255,0.9)`, 15 px, cyfry tabelaryczne.
 - `.ogrod-sheet` — siatka (zakładki, lista, notka), promień 20 px u góry, tło `rgba(255,246,227,0.97)`, cień w górę; `.ogrod-tabs` — 4 równe kolumny; `.ogrod-tab` — min. 44 px, bez ramki, promień 14 px u góry, 14 px; wybrana (`aria-selected="true"`) — białe tło i pasek `monstera` u dołu; `.ogrod-panel` — siatka z odstępem 8 px, przewijanie w pionie (`overscroll-behavior: contain`), dół z bezpiecznym obszarem.
-- `.ogrod-card` — siatka `auto minmax(0, 1fr)` (próbka koloru i opis), `padding: 8px 10px`, promień 14 px, białe tło; `.ogrod-card.is-row` (ulepszenie, węzeł drzewka) — siatka `minmax(0, 1fr) auto`: opis po lewej, przycisk albo „Kupione” / „Maks.” po prawej w tym samym wierszu (`justify-self: end`); `.is-done` — krycie 0,7; `h3` 15 px, `p` 12 px (krycie 0,85); `.ogrod-swatch` 28 × 28 px w kolorze gatunku (`--kolor`, „liść”: promień 50% 50% 8px 8px); `.ogrod-owned` 13 px; `.ogrod-buy` — 3 kolumny (2 : 1 : 1), przyciski min. 44 px, główny z ceną po prawej; `.ogrod-done` 13 px `monstera-ciemna`; `.ogrod-subtitle` 14 px; `.ogrod-note`, `.ogrod-empty` 13 px; `.ogrod-chapters` — pigułki 13 px (szare, ukończone `monstera-jasna`, bieżący `zloto`); `.ogrod-stats` — wiersze flex 13 px; `.ogrod-preview` 12 px, krycie 0,8; przy wysokości ekranu ≤ 600 px ukryta (notka zostaje w zakładce Kolekcja).
+- `.ogrod-card` — siatka `auto minmax(0, 1fr)` (próbka koloru i opis), `padding: 8px 10px`, promień 14 px, białe tło; `.ogrod-card.is-row` (ulepszenie, węzeł drzewka) — siatka `minmax(0, 1fr) auto`: opis po lewej, przycisk albo „Kupione” / „Maks.” po prawej w tym samym wierszu (`justify-self: end`); `.is-done` — krycie 0,7; `h3` 15 px, `p` 12 px (krycie 0,85); `.ogrod-swatch` 28 × 28 px w kolorze gatunku (`--kolor`, „liść”: promień 50% 50% 8px 8px); `.ogrod-owned` 13 px; `.ogrod-buy` — 3 kolumny (2 : 1 : 1), przyciski min. 44 px, główny z ceną po prawej; `.ogrod-done` 13 px `monstera-ciemna`; `.ogrod-subtitle` 14 px; `.ogrod-note`, `.ogrod-empty` 13 px; `.ogrod-chapters` — pigułki 13 px (szare, ukończone `monstera-jasna`, bieżący `zloto`); `.ogrod-stats` — wiersze flex 13 px.
 - Telefon poziomo (`orientation: landscape` i `max-height: 500px`): 2 kolumny — po lewej HUD, cel i ogród, po prawej panel na całą wysokość. Komputer (`min-width: 900px` i `min-height: 501px`): kolumny 3 : 2, panel po prawej (promień 20 px).
 
 ### `ogrod/render.js`
@@ -173,12 +174,13 @@ Dawne „Kontrakty ogrodnicze” (`shared/gameplay-expansion.js`), teraz w stani
 - **Rośliny** — gatunki otwartych rozdziałów: kolor, nazwa i „×posiadane”, produkcja za sztukę, mnożnik kamienia milowego, ile do następnego progu; przyciski „Kup” z ceną (×1), „×10”, „max” (wyłączone, gdy nie stać);
 - **Ulepszenia** — niekupione od najtańszych (karty `is-row`: nazwa, opis, „Kup” z ceną), notka o kolejnych ulepszeniach po bieżącym rozdziale, potem „Kupione”;
 - **Prestiż** — opis Wielkiego Przesadzania, nasiona (i ile teraz), przycisk „Wielkie Przesadzanie (+N nasion)” albo wyłączony „Wielkie Przesadzanie — po Szklarni i 10 mld liści”; gałęzie drzewka z węzłami (karty `is-row`: poziom/maks., opis — przy zablokowanym dopisek „Najpierw: nazwa poprzedniego.” — i przycisk z kosztem w nasionach „N 🌰”, zablokowany „🔒” albo „Maks.”);
-- **Kolekcja** — od E7d3 na początku „Kontrakty dnia” (`section.ogrod-contracts`, siatka z przerwą 8 px): karty `is-row` `[data-contract]` z nazwą, „k/n · +XP XP · +N piórka” (`[data-contract-progress]`) i przyciskiem „Odbierz” `[data-claim]` (wyłączony, gdy niewykonany) albo „Odebrano ✓”; potem „Rozdziały” — pigułki rozdziałów (ukończone, bieżący), gatunki w ogrodzie z etapem wyglądu, statystyki (liście z całej gry i cyklu, najlepsza i bieżąca produkcja, stuknięcia, podlewania, kupione rośliny, przesadzania, liście z offline); pod statystykami przycisk „Powtórz samouczek” (`button.sowie-ui-button.ogrod-tutorial-replay[data-tutorial-replay]`, pełna szerokość, 10 px odstępu u góry — uwaga właściciela G1; `onTutorial()` → `startTutorial()`); na końcu notka „Wersja podglądowa nowej odsłony…” z odnośnikiem do dawnej gry (od E7d3; na niskich ekranach to jej jedyne miejsce). `createPanel` przyjmuje też `onClaim(id)` i `onTutorial()`, klucz zawartości Kolekcji obejmuje odebrane kontrakty, `refresh()` wymusza przebudowę.
+- **Kolekcja** — od E7d3 na początku „Kontrakty dnia” (`section.ogrod-contracts`, siatka z przerwą 8 px): karty `is-row` `[data-contract]` z nazwą, „k/n · +XP XP · +N piórka” (`[data-contract-progress]`) i przyciskiem „Odbierz” `[data-claim]` (wyłączony, gdy niewykonany) albo „Odebrano ✓”; potem „Rozdziały” — pigułki rozdziałów (ukończone, bieżący), gatunki w ogrodzie z etapem wyglądu, statystyki (liście z całej gry i cyklu, najlepsza i bieżąca produkcja, stuknięcia, podlewania, kupione rośliny, przesadzania, liście z offline); pod statystykami przycisk „Powtórz samouczek” (`button.sowie-ui-button.ogrod-tutorial-replay[data-tutorial-replay]`, pełna szerokość, 10 px odstępu u góry — uwaga właściciela G1; `onTutorial()` → `startTutorial()`). `createPanel` przyjmuje też `onClaim(id)` i `onTutorial()`, klucz zawartości Kolekcji obejmuje odebrane kontrakty, `refresh()` wymusza przebudowę.
 
 ### `ogrod/main.js`
 
-- **Zapis w podglądzie:** stan v3 jako JSON w polu `preview` dokumentu `sowiegry/profil/sowiegry_gry/ogrody` przez `cloud.updateGame` (co 30 s gry z opóźnieniem 1 s, po ważnej akcji — rozdział, ulepszenie, przesadzanie, węzeł drzewka, przeniesienie stanu — po 2 s, przy zejściu do tła i `pagehide` od razu z `flush`); pole `state` (wersja 2) zostaje dla dawnej gry.
-- **Start:** `cloud.ready` → `loadGame("ogrody")`; stan z pola `preview`, a gdy go nie ma — `loadGameState` (dawny v2) → `loadState` (migracja); `createGarden({ state, now: Date.now })` (zdarzenia aktywnej gry włączone od E7c2; w E7c1 były wyłączone, bo na ekranie nie dało się jeszcze odrzucić telefonu ani przegonić ciężarówki); czas nieobecności od `updatedAt` dokumentu (znacznik serwera; zapas: `savedAt` stanu) → `applyOffline`; przy migracji zapis od razu; okno powitalne.
+- **Zapis** (od E7e): `save({ immediate, flush })` — `state.savedAt = teraz`, `cloud.saveGameState("ogrody", state, { immediate, saveVersion: SAVE_VERSION (3), summary })`: JSON stanu w polu `state` dokumentu `sowiegry/profil/sowiegry_gry/ogrody` (`saveVersion: 3`, `rev`, `deviceId`, `clientSavedAt`), podsumowanie `summary = { lifetimeLeaves (całe), prestiges: stats.prestiges, zone: nazwa bieżącego rozdziału }` w dokumencie i w `profil.records.ogrody` (karta i okno „Rekordy” w menu). Co 30 s gry (`SAVE_EVERY`; SowieCloud wysyła po 30 s), po ważnej akcji — rozdział, ulepszenie, przesadzanie, węzeł drzewka, przeniesienie stanu — `immediate` (wysyłka po 2 s), przy zejściu do tła i `pagehide` z `flush` (od razu). W E7b–E7d (podgląd) stan v3 był w osobnym polu `preview` (`updateGame`), a `state` (v2) należało do dawnej gry.
+- `window.SowieNotifications` (jeśli strona go nie ma) — `toast({ title, detail, reward })` (API, którego używają Sowia Akademia i Galeria Sów): niepuste części połączone „ · ”, `toasts.show(tekst, { kind: "reward", duration: 3200 })`.
+- **Start:** `cloud.ready` → `loadGame("ogrody")`; stan z pola `preview` (zapis z czasu podglądu — `fromPreview`), a gdy go nie ma — `loadGameState` (`state`: v3 albo dawny v2) → `loadState` (v3 — uzupełnienie pól, v2 — migracja); przy `fromPreview` `updateGame("ogrody", (doc) => delete doc.preview)` — pole znika w tym samym zapisie, w którym stan trafia do `state` (zapis od razu, bez okna powitalnego); `createGarden({ state, now: Date.now })` (zdarzenia aktywnej gry włączone od E7c2; w E7c1 były wyłączone, bo na ekranie nie dało się jeszcze odrzucić telefonu ani przegonić ciężarówki); czas nieobecności od `updatedAt` dokumentu (znacznik serwera; zapas: `savedAt` stanu) → `applyOffline`; przy migracji zapis od razu; okno powitalne.
 - **Okna** (`openModal`) dostają treść jako węzeł z HTML gry (`fragment(markup)` — `div` z `innerHTML`; tylko stałe teksty i sformatowane liczby), bo tekst `openModal` wstawia dosłownie.
 - **Okno powitalne**: przy migracji „Witaj w nowym ogrodzie!” (rośliny i ulepszenia zostały, zwrot liści i nasion), przy postępie offline „Witaj z powrotem!” („Sowa doglądała ogrodu przez … Urosło: +… liści.”), przycisk „Do ogrodu”.
 - **Pętla** (`requestAnimationFrame`, krok ≤ 0,25 s): `garden.update` (pomijane przy haku testowym `hold`), zdarzenia, zapis co 30 s, animator sowy („radosc” 0,4 s po stuknięciu i 2 s po rozdziale, inaczej „stoi”), rysowanie; HUD (liście, liście/s, konewka: ładunki, wyłączona bez ładunku, `is-active` przy podlaniu, opis `aria-label`), cel rozdziału („Rozdział N/6: nazwa” i licznik „k/n ✓” albo „ukończony ✓”; lista tylko niewykonanych celów z postępem) i panel co 0,2 s.
@@ -190,7 +192,7 @@ Dawne „Kontrakty ogrodnicze” (`shared/gameplay-expansion.js`), teraz w stani
 - **Powrót z tła:** `visibilitychange` — ukrycie: zapis od razu; powrót: `applyOffline(czas w tle)` i okno „Witaj z powrotem!” (od minuty).
 - **Samouczek** (E7d2): po starcie, gdy `!state.tutorialDone` (od uwagi G1 także gdy dokument gry ma `tutorialDone: false` — prośba z menu „Powtórz samouczki we wszystkich grach”: wtedy `state.tutorialDone = false`; po samouczku `tutorialFinished` zapisuje w dokumencie `tutorialDone: true`) — `startTutorial()` (`createTutorial` z `showTutorial` i `tutorialFinished`); `showTutorial(podpowiedź)` — dymek widoczny, „Samouczek · krok N z 4”, pokaz gestu (ukryty bez gestu, `data-gesture`), tekst, „Dalej” tylko w krokach informacyjnych; `tutorial.update(stan)` co 0,2 s z HUD; „Dalej” → `tutorial.next`, „✕” → `skip` (bez komunikatu). Koniec (`tutorialFinished`): bez pominięcia — `zycie` (wysokość 1,2) i komunikat „Świetnie! Ogród jest Twój — powodzenia!” (`success`, klucz `samouczek-koniec`, priorytet 3); `tutorialDone = true` i zapis po 2 s.
 - **Kontrakty dnia** (E7d3): po starcie `ensureDaily` (linia bazowa pierwszego wejścia dnia); z HUD co 0,2 s `checkContracts()` — wykonany i nieodebrany kontrakt → raz na wizytę komunikat „Kontrakt gotowy: … — odbierz w zakładce Kolekcja” (nagroda); „Odbierz” → `claimDaily(id)`: `claimContract`, zdarzenie SowieProgress `award` `{ id: feature:ogrody:<dzień>:<id>, xp, feathers, label: "Kontrakt ogrodniczy" }` (→ `SowieAcademy.award`), dźwięk `powerup-start`, komunikat „Kontrakt wykonany: … (+N XP, +M piórka)” (priorytet 2), przebudowa panelu, zapis po 2 s.
-- **„Jak grać?”** (E7d2): przycisk „?” → `openModal` „Jak grać — Sowie Ogrody” (`className: "is-guide"`, treść `renderGuide(guideFor("ogrod"), { atlas, sprites: SPRITES })`), przyciski „Zagraj samouczek” (zamyka okno i zaczyna samouczek od kroku 1) i „Rozumiem”; po zamknięciu fokus wraca na „?”.
+- **„Jak grać?”** (E7d2): przycisk „?” → `openModal` „Jak grać — Sowie Ogrody” (`className: "is-guide"`, treść `renderGuide(guideFor("ogrody"), { atlas, sprites: SPRITES })`), przyciski „Zagraj samouczek” (zamyka okno i zaczyna samouczek od kroku 1) i „Rozumiem”; po zamknięciu fokus wraca na „?”.
 - **Dźwięk** (E7d1): `fetch("../../assets/audio/audio.json")` → `createAudio({ manifest, baseUrl, preloadOnUnlock: GAME_SOUNDS })`, `connectAudioSettings(audio, cloud)` (głośności z profilu), `bindUnlock(window)` (bez kliknięć w odnośniki); od razu `playMusic(Zatoka ? "humbak" : "ogrod")` (gra po odblokowaniu; `playMusic` nie zaczyna od nowa utworu, który już gra); silnik sam usypia dźwięk w tle. `play(nazwa, opcje)` bez wyjątków. Efekty: stuknięcie — `lisc` (głośność 0,6, najwyżej co 70 ms); zakup rośliny przez gracza — `zakup` (0,7; Sowa zakupowa kupuje po cichu); ulepszenie — `zakup`; kamień milowy — `hu-hu` (0,8); rozdział i Wielkie Przesadzanie — `rekord`; podlanie — `humbak-plusk` (0,6); telefon — `dzwonek`, odrzucenie — `klik`; ciężarówka — `trafienie-amic` (0,7), stuknięcie — `klik`, odjazd — `zycie`; kózka — `koza-meee` (0,8), złapana — `powerup-start`; pełny Plusk-o-metr — `hu-hu`; start Zatoki — `bonus-start` i muzyka `humbak`; złapany liść — `lisc-zloty` (wysokość 1 + 0,03 × combo do 10); koniec Zatoki — `powerup-koniec` i znowu `ogrod`.
 - **Sowia Akademia** (most `SowieProgress`, `shared/meta/progress.js`): po starcie zdarzenie `game:visit` (`ogrodyVisits` +1) i raport, potem co 5 s gry `reportProgress()` → zdarzenie `idle:progress` `{ gameId: "ogrody", lifetimeLeaves (całe), clicks: stats.taps, buys, watering: stats.waterings, prestiges, plants: suma roślin }` → metryki `ogrodyLeaves`, `ogrodyClicks`, `ogrodyBuys`, `ogrodyWatering`, `ogrodyPrestiges`, `ogrodyPlants` (misje dnia i tygodnia, zdjęcia Galerii; Akademia zapisuje tylko zmiany).
 - Atlas Sowiego Świata: `ensure(max(64, rozmiar sowy / 1,15) × min(2, DPR))` (rozmiar sowy jak w `render.js`) przy starcie i zmianie rozmiaru.
@@ -206,328 +208,20 @@ Dawne „Kontrakty ogrodnicze” (`shared/gameplay-expansion.js`), teraz w stani
 
 `tests/unit/ogrody-ekonomia.test.mjs` (11): dane (6 rozdziałów po 3–5 celów, rośliny od tańszych do droższych z rosnącym czasem zwrotu, cele wskazują istniejące rośliny i ulepszenia, drzewko 3 × 3); ceny (suma ciągu, `maxAffordable`, kamienie milowe, etapy wyglądu); produkcja (ulepszenia, kamienie milowe, premie na czas, ciężarówka); silnik (stuknięcia, zakupy ×1 / ×n / max, rozdziały otwierają rośliny i ulepszenia po kolei, zdarzenia rozdziału i kamienia milowego); konewka (ładunki, wydłużanie, odnowienie 60 s, Zraszacz ×3 i 40 s); Wielkie Przesadzanie (warunki, nasiona, reset i to, co zostaje, Arboretum); drzewko prestiżu (wymagania, koszt, limit, Korzenie, Szybki parapet); offline (50%, limit, minuta, konewka, Senni i Głęboki sen); migracja v2 → v3 (rośliny, ulepszenia, zwroty, Plusk-o-metr, rozdziały ze stref, statystyki, `loadState`); liczby i czas po polsku; **symulator** (od E7c1 ze zdarzeniami i losowaniem z ziarnem — `seeded(ziarno)`, generator mulberry32) — bot jak aktywny gracz (2 stuknięcia/s, podlewanie, ulepszenia od najtańszych, rośliny z celów, potem najopłacalniejsze; telefon odrzuca po 2 s, ciężarówkę przegania po 3 s, złotą kózkę łapie w 80% po 1,5 s, Zatokę zaczyna od razu i łapie 70% liści na opadaniu — w Zatoce kroki po 0,1 s; po przesadzaniu nasiona w drzewko): zdarzenia naprawdę zachodzą (kózki: więcej niż 1 na 3 min, Zatoki co 5–10 min, telefony i ciężarówki co kilka minut), rozdziały po kolei (Parapet < 3 min, Balkon < 20 min), pierwsze Wielkie Przesadzanie po 120–180 min (obecnie ok. 143 min; bez zdarzeń było 161), drugi cykl krótszy niż 75% pierwszego, trzeci nie dłuższy niż drugi; spokojniejsza gra (0,5 stuknięcia/s, 40% liści w Zatoce) — wolniej, poniżej 4 h.
 
-`tests/e2e/telefon/ogrody-nowe.spec.js` (9 na każdy profil telefonu): stuknięcia w ogród (16 liści), wizyta i stuknięcia w Sowiej Akademii (`ogrodyVisits`, `ogrodyClicks` = 16), pierwsza Monstera, cel rozdziału „Rozdział 1/6: Parapet”, wyłączone przyciski bez liści, Paproć ukryta przed Balkonem, zakładki Ulepszenia / Prestiż / Kolekcja; ukończenie Parapetu (komunikat, „Rozdział 2/6: Balkon”, Paproć), konewka z zakładki Ulepszenia i podlewanie (3/3 → 2/3, `is-active`); w emulatorze dawny stan v2 w polu `state` → okno „Witaj w nowym ogrodzie!” z pogrubionym zwrotem „1 tys.” (bez dosłownych znaczników), rośliny, ulepszenia, nasiona i stuknięcia przeniesione, zapis w polu `preview` przy niezmienionym `state`, ponowne wejście w nowej karcie bez okna przeniesienia; powrót z tła po 10 minutach (podmieniony `Date.now`) → „Witaj z powrotem!” z czasem „10 min” i przyrostem liści; najmniejszy telefon 320 × 568 — bez przewijania w bok, ogród ≥ 150 px, przycisk „Kup” i zakładka ≥ 44 px; od E7c2 zdarzenia (wywołane hakiem `trigger`): telefon — przycisk „Odrzuć”, komunikat „Dzwoni Pracu Pracu!”, produkcja ×0,7, po odrzuceniu ×1; ciężarówka — przycisk z „0/3”, zastawiona Monstera albo Pilea, dwa stuknięcia w cysternę na płótnie („2/3”, bez liczenia stuknięć w ogród), trzecie przyciskiem — odjeżdża, produkcja wraca; złota kózka z premią `boost` — przycisk „Złap kózkę!”, komunikat „Złota kózka: produkcja ×3 przez 30 s!”, produkcja ×3, Plusk-o-metr 0,1; pełny Plusk-o-metr — przycisk Zatoki, licznik Zatoki, logika wstrzymana (`hold`) i przewinięta o 0,5 s, stuknięcie w liść na płótnie → „combo ×1” i więcej liści, po 21 s koniec — „Zatoka Humbaka: złapane liście — 1”, `stats.bays` = 1; od E7d1 muzyka: po pierwszym dotknięciu `ogrod`, w Zatoce `humbak`, po niej znowu `ogrod`; od E7d2 samouczek w emulatorze: „krok 1 z 4” z gestem `tap` (bez „Dalej”), 5 stuknięć w płótno pod dymkiem → „krok 2 z 4” „Kup Monsterę”, zakup → „krok 3 z 4”, „Dalej” → „krok 4 z 4” („łap złotą kózkę”), „Dalej” → dymek schowany, „Świetnie! Ogród jest Twój”, `tutorialDone: true` w polu `preview`; nowa karta — bez samouczka, „Jak grać?” → okno „Jak grać — Sowie Ogrody” z „Wielkie Przesadzanie” i „Zatoce Humbaka”, „Zagraj samouczek” → „krok 1 z 4”, „Pomiń samouczek” → dymek schowany; od E7d3 kontrakt dnia: 25 stuknięć → komunikat „Kontrakt gotowy: Zbierz liście 25 stuknięciami”, w Kolekcji karta „25/25”, „Odbierz” przy zakupach wyłączone, „Odbierz” → „Odebrano ✓”, komunikat „Kontrakt wykonany”, w Sowiej Akademii nagroda `feature:ogrody:<dzień>:clicks` i co najmniej +30 XP. Architektura: `SowieOgrody/nowa.html` na liście stron podglądu (`previewPages`); menu: trzy podglądy, karta Sowich Ogrodów z „Wypróbuj nową wersję: nowe Sowie Ogrody”.
+`tests/e2e/telefon/ogrody-nowe.spec.js` (9 na każdy profil telefonu): stuknięcia w ogród (16 liści), wizyta i stuknięcia w Sowiej Akademii (`ogrodyVisits`, `ogrodyClicks` = 16), pierwsza Monstera, cel rozdziału „Rozdział 1/6: Parapet”, wyłączone przyciski bez liści, Paproć ukryta przed Balkonem, zakładki Ulepszenia / Prestiż / Kolekcja; ukończenie Parapetu (komunikat, „Rozdział 2/6: Balkon”, Paproć), konewka z zakładki Ulepszenia i podlewanie (3/3 → 2/3, `is-active`); w emulatorze dawny stan v2 w polu `state` → okno „Witaj w nowym ogrodzie!” z pogrubionym zwrotem „1 tys.” (bez dosłownych znaczników), rośliny, ulepszenia, nasiona i stuknięcia przeniesione, zapis w polu `preview` przy niezmienionym `state`, ponowne wejście w nowej karcie bez okna przeniesienia; powrót z tła po 10 minutach (podmieniony `Date.now`) → „Witaj z powrotem!” z czasem „10 min” i przyrostem liści; najmniejszy telefon 320 × 568 — bez przewijania w bok, ogród ≥ 150 px, przycisk „Kup” i zakładka ≥ 44 px; od E7c2 zdarzenia (wywołane hakiem `trigger`): telefon — przycisk „Odrzuć”, komunikat „Dzwoni Pracu Pracu!”, produkcja ×0,7, po odrzuceniu ×1; ciężarówka — przycisk z „0/3”, zastawiona Monstera albo Pilea, dwa stuknięcia w cysternę na płótnie („2/3”, bez liczenia stuknięć w ogród), trzecie przyciskiem — odjeżdża, produkcja wraca; złota kózka z premią `boost` — przycisk „Złap kózkę!”, komunikat „Złota kózka: produkcja ×3 przez 30 s!”, produkcja ×3, Plusk-o-metr 0,1; pełny Plusk-o-metr — przycisk Zatoki, licznik Zatoki, logika wstrzymana (`hold`) i przewinięta o 0,5 s, stuknięcie w liść na płótnie → „combo ×1” i więcej liści, po 21 s koniec — „Zatoka Humbaka: złapane liście — 1”, `stats.bays` = 1; od E7d1 muzyka: po pierwszym dotknięciu `ogrod`, w Zatoce `humbak`, po niej znowu `ogrod`; od E7d2 samouczek w emulatorze: „krok 1 z 4” z gestem `tap` (bez „Dalej”), 5 stuknięć w płótno pod dymkiem → „krok 2 z 4” „Kup Monsterę”, zakup → „krok 3 z 4”, „Dalej” → „krok 4 z 4” („łap złotą kózkę”), „Dalej” → dymek schowany, „Świetnie! Ogród jest Twój”, `tutorialDone: true` w polu `preview`; nowa karta — bez samouczka, „Jak grać?” → okno „Jak grać — Sowie Ogrody” z „Wielkie Przesadzanie” i „Zatoce Humbaka”, „Zagraj samouczek” → „krok 1 z 4”, „Pomiń samouczek” → dymek schowany; od E7d3 kontrakt dnia: 25 stuknięć → komunikat „Kontrakt gotowy: Zbierz liście 25 stuknięciami”, w Kolekcji karta „25/25”, „Odbierz” przy zakupach wyłączone, „Odbierz” → „Odebrano ✓”, komunikat „Kontrakt wykonany”, w Sowiej Akademii nagroda `feature:ogrody:<dzień>:clicks` i co najmniej +30 XP. Architektura: `SowieOgrody/nowa.html` na liście stron podglądu (`previewPages`); menu: trzy podglądy, karta Sowich Ogrodów z „Wypróbuj nową wersję: nowe Sowie Ogrody”. Od E7e testy otwierają `SowieOgrody/` (nie `nowa.html`); przeniesienie dawnego stanu v2 kończy się zapisem v3 w polu `state` (`saveVersion: 3`, bez pola `preview`, `profil.records.ogrody.zone` = „Balkon”); nowy test: dokument z polem `preview` (zapis z czasu podglądu, 7 Monster) i dawnym `state` v2 — wejście przez `nowa.html` przekierowuje do `SowieOgrody/?…`, gra ma 7 Monster bez okna przeniesienia, a w bazie `preview` znika, `state` ma 7 Monster i `saveVersion: 3`; samouczek i prośba z menu sprawdzają `tutorialDone` w `state`. `tests/e2e/telefon/chmura.spec.js` — powrót z tła po 10 min (emulator): stan v3 w `state` od razu przy ukryciu, okno „Witaj z powrotem!”.
 
-## Architektura
+## Dawna gra (do E7e)
 
-`Sowie Ogrody` jest samodzielną grą Canvas 2D w katalogu `SowieOgrody/`. Wykorzystuje wspólne elementy repozytorium:
+Do etapu E7e w folderze była dawna gra: `script.js` (klasyczny skrypt, stan w wersji 2: rośliny, zwykłe drzewka rozwoju, konewka, automatyzacja, prestiż), `style.css`, stabilny panel (`../shared/stable-panel.js`), wspólne okna i dok przycisków (`../shared/sowie-core.js`, `game-guides.js`, `records.js`, `gameplay-expansion.js` z „Kontraktami ogrodniczymi”). Po zgodzie właściciela (2026-10-05) `script.js` i `style.css` zostały usunięte, a `index.html` to nowa odsłona (wcześniej `nowa.html`). Dawny stan v2 nadal działa jako wejście: `state.js` (`migrateV2`) przenosi go przy pierwszym wejściu („Witaj w nowym ogrodzie!”). Kontrakty dnia są w grze (`ogrod/daily.js`, te same identyfikatory nagród Akademii co dawne „Kontrakty ogrodnicze”), a `shared/gameplay-expansion.js` i `shared/game-guides.js` nie obsługują już Ogrodów.
 
-- `../config/firebase-config.js` i `../shared/sowie-cloud.js` (zapis w Firestore),
-- `../shared/password-gate.js` (ekran „Hasło sowy”),
-- `../shared/cute-ui.css`,
-- `../shared/sowie-core.js`,
-- `../shared/sowie-runtime.js`,
-- `../shared/sowie-smoke-hook.js`.
+## `nowa.html` — przekierowanie (od E7e)
 
-Główna logika znajduje się w `script.js`. Gra jest napisana jako jeden moduł IIFE, żeby łatwo działała bez bundlera.
-
-## Kolejność ładowania
-
-1. `../config/firebase-config.js`
-2. `../shared/sowie-platform.js`
-3. `../shared/sowie-cloud.js`
-4. `../shared/password-gate.js`
-5. `../shared/sowie-smoke-hook.js`
-6. `../shared/cute-ui.css`, `../shared/game-enhancements.css`, `../shared/owl-gallery.css`, `style.css`
-7. `../shared/stable-panel.js`
-8. `../shared/sowie-core.js`
-9. `../shared/notification-manager.js`
-10. `../shared/sowie-runtime.js`
-11. `script.js`
-12. `../shared/modal-accessibility.js`, `../shared/game-guides.js`, `../shared/sowie-academy.js`, `../shared/owl-gallery.js`, `../shared/gameplay-expansion.js`
-
-## Pliki
-
-```txt
-SowieOgrody/
-  index.html
-  style.css
-  script.js
-  docs/
-    README.md
-    Documentation.md
-```
-
-## Stan gry
-
-Stan jest zapisywany w Firestore przez `SowieCloud` jako tekst JSON w polu `state` dokumentu:
-
-```txt
-sowiegry/profil/sowiegry_gry/ogrody
-```
-
-Stałe w `script.js`: `GAME_ID = "ogrody"`, `VERSION = 2` (`saveVersion`), `IMPORTANT_SAVES = ["manual", "prestige", "upgrade", "unlock", "offline"]`.
-
-- **start:** `let state = defaultSave()`; na końcu pliku `cloud.loadGameState(GAME_ID)` (czeka na `SowieCloud.ready`), potem `state = load(saved)` (`mergeSave` z wartościami domyślnymi) i `init()`. Gra nie startuje przed wczytaniem stanu z chmury;
-- **`save(reason)`:** `state.lastSavedAt = Date.now()`, potem `cloud.saveGameState(GAME_ID, state, { immediate, saveVersion: 2, summary })`, gdzie `immediate` = powód z `IMPORTANT_SAVES` (zapis po 2 s), inne powody — zapis zbiorczy najpóźniej po 30 s (≤ 120 zapisów na godzinę). `summary = { lifetimeLeaves, prestiges: stats.prestiges, zone }` trafia do dokumentu gry i do `profil.records.ogrody`. Dla powodów `manual`, `hidden`, `pagehide` dodatkowo `cloud.flush()` (natychmiastowe wysłanie). Napis w HUD „Zapisano” / „Zapisano ręcznie”;
-- **`queueSave(reason)`:** jak dotąd — napis „Zapisywanie…” i `save(reason)` po 250 ms;
-- **cykliczny zapis:** `setInterval(..., 5000)` wywołuje `queueSave("interval")` tylko przy widocznej karcie (w tle produkcja nie działa, więc `lastSavedAt` zostaje czasem zejścia do tła);
-- **`window.SowieIdleGame = { id: "ogrody", ready, snapshot }`** — `ready` rozwiązuje się po wczytaniu stanu, `snapshot()` zwraca bieżący `state` (tylko do odczytu). Korzysta z niego `shared/gameplay-expansion.js` (kontrakty dnia).
-
-Najważniejsze pola:
-
-- `leaves` — aktualne liście,
-- `water` — aktualna woda,
-- `prestigeSeeds` — niewydane nasiona prestiżu,
-- `lifetimeLeaves` — liście lifetime,
-- `lifetimeWater` — woda lifetime,
-- `currentRunLeaves` — liście zdobyte w obecnym cyklu prestiżu,
-- `currentRunWater` — woda zdobyta w obecnym cyklu prestiżu,
-- `zone` — aktualna strefa,
-- `unlocked` — odblokowane strefy,
-- `plants` — liczba roślin danego typu,
-- `upgrades` — zwykłe ulepszenia cyklu,
-- `prestige` — stałe poziomy drzewka prestiżu,
-- `automation` — ustawienia automatyzacji,
-- `effects` — aktywne efekty czasowe,
-- `can` — stan konewki,
-- `stats` — statystyki lokalne,
-- `achievements` — osiągnięcia lokalne.
-
-## Zwykłe drzewka rozwoju
-
-Zwykłe skille są przechowywane w `upgrades` i resetują się przy prestiżu. Dane są w tablicy `UPGRADES`.
-
-Każdy wpis może mieć:
-
-```txt
-id
-group
-icon
-name
-cost
-zone
-req
-desc
-effect
-```
-
-Grupy zwykłych drzewek:
-
-- `click` — ręczne zbiory,
-- `production` — produkcja roślin,
-- `water` — konewka, zraszacze, woda i humbak,
-- `automation` — auto-zbiory, auto-kliknięcia, koza, dostawy i auto-buy.
-
-Wymagania zwykłych skilli są walidowane przez `upgradeAvailable(upgrade)`, która sprawdza strefę oraz listę `req`.
-
-## System ekonomii
-
-Koszt rośliny:
-
-```txt
-cost = baseCost * growth ^ owned
-```
-
-Produkcja rośliny:
-
-```txt
-owned * baseProduction * globalMultiplier * plantMultiplier * zoneMultiplier * milestoneMultiplier
-```
-
-Całkowite LPS:
-
-```txt
-sum(production of all plants)
-```
-
-Kliknięcie:
-
-```txt
-clickPower = max(1, clickMultiplier + leavesPerSecond * clickLpsPercent)
-```
-
-## Offline progress
-
-Po wejściu do gry **oraz po powrocie z tła** (`visibilitychange → visible`, np. powrót do przeglądarki na telefonie) porównywany jest obecny czas z `lastSavedAt`. Zejście do tła (`visibilitychange → hidden`) wywołuje `save("hidden")`, a `pagehide` — `save("pagehide")`.
-
-```txt
-elapsed = now - lastSavedAt
-used = min(elapsed, offlineCap)
-offlineLeaves = lps * used * offlineEfficiency
-offlineWater = wps * used * min(1, offlineEfficiency * 0.6)
-```
-
-Jeżeli minęło mniej niż 60 sekund, modal offline progress nie jest pokazywany.
-
-## Konewka
-
-Konewka jest stanem w `state.can`:
-
-```txt
-charges
-max
-progress
-```
-
-Użycie podlewania:
-
-- wymaga ulepszenia `wateringCan`,
-- zużywa ładunek konewki albo 10 wody,
-- ustawia `effects.watered` na 45 sekund,
-- produkcja jest mnożona x2.
-
-Zraszacze zwiększają `canRegen` i produkcję wody. Stałe ulepszenie prestiżowe `waterStart` zwiększa startową wartość konewki i przyspiesza jej regenerację.
-
-## Automatyzacja
-
-Automatyzacja jest liczona w `metrics()` na podstawie zwykłych ulepszeń oraz stałego drzewka prestiżu.
-
-Systemy:
-
-- `harvestInterval` — okresowy bonus auto-zbiorów,
-- `autoClick` — generowanie kliknięć na sekundę,
-- `goat` — automatyczne zbieranie części złotych liści,
-- `delivery` — automatyczne odbieranie zwykłych dostaw,
-- `autobuy` — auto-buy najbardziej opłacalnych roślin.
-
-Stałe ulepszenia prestiżowe mogą wzmacniać automatyzację, np. `goatWisdom`, `amic`, `smartRoots` i `nightShift`.
-
-## Eventy
-
-Eventy są przechowywane w tablicy runtime `events`, nie w zapisie. Są krótkotrwałe i nie muszą przetrwać reloadu.
-
-Typy:
-
-- `golden`,
-- `rainbow`,
-- `splash`,
-- `delivery`,
-- `goat`,
-- `pracu`.
-
-## Prestiż i stałe drzewko prestiżu
-
-Prestiż odblokowuje się przy 100M liści zdobytych w obecnym cyklu, czyli `currentRunLeaves >= 100_000_000`.
-
-Wzór nasion:
-
-```txt
-base = floor(sqrt(currentRunLeaves / 10_000_000))
-prestigeGain = floor(base * (1 + seedMemoryLevel * 0.08))
-```
-
-Reset prestiżowy kasuje:
-
-- `leaves`,
-- `water`,
-- `currentRunLeaves`,
-- `currentRunWater`,
-- `plants`,
-- `upgrades`,
-- aktywne eventy,
-- aktywne efekty cyklu.
-
-Reset zachowuje:
-
-- `prestigeSeeds`,
-- `prestige`,
-- `stats`,
-- `achievements`,
-- `lifetimeLeaves`,
-- `lifetimeWater`.
-
-Drzewko prestiżu jest zdefiniowane w `PRESTIGE_TREE`. Każdy węzeł ma:
-
-```txt
-id
-branch
-icon
-name
-cost
-max
-req
-desc
-effect
-```
-
-Gałęzie drzewka prestiżu:
-
-- `Korzenie` — produkcja, szybszy start i więcej nasion,
-- `Woda` — woda, konewka i pluski humbaka,
-- `Idle` — offline progress,
-- `Auto` — koza, dostawy i auto-buy.
-
-Zakup stałego ulepszenia wykonuje `buyPrestigeUpgrade(id)`. Zależności są sprawdzane przez `prestigeAvailable(upgrade)`. Koszt skaluje się przez:
-
-```txt
-cost = ceil(baseCost * 1.55 ^ currentLevel)
-```
-
-## Renderer
-
-Renderer rysuje wszystko w Canvas 2D:
-
-- tła stref,
-- rośliny,
-- sowę,
-- słomkowy kapelusz w szklarni,
-- kozę,
-- humbaka,
-- ciężarówkę Amic,
-- eventy,
-- cząsteczki,
-- teksty pływające,
-- aktywne boosty.
-
-Nie używa zewnętrznych obrazków.
-
-## Responsywność
-
-`style.css` używa układu dwukolumnowego na desktopie i jednokolumnowego na mniejszych ekranach. Panel danych ma przewijanie, a karty/tabele są kompaktowe, żeby mieściły się na telefonie.
-
-Dla drzewek rozwoju dodane są klasy:
-
-```txt
-.skill-tree
-.skill-node
-.prestige-tree
-.prestige-node
-```
-
-Na telefonie drzewka przechodzą do jednej kolumny.
+Dawny adres podglądu zostaje, żeby zakładki i skróty działały: `<html lang="pl">`, `charset`, `viewport` (`width=device-width,initial-scale=1.0,viewport-fit=cover`), `theme-color` `#e7ffe6`, ikona `../assets/icons/icon.svg`, tytuł „Sowie Ogrody — SowieGry”; `<meta http-equiv="refresh" content="0; url=./">` i skrypt `location.replace(\`./${location.search}${location.hash}\`)` — przejście do `./` **z parametrami adresu** (np. `?cloud=emulator`, `?seed=`); `<body>`: „Nowa odsłona to teraz po prostu Sowie Ogrody.” z odnośnikiem `./`. Strona nie ładuje skryptów.
 
 ## Integracja z menu
 
-Główne `index.html` zawiera kartę:
-
-```html
-<a class="game-card" href="SowieOgrody/">
-  <h2>Sowie Ogrody</h2>
-  <p>Idle incremental: sadź rośliny, podlewaj konewką, automatyzuj ogród i wracaj po offline progress.</p>
-</a>
-```
-
-## Testy ręczne
-
-1. Gra ładuje się z menu głównego.
-2. Kliknięcie dodaje liście.
-3. Rośliny można kupić po uzbieraniu kosztu.
-4. LPS rośnie po zakupie roślin.
-5. Save przetrwa reload i jest widoczny na drugim urządzeniu (po wpisaniu hasła `huhu`).
-6. Zakładka `Rozwój` pokazuje zwykłe drzewka skilli.
-7. Zależności zwykłych skilli działają.
-8. Konewka odblokowuje podlewanie.
-9. Podlewanie daje boost x2.
-10. Offline progress pokazuje modal po przerwie.
-11. Automatyzacja działa po zakupie odpowiednich ulepszeń.
-12. Sowa w szklarni ma słomkowy kapelusz.
-13. Prestiż pojawia się po spełnieniu warunku obecnego cyklu.
-14. Prestiż resetuje zwykłe skille, rośliny i zasoby.
-15. Drzewko prestiżu zostaje po resetach.
-16. Stałe ulepszenia prestiżowe przyspieszają nowy cykl.
-
-## Utrzymanie
-
-- Dane ekonomii są na początku `script.js`.
-- Zmiany balansu najlepiej robić przez wartości w `PLANTS`, `UPGRADES` i `PRESTIGE_TREE`.
-- Zapis wyłącznie przez `SowieCloud` (`loadGameState` / `saveGameState`); gra nie używa pamięci przeglądarki.
-- Zmiana formatu stanu wymaga podniesienia `VERSION` i obsługi starszego stanu w `mergeSave`.
-
-## Okno „🏆 Rekordy”
-
-Strona ładuje `../shared/records.js` po `../shared/owl-gallery.js` (i po `../shared/game-guides.js`, który tworzy dok przycisków). Moduł dodaje do doku przycisk 🏆 i okno rekordów zasilane przez `SowieCloud` (podsumowanie `profil.records.ogrody`). Opis modułu: `docs/Documentation.md`, sekcja „`shared/records.js`”.
+Karta gry powstaje z rejestru (`shared/sowie-platform.js`: `ogrody` — „Sowie Ogrody”, `SowieOgrody/`, 🌿, `kind: "idle"`, `saveVersion: 3`, `rebuilt: true` — znaczek „Nowe!”; ilustracja „Ogród” w `shared/menu/games.js`). Rekord na karcie: „Liście: N” z `profil.records.ogrody.lifetimeLeaves`; okno „Rekordy — Sowie Ogrody” w zakładce „Sowa”: „Liście w całej grze”, „Wielkie Przesadzania”, „Rozdział” (podsumowanie zapisywane przez `saveGameState`). Instrukcja w zakładce „Jak grać” — przewodnik `ogrody` (`shared/meta/guides-data.js`).
 
 ## PWA (etap E2a)
 
-`index.html` ma w `<head>` po `theme-color`: `<link rel="manifest" href="../manifest.webmanifest">`, `<link rel="icon" href="../assets/icons/icon.svg" type="image/svg+xml">`, `<link rel="apple-touch-icon" href="../assets/icons/apple-touch-icon.png">`, `<meta name="mobile-web-app-capable" content="yes">`, `<meta name="apple-mobile-web-app-capable" content="yes">`, `<meta name="apple-mobile-web-app-title" content="SowieGry">`, a po `../shared/password-gate.js` skrypt `../shared/pwa.js` (rejestracja service workera `sw.js`). Gra trafia do pamięci podręcznej przy pierwszym otwarciu i potem uruchamia się także bez zasięgu. Opis: `docs/Documentation.md`, rozdział „PWA”.
+`index.html` ma w `<head>` po `theme-color`: `<link rel="manifest" href="../manifest.webmanifest">`, `<link rel="icon" href="../assets/icons/icon.svg" type="image/svg+xml">`, `<link rel="apple-touch-icon" href="../assets/icons/apple-touch-icon.png">`, `<meta name="mobile-web-app-capable" content="yes">`, `<meta name="apple-mobile-web-app-capable" content="yes">`, `<meta name="apple-mobile-web-app-title" content="SowieGry">`, a po `password-gate.js` — `<script src="../shared/pwa.js"></script>` (rejestracja service workera).

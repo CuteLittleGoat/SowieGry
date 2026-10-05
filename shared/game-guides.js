@@ -12,7 +12,6 @@
 
   function detectGameId() {
     const path = location.pathname.toLowerCase();
-    if (path.includes("sowieogrody")) return "ogrody";
     if (path.includes("sowiaszklarnia")) return "szklarnia";
     return null;
   }

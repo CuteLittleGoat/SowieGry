@@ -1,9 +1,8 @@
 const { test, expect, waitForCloud } = require("./fixtures");
 
-// Dawne gry idle (dok z instrukcją, Akademią i panelem mechaniki). Sowia Ucieczka, Sowie Tory i Sowa w Chmurach
-// mają własne instrukcje, zadania i combo — testy w tests/e2e/telefon/ucieczka.spec.js, tory.spec.js, chmury.spec.js.
+// Dawna Sowia Szklarnia (dok z instrukcją, Akademią i panelem mechaniki). Przebudowane gry mają własne instrukcje,
+// zadania i kontrakty — testy w tests/e2e/telefon/ (ucieczka, tory, chmury, ogrody-nowe, lacz).
 const games = [
-  { id: "ogrody", path: "/SowieOgrody/", title: "Sowie Ogrody", feature: "Kontrakty ogrodnicze" },
   { id: "szklarnia", path: "/SowiaSzklarnia/", title: "Sowia Szklarnia", feature: "Album cech i cele laboratorium" },
 ];
 

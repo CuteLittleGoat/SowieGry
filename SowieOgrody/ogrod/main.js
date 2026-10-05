@@ -1,10 +1,10 @@
-// Sowie Ogrody — nowa odsłona: strona podglądu (SowieOgrody/nowa.html). Ogród na płótnie (stuknięcie zbiera liście),
+// Sowie Ogrody (SowieOgrody/index.html; od E7e zamiast dawnej gry). Ogród na płótnie (stuknięcie zbiera liście),
 // HUD z liśćmi i konewką, cel rozdziału, dolny panel z zakładkami, okna: powitanie (postęp offline, przeniesienie
 // dawnego postępu) i Wielkie Przesadzanie.
 //
-// Zapis w czasie podglądu: stan v3 w polu `preview` dokumentu gry `sowiegry_gry/ogrody` (pole `state` z wersją 2
-// zostaje dla dawnej gry — można do niej wrócić bez strat). Pierwsze wejście: stan z `preview`, a gdy go nie ma —
-// migracja dawnego stanu (v2). Po podmianie (E7e) gra zapisze v3 przez `saveGameState`.
+// Zapis: stan v3 w polu `state` dokumentu gry `sowiegry_gry/ogrody` (`SowieCloud.saveGameState`, `saveVersion: 3`,
+// podsumowanie do profil.records.ogrody). Wczytanie: stan z pola `preview` (zapis z czasu podglądu, E7b–E7d —
+// przenoszony do `state`, a `preview` znika w tym samym zapisie), inaczej `state` (v3 albo dawny v2 — migracja).
 import { connectAudioSettings, createAudio } from "../../shared/engine/audio.js";
 import { createAtlas } from "../../shared/engine/sprites.js";
 import { guideFor } from "../../shared/meta/guides-data.js";
@@ -22,6 +22,7 @@ import {
   GARDEN_MUSIC,
   GOAT_REWARDS,
   PLANTS,
+  SAVE_VERSION,
   UPGRADES,
 } from "./config.js";
 import { formatNumber, formatTime, hasUpgrade, plantById, prestigeSeeds, production, waterStats } from "./economy.js";
@@ -32,13 +33,12 @@ import { defaultState, loadState } from "./state.js";
 import { createTutorial } from "./tutorial.js";
 import { claimContract, dailyContracts, ensureDaily } from "./daily.js";
 
+// Pole zapisu z czasu podglądu (E7b–E7d) — przy pierwszym wejściu po podmianie przenoszone do `state`.
 const PREVIEW_FIELD = "preview";
-// Instrukcja „Jak grać?” nowej odsłony (shared/meta/guides-data.js).
-const GUIDE_ID = "ogrod";
+const GUIDE_ID = GAME_ID; // instrukcja „ogrody” w shared/meta/guides-data.js
 const AUDIO_BASE = new URL("../../assets/audio/", import.meta.url).href;
-// Zapis: co 30 s w tle gry, po ważnej akcji po 2 s, przy zejściu do tła od razu.
+// Zapis: co 30 s w tle gry, po ważnej akcji po 2 s (saveGameState z `immediate`), przy zejściu do tła od razu.
 const SAVE_EVERY = 30;
-const IMPORTANT_DELAY = 2000;
 // Metryki dla Sowiej Akademii (misje dnia i tygodnia, zdjęcia Galerii) — co 5 s gry.
 const PROGRESS_EVERY = 5;
 
@@ -65,8 +65,12 @@ const renderer = createGardenRenderer({ canvas, atlas });
 // Jeden komunikat naraz, u góry (jak w trakcie gry) — nie zasłania panelu.
 const toasts = createToasts({ root, isInGame: () => true });
 
-// Komunikaty Sowiej Akademii i Galerii Sów — jako zwykłe komunikaty ogrodu.
-window.SowieNotifications ||= { notify: (message) => toasts.show(message) };
+// Komunikaty Sowiej Akademii i Galerii Sów (wołają toast({ title, detail, reward })) — jako komunikaty ogrodu.
+window.SowieNotifications ||= {
+  toast({ title = "", detail = "", reward = "" } = {}) {
+    toasts.show([title, detail, reward].filter(Boolean).join(" · "), { kind: "reward", duration: 3200 });
+  },
+};
 
 let garden = createGarden({ state: defaultState() });
 let ready = false;
@@ -128,10 +132,16 @@ function reportProgress() {
 // ---------- Zapis ----------
 
 function save({ immediate = false, flush = false } = {}) {
-  if (!ready || !cloud?.updateGame) return;
-  garden.state.savedAt = now();
-  const options = immediate ? { delayMs: IMPORTANT_DELAY } : undefined;
-  cloud.updateGame(GAME_ID, { [PREVIEW_FIELD]: JSON.stringify(garden.state) }, options);
+  if (!ready || !cloud?.saveGameState) return;
+  const { state } = garden;
+  state.savedAt = now();
+  // Podsumowanie do profilu (menu: karta i okno „Rekordy”): liście, przesadzania, bieżący rozdział.
+  const summary = {
+    lifetimeLeaves: Math.floor(state.lifetimeLeaves),
+    prestiges: state.stats.prestiges,
+    zone: CHAPTERS[chapterIndex(state)]?.name || "",
+  };
+  cloud.saveGameState(GAME_ID, state, { immediate, saveVersion: SAVE_VERSION, summary });
   if (flush) cloud.flush?.();
 }
 
@@ -641,6 +651,7 @@ async function start() {
       raw = null;
     }
   }
+  const fromPreview = Boolean(raw);
   if (!raw) raw = (await cloud?.loadGameState?.(GAME_ID)) ?? null;
   const { state, report } = loadState(raw, now());
   garden = createGarden({ state, now });
@@ -650,7 +661,13 @@ async function start() {
   garden.takeEvents();
   ready = true;
   ensureDaily(garden.state, now());
-  if (report) save({ immediate: true });
+  if (fromPreview) {
+    // Zapis z czasu podglądu staje się stanem gry; pole `preview` znika (ten sam zapis do bazy).
+    cloud.updateGame(GAME_ID, (gameDoc) => {
+      delete gameDoc[PREVIEW_FIELD];
+    });
+  }
+  if (report || fromPreview) save({ immediate: true });
   progress.emit(EVENTS.VISIT, { gameId: GAME_ID });
   reportProgress();
   welcome({ offline, report });

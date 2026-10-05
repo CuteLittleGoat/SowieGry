@@ -52,11 +52,10 @@ test("zakładka „Gry”: pięć kart z rejestru, „Graj” otwiera grę", asy
   // Sowa w Chmurach zastąpiła SowaJumper (E6f): karta „jumper” prowadzi do nowej gry i ma znaczek „Nowe!”.
   await expect(page.locator('[data-play="jumper"]')).toHaveAttribute("href", "SowaWChmurach/");
   await expect(page.locator('[data-game="jumper"] .game-card-new')).toHaveText("Nowe!");
-  await expect(page.locator("[data-preview]")).toHaveCount(2);
-  // Nowe Sowie Ogrody (E7) w podglądzie: ten sam folder, strona nowa.html.
+  await expect(page.locator("[data-preview]")).toHaveCount(1);
+  // Nowa odsłona Sowich Ogrodów zastąpiła dawną grę (E7e) w tym samym folderze: „Nowe!”, bez podglądu.
   await expect(page.locator('[data-play="ogrody"]')).toHaveAttribute("href", "SowieOgrody/");
-  await expect(page.locator('[data-preview="ogrody"]')).toHaveAttribute("href", "SowieOgrody/nowa.html");
-  await expect(page.locator('[data-preview="ogrody"]')).toContainText("Wypróbuj nową wersję: nowe Sowie Ogrody");
+  await expect(page.locator('[data-game="ogrody"] .game-card-new')).toHaveText("Nowe!");
   await expect(page.locator('[data-preview="szklarnia"]')).toHaveAttribute("href", "LaczIHoduj/");
   await expect(page.locator('[data-preview="szklarnia"]')).toContainText("Wypróbuj nową wersję: Łącz i Hoduj");
   // Ilustracje rysują postacie z atlasu.

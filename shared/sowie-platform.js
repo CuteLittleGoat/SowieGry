@@ -43,15 +43,15 @@
         Object.freeze({ id: "nieskonczony", label: "Nieskończony" }),
       ]),
     },
+    // Nowa odsłona Sowich Ogrodów (E7) zastąpiła dawną grę w tym samym folderze; SowieOgrody/nowa.html przekierowuje.
     {
       id: "ogrody",
       name: "Sowie Ogrody",
       path: "SowieOgrody/",
       icon: "🌿",
       kind: "idle",
-      saveVersion: 2,
-      // Nowa odsłona w podglądzie (E7): ten sam folder i dokument gry (stan podglądu w polu `preview`).
-      preview: Object.freeze({ path: "SowieOgrody/nowa.html", name: "nowe Sowie Ogrody" }),
+      saveVersion: 3,
+      rebuilt: true,
     },
     {
       id: "szklarnia",

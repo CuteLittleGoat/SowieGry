@@ -1,4 +1,4 @@
-// Rozszerzenia dawnych gier idle: kontrakty Ogrodów, cele laboratorium i album cech Szklarni.
+// Rozszerzenia dawnej Sowiej Szklarni: cele laboratorium i album cech.
 // Stan dnia (gry/{id}.daily) i album cech (gry/szklarnia.traitAlbum) zapisuje SowieCloud.
 // Gry idle udostępniają swój stan przez window.SowieIdleGame.snapshot().
 (() => {
@@ -17,7 +17,6 @@
 
   function detectFromPath() {
     const path = location.pathname.toLowerCase();
-    if (path.includes("sowieogrody")) return "ogrody";
     if (path.includes("sowiaszklarnia")) return "szklarnia";
     return null;
   }
@@ -155,54 +154,6 @@
     }).join("");
   }
 
-  function initializeGardens() {
-    attachFeatureButton("Kontrakty ogrodnicze");
-    let expansion = { claimed: {}, baseline: { clicks: 0, buys: 0, watering: 0 } };
-    let save = {};
-    let started = false;
-
-    // Stan bazowy dnia liczony od pierwszego uruchomienia danego dnia (po wczytaniu stanu gry z chmury).
-    window.SowieIdleGame?.ready?.then(() => {
-      save = idleSnapshot();
-      const daily = dailyState();
-      if (!daily.baseline) {
-        daily.baseline = {
-          clicks: Number(save.stats?.clicks || 0),
-          buys: Number(save.stats?.buys || 0),
-          watering: Number(save.stats?.watering || 0),
-        };
-        saveDailyState(daily);
-      }
-      expansion = daily;
-      started = true;
-    });
-
-    objectivesProvider = () => {
-      save = idleSnapshot();
-      return [
-        { id: "clicks", label: "Zbierz liście ręcznie 25 razy", progress: Number(save.stats?.clicks || 0) - expansion.baseline.clicks, target: 25, xp: 30, feathers: 4, rewardLabel: "Kontrakt ogrodniczy" },
-        { id: "buys", label: "Kup 6 roślin lub ulepszeń", progress: Number(save.stats?.buys || 0) - expansion.baseline.buys, target: 6, xp: 35, feathers: 4, rewardLabel: "Kontrakt ogrodniczy" },
-        { id: "watering", label: "Podlej ogród 2 razy", progress: Number(save.stats?.watering || 0) - expansion.baseline.watering, target: 2, xp: 30, feathers: 4, rewardLabel: "Kontrakt ogrodniczy" },
-      ];
-    };
-
-    featureRenderer = () => `<p>Codzienne kontrakty dają XP i piórka do Sowiej Akademii. Postęp jest liczony od pierwszego uruchomienia danego dnia.</p><div class="sowie-feature-list">${objectiveCards(currentObjectives())}</div>`;
-
-    window.setInterval(() => {
-      if (!started) return;
-      save = idleSnapshot();
-      const plantCount = Object.values(save.plants || {}).reduce((sum, value) => sum + Number(value || 0), 0);
-      academy?.record?.("ogrody", "ogrodyLeaves", Number(save.lifetimeLeaves || 0), "max");
-      academy?.record?.("ogrody", "ogrodyClicks", Number(save.stats?.clicks || 0), "set");
-      academy?.record?.("ogrody", "ogrodyBuys", Number(save.stats?.buys || 0), "set");
-      academy?.record?.("ogrody", "ogrodyWatering", Number(save.stats?.watering || 0), "set");
-      academy?.record?.("ogrody", "ogrodyPrestiges", Number(save.stats?.prestiges || 0), "set");
-      academy?.record?.("ogrody", "ogrodyPlants", plantCount, "max");
-      setHud(`📋 Kontrakty: ${currentObjectives().filter((entry) => entry.progress >= entry.target).length}/3 gotowe`);
-      if (featureModal && !featureModal.hidden) renderFeature();
-    }, 2500);
-  }
-
   function initializeGreenhouse() {
     attachFeatureButton("Album cech i cele laboratorium");
     let save = {};
@@ -293,9 +244,8 @@
   } else initialize();
 
   function initialize() {
-    // SowaRunner, Sowa3 i SowaJumper zastąpiły Sowia Ucieczka, Sowie Tory i Sowa w Chmurach (moduły ES, własne
-    // zadania i combo) — bez tego skryptu.
-    if (gameId === "ogrody") initializeGardens();
-    else if (gameId === "szklarnia") initializeGreenhouse();
+    // SowaRunner, Sowa3, SowaJumper i dawne Sowie Ogrody zastąpiły przebudowane gry (moduły ES, własne zadania,
+    // combo i kontrakty dnia) — bez tego skryptu.
+    if (gameId === "szklarnia") initializeGreenhouse();
   }
 })();
