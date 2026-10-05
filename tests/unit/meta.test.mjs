@@ -206,9 +206,11 @@ test("instrukcje obecnych gier: każda gra z rejestru ma przewodnik (treść z d
   // „runner” to od E4 Sowia Ucieczka.
   assert.equal(guideFor("runner").title, "Sowia Ucieczka");
   assert.match(guideFor("runner").summary, /Chmurą Pracu/);
-  // „sowa3” to od E5f Sowie Tory.
+  // „sowa3” to od E5f Sowie Tory, „jumper” od E6f — Sowa w Chmurach.
   assert.equal(guideFor("sowa3").title, "Sowie Tory");
   assert.equal(guideFor("sowa3").id, "sowa3");
+  assert.equal(guideFor("jumper").title, "Sowa w Chmurach");
+  assert.equal(guideFor("jumper").id, "jumper");
   assert.match(guideFor("szklarnia").cards[1].text, /SIO! SIO!/);
   // Klasyczny skrypt gier nie ma już własnej kopii treści.
   const legacy = readFileSync(new URL("../../shared/game-guides.js", import.meta.url), "utf8");

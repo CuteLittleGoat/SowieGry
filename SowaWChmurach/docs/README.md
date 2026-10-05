@@ -1,9 +1,9 @@
 # Sowa w Chmurach — instrukcja
 
-**Sowa w Chmurach** to nowa wersja gry **SowaJumper** (etap E6 przebudowy SowieGry). Na razie jest to **wersja
-podglądowa**: otwierasz ją z menu głównego przyciskiem **„Wypróbuj nową wersję: Sowa w Chmurach”** na karcie
-SowaJumper albo pod adresem `SowaWChmurach/`. Rekordy liczą się tak samo jak w SowaJumper (wspólny profil
-w chmurze).
+**Sowa w Chmurach** to nowa wersja gry **SowaJumper**. Otwierasz ją z menu głównego przyciskiem **Graj** na karcie
+**Sowa w Chmurach** (ze znaczkiem „Nowe!”). Stary adres `SowaJumper/` sam przenosi do nowej gry, a Twoje rekordy
+z SowaJumper zostały. Gra posuwa też misje garderoby sowy (np. 250 m — Plecak); ukończone misje, zadania Akademii
+i zdjęcia Galerii pokazują się na ekranie wyników.
 
 ## Cel gry
 

@@ -87,9 +87,10 @@ test("panel szklarni zachowuje fokus podczas cyklicznego odświeżania", async (
 
 test("modal wspólny przechwytuje fokus, zamyka się Escape i przywraca fokus", async ({ page }) => {
   const errors = watchErrors(page);
-  await page.goto("/SowaJumper/?seed=modal", { waitUntil: "load" });
+  // Od E6f nie ma już dawnych gier zręcznościowych z przyciskiem „Ustawienia” — okno instrukcji dawnej Szklarni.
+  await page.goto("/SowiaSzklarnia/?seed=modal", { waitUntil: "load" });
   await waitForCloud(page);
-  const opener = page.getByRole("button", { name: "Ustawienia", exact: true });
+  const opener = page.locator('[data-game-guide-fab="szklarnia"]');
   await opener.click();
 
   const dialog = page.getByRole("dialog");
@@ -109,19 +110,20 @@ test("ustawienia zapisują się w profilu, pokazują stan zapisu i pozwalają wy
 }, testInfo) => {
   const project = uniqueProject(testInfo);
   const errors = watchErrors(page);
-  await page.goto(cloudUrl("/SowaJumper/?seed=settings", project), { waitUntil: "load" });
+  // Od E6f ustawienia są w menu głównym (zakładka „Sowa”) — dawne okno SowieCore miały tylko dawne gry zręcznościowe.
+  await page.goto(cloudUrl("/?seed=settings", project), { waitUntil: "load" });
   await waitForCloud(page);
-  await page.getByRole("button", { name: "Ustawienia", exact: true }).click();
-  const dialog = page.getByRole("dialog", { name: "Ustawienia" });
-  await expect(dialog).toContainText("Zapis postępu");
-  await expect(dialog.locator("[data-cloud-status]")).toHaveText(/zapisano w chmurze|zapisywanie/);
-  await expect(dialog).not.toContainText("Eksportuj");
-  await expect(dialog).not.toContainText("Importuj");
+  await page.getByRole("tab", { name: "Sowa" }).click();
+  const panel = page.locator("#sowa");
+  await expect(panel.locator("[data-save-state]")).toHaveText(/zapisany w chmurze|Zapisuję postęp/);
+  await expect(panel).not.toContainText("Eksportuj");
+  await expect(panel).not.toContainText("Importuj");
 
-  await dialog.locator(".sowie-setting-row", { hasText: "Muzyka" }).getByRole("button").click();
-  await expect.poll(async () => (await readDoc(project, "sowiegry/profil"))?.settings?.music).toBe(false);
+  await panel.locator('[data-setting="quips"]').click();
+  await expect.poll(async () => (await readDoc(project, "sowiegry/profil"))?.settings?.quips).toBe(false);
 
-  await dialog.getByRole("button", { name: "Wyloguj to urządzenie" }).click();
+  await panel.locator("[data-logout]").click();
+  await page.getByRole("dialog", { name: "Wylogować to urządzenie?" }).getByRole("button", { name: "Wyloguj" }).click();
   await expect(page.getByRole("dialog", { name: "Hasło sowy" })).toBeVisible();
   const device = await page.evaluate((key) => JSON.parse(localStorage.getItem(key)), DEVICE_KEY);
   expect(device.unlocked).toBe(false);

@@ -35,7 +35,7 @@ test("zakładka „Gry”: pięć kart z rejestru, „Graj” otwiera grę", asy
   await openMenu(page);
   await expect(page.getByRole("tab", { name: "Gry" })).toHaveAttribute("aria-selected", "true");
   const cards = page.locator(".game-card");
-  for (const name of ["Sowia Ucieczka", "SowaJumper", "Sowie Tory", "Sowie Ogrody", "Sowia Szklarnia"]) {
+  for (const name of ["Sowia Ucieczka", "Sowa w Chmurach", "Sowie Tory", "Sowie Ogrody", "Sowia Szklarnia"]) {
     await expect(cards.filter({ hasText: name })).toHaveCount(1);
   }
   // Rekord z profilu (tu: jeszcze bez gry) zastępuje szkielet karty po wczytaniu chmury.
@@ -49,11 +49,10 @@ test("zakładka „Gry”: pięć kart z rejestru, „Graj” otwiera grę", asy
   await expect(page.locator('[data-play="sowa3"]')).toHaveAttribute("href", "SowieTory/");
   await expect(page.locator('[data-game="sowa3"] .game-card-new')).toHaveText("Nowe!");
   await expect(page.locator('[data-preview="sowa3"]')).toHaveCount(0);
-  await expect(page.locator("[data-preview]")).toHaveCount(3);
-  // Sowa w Chmurach (E6) w podglądzie: karta SowaJumper prowadzi do obecnej gry i ma przycisk nowej wersji.
-  await expect(page.locator('[data-play="jumper"]')).toHaveAttribute("href", "SowaJumper/");
-  await expect(page.locator('[data-preview="jumper"]')).toHaveAttribute("href", "SowaWChmurach/");
-  await expect(page.locator('[data-preview="jumper"]')).toContainText("Wypróbuj nową wersję: Sowa w Chmurach");
+  // Sowa w Chmurach zastąpiła SowaJumper (E6f): karta „jumper” prowadzi do nowej gry i ma znaczek „Nowe!”.
+  await expect(page.locator('[data-play="jumper"]')).toHaveAttribute("href", "SowaWChmurach/");
+  await expect(page.locator('[data-game="jumper"] .game-card-new')).toHaveText("Nowe!");
+  await expect(page.locator("[data-preview]")).toHaveCount(2);
   // Nowe Sowie Ogrody (E7) w podglądzie: ten sam folder, strona nowa.html.
   await expect(page.locator('[data-play="ogrody"]')).toHaveAttribute("href", "SowieOgrody/");
   await expect(page.locator('[data-preview="ogrody"]')).toHaveAttribute("href", "SowieOgrody/nowa.html");
@@ -135,9 +134,9 @@ test("instrukcje: „Jak grać?” na karcie i zakładka z kartami wszystkich gi
 
   const button = page.locator('[data-guide="jumper"]');
   await button.click();
-  const dialog = page.getByRole("dialog", { name: "Jak grać — SowaJumper" });
+  const dialog = page.getByRole("dialog", { name: "Jak grać — Sowa w Chmurach" });
   await expect(dialog).toBeVisible();
-  await expect(dialog.locator(".sowie-guide-card")).toHaveCount(5);
+  await expect(dialog.locator(".sowie-guide-card")).toHaveCount(7);
   await expect(dialog.locator(".sowie-gesture-demo")).toHaveCount(1);
   await dialog.getByRole("button", { name: "Rozumiem" }).click();
   await expect(dialog).toBeHidden();
@@ -177,7 +176,7 @@ test("odnośnik do instrukcji jednej gry i przełączanie zakładek z klawiatury
 test("galeria: nowe zdjęcia, zablokowane z postępem i przeglądarka z gestami", async ({ page }) => {
   const errors = watchErrors(page);
   await openMenu(page);
-  // Cele Akademii odblokowują kolejne zdjęcia (1000 m w Sowiej Ucieczce, 250 m w SowaJumper).
+  // Cele Akademii odblokowują kolejne zdjęcia (1000 m w Sowiej Ucieczce, 250 m w Sowie w Chmurach).
   await page.evaluate(() => {
     window.SowieAcademy.record("runner", "runnerDistance", 1500);
     window.SowieAcademy.record("jumper", "jumperHeight", 300);

@@ -1,9 +1,8 @@
 const { test, expect, waitForCloud } = require("./fixtures");
 
-// Obecne gry (dok z instrukcją, Akademią i panelem mechaniki). Sowia Ucieczka (runner) i Sowie Tory (sowa3) mają
-// własne instrukcje, zadania i combo — testy w tests/e2e/telefon/ucieczka.spec.js i tory.spec.js.
+// Dawne gry idle (dok z instrukcją, Akademią i panelem mechaniki). Sowia Ucieczka, Sowie Tory i Sowa w Chmurach
+// mają własne instrukcje, zadania i combo — testy w tests/e2e/telefon/ucieczka.spec.js, tory.spec.js, chmury.spec.js.
 const games = [
-  { id: "jumper", path: "/SowaJumper/", title: "SowaJumper", feature: "Precyzja i wyzwanie dnia SowaJumper" },
   { id: "ogrody", path: "/SowieOgrody/", title: "Sowie Ogrody", feature: "Kontrakty ogrodnicze" },
   { id: "szklarnia", path: "/SowiaSzklarnia/", title: "Sowia Szklarnia", feature: "Album cech i cele laboratorium" },
 ];

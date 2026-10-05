@@ -1,147 +1,21 @@
-# SowaJumper — dokumentacja techniczna
+# SowaJumper — przekierowanie do Sowy w Chmurach
 
-## Architektura
+Od etapu E6f (Analiza 3, zadanie 6.8) gra SowaJumper została zastąpiona przez **Sowę w Chmurach** (`SowaWChmurach/`, dokumentacja: `SowaWChmurach/docs/Documentation.md`). Identyfikator w bazie (`jumper`), rekordy, top 10 i historia są wspólne — nowa gra korzysta z tych samych danych.
 
-`SowaJumper` jest grą Canvas 2D bez frameworka. Bazowy silnik znajduje się w `script.js`. `difficulty.js` ładuje starsze moduły dynamicznie, a `cute-loader.js` czeka na ich gotowość przed uruchomieniem kolejnych warstw.
+Stare pliki gry (`script.js` i jedenaście warstw: `animation-polish.js`, `bonus-fix.js`, `bonus-lanes.js`, `cute-loader.js`, `cute-rework.js`, `difficulty.js`, `extra-lives.js`, `pause-final.js`, `platform-expansion.js`, `safety-balance.js`, a także `styles.css`) zostały usunięte (Analiza 2, rozdz. 6). Część dawnej gry w `shared/gameplay-expansion.js` (`initializeJumper`: panel „Precyzja i wyzwanie dnia SowaJumper”, precyzyjne lądowania liczone z globalnego `state`, przycisk uruchomienia wyzwania dnia) i rozpoznawanie folderu `sowajumper` w `shared/game-guides.js` też zniknęły — Sowa w Chmurach ma własną serię idealnych lądowań (metryka Akademii `jumperStreak` przez SowieProgress), combo i instrukcję.
 
-## Kolejność ładowania
+## `index.html` — przekierowanie
 
-### Statyczna
+W folderze został tylko `index.html`, żeby stare adresy i zakładki (także ekran główny telefonu) dalej działały:
 
-0. w `<head>`: `../config/firebase-config.js`, `../shared/sowie-platform.js`, `../shared/sowie-cloud.js`, `../shared/password-gate.js`, `../shared/sowie-smoke-hook.js`
-1. `script.js`
-2. `../shared/sowie-core.js`
-3. `../shared/sowie-runtime.js`
-4. `difficulty.js`
-5. `cute-loader.js`
+- `<html lang="pl">`, `<meta charset="utf-8">`, `viewport` (`width=device-width,initial-scale=1.0,viewport-fit=cover`), `theme-color` `#bfe9ff`, ikona `../assets/icons/icon.svg`, tytuł „Sowa w Chmurach — SowieGry”;
+- `<meta http-equiv="refresh" content="0; url=../SowaWChmurach/">` — przekierowanie także bez JavaScriptu;
+- skrypt w `<head>`: `location.replace(\`../SowaWChmurach/${location.search}${location.hash}\`)` — przekierowanie od razu, **z parametrami adresu** (np. `?seed=…`, `?cloud=emulator` w testach) i bez wpisu w historii przeglądarki;
+- `<body>`: akapit „SowaJumper to teraz Sowa w Chmurach.” z odnośnikiem `../SowaWChmurach/`.
 
-### Dynamiczna z `difficulty.js`
+Strona nie ładuje SowieCloud ani innych skryptów — niczego nie zapisuje w bazie.
 
-1. `extra-lives.js`
-2. `bonus-fix.js`
-3. `safety-balance.js`
+## Testy
 
-### Dynamiczna z `cute-loader.js`
-
-1. `cute-rework.js`
-2. `bonus-lanes.js`
-3. `animation-polish.js`
-4. `platform-expansion.js`
-5. `pause-final.js`
-
-W `<head>` ładowane są kolejno `../config/firebase-config.js`, `../shared/sowie-platform.js`, `../shared/sowie-cloud.js`, `../shared/password-gate.js`, `../shared/sowie-smoke-hook.js`, a także `styles.css` i `../shared/cute-ui.css`.
-
-## Poziomy trudności
-
-`JUMPER_DIFFICULTIES` zmienia grawitację, zwykłe wybicie, wybicie kozy, wybicie Amic, życia startowe oraz mnożnik odstępów. Wybór jest zapisywany w Firestore w dokumencie gry `sowiegry/profil/sowiegry_gry/jumper`, pole `difficulty` (`SowieCloud.updateGame("jumper", { difficulty })`).
-
-- przy ładowaniu poziom to `arcade`; po `SowieCloud.ready` odczytywany jest zapisany `difficulty` (jeśli jest na liście), wywoływane są `applyJumperDifficulty()`, `syncJumperBest()` i `renderJumperDifficultyButtons()`;
-- `syncJumperBest()` ustawia `state.bestScore` i `state.bestHeight` z `SowieCloud.records("jumper", state.difficultyKey)` (`bestScore`, `bestHeight`) — rekordy są osobne dla każdego poziomu;
-- `setJumperDifficulty(key)` zapisuje wybór i od razu przełącza pokazywany rekord.
-
-## Bezpieczeństwo platform
-
-`safety-balance.js` kontroluje maksymalny poziomy skok między platformami, serie ruchomych i kruszących się platform oraz pozycję `Pracu Pracu`.
-
-## Platformy z `cute-rework.js`
-
-- `cushion`,
-- `cloud`,
-- `leafpad`,
-- `balcony`,
-- `rest`.
-
-Punkty odpoczynku pojawiają się w kolejnych przedziałach wysokości i dają chwilową nietykalność.
-
-## Platformy z `platform-expansion.js`
-
-- `rotating` — lekko obraca się i daje premię punktową,
-- `temporary` — znika około 720 ms po pierwszym lądowaniu,
-- `springGoat` — kozia trampolina z mocnym wybiciem.
-
-Moduł opakowuje `createPlatform()`, `updateGame()`, `collidePlatforms()` i `drawPlatform()` po załadowaniu wcześniejszych systemów.
-
-## `pause-final.js`
-
-Ostatnia warstwa `updateGame()`, `updateBonus()` i `updateTitle()`. Zatrzymuje także animację platform tymczasowych, bąbelki oraz pozostałe późne systemy podczas pauzy.
-
-## Strefy wysokości
-
-- miasto poniżej 100 m,
-- dachy 100–250 m,
-- chmury 250–450 m,
-- noc 450–700 m,
-- sowie niebo powyżej 700 m.
-
-Warstwy są dekoracyjne i nie zmieniają kolizji.
-
-## Combo i near miss
-
-Combo ma progi `×1`–`×5`. Rośnie za liście, perfekcyjne lądowania i bliskie minięcie `Pracu Pracu`; obrażenie resetuje serię.
-
-## Liście i gorączka
-
-Liście otrzymują wariant `normal`, `gold` albo `rainbow`. Tęczowy liść lub seria ośmiu zbiórek uruchamia gorączkę, która dodaje wyłącznie pickupy nad istniejącymi platformami.
-
-## Dodatkowe życia
-
-`extra-lives.js` tworzy `jumperLifePickups`. Nadmiarowy pickup przy limicie żyć daje punkty.
-
-## Mini-gra humbaka
-
-### `bonus-fix.js`
-
-- obiekty spadają pionowo,
-- sowa porusza się poziomo,
-- wynik zależy od gracza.
-
-### `bonus-lanes.js`
-
-- trzy pasy,
-- lane-based spawn,
-- brak blokady wszystkich pasów,
-- ostrzeżenia u góry,
-- złote liście bonusowe.
-
-## Animacja i kosmetyki
-
-`animation-polish.js` dodaje squash-and-stretch, przechylenie, gwiazdki, dźwięki oraz działający kosmetyk `bubbleTrail`. Pozostałe kosmetyki są rysowane przez `SowieCore`.
-
-## Profil i misje
-
-Gra raportuje liście, dodatkowe życia, near missy, combo, wysokość i wynik bonusu. Misja 250 m odblokowuje plecak.
-
-## Pauza i audio
-
-Adapter przekazany do `SowieCore.registerGame()` zatrzymuje sceny `title`, `playing` i `bonus`. Muzyka korzysta z motywu `jumper`.
-
-## Diagnostyka i testy
-
-- `?debug=1`,
-- `tests/smoke.html`,
-- `.github/workflows/js-check.yml`.
-
-## Rekordy
-
-Rekordy są w Firestore (`SowieCloud`):
-
-- `profil.records.jumper.{chill|arcade|chaos}` — `bestScore`, `bestHeight` (zapis tylko przy poprawie), `profil.records.jumper.runs`, `lastPlayedAt`;
-- `sowiegry_gry/jumper` — `top10` na poziom, `dailyBest` (rekord wyzwania dnia = wysokość), historia `sowiegry_historia`.
-
-`endGame()` w `script.js` po ustawieniu `lastScore`, `lastHeight` i lokalnych maksimów wywołuje `SowieCloud.submitRun("jumper", { score, height, difficulty: state.difficultyKey })`. Start gry (Spacja/Enter, dotknięcie planszy na ekranie tytułowym i końcowym) jest możliwy dopiero, gdy `jumperCloudReady()` (`SowieCloud.isReady()`) zwraca `true`.
-
-## Okno „🏆 Rekordy”
-
-Strona ładuje `../shared/records.js` po `../shared/owl-gallery.js` (i po `../shared/game-guides.js`, który tworzy dok przycisków). Moduł dodaje do doku przycisk 🏆 i okno rekordów zasilane przez `SowieCloud` (top 10 na poziom trudności, ostatnie gry, rekordy wyzwania dnia). Opis modułu: `docs/Documentation.md`, sekcja „`shared/records.js`”.
-
-## PWA (etap E2a)
-
-`index.html` ma w `<head>` po `theme-color`: `<link rel="manifest" href="../manifest.webmanifest">`, `<link rel="icon" href="../assets/icons/icon.svg" type="image/svg+xml">`, `<link rel="apple-touch-icon" href="../assets/icons/apple-touch-icon.png">`, `<meta name="mobile-web-app-capable" content="yes">`, `<meta name="apple-mobile-web-app-capable" content="yes">`, `<meta name="apple-mobile-web-app-title" content="SowieGry">`, a po `../shared/password-gate.js` skrypt `../shared/pwa.js` (rejestracja service workera `sw.js`). Gra trafia do pamięci podręcznej przy pierwszym otwarciu i potem uruchamia się także bez zasięgu. Opis: `docs/Documentation.md`, rozdział „PWA”.
-
-## Komunikaty w trakcie gry (etap E2d)
-
-- Adapter gry w `SowaJumper/cute-rework.js` (`SowieCore.registerGame`) ma dodatkowe pole `isPlaying: () => state.scene === "playing" || state.scene === "bonus"` (wspinaczka i bonus).
-- `SowieCore.isPlaying()` zwraca `true`, gdy trwa rozgrywka i gra nie jest wstrzymana; `registerGame` dodaje klasę `sowie-arcade` do `<html>`.
-- `shared/notification-manager.js` pokazuje wtedy **najwyżej 1 komunikat naraz**, u góry ekranu pod paskiem narzędzi (`top: max(112px, safe-area + 104px)` na telefonie w pionie, w poziomie w rzędzie paska narzędzi), węższy (`min(64vw, 300px)`) i mniejszy (13 px). Pozostałe czekają w kolejce. Dzięki temu komunikaty nie zasłaniają sowy przy dolnej krawędzi (zgłoszenie właściciela). Poza rozgrywką (tytuł, pauza, koniec gry) widać do 2 komunikatów.
-- Test: `tests/e2e/telefon/komunikaty.spec.js`.
-
+- `tests/unit/architecture.test.mjs` — w `SowaJumper/` zostały tylko `index.html` i `docs/`; strona przekierowuje do `../SowaWChmurach/` z zachowaniem parametrów adresu i nie ładuje skryptów; rejestr nie wskazuje już `SowaJumper/`, a Sowa w Chmurach nie jest podglądem.
+- `tests/e2e/telefon/start.spec.js` — `/SowaJumper/?seed=przekierowanie` kończy na `/SowaWChmurach/?seed=przekierowanie`.

@@ -117,17 +117,14 @@ test("pierwsze połączenie tworzy sowiegry/meta i sowiegry/profil", async ({ pa
 
 test("rekord zrobiony na telefonie widać na drugim urządzeniu", async ({ page, browser }, testInfo) => {
   const project = uniqueProject(testInfo);
-  const url = cloudUrl("/SowaJumper/?seed=rekord", project);
+  const url = cloudUrl("/SowaWChmurach/?seed=rekord", project);
   const errors = watchErrors(page);
   await page.goto(url, { waitUntil: "load" });
   await waitForCloud(page);
 
-  // Koniec gry w SowaJumper — ta sama ścieżka co po utracie ostatniego życia.
+  // Koniec lotu w Sowie w Chmurach — ten sam zapis zbiorczy, który robi gra (SowieCloud.submitRun).
   await page.evaluate(async () => {
-    state.scene = "playing";
-    state.score = 1234;
-    state.heightMeters = 77;
-    endGame();
+    window.SowieCloud.submitRun("jumper", { score: 1234, height: 77, leaves: 3, difficulty: "arcade" });
     await window.SowieCloud.flush();
   });
   const profile = await readDoc(project, "sowiegry/profil");
@@ -149,7 +146,9 @@ test("rekord zrobiony na telefonie widać na drugim urządzeniu", async ({ page,
       bestScore: 1234,
       bestHeight: 77,
     });
-    expect(await other.evaluate(() => [state.bestScore, state.bestHeight])).toEqual([1234, 77]);
+    // Ekran tytułowy gry na drugim urządzeniu pokazuje rekord z chmury.
+    await other.waitForFunction(() => window.SowaWChmurach?.ready?.());
+    await expect(other.locator("[data-record]")).toContainText(/1\s?234/);
     expect(await other.evaluate(() => window.SowieCloud.deviceId())).not.toBe(
       await page.evaluate(() => window.SowieCloud.deviceId()),
     );

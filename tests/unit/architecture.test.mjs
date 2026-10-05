@@ -6,9 +6,9 @@ import { test } from "node:test";
 const read = (path) => readFile(path, "utf8");
 
 // Obecne gry na starym interfejsie (SowieCore, wspólny menedżer powiadomień, okno Rekordów).
-const legacyGamePages = ["SowaJumper/index.html", "SowieOgrody/index.html", "SowiaSzklarnia/index.html"];
+const legacyGamePages = ["SowieOgrody/index.html", "SowiaSzklarnia/index.html"];
 // Wszystkie gry z rejestru: Sowia Ucieczka (E4, moduły ES na Sowim Silniku; zastąpiła SowaRunner), Sowie Tory
-// (E5, zastąpiły Sowa3), podglądy Sowy w Chmurach (E6) i Łącz i Hoduj (E8) oraz obecne gry.
+// (E5, zastąpiły Sowa3), Sowa w Chmurach (E6, zastąpiła SowaJumper), podgląd Łącz i Hoduj (E8) oraz obecne gry.
 const newGamePages = [
   "SowiaUcieczka/index.html",
   "SowieTory/index.html",
@@ -77,7 +77,6 @@ async function projectScripts() {
     "SowieTory",
     "SowaWChmurach",
     "LaczIHoduj",
-    "SowaJumper",
     "SowieOgrody",
     "SowiaSzklarnia",
   ];
@@ -217,6 +216,7 @@ test("projekt respektuje reduced motion", async () => {
 const REPLACED_GAMES = [
   ["SowaRunner", "SowiaUcieczka", "Sowia Ucieczka"],
   ["Sowa3", "SowieTory", "Sowie Tory"],
+  ["SowaJumper", "SowaWChmurach", "Sowa w Chmurach"],
 ];
 
 for (const [oldFolder, newFolder, name] of REPLACED_GAMES) {

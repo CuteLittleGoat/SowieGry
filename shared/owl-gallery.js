@@ -46,7 +46,7 @@
       alt: "Zbliżenie kolorowej sowy o dużych oczach.",
       photographer: "Regan Dsouza",
       sourceUrl: "https://www.pexels.com/photo/29082522/",
-      requirement: "Osiągnij wysokość 250 m w SowaJumper.",
+      requirement: "Osiągnij wysokość 250 m w Sowie w Chmurach.",
       goals: [["jumperHeight", 250]],
     },
     {
@@ -136,7 +136,7 @@
       alt: "Młoda puszczykowata sowa wspinająca się po pniu.",
       photographer: "Twórca w serwisie Pexels",
       sourceUrl: "https://www.pexels.com/photo/27067203/",
-      requirement: "Zdobądź 1200 punktów w SowaJumper.",
+      requirement: "Zdobądź 1200 punktów w Sowie w Chmurach.",
       goals: [["jumperScore", 1200]],
     },
     {
@@ -146,7 +146,7 @@
       alt: "Młody puszczyk oświetlony miękkim światłem w lesie.",
       photographer: "Twórca w serwisie Pexels",
       sourceUrl: "https://www.pexels.com/photo/17817497/",
-      requirement: "Wykonaj serię 4 precyzyjnych lądowań w SowaJumper.",
+      requirement: "Wyląduj idealnie 4 razy z rzędu w Sowie w Chmurach.",
       goals: [["jumperStreak", 4]],
     },
     {

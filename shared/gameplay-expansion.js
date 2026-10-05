@@ -1,4 +1,4 @@
-// Rozszerzenia gier: serie, precyzja, combo, wyzwanie dnia, kontrakty i album cech.
+// Rozszerzenia dawnych gier idle: kontrakty Ogrodów, cele laboratorium i album cech Szklarni.
 // Stan dnia (gry/{id}.daily) i album cech (gry/szklarnia.traitAlbum) zapisuje SowieCloud.
 // Gry idle udostępniają swój stan przez window.SowieIdleGame.snapshot().
 (() => {
@@ -10,7 +10,6 @@
   const academy = window.SowieAcademy;
   const cloud = window.SowieCloud;
   const day = new Date().toISOString().slice(0, 10);
-  const isDaily = new URLSearchParams(location.search).get("daily") === "1";
   let featureModal = null;
   let featureRenderer = null;
   let previousFocus = null;
@@ -18,7 +17,6 @@
 
   function detectFromPath() {
     const path = location.pathname.toLowerCase();
-    if (path.includes("sowajumper")) return "jumper";
     if (path.includes("sowieogrody")) return "ogrody";
     if (path.includes("sowiaszklarnia")) return "szklarnia";
     return null;
@@ -63,17 +61,8 @@
 
   function setHud(text) {
     if (!hud) createHud();
-    hud.innerHTML = `${text}${isDaily ? '<span class="sowie-daily-badge">WYZWANIE DNIA</span>' : ""}`;
+    hud.textContent = text;
   }
-
-  function startDaily() {
-    const url = new URL(location.href);
-    url.searchParams.set("seed", `daily-${day}-${gameId}`);
-    url.searchParams.set("daily", "1");
-    location.href = url.href;
-  }
-
-  // Rekord wyzwania dnia zapisuje gra przez SowieCloud.submitRun() (gry/{id}.dailyBest).
 
   function ensureFeatureModal() {
     if (featureModal) return featureModal;
@@ -90,7 +79,6 @@
       if (event.target === featureModal || event.target.closest("[data-feature-close]")) closeFeature();
       const claim = event.target.closest("[data-feature-claim]");
       if (claim) claimFeature(claim.dataset.featureClaim);
-      if (event.target.closest("[data-start-daily]")) startDaily();
     });
     featureModal.addEventListener("keydown", (event) => {
       if (event.key === "Escape") {
@@ -133,13 +121,6 @@
     getDock().appendChild(button);
   }
 
-  function dailyPanel(description) {
-    const active = isDaily
-      ? `<p><strong>Dzisiejsza trasa jest aktywna.</strong> Losowość jest stała dla daty ${day}, więc każda próba ma taki sam układ.</p>`
-      : `<button class="sowie-feature-button" type="button" data-start-daily>Uruchom wyzwanie dnia</button>`;
-    return `<article class="sowie-feature-card"><h3>Wyzwanie dnia</h3><p>${description}</p>${active}</article>`;
-  }
-
   function claimFeature(id) {
     const data = dailyState();
     data.claimed ||= {};
@@ -172,57 +153,6 @@
         <button class="sowie-feature-button" type="button" data-feature-claim="${objective.id}" ${complete && !claimed ? "" : "disabled"}>${claimed ? "Odebrano" : "Odbierz nagrodę"}</button>
       </article>`;
     }).join("");
-  }
-
-  function initializeJumper() {
-    attachFeatureButton("Precyzja i wyzwanie dnia SowaJumper");
-    let previousScene = null;
-    let previousVy = 0;
-    let previousLives = null;
-    let streak = 0;
-    let bestStreak = 0;
-
-    featureRenderer = () => `${dailyPanel("Wspinaj się po codziennie ustalonym układzie platform. Rekord dnia jest zapisywany oddzielnie.")}
-      <article class="sowie-feature-card"><h3>Precyzyjne lądowania</h3><p>Lądowanie w środkowych 44% platformy zwiększa serię i dodaje punkty. Nieprecyzyjne lądowanie lub utrata życia zerują serię.</p><strong>Najlepsza seria: ${bestStreak}</strong></article>`;
-
-    window.setInterval(() => {
-      try {
-        if (typeof state === "undefined" || typeof owl === "undefined" || typeof platforms === "undefined") return;
-        if (previousLives !== null && state.lives < previousLives) streak = 0;
-        if (state.scene === "playing" && previousVy > 1 && owl.vy < -1) {
-          const feet = owl.y + owl.radius;
-          let nearest = null;
-          let distance = Infinity;
-          for (const platform of platforms) {
-            const gap = Math.abs(feet - platform.y);
-            if (gap < distance) {
-              nearest = platform;
-              distance = gap;
-            }
-          }
-          if (nearest && distance < 30) {
-            const center = nearest.x + nearest.width / 2;
-            const precise = Math.abs(owl.x - center) <= nearest.width * 0.22;
-            if (precise) {
-              streak += 1;
-              bestStreak = Math.max(bestStreak, streak);
-              state.score += streak * 4;
-              academy?.record?.("jumper", "jumperStreak", bestStreak, "max");
-            } else streak = 0;
-          }
-        }
-        if (state.scene === "playing") setHud(`🎯 Precyzja: ${streak} · premia lądowania: +${(streak + 1) * 4}`);
-        if (state.scene === "gameover" && previousScene !== state.scene) {
-          academy?.record?.("jumper", "jumperHeight", Number(state.lastHeight || state.heightMeters || 0), "max");
-          academy?.record?.("jumper", "jumperScore", Number(state.lastScore || state.score || 0), "max");
-        }
-        previousVy = owl.vy;
-        previousLives = state.lives;
-        previousScene = state.scene;
-      } catch (_error) {
-        // Stan pojawia się po uruchomieniu głównego skryptu gry.
-      }
-    }, 100);
   }
 
   function initializeGardens() {
@@ -363,9 +293,9 @@
   } else initialize();
 
   function initialize() {
-    // SowaRunner zastąpiła Sowia Ucieczka, a Sowa3 — Sowie Tory (moduły ES, własne zadania) — bez tego skryptu.
-    if (gameId === "jumper") initializeJumper();
-    else if (gameId === "ogrody") initializeGardens();
+    // SowaRunner, Sowa3 i SowaJumper zastąpiły Sowia Ucieczka, Sowie Tory i Sowa w Chmurach (moduły ES, własne
+    // zadania i combo) — bez tego skryptu.
+    if (gameId === "ogrody") initializeGardens();
     else if (gameId === "szklarnia") initializeGreenhouse();
   }
 })();

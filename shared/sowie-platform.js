@@ -18,15 +18,15 @@
       dailyMetric: "distance",
       rebuilt: true,
     },
+    // Sowa w Chmurach (E6) zastąpiła SowaJumper: ten sam identyfikator i te same rekordy; SowaJumper/ przekierowuje.
     {
       id: "jumper",
-      name: "SowaJumper",
-      path: "SowaJumper/",
+      name: "Sowa w Chmurach",
+      path: "SowaWChmurach/",
       icon: "🪶",
       kind: "arcade",
       dailyMetric: "height",
-      // Nowa wersja w podglądzie (E6): ten sam identyfikator i te same rekordy.
-      preview: Object.freeze({ path: "SowaWChmurach/", name: "Sowa w Chmurach" }),
+      rebuilt: true,
     },
     // Sowie Tory (E5) zastąpiły Sowa3: ten sam identyfikator i te same rekordy; Sowa3/ przekierowuje.
     {

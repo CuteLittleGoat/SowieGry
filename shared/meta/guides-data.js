@@ -129,46 +129,6 @@ export const GUIDES = Object.freeze({
       },
     ],
   },
-  // Obecne gry (treść przeniesiona z shared/game-guides.js w E3). Po przebudowie każdej gry podmieniamy jej karty.
-  jumper: {
-    id: "jumper",
-    title: "SowaJumper",
-    summary:
-      "Automatycznie odbijająca się sowa wspina się po platformach. Ty sterujesz wyłącznie ruchem poziomym i wybierasz najbezpieczniejszą drogę ku górze.",
-    cards: [
-      {
-        id: "cel",
-        title: "Cel gry",
-        text: "Wznieś się jak najwyżej, zbieraj liście i buduj serię precyzyjnych lądowań.",
-        sprite: "sowa-skok",
-      },
-      {
-        id: "sterowanie",
-        title: "Sterowanie",
-        text: "Na telefonie przytrzymaj lewą albo prawą połowę ekranu. Na klawiaturze: ←/→ lub A/D. Spacja albo dotknięcie ekranu tytułowego rozpoczyna grę.",
-        gesture: "hold",
-        sprite: "sowa-szybuje",
-      },
-      {
-        id: "krawedz",
-        title: "Przez krawędź",
-        text: "Sowa przechodzi przez boczną krawędź i wraca z drugiej strony.",
-        sprite: "sowa-bieg-4",
-      },
-      {
-        id: "ladowanie",
-        title: "Precyzyjne lądowanie",
-        text: "Lądowanie blisko środka platformy podtrzymuje serię precyzji.",
-        sprite: "sowa-radosc",
-      },
-      {
-        id: "platformy",
-        title: "Platformy",
-        text: "Platformy Amic wybijają znacznie wyżej, a kruche rozpadają się po użyciu.",
-        sprite: "amic-sterowiec",
-      },
-    ],
-  },
   // Sowie Tory (SowieTory/, Analiza 3 E5) — od podmiany (E5f) gra „sowa3”.
   sowa3: {
     id: "sowa3",
@@ -236,10 +196,9 @@ export const GUIDES = Object.freeze({
       },
     ],
   },
-  // Sowa w Chmurach — nowa wersja SowaJumper w podglądzie (SowaWChmurach/, Analiza 3 E6); po podmianie (E6f) zastąpi
-  // klucz `jumper`.
-  chmury: {
-    id: "chmury",
+  // Sowa w Chmurach (SowaWChmurach/, Analiza 3 E6) — od podmiany (E6f) gra „jumper”.
+  jumper: {
+    id: "jumper",
     title: "Sowa w Chmurach",
     summary:
       "Sowa wspina się coraz wyżej — sama odbija się od gałązek, a Ty prowadzisz ją w bok. Od ogródka przez blok i chmury aż do zorzy i kosmosu.",
@@ -406,6 +365,7 @@ export const GUIDES = Object.freeze({
       },
     ],
   },
+  // Obecne gry (treść przeniesiona z shared/game-guides.js w E3). Po przebudowie każdej gry podmieniamy jej karty.
   ogrody: {
     id: "ogrody",
     title: "Sowie Ogrody",

@@ -16,7 +16,7 @@
     chaosFinish: "Ukończ kampanię Sowich Torów na poziomie Chaos",
     combo4: "Osiągnij combo ×4",
     runner1000: "Przebiegnij 1000 m w Sowiej Ucieczce",
-    jumper250: "Osiągnij 250 m w SowaJumper",
+    jumper250: "Osiągnij 250 m w Sowie w Chmurach",
   };
   const QUIPS = [
     "Hu-hu! Ale lot!",

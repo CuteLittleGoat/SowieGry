@@ -1,4 +1,4 @@
-// Sowa w Chmurach (wersja podglądowa nowej SowaJumper, Analiza 3, E6) na telefonach: start, przeciąganie palcem
+// Sowa w Chmurach (gra „jumper”, od E6f zamiast SowaJumper; Analiza 3, E6) na telefonach: start, przeciąganie palcem
 // (ruch względny), klawiatura, strefy wysokości, ratunek kózki, pauza, koniec lotu z wynikami i zapis rekordu
 // „jumper” (wynik i wysokość) w chmurze.
 const { test, expect, swipe: swipeFrom, waitForCloud, watchErrors } = require("../fixtures");
@@ -28,7 +28,7 @@ test("Sowa w Chmurach: przeciąganie palcem przesuwa sowę w bok, klawiatura, so
   const errors = watchErrors(page);
   await openGame(page);
   await expect(page.getByRole("heading", { name: "Sowa w Chmurach" })).toBeVisible();
-  await expect(page.locator("[data-preview]")).toContainText("Wersja podglądowa");
+  await expect(page.locator("[data-preview]")).toHaveCount(0);
   await page.locator("[data-start]").click();
   await expect(page.locator("[data-title]")).toBeHidden();
   expect(await page.evaluate(() => window.SowaWChmurach.screen())).toBe("playing");

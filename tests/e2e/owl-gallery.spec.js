@@ -138,10 +138,10 @@ test("osiągnięcia Akademii z Firestore trwale odblokowują komplet trzydziestu
   expect(errors).toEqual([]);
 });
 
-// Obecne gry mają przycisk Galerii w doku; przebudowane (Sowia Ucieczka, Sowie Tory) — Galerię w zakładce menu.
+// Dawne gry idle mają przycisk Galerii w doku; przebudowane gry — Galerię w zakładce menu głównego.
 test("Galeria Sów jest dostępna bezpośrednio z każdej obecnej gry", async ({ page }) => {
   const errors = watchRuntimeErrors(page);
-  const paths = ["/SowaJumper/", "/SowieOgrody/", "/SowiaSzklarnia/"];
+  const paths = ["/SowieOgrody/", "/SowiaSzklarnia/"];
 
   for (const [index, path] of paths.entries()) {
     await page.goto(`${path}?seed=gallery-game-${index}&testNow=1783656000000`, { waitUntil: "load" });

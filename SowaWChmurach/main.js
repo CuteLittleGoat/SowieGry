@@ -24,8 +24,7 @@ import { createTutorial } from "./tutorial.js";
 const cloud = window.SowieCloud;
 const params = new URLSearchParams(location.search);
 const AUDIO_BASE = new URL("../assets/audio/", import.meta.url).href;
-// Instrukcja: własny przewodnik (shared/meta/guides-data.js, klucz „chmury”); po podmianie (E6f) zastąpi „jumper”.
-const GUIDE_ID = "chmury";
+const GUIDE_ID = GAME_ID; // instrukcja „jumper” w shared/meta/guides-data.js
 
 const stage = document.querySelector("[data-stage]");
 const canvas = document.querySelector("[data-canvas]");
@@ -131,15 +130,22 @@ function updateHeight(state) {
   heightFill.style.transform = `scaleX(${Math.min(1, Math.max(0, share))})`;
 }
 
-// Akademia i Galeria: w trakcie lotu komunikaty czekają na ekran wyników (Analiza 2, rozdz. 4.3).
+// Akademia, Galeria i misje garderoby: w trakcie lotu komunikaty czekają na ekran wyników (Analiza 2, rozdz. 4.3).
+// Akademia i Galeria wołają SowieNotifications.toast({ title, detail, reward }) — jak w Sowiej Ucieczce.
 let collectingResults = false;
 window.SowieNotifications ||= {
-  notify(message) {
-    if (screen === "playing" || collectingResults) toasts.defer(message);
-    else toasts.show(message);
+  toast({ title = "", detail = "", reward = "" } = {}) {
+    const text = [title, detail, reward].filter(Boolean).join(" · ");
+    if (screen === "playing" || collectingResults) toasts.defer(text);
+    else toasts.show(text, { kind: "reward", duration: 3200 });
   },
 };
-progress.linkProfile?.(cloud);
+// Misje garderoby i statystyki profilu (jak w dawnym SowaJumper przez SowieCore): liście, „O włos!”, combo,
+// odzyskane życie, 250 m. Ukończona misja odblokowuje dodatek; komunikat trafia na ekran wyników.
+progress.linkProfile({
+  onMission: ({ label, rewardLabel }) =>
+    window.SowieNotifications?.toast?.({ title: "Misja ukończona", detail: label, reward: `Nagroda: ${rewardLabel}` }),
+});
 
 function play(name, options) {
   try {

@@ -1,5 +1,5 @@
 // Sowa w Chmurach (Analiza 3, E6e): samouczek pierwszego lotu (kroki, warunki, limity czasu, dymek do zdeptania
-// obok gałązki) i instrukcja „chmury” (karty, grafiki z atlasu).
+// obok gałązki) i instrukcja „jumper” (od E6f; wcześniej „chmury”) (karty, grafiki z atlasu).
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { guideFor } from "../../shared/meta/guides-data.js";
@@ -172,9 +172,9 @@ test("samouczek w locie: dymek obok gałązki nie trafia wznoszącej się sowy, 
   assert.equal(base.y + TUTORIAL_DYMEK.above, dymek.y0);
 });
 
-test("instrukcja „chmury”: tytuł, opis, karty o sterowaniu, platformach, Pracu i Amic, kózkach, oceanie — z grafikami z atlasu", () => {
-  const guide = guideFor("chmury");
-  assert.equal(guide.id, "chmury");
+test("instrukcja „jumper” (Sowa w Chmurach): tytuł, opis, karty o sterowaniu, platformach, Pracu i Amic, kózkach, oceanie — z grafikami z atlasu", () => {
+  const guide = guideFor("jumper");
+  assert.equal(guide.id, "jumper");
   assert.equal(guide.title, "Sowa w Chmurach");
   assert.ok(guide.summary.length > 40);
   assert.deepEqual(

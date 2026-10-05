@@ -13,12 +13,15 @@ const games = [
     core: false,
   },
   {
+    // Sowa w Chmurach (E6, zastąpiła SowaJumper): moduły ES, bez SowieCore; przycisk „Graj” na ekranie tytułowym.
     id: "jumper",
-    name: "SowaJumper",
-    path: "/SowaJumper/",
-    marker: "#game",
-    action: "keyboard",
-    started: "state.scene === 'playing'",
+    name: "Sowa w Chmurach",
+    path: "/SowaWChmurach/",
+    marker: "[data-stage] canvas",
+    action: "[data-start]",
+    started: "window.SowaWChmurach.screen() === 'playing'",
+    ready: "window.SowaWChmurach?.ready?.() === true",
+    core: false,
   },
   {
     // Sowie Tory (E5, zastąpiły Sowa3): moduły ES, bez SowieCore; przycisk „Graj” na ekranie tytułowym.
@@ -112,7 +115,11 @@ for (const game of games) {
 }
 
 test("gry używają wspólnego menedżera powiadomień", async ({ page }) => {
-  const errors = await openGame(page, games[1]);
+  // Wspólny menedżer powiadomień mają już tylko dawne gry idle (SowieCore).
+  const errors = await openGame(
+    page,
+    games.find((game) => game.id === "ogrody"),
+  );
   await page.evaluate(() => window.SowieCore.toast({ text: "Test", amount: 1, mergeKey: "audit" }));
   await page.evaluate(() => window.SowieCore.toast({ text: "Test", amount: 2, mergeKey: "audit" }));
   await expect(page.locator(".sowie-notification-stack .sowie-toast")).toHaveCount(1);

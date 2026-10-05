@@ -59,6 +59,7 @@ test("zdarzenia gry → misje i statystyki profilu (jak dawne SowieCore.progress
   ]);
   assert.deepEqual(profileUpdates(EVENTS.GOAT, { kind: "tarcza" }), { missions: [], stats: [] });
   assert.equal(MISSION_LABELS.runner1000, "Przebiegnij 1000 m w Sowiej Ucieczce");
+  assert.equal(MISSION_LABELS.jumper250, "Osiągnij 250 m w Sowie w Chmurach");
 });
 
 test("zapis: postęp misji, ukończenie z nagrodą (dodatek odblokowany raz), liczniki i maksimum", () => {
