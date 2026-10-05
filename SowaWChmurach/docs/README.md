@@ -112,6 +112,8 @@ Aktywne moce widać w prawym górnym rogu, pod serduszkami (pasek pokazuje, ile 
   podwójnie, a nad gałązkami przed sową pojawia się deszcz liści.
 - **Serduszko-doniczka** nad gałązką: **dodatkowe życie**; gdy masz już wszystkie życia — **+100 pkt**.
 
+W **Sowim Butiku** (menu → zakładka **Sowa**) możesz za piórka wydłużyć działanie kózek: ×1,2, ×1,4 albo ×1,6 — dotyczy to też paska czasu przy ikonie kózki. Tam kupisz też inne gatunki sów (Twoja sowa w grze będzie wtedy np. Puszczykiem) i nowe stroje.
+
 ## Niebiański Ocean
 
 Mniej więcej co 300 m (pierwszy raz między 300 a 340 m) na gałązce leży **humbak-gejzer** — wypuszcza w górę

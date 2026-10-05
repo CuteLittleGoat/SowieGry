@@ -77,6 +77,8 @@ Co kilkaset metrów między przeszkodami podskakuje kózka. Wbiegnij w nią albo
 
 Aktywne kózki widać w prawym górnym rogu z paskiem pozostałego czasu (miga, gdy się kończy).
 
+W **Sowim Butiku** (menu → zakładka **Sowa**) możesz za piórka wydłużyć działanie kózek: ×1,2, ×1,4 albo ×1,6 — dotyczy to też paska czasu przy ikonie kózki. Tam kupisz też inne gatunki sów (Twoja sowa w grze będzie wtedy np. Puszczykiem) i nowe stroje.
+
 ## Gorączka Monster
 
 Tęczowy liść włącza **Gorączkę Monster** na 8 sekund: tęczowa ramka ekranu, liście liczą się podwójnie (razem z Podwajaczką — poczwórnie), a nad trasą pojawia się dodatkowy rząd liści. Przeszkód nie przybywa.

@@ -900,6 +900,48 @@ body.menu.has-photo {
   font-weight: 500;
 }
 
+.menu-card h4 {
+  margin: 4px 0 0;
+  font-size: 17px;
+}
+
+/* Sowi Butik (E9c): wiersz — obrazek (głowa sowy w kolorach gatunku albo ikona), opis, przycisk zakupu / wyboru. */
+.menu-shop .menu-shop-row {
+  grid-template-columns: auto minmax(0, 1fr) auto;
+}
+
+.menu-shop-row small {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.menu-shop-swatch {
+  width: 44px;
+  height: 44px;
+}
+
+.menu-shop-icon {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  font-size: 28px;
+}
+
+.menu-shop-row .menu-button {
+  min-width: 88px;
+}
+
+.menu-shop-row .menu-button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.menu-shop-row.is-owned .menu-chip[aria-pressed="true"] {
+  min-width: 88px;
+}
+
 .menu-achievement small {
   display: block;
   font-size: 13px;

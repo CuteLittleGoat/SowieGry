@@ -85,6 +85,7 @@ function drawText(context, layer, fontFor) {
  * catalog: { nazwa: { box: [szer, wys] (jednostki SVG), size: [szer, wys] (jednostki świata), anchor: [ax, ay] (0–1),
  *            layers: [{ svg, dx, dy, rotate, pivot, scale, alpha } | { text, x, y, size, weight, color, stroke }] } }
  * baseUrl: adres katalogu assets/svg/ (względem strony).
+ * transform: (plik, tekst SVG) → tekst SVG — zmiana wyglądu przed rasteryzacją (np. gatunek sowy z Sowiego Butiku).
  */
 export function createAtlas({
   catalog,
@@ -96,19 +97,31 @@ export function createAtlas({
   load = (file) => loadText(new URL(file, baseUrl).href),
   rasterize = svgToImage,
   fonts = loadFonts,
+  transform = null,
 } = {}) {
   let pages = [];
   let placements = {};
   let pixelsPerUnit = 0;
   let building = null;
   let version = 0;
+  let lastTarget = 0;
+  let recolor = transform;
 
   async function build(ppu) {
     const target = Math.max(1, ppu);
     const buildVersion = (version += 1);
+    lastTarget = target;
+    const change = recolor;
     await fonts();
     const files = svgFiles(catalog);
-    const texts = Object.fromEntries(await Promise.all(files.map(async (file) => [file, await load(file)])));
+    const texts = Object.fromEntries(
+      await Promise.all(
+        files.map(async (file) => {
+          const text = await load(file);
+          return [file, change ? change(file, text) : text];
+        }),
+      ),
+    );
     const items = Object.entries(catalog).map(([name, sprite]) => ({ name, ...cellSize(sprite, target) }));
     const packed = packShelves(items, { maxSize, padding });
     const images = new Map();
@@ -159,13 +172,22 @@ export function createAtlas({
   const atlas = {
     // Buduje atlas dla gęstości ppu (piksele urządzenia na jednostkę świata). Kolejne wywołanie zastępuje poprzednie.
     build(ppu) {
-      building = build(ppu).finally(() => (building = null));
-      return building;
+      const promise = build(ppu).finally(() => {
+        if (building === promise) building = null;
+      });
+      building = promise;
+      return promise;
     },
     // Przebudowa tylko przy wyraźnej zmianie gęstości (np. obrót telefonu na tablecie).
     ensure(ppu, tolerance = 0.15) {
       if (pixelsPerUnit && Math.abs(ppu - pixelsPerUnit) / pixelsPerUnit <= tolerance) return Promise.resolve(false);
       return building || atlas.build(ppu);
+    },
+    // Nowa zmiana wyglądu (albo null): atlas zbudowany lub w budowie przebudowuje się z nią w tej samej gęstości;
+    // do końca przebudowy rysuje poprzednie grafiki. → obietnica (true, gdy ta przebudowa podmieniła grafiki).
+    setTransform(fn) {
+      recolor = fn || null;
+      return lastTarget ? atlas.build(lastTarget) : Promise.resolve(false);
     },
     ready: () => pixelsPerUnit > 0,
     pixelsPerUnit: () => pixelsPerUnit,

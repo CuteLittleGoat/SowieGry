@@ -23,11 +23,21 @@ Na dole ekranu jest pasek z czterema zakładkami: **Gry**, **Jak grać**, **Gale
   - **Ulubione** — serduszko przy zdjęciu w galerii,
   - **Tło menu** — zdjęcie staje się tłem menu (stuknij jeszcze raz, żeby wrócić do nieba),
   - pod zdjęciem autor i link do źródła (Pexels).
-- **Sowa** — Twój profil: poziom, punkty doświadczenia (XP) i piórka Sowiej Akademii; **Zadania** (trzy zadania dnia z różnych gier — także takie jak „Złap 3 skaczące kózki” czy „Zbierz 150 liści w grach zręcznościowych”, które zrobisz w dowolnej grze — i jedno tygodnia; nagrody przychodzą same); **Osiągnięcia** (13 trwałych celów, np. „Zbieraczka liści” — 1000 liści, „Kozia przyjaciółka” — 25 kózek, „Pierwsze kroki” — zagraj w każdą grę, „Prymuska Akademii” — 10. poziom; przy każdym widać postęp, a za zdobycie dostajesz XP i piórka); **Garderoba** (dodatek, który sowa nosi we wszystkich grach; przy zablokowanym widać, co trzeba zrobić, np. „Zbierz 20 liści monster (12 / 20)”); **Rekordy** każdej gry (przycisk „Rekordy” — najlepszy wynik i 10 najlepszych gier na każdym poziomie trudności; w Sowich Torach osobno **Kampania** i tryb **Nieskończony**); **Ustawienia** (patrz niżej).
+- **Sowa** — Twój profil: poziom, punkty doświadczenia (XP) i piórka Sowiej Akademii; **Zadania** (trzy zadania dnia z różnych gier — także takie jak „Złap 3 skaczące kózki” czy „Zbierz 150 liści w grach zręcznościowych”, które zrobisz w dowolnej grze — i jedno tygodnia; nagrody przychodzą same); **Osiągnięcia** (13 trwałych celów, np. „Zbieraczka liści” — 1000 liści, „Kozia przyjaciółka” — 25 kózek, „Pierwsze kroki” — zagraj w każdą grę, „Prymuska Akademii” — 10. poziom; przy każdym widać postęp, a za zdobycie dostajesz XP i piórka); **Garderoba** (dodatek, który sowa nosi we wszystkich grach; przy zablokowanym widać, co trzeba zrobić, np. „Zbierz 20 liści monster (12 / 20)”, albo ile kosztuje w Butiku); **Sowi Butik** (patrz niżej); **Rekordy** każdej gry (przycisk „Rekordy” — najlepszy wynik i 10 najlepszych gier na każdym poziomie trudności; w Sowich Torach osobno **Kampania** i tryb **Nieskończony**); **Ustawienia** (patrz niżej).
 
 Menu działa też z klawiatury: strzałki w lewo / w prawo przełączają zakładki, Tab przechodzi po przyciskach. Adres strony pamięta zakładkę (np. `…/#galeria`), a `…/#jak-grac-runner` otwiera od razu instrukcję Sowiej Ucieczki. Po pierwszym dotknięciu w menu gra cicha muzyka (można ją wyłączyć suwakiem „Muzyka”).
 
 Najpewniejszym sposobem uruchomienia jest GitHub Pages albo lokalny serwer HTTP. Przy bezpośrednim otwieraniu plików przez `file://` część funkcji przeglądarki może nie działać.
+
+### Sowi Butik
+
+W zakładce **Sowa** jest **Sowi Butik**. Płacisz w nim **piórkami**, które dostajesz za zadania dnia, zadanie tygodnia i osiągnięcia Sowiej Akademii (saldo widać w nagłówku Butiku, np. „🪶 45 piórek”). Każdy zakup trzeba potwierdzić przyciskiem **Kup** — „Anuluj” niczego nie zabiera.
+
+- **Gatunki sów** — Puszczyk, Pójdźka, Uszatka, Płomykówka, Śnieżna i Puchacz (od 40 do 120 piórek; rzadsze gatunki wymagają wyższego poziomu Akademii — wtedy przycisk pokazuje kłódkę i „Poziom N”). Kupiony gatunek od razu staje się Twoją sową w menu, w Sowiej Ucieczce, Sowich Torach, Sowie w Chmurach i Sowich Ogrodach. Między posiadanymi gatunkami przełączasz przyciskiem **Wybierz** (Sówka jest zawsze). Gatunek zmienia tylko wygląd.
+- **Stroje** — dodatki, których jeszcze nie masz: dawne z misji garderoby (można je też nadal zdobyć misją) i nowe: **Muszka**, **Czapka z pomponem**, **Słuchawki** i **Korona**. Kupiony strój pojawia się w Garderobie.
+- **Kózki** — dłuższe działanie skaczących kózek w Sowiej Ucieczce, Sowich Torach i Sowie w Chmurach: trzy poziomy (×1,2, ×1,4, ×1,6) kupowane po kolei.
+
+Gdy piórek jest za mało, przycisk ceny jest wyszarzony.
 
 ## Instalacja na telefonie (aplikacja)
 

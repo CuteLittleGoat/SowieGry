@@ -1,8 +1,9 @@
-// Zakładka „Sowa”: profil (poziom, XP, piórka), garderoba, zadania dnia i tygodnia (Sowia Akademia), rekordy
-// wszystkich gier (okno z Top 10 na poziom trudności) i ustawienia: dźwięk, efekty, wibracje, Tryb Przytulny,
-// komentarze sowy, stan zapisu i „Wyloguj to urządzenie”.
+// Zakładka „Sowa”: profil (poziom, XP, piórka), zadania dnia i tygodnia, osiągnięcia (Sowia Akademia), garderoba,
+// Sowi Butik (gatunki sów, stroje, dłuższe kózki), rekordy wszystkich gier (okno z Top 10 na poziom trudności)
+// i ustawienia: dźwięk, efekty, wibracje, Tryb Przytulny, komentarze sowy, stan zapisu i „Wyloguj to urządzenie”.
 import { MISSION_LABELS } from "../meta/missions.js";
 import { taskProgress } from "../meta/progress.js";
+import { buy, GOAT_LEVELS, OUTFIT_PRICES, selectSpecies, shopOffer } from "../meta/shop.js";
 import { ICONS } from "../ui/icons.js";
 import { openModal } from "../ui/modal.js";
 import { drawOwl } from "../world/owl.js";
@@ -53,10 +54,34 @@ export function cosmeticHint(key, missions = {}, defaults = {}) {
   return `${MISSION_LABELS[missionKey] || missionKey} (${formatNumber(progress)} / ${formatNumber(mission.target)})`;
 }
 
+// Mała głowa sowy w kolorach gatunku (Sowi Butik) — inline SVG 44 × 44.
+export function speciesSwatch(colors) {
+  return `<svg class="menu-shop-swatch" viewBox="0 0 44 44" aria-hidden="true">
+    <path d="M9 15 L6 4 Q12 6 16 11 Z M35 15 L38 4 Q32 6 28 11 Z" fill="${colors.dark}" stroke="#3b2f4a" stroke-width="2" stroke-linejoin="round"/>
+    <circle cx="22" cy="24" r="17" fill="${colors.body}" stroke="#3b2f4a" stroke-width="2.5"/>
+    <ellipse cx="22" cy="35" rx="9" ry="5.5" fill="${colors.belly}"/>
+    <path d="M22 17 C17 12 9 13 9 21 C9 28 17 30 22 26 C27 30 35 28 35 21 C35 13 27 12 22 17 Z" fill="${colors.face}"/>
+    <circle cx="16" cy="21" r="3.6" fill="#ffffff" stroke="#3b2f4a" stroke-width="1.5"/>
+    <circle cx="28" cy="21" r="3.6" fill="#ffffff" stroke="#3b2f4a" stroke-width="1.5"/>
+    <circle cx="16.6" cy="21.4" r="1.6" fill="#3b2f4a"/>
+    <circle cx="28.6" cy="21.4" r="1.6" fill="#3b2f4a"/>
+    <path d="M20 26 L24 26 L22 30 Z" fill="${colors.beak}" stroke="#3b2f4a" stroke-width="1.2" stroke-linejoin="round"/>
+  </svg>`;
+}
+
 // Gry z samouczkiem (identyfikatory w bazie): Sowia Ucieczka, Sowie Tory (sowa3), Sowa w Chmurach (jumper), nowe Ogrody.
 export const TUTORIAL_GAMES = Object.freeze(["runner", "sowa3", "jumper", "ogrody", "szklarnia"]);
 
-export function createOwlTab({ root, cloud, platform, academy, audio, atlas, onCosmetic = () => {} }) {
+export function createOwlTab({
+  root,
+  cloud,
+  platform,
+  academy,
+  audio,
+  atlas,
+  onCosmetic = () => {},
+  onShop = () => {},
+}) {
   const profile = () => cloud?.profile?.() || {};
   const settings = () => profile().settings || {};
   const save = (changes) =>
@@ -94,7 +119,10 @@ export function createOwlTab({ root, cloud, platform, academy, audio, atlas, onC
     const chips = Object.entries(platform.COSMETICS)
       .map(([key, item]) => {
         const unlocked = key === "none" || owned.unlocked?.includes(key);
-        const hint = unlocked ? "" : cosmeticHint(key, profile().missions, platform.DEFAULT_MISSIONS);
+        const hint = unlocked
+          ? ""
+          : cosmeticHint(key, profile().missions, platform.DEFAULT_MISSIONS) ||
+            (OUTFIT_PRICES[key] ? `W Sowim Butiku za ${OUTFIT_PRICES[key]} piórek` : "");
         return `<li><button type="button" class="menu-chip" data-cosmetic="${key}" aria-pressed="${owned.selected === key}" ${unlocked ? "" : "disabled"}>${unlocked ? "" : ICONS.lock}<span>${escapeHtml(item.label)}</span></button>${hint ? `<small>${escapeHtml(hint)}</small>` : ""}</li>`;
       })
       .join("");
@@ -156,6 +184,91 @@ export function createOwlTab({ root, cloud, platform, academy, audio, atlas, onC
     </section>`;
   }
 
+  // Sowi Butik (E9c): gatunki sów, stroje do kupienia (posiadane są w Garderobie) i dłuższe działanie kózek.
+  function shopCard() {
+    const data = academy()?.snapshot?.();
+    if (!data || !cloud?.isReady?.()) return "";
+    const offer = shopOffer(profile(), data, platform.COSMETICS);
+    const buyButton = (item) =>
+      item.locked
+        ? `<button type="button" class="menu-button" disabled>${ICONS.lock}<span>Poziom ${item.level}</span></button>`
+        : `<button type="button" class="menu-button is-buy" data-buy="${item.id}" aria-label="Kup: ${escapeHtml(item.label)} za ${item.price} piórek" ${item.affordable ? "" : "disabled"}>🪶 ${formatNumber(item.price)}</button>`;
+    const species = offer.species
+      .map(
+        (item) => `<li class="menu-shop-row${item.owned ? " is-owned" : ""}" data-shop-item="${item.id}">
+          ${speciesSwatch(item.colors)}
+          <span><strong>${escapeHtml(item.label)}</strong><small>${escapeHtml(item.text)}</small></span>
+          ${
+            item.owned
+              ? `<button type="button" class="menu-chip" data-species="${item.key}" aria-pressed="${item.selected}">${item.selected ? "Wybrana" : "Wybierz"}</button>`
+              : buyButton(item)
+          }
+        </li>`,
+      )
+      .join("");
+    const outfits = offer.outfits.filter((item) => !item.owned);
+    const outfitRows = outfits.length
+      ? outfits
+          .map(
+            (item) => `<li class="menu-shop-row" data-shop-item="${item.id}">
+          <span class="menu-shop-icon" aria-hidden="true">${platform.COSMETICS[item.key]?.icon || "🎁"}</span>
+          <span><strong>${escapeHtml(item.label)}</strong><small>Sowa nosi go we wszystkich grach.</small></span>
+          ${buyButton(item)}
+        </li>`,
+          )
+          .join("")
+      : '<li class="menu-shop-row"><span><strong>Masz już wszystkie stroje!</strong></span></li>';
+    const goat = offer.goat;
+    const factor = (value) => `×${String(value).replace(".", ",")}`;
+    return `<section class="menu-card" data-owl-card="butik" aria-labelledby="sowa-butik">
+      <h3 id="sowa-butik">Sowi Butik <small data-shop-feathers>🪶 ${formatNumber(offer.feathers)} piórek</small></h3>
+      <p>Piórka zdobywasz za zadania dnia i tygodnia oraz osiągnięcia. Gatunek sowy zmienia tylko jej wygląd.</p>
+      <h4>Gatunki sów</h4>
+      <ul class="menu-list menu-shop">${species}</ul>
+      <h4>Stroje</h4>
+      <ul class="menu-list menu-shop">${outfitRows}</ul>
+      <h4>Kózki</h4>
+      <ul class="menu-list menu-shop">
+        <li class="menu-shop-row" data-shop-item="goat">
+          <span class="menu-shop-icon" aria-hidden="true">🐐</span>
+          <span><strong>Dłuższe działanie kózek</strong><small data-goat-level>W Sowiej Ucieczce, Sowich Torach i Sowie w Chmurach. Teraz: ${factor(goat.factor)} (poziom ${goat.level} z ${goat.max}).</small></span>
+          ${goat.next ? buyButton({ ...goat.next, label: `dłuższe kózki ${factor(GOAT_LEVELS[goat.level].factor)}` }) : '<strong class="menu-shop-max">Najwyżej!</strong>'}
+        </li>
+      </ul>
+    </section>`;
+  }
+
+  // Potwierdzenie zakupu (żeby przypadkowe stuknięcie nie wydało piórek).
+  function confirmBuy(id, trigger) {
+    const offer = shopOffer(profile(), academy()?.snapshot?.(), platform.COSMETICS);
+    const item = [...offer.species, ...offer.outfits, ...(offer.goat.next ? [offer.goat.next] : [])].find(
+      (entry) => entry.id === id,
+    );
+    if (!item) return;
+    const name = id.startsWith("goat:") ? "dłuższe działanie kózek" : item.label;
+    openModal({
+      title: "Kupić w Sowim Butiku?",
+      content: `${name.charAt(0).toUpperCase()}${name.slice(1)} za ${formatNumber(item.price)} piórek (masz ${formatNumber(offer.feathers)}).`,
+      actions: [
+        { label: "Anuluj", onClick: (close) => close() },
+        {
+          label: "Kup",
+          primary: true,
+          onClick: (close) => {
+            close();
+            const result = buy(id, { cloud, academy: academy(), cosmetics: platform.COSMETICS });
+            onShop({ ...result, id, label: item.label });
+            render();
+            root.querySelector(`[data-shop-item="${id}"] button, [data-owl-card="butik"] h3`)?.focus?.({
+              preventScroll: true,
+            });
+          },
+        },
+      ],
+      onClose: () => trigger?.isConnected && trigger.focus?.({ preventScroll: true }),
+    });
+  }
+
   function recordsCard() {
     const records = profile().records || {};
     const ready = cloud?.isReady?.();
@@ -199,6 +312,7 @@ export function createOwlTab({ root, cloud, platform, academy, audio, atlas, onC
       tasksCard(),
       achievementsCard(),
       wardrobeCard(),
+      shopCard(),
       recordsCard(),
       '<div data-install-slot="sowa"></div>',
       settingsCard(),
@@ -411,6 +525,20 @@ export function createOwlTab({ root, cloud, platform, academy, audio, atlas, onC
     }
     if (event.target.closest("[data-logout]")) {
       confirmLogout(event.target.closest("[data-logout]"));
+      return;
+    }
+    const buyButton = event.target.closest("[data-buy]");
+    if (buyButton && !buyButton.disabled) {
+      confirmBuy(buyButton.dataset.buy, buyButton);
+      return;
+    }
+    const species = event.target.closest("[data-species]");
+    if (species) {
+      if (selectSpecies(species.dataset.species, { cloud })) {
+        onShop({ ok: true, id: `select:${species.dataset.species}` });
+        render();
+        root.querySelector(`[data-species="${species.dataset.species}"]`)?.focus?.({ preventScroll: true });
+      }
       return;
     }
     const cosmetic = event.target.closest("[data-cosmetic]");

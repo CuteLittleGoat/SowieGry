@@ -69,6 +69,8 @@ jeszcze przez chwilę miga i jest nietykalna.
   w przeszkodach i bez dodatkowych przeszkód).
 - **Serduszko-doniczka** nad torem: **dodatkowe życie**. Gdy masz już wszystkie życia — **+150 pkt**.
 
+W **Sowim Butiku** (menu → zakładka **Sowa**) możesz za piórka wydłużyć działanie kózek: ×1,2, ×1,4 albo ×1,6 — dotyczy to też paska czasu przy ikonie kózki. Tam kupisz też inne gatunki sów (Twoja sowa w grze będzie wtedy np. Puszczykiem) i nowe stroje.
+
 ## Meta: basen i przemiana w humbaka
 
 Na mecie sowa dobiega na **działkę z okrągłym basenem ogrodowym** (trawa, płot, drzewa, koza na leżaku i grill),

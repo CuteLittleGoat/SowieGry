@@ -51,6 +51,8 @@ export function createRun({
   safe = false,
   hazards = true,
   extras = true,
+  // Sowi Butik (E9c): dłuższe działanie kózek — mnożnik czasu power-upów.
+  goatTime = 1,
 } = {}) {
   const info = DIFFICULTIES[difficulty];
   if (!info) throw new Error(`Nieznany poziom trudności: ${difficulty}`);
@@ -74,6 +76,8 @@ export function createRun({
   const state = {
     difficulty,
     cozy: Boolean(cozy) && difficulty === "chill",
+    // Sowi Butik: mnożnik czasu działania kózek (1–2; 1,2 / 1,4 / 1,6 z ulepszeń).
+    goatTime: Math.min(2, Math.max(1, Number(goatTime) || 1)),
     safe: Boolean(safe),
     phase: "run", // run | rescue | ocean | over
     time: 0,
@@ -358,12 +362,12 @@ export function createRun({
       state.spring = true;
       emit("spring", { height: GOATS.springHeight });
     } else if (goat.kind === "turbo") {
-      state.rocket = GOATS.duration.turbo;
+      state.rocket = GOATS.duration.turbo * state.goatTime;
       owl.vy = GOATS.rocketSpeed;
-      emit("rocketStart", { duration: GOATS.duration.turbo });
+      emit("rocketStart", { duration: GOATS.duration.turbo * state.goatTime });
     } else {
-      state.powerups[goat.kind] = GOATS.duration[goat.kind];
-      emit("powerupStart", { kind: goat.kind, duration: GOATS.duration[goat.kind] });
+      state.powerups[goat.kind] = GOATS.duration[goat.kind] * state.goatTime;
+      emit("powerupStart", { kind: goat.kind, duration: GOATS.duration[goat.kind] * state.goatTime });
     }
   }
 

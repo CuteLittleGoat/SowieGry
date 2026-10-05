@@ -66,6 +66,8 @@ export function createRun({
   startStage = 0,
   finishSeen = false,
   mode = "kampania",
+  // Sowi Butik (E9c): dłuższe działanie kózek — mnożnik czasu power-upów.
+  goatTime = 1,
 } = {}) {
   // Tryb Nieskończony: po 4. planszy znowu 1. (kolejne okrążenie), każda plansza szybsza, do ENDLESS.maxSpeed.
   const endless = mode === "nieskonczony";
@@ -104,6 +106,8 @@ export function createRun({
   const state = {
     difficulty: level,
     cozy: Boolean(cozy),
+    // Sowi Butik: mnożnik czasu działania kózek (1–2; 1,2 / 1,4 / 1,6 z ulepszeń).
+    goatTime: Math.min(2, Math.max(1, Number(goatTime) || 1)),
     safe: Boolean(safe),
     phase: "run", // run | finale | whale | stageEnd | over
     mode: endless ? "nieskonczony" : "kampania",
@@ -341,11 +345,11 @@ export function createRun({
       owl.diving = false;
       emit("spring");
     } else if (goat.kind === "turbo") {
-      state.riding = GOATS.duration.turbo;
+      state.riding = GOATS.duration.turbo * state.goatTime;
       emit("rideStart", { duration: state.riding });
     } else {
-      state.powerups[goat.kind] = GOATS.duration[goat.kind];
-      emit("powerupStart", { kind: goat.kind, duration: GOATS.duration[goat.kind] });
+      state.powerups[goat.kind] = GOATS.duration[goat.kind] * state.goatTime;
+      emit("powerupStart", { kind: goat.kind, duration: GOATS.duration[goat.kind] * state.goatTime });
     }
   }
 

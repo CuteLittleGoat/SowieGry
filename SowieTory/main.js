@@ -11,6 +11,7 @@ import { createAtlas } from "../shared/engine/sprites.js";
 import { createView } from "../shared/engine/view.js";
 import { guideFor } from "../shared/meta/guides-data.js";
 import { EVENTS, progress } from "../shared/meta/progress.js";
+import { goatTimeFactor, linkSpecies } from "../shared/meta/shop.js";
 import { createHud, createPauseMenu, createResults, createToasts, openModal, renderGuide } from "../shared/ui/index.js";
 import { SPRITES, SVG_BASE } from "../shared/world/catalog.js";
 import { createOwlAnimator } from "../shared/world/owl.js";
@@ -50,6 +51,8 @@ const view = createView({
   getDpr: () => Math.min(window.devicePixelRatio || 1, dprCap),
 });
 const atlas = createAtlas({ catalog: SPRITES, baseUrl: SVG_BASE });
+// Gatunek sowy z Sowiego Butiku (przekolorowanie części sowy w atlasie).
+linkSpecies(atlas);
 const renderer = createRenderer({ canvas, view, atlas });
 const particles = createParticles({ max: 200 });
 const animator = createOwlAnimator();
@@ -307,6 +310,7 @@ function startRun() {
     seed: seedFor(),
     cozy: cozyEnabled(),
     startStage: START_STAGE,
+    goatTime: goatTimeFactor(cloud?.profile?.()),
     finishSeen: Boolean(cloud?.game?.(GAME_ID)?.finishSeen),
     mode: withTutorial ? "kampania" : mode,
     intro: withTutorial ? TUTORIAL_PATTERNS : debugPatterns(),
@@ -487,10 +491,15 @@ function powerupList(state) {
   const list = Object.entries(state.powerups).map(([kind, remaining]) => ({
     kind,
     remaining,
-    total: GOATS.duration[kind],
+    total: GOATS.duration[kind] * (state.goatTime || 1),
   }));
   if (state.riding > 0) {
-    list.push({ kind: "turbo", remaining: state.riding, total: GOATS.duration.turbo, label: "Kózia jazda" });
+    list.push({
+      kind: "turbo",
+      remaining: state.riding,
+      total: GOATS.duration.turbo * (state.goatTime || 1),
+      label: "Kózia jazda",
+    });
   }
   if (state.fever > 0) list.push({ kind: "goraczka", remaining: state.fever, total: FEVER.duration });
   return list;

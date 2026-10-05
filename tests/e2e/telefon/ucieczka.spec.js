@@ -461,3 +461,22 @@ test("misje garderoby: 1000 m w biegu kończy misję i odblokowuje Czapkę z das
   expect(profile.cosmetics.unlocked).toContain("cap");
   expect(errors).toEqual([]);
 });
+
+test("Sowi Butik (E9c): ulepszenie kózek z profilu — power-up działa dłużej (×1,4), także w HUD", async ({ page }) => {
+  const errors = watchErrors(page);
+  await openGame(page);
+  await page.evaluate(() =>
+    window.SowieCloud.updateProfile((profile) => {
+      profile.shop = { goatLevel: 2, species: { owned: ["sowka", "sniezna"], selected: "sniezna" } };
+    }),
+  );
+  await page.locator("[data-start]").click();
+  await page.waitForTimeout(300);
+  await page.evaluate(() => {
+    window.SowiaUcieczka.hold(true);
+    window.SowiaUcieczka.goat("magnes");
+  });
+  expect((await page.evaluate(() => window.SowiaUcieczka.powerups())).magnes).toBeCloseTo(8 * 1.4, 5);
+  await expect(page.locator(".sowie-hud-powerup", { hasText: "Magnes" })).toBeVisible();
+  expect(errors).toEqual([]);
+});

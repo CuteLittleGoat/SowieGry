@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <!-- Muszka (Sowi Butik): fioletowa, pod dziobkiem, w złote kropki. -->
+  <g stroke="#3b2f4a" stroke-width="3.5" stroke-linejoin="round">
+    <path d="M64 88 L45 78 Q41 88 45 98 Z" fill="#9b6ddb"/>
+    <path d="M64 88 L83 78 Q87 88 83 98 Z" fill="#9b6ddb"/>
+    <rect x="58.5" y="82.5" width="11" height="11" rx="3.5" fill="#f4c542"/>
+  </g>
+  <g fill="#f4c542">
+    <circle cx="51" cy="85" r="2"/>
+    <circle cx="52" cy="93" r="2"/>
+    <circle cx="77" cy="85" r="2"/>
+    <circle cx="76" cy="93" r="2"/>
+  </g>
+</svg>

@@ -30,6 +30,10 @@ const WARDROBE = {
   "garderoba-plecak": "plecak",
   "garderoba-plecak-szelki": "plecak-szelki",
   "garderoba-babelki": "babelki",
+  "garderoba-korona": "korona",
+  "garderoba-muszka": "muszka",
+  "garderoba-sluchawki": "sluchawki",
+  "garderoba-czapka-zimowa": "czapka-zimowa",
 };
 
 export const GOAT_KINDS = Object.freeze({

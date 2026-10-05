@@ -124,6 +124,10 @@ export const COSMETIC_SPRITES = Object.freeze({
   scarf: { front: "garderoba-szalik" },
   backpack: { behind: "garderoba-plecak", front: "garderoba-plecak-szelki" },
   bubbleTrail: { front: "garderoba-babelki" },
+  crown: { front: "garderoba-korona" },
+  bowTie: { front: "garderoba-muszka" },
+  headphones: { front: "garderoba-sluchawki" },
+  beanie: { front: "garderoba-czapka-zimowa" },
 });
 
 export const OWL_ACTIONS = ["stoi", "bieg", "skok", "szybowanie", "oszolomienie", "radosc"];

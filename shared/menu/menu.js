@@ -6,6 +6,7 @@ import { createLoop } from "../engine/loop.js";
 import { createAtlas } from "../engine/sprites.js";
 import { guideFor } from "../meta/guides-data.js";
 import { taskProgress } from "../meta/progress.js";
+import { linkSpecies } from "../meta/shop.js";
 import { renderGuide } from "../ui/guide-view.js";
 import { ICONS } from "../ui/icons.js";
 import { openModal } from "../ui/modal.js";
@@ -373,6 +374,15 @@ const owlTab = createOwlTab({
     hero.jump = 0;
     if (calm()) drawStatic();
   },
+  // Sowi Butik: dźwięk zakupu i komunikat; wybór gatunku przebudowuje grafiki (linkSpecies niżej).
+  onShop: (result) => {
+    if (result.id?.startsWith("select:")) return;
+    if (result.ok) {
+      sound("zakup");
+      toasts.show(`Kupione: ${result.label}!`, { kind: "success" });
+    } else if (result.reason === "feathers") toasts.show("Za mało piórek — zrób zadania dnia!", { kind: "info" });
+    else if (result.reason === "offline") toasts.show("Butik działa po wczytaniu postępu z chmury.", { kind: "info" });
+  },
 });
 let offOwlInstall = () => {};
 
@@ -420,6 +430,19 @@ window.addEventListener("sowie:gallery-changed", () => {
 // Powrót z gry przyciskiem „wstecz” (strona z pamięci podręcznej przeglądarki) — świeże rekordy i zadania.
 window.addEventListener("pageshow", (event) => {
   if (event.persisted) location.reload();
+});
+
+// Gatunek sowy z Sowiego Butiku: po przebudowie atlasu przerysowanie kart, sówki w dymku i profilu.
+linkSpecies(atlas, {
+  getCloud: () => cloud,
+  onChange: () => {
+    for (const card of cards.cards) card.dirty = true;
+    if (current === "sowa") owlTab.drawProfileOwl();
+    if (calm()) drawStatic();
+  },
+});
+window.addEventListener("sowie:shop-changed", () => {
+  if (current === "sowa") renderOwlTab();
 });
 
 atlas

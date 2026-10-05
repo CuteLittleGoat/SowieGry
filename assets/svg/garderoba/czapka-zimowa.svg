@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <!-- Czapka z pomponem (Sowi Butik): zielona, z kremowym wywinięciem i pomponem. -->
+  <g stroke="#3b2f4a" stroke-width="4" stroke-linejoin="round">
+    <path d="M32 38 C30 12 98 12 96 38 Z" fill="#3fae6a"/>
+    <path d="M28 46 C46 38 82 38 100 46 L100 35 C82 27 46 27 28 35 Z" fill="#fffaf2"/>
+    <circle cx="64" cy="11" r="8" fill="#fffaf2"/>
+  </g>
+  <path d="M48 20 L52 31 M64 17 L64 30 M80 20 L76 31" stroke="#2e8b57" stroke-width="3" stroke-linecap="round"/>
+  <path d="M40 26 Q42 20 48 17" fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/>
+</svg>

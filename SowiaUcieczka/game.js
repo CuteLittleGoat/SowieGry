@@ -115,6 +115,8 @@ export function createRun({
   // Samouczek: wzory wstępne i tryb bezpieczny (trafienia nie liczą się).
   intro = [],
   safe = false,
+  // Sowi Butik (E9c): dłuższe działanie kózek — mnożnik czasu power-upów.
+  goatTime = 1,
 } = {}) {
   const rng = random || createRng(seed).next;
   const config = DIFFICULTIES[difficulty] ? difficulty : "arcade";
@@ -131,6 +133,8 @@ export function createRun({
   const state = {
     difficulty: config,
     cozy: Boolean(cozy) && config === "chill",
+    // Sowi Butik: mnożnik czasu działania kózek (1–2; 1,2 / 1,4 / 1,6 z ulepszeń).
+    goatTime: Math.min(2, Math.max(1, Number(goatTime) || 1)),
     time: 0,
     speed: speedAt(0, config, cozy),
     distance: 0,
@@ -362,7 +366,7 @@ export function createRun({
       owl.sliding = 0;
       owl.diving = false;
     } else {
-      state.powerups[goat.kind] = GOATS.duration[goat.kind];
+      state.powerups[goat.kind] = GOATS.duration[goat.kind] * state.goatTime;
     }
     emit("goat", { kind: goat.kind, x: goat.x, bonus: GOATS.bonus });
   }

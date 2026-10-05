@@ -100,11 +100,11 @@ test("katalog grafik: każda warstwa ma plik, pudełko zgadza się z viewBox, na
     assert.ok(SPRITES[name], name);
 });
 
-test("garderoba: nakładki dla wszystkich 9 pozycji z SowiePlatform.COSMETICS", () => {
+test("garderoba: nakładki dla wszystkich 13 pozycji z SowiePlatform.COSMETICS (9 dawnych + 4 z Sowiego Butiku)", () => {
   const source = readFileSync(join(root, "shared/sowie-platform.js"), "utf8");
   const block = source.match(/const COSMETICS = Object\.freeze\(\{([\s\S]*?)\}\);/)[1];
   const keys = [...block.matchAll(/^\s*(\w+):/gm)].map((match) => match[1]);
-  assert.equal(keys.length, 9);
+  assert.equal(keys.length, 13);
   assert.deepEqual(Object.keys(COSMETIC_SPRITES).sort(), keys.sort());
   for (const [key, layers] of Object.entries(COSMETIC_SPRITES)) {
     for (const sprite of Object.values(layers)) assert.ok(SPRITES[sprite], `${key}: ${sprite}`);
@@ -231,6 +231,7 @@ test("atlas: budowa z katalogu, rysowanie z właściwego wycinka i brak przebudo
     globalAlpha: 1,
   });
   const canvases = [];
+  const rasterized = [];
   let builds = 0;
   const atlas = createAtlas({
     catalog: SPRITES,
@@ -241,7 +242,10 @@ test("atlas: budowa z katalogu, rysowanie z właściwego wycinka i brak przebudo
       return canvas;
     },
     load: async (file) => readFileSync(join(svgRoot, file), "utf8"),
-    rasterize: async (text, width, height) => ({ width, height, text }),
+    rasterize: async (text, width, height) => {
+      rasterized.push(text);
+      return { width, height, text };
+    },
     fonts: async () => {
       builds += 1;
       return true;
@@ -276,4 +280,24 @@ test("atlas: budowa z katalogu, rysowanie z właściwego wycinka i brak przebudo
   assert.equal(await atlas.ensure(120), true);
   assert.equal(builds, 2);
   assert.ok(drawn.length > Object.keys(SPRITES).length);
+
+  // Zmiana wyglądu (gatunek sowy z Sowiego Butiku): przebudowa w tej samej gęstości z przekolorowanym SVG.
+  rasterized.length = 0;
+  const seen = new Set();
+  assert.equal(
+    await atlas.setTransform((file, text) => {
+      seen.add(file);
+      return file === "sowa/cialo.svg" ? text.replaceAll("#b07a52", "#123456") : text;
+    }),
+    true,
+  );
+  assert.equal(builds, 3);
+  assert.equal(atlas.pixelsPerUnit(), 120);
+  assert.ok(seen.has("sowa/cialo.svg") && seen.has("pracu/budzik.svg"));
+  assert.ok(rasterized.some((text) => text.includes("#123456")));
+  assert.ok(!rasterized.some((text) => text.includes("#b07a52") && text.includes("Sówka: tułów")));
+  rasterized.length = 0;
+  assert.equal(await atlas.setTransform(null), true);
+  assert.ok(rasterized.some((text) => text.includes("#b07a52")));
+  assert.equal(await createAtlas({ catalog: SPRITES, baseUrl: SVG_BASE }).setTransform(() => ""), false);
 });

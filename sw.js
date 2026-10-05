@@ -1,7 +1,7 @@
 // Service worker SowieGry (PWA): start bez zasięgu i szybkie ponowne wejścia.
 // Wersjonowana pamięć podręczna — przy każdej zmianie listy SHELL albo strategii podnieś VERSION.
 // Nie obsługuje żądań do Firestore (firestore.googleapis.com) — zapisami offline zajmuje się SDK (IndexedDB).
-const VERSION = "sowiegry-v10";
+const VERSION = "sowiegry-v11";
 const SHELL = [
   "./",
   "index.html",
@@ -40,12 +40,14 @@ const SHELL = [
   "shared/meta/progress.js",
   "shared/meta/progress-events.js",
   "shared/meta/missions.js",
+  "shared/meta/shop.js",
   "shared/ui/guide-view.js",
   "shared/ui/icons.js",
   "shared/ui/modal.js",
   "shared/ui/toasts.js",
   "shared/world/catalog.js",
   "shared/world/owl.js",
+  "shared/world/species.js",
   "shared/world/tokens.js",
   "assets/audio/audio.json",
   "assets/audio/sfx/klik.mp3",
@@ -62,11 +64,15 @@ const SHELL = [
   "assets/svg/garderoba/babelek.svg",
   "assets/svg/garderoba/babelki.svg",
   "assets/svg/garderoba/czapka.svg",
+  "assets/svg/garderoba/czapka-zimowa.svg",
   "assets/svg/garderoba/kapelusz-ogrodnika.svg",
   "assets/svg/garderoba/kokardka.svg",
+  "assets/svg/garderoba/korona.svg",
+  "assets/svg/garderoba/muszka.svg",
   "assets/svg/garderoba/okulary.svg",
   "assets/svg/garderoba/plecak-szelki.svg",
   "assets/svg/garderoba/plecak.svg",
+  "assets/svg/garderoba/sluchawki.svg",
   "assets/svg/garderoba/szalik.svg",
   "assets/svg/garderoba/wianek.svg",
   "assets/svg/humbak/humbak.svg",

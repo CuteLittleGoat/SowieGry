@@ -628,3 +628,13 @@ test("biomy co 1000 m (6), przenikanie 60 m, kolejne okrążenie szybciej (najwy
   game.update(DT);
   assert.ok(game.takeEvents().some((event) => event.type === "biome" && event.index === 1));
 });
+
+test("Sowi Butik: dłuższe działanie kózek (goatTime) mnoży czas power-upów, w granicach 1–2", () => {
+  const longer = createRun({ difficulty: "arcade", seed: "butik", goatTime: 1.4 });
+  assert.equal(longer.state.goatTime, 1.4);
+  longer.giveGoat("magnes");
+  assert.ok(Math.abs(longer.state.powerups.magnes - GOATS.duration.magnes * 1.4) < 1e-9);
+  assert.equal(createRun({ seed: "butik", goatTime: 5 }).state.goatTime, 2);
+  assert.equal(createRun({ seed: "butik", goatTime: "x" }).state.goatTime, 1);
+  assert.equal(createRun({ seed: "butik" }).state.goatTime, 1);
+});

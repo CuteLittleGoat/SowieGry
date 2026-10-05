@@ -75,6 +75,11 @@
     scarf: { label: "Szalik", icon: "🧣" },
     backpack: { label: "Plecak", icon: "🎒" },
     bubbleTrail: { label: "Ślad bąbelków", icon: "🫧" },
+    // Nowe stroje z Sowiego Butiku (E9c) — tylko za piórka.
+    crown: { label: "Korona", icon: "👑" },
+    bowTie: { label: "Muszka", icon: "🎀" },
+    headphones: { label: "Słuchawki", icon: "🎧" },
+    beanie: { label: "Czapka z pomponem", icon: "🧶" },
   });
 
   const DEFAULT_SETTINGS = Object.freeze({

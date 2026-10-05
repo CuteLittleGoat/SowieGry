@@ -9,6 +9,7 @@ import { connectAudioSettings, createAudio } from "../../shared/engine/audio.js"
 import { createAtlas } from "../../shared/engine/sprites.js";
 import { guideFor } from "../../shared/meta/guides-data.js";
 import { EVENTS, progress } from "../../shared/meta/progress.js";
+import { linkSpecies } from "../../shared/meta/shop.js";
 import { createToasts, openModal, renderGuide } from "../../shared/ui/index.js";
 import { SPRITES, SVG_BASE } from "../../shared/world/catalog.js";
 import { createOwlAnimator } from "../../shared/world/owl.js";
@@ -60,6 +61,8 @@ const bayHud = root.querySelector("[data-bay-hud]");
 const tutorialNode = root.querySelector("[data-tutorial]");
 
 const atlas = createAtlas({ catalog: SPRITES, baseUrl: SVG_BASE });
+// Gatunek sowy z Sowiego Butiku (przekolorowanie części sowy w atlasie).
+linkSpecies(atlas);
 const animator = createOwlAnimator();
 const renderer = createGardenRenderer({ canvas, atlas });
 // Jeden komunikat naraz, u góry (jak w trakcie gry) — nie zasłania panelu.

@@ -47,6 +47,8 @@ zaczyna od parapetu, a kolejne rozdziały z celami prowadzą przez Balkon, Dzia�
   zakupy i wydarzenia mają swoje dźwięki. Głośność muzyki i efektów ustawisz w menu głównym (zakładka „Sowa”).
 - Przycisk **Menu** (lewy górny róg) wraca do menu głównego.
 
+Sowa ogrodniczka ma gatunek wybrany w **Sowim Butiku** (menu → zakładka **Sowa**) — np. Puszczyka albo Śnieżną; zmienia to tylko jej wygląd.
+
 ## Zapis
 
 Gra zapisuje postęp automatycznie w chmurze (Firestore) — ten sam ogród na telefonie i komputerze. Przy pierwszym

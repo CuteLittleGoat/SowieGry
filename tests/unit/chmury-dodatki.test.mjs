@@ -233,3 +233,11 @@ test("kózki w locie: pojawiają się na trasie i złapana kózka daje moc", () 
   assert.equal(goat.taken, true);
   assert.equal(run.summary().goats, 1);
 });
+
+test("Sowi Butik: dłuższe działanie kózek (goatTime) — moce i Rakietka trwają dłużej", () => {
+  const run = createRun({ seed: "butik", hazards: false, extras: false, goatTime: 1.2 });
+  run.giveGoat("magnes");
+  assert.ok(Math.abs(run.state.powerups.magnes - GOATS.duration.magnes * 1.2) < 1e-9);
+  run.giveGoat("turbo");
+  assert.ok(Math.abs(run.state.rocket - GOATS.duration.turbo * 1.2) < 1e-9);
+});

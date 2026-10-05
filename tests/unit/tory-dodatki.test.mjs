@@ -302,3 +302,12 @@ test("scenografia: rekwizyty zawsze poza drogą, każdy narysowany; sklep w stre
     for (const kind of kinds) assert.ok(seen[stageId].get(kind) > 0, `${stageId}: ${kind}`);
   }
 });
+
+test("Sowi Butik: dłuższe działanie kózek (goatTime) — moce i Kózia jazda trwają dłużej", () => {
+  const run = createRun({ seed: 5, difficulty: "arcade", goatTime: 1.6 });
+  run.giveGoat("tarcza");
+  assert.ok(Math.abs(run.state.powerups.tarcza - GOATS.duration.tarcza * 1.6) < 1e-9);
+  run.giveGoat("turbo");
+  assert.ok(Math.abs(run.state.riding - GOATS.duration.turbo * 1.6) < 1e-9);
+  assert.equal(createRun({ seed: 5 }).state.goatTime, 1);
+});

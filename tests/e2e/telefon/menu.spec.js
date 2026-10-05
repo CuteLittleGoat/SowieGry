@@ -307,6 +307,73 @@ test("zakładka „Sowa”: osiągnięcia Sowiej Akademii z postępem i nagrodą
   expect(errors).toEqual([]);
 });
 
+// Czy na płótnie sówki w profilu jest kolor (tułów gatunku) — z tolerancją na wygładzanie krawędzi.
+const profileOwlHas = (page, rgb) =>
+  page.evaluate(([r, g, b]) => {
+    const canvas = document.querySelector("[data-profile-owl]");
+    if (!canvas?.width) return false;
+    const data = canvas.getContext("2d").getImageData(0, 0, canvas.width, canvas.height).data;
+    for (let index = 0; index < data.length; index += 4) {
+      if (
+        data[index + 3] > 250 &&
+        Math.abs(data[index] - r) + Math.abs(data[index + 1] - g) + Math.abs(data[index + 2] - b) < 12
+      )
+        return true;
+    }
+    return false;
+  }, rgb);
+
+test("zakładka „Sowa”: Sowi Butik — gatunek sowy, dłuższe kózki i strój za piórka (E9c)", async ({ page }) => {
+  const errors = watchErrors(page);
+  await openMenu(page);
+  await page.evaluate(() => window.SowieAcademy.award("test:piorka", 0, 100, "Piórka do testu"));
+  await page.getByRole("tab", { name: "Sowa" }).click();
+  const shop = page.locator('[data-owl-card="butik"]');
+  await expect(shop.locator("[data-shop-feathers]")).toHaveText("🪶 100 piórek");
+  await expect(shop.locator('[data-species="sowka"]')).toHaveAttribute("aria-pressed", "true");
+  await expect(shop.locator('[data-shop-item="species:uszatka"]')).toContainText("Poziom 3");
+  await expect(page.locator('[data-owl-card="garderoba"]')).toContainText("W Sowim Butiku za 80 piórek");
+  expect(await profileOwlHas(page, [176, 122, 82])).toBe(true); // Sówka: #b07a52
+  const dialog = page.getByRole("dialog", { name: "Kupić w Sowim Butiku?" });
+
+  // Gatunek: zakup z potwierdzeniem, od razu wybrany, sówka w profilu w kolorach Puszczyka.
+  await shop.locator('[data-buy="species:puszczyk"]').click();
+  await expect(dialog).toContainText("Puszczyk za 40 piórek (masz 100).");
+  await dialog.getByRole("button", { name: "Kup", exact: true }).click();
+  await expect(page.getByText("Kupione: Puszczyk!")).toBeVisible();
+  await expect(shop.locator('[data-species="puszczyk"]')).toHaveAttribute("aria-pressed", "true");
+  await expect(shop.locator("[data-shop-feathers]")).toHaveText("🪶 60 piórek");
+  await expect.poll(() => profileOwlHas(page, [140, 123, 107])).toBe(true); // Puszczyk: #8c7b6b
+
+  // Dłuższe kózki: poziom 1 (×1,2); na poziom 2 (60 piórek) już nie starcza.
+  await shop.locator('[data-buy="goat:1"]').click();
+  await dialog.getByRole("button", { name: "Anuluj" }).click();
+  await expect(shop.locator("[data-shop-feathers]")).toHaveText("🪶 60 piórek");
+  await shop.locator('[data-buy="goat:1"]').click();
+  await dialog.getByRole("button", { name: "Kup", exact: true }).click();
+  await expect(shop.locator("[data-goat-level]")).toContainText("Teraz: ×1,2 (poziom 1 z 3)");
+  await expect(shop.locator('[data-buy="goat:2"]')).toBeDisabled();
+
+  // Strój: Muszka do garderoby; Korona (80) za droga.
+  await expect(shop.locator('[data-buy="outfit:crown"]')).toBeDisabled();
+  await shop.locator('[data-buy="outfit:bowTie"]').click();
+  await dialog.getByRole("button", { name: "Kup", exact: true }).click();
+  await expect(shop.locator('[data-shop-item="outfit:bowTie"]')).toHaveCount(0);
+  await expect(page.locator('[data-cosmetic="bowTie"]')).toBeEnabled();
+  await expect(shop.locator("[data-shop-feathers]")).toHaveText("🪶 0 piórek");
+
+  // Powrót do Sówki — bez zakupu.
+  await shop.locator('[data-species="sowka"]').click();
+  await expect(shop.locator('[data-species="sowka"]')).toHaveAttribute("aria-pressed", "true");
+  await expect.poll(() => profileOwlHas(page, [176, 122, 82])).toBe(true);
+  const profile = await page.evaluate(() => window.SowieCloud.profile());
+  expect(profile.shop).toMatchObject({ goatLevel: 1, species: { owned: ["sowka", "puszczyk"], selected: "sowka" } });
+  expect(Object.keys(profile.shop.purchases).sort()).toEqual(["goat:1", "outfit:bowTie", "species:puszczyk"]);
+  expect(profile.cosmetics.unlocked).toContain("bowTie");
+  expect(profile.academy.feathers).toBe(0);
+  expect(errors).toEqual([]);
+});
+
 test("zakładka „Sowa”: „Powtórz samouczki we wszystkich grach” — `tutorialDone: false` w dokumentach gier z samouczkiem (emulator, uwaga G1)", async ({
   page,
 }, testInfo) => {

@@ -11,6 +11,7 @@ import { createAtlas } from "../shared/engine/sprites.js";
 import { createView } from "../shared/engine/view.js";
 import { guideFor } from "../shared/meta/guides-data.js";
 import { EVENTS, progress } from "../shared/meta/progress.js";
+import { goatTimeFactor, linkSpecies } from "../shared/meta/shop.js";
 import { createHud, createPauseMenu, createResults, createToasts, openModal, renderGuide } from "../shared/ui/index.js";
 import { SPRITES, SVG_BASE } from "../shared/world/catalog.js";
 import { createOwlAnimator } from "../shared/world/owl.js";
@@ -47,6 +48,8 @@ const view = createView({
   getDpr: () => Math.min(window.devicePixelRatio || 1, dprCap),
 });
 const atlas = createAtlas({ catalog: SPRITES, baseUrl: SVG_BASE });
+// Gatunek sowy z Sowiego Butiku (przekolorowanie części sowy w atlasie).
+linkSpecies(atlas);
 const renderer = createRenderer({ canvas, view, atlas });
 const particles = createParticles({ max: 200 });
 const animator = createOwlAnimator();
@@ -346,7 +349,13 @@ function startRun() {
   const withTutorial = wantsTutorial();
   forceTutorial = false;
   // W samouczku upadki i trafienia nie zabierają serduszek.
-  game = createRun({ difficulty, seed: seedFor(), cozy: cozyEnabled(), safe: withTutorial });
+  game = createRun({
+    difficulty,
+    seed: seedFor(),
+    cozy: cozyEnabled(),
+    safe: withTutorial,
+    goatTime: goatTimeFactor(cloud?.profile?.()),
+  });
   tutorial = withTutorial
     ? createTutorial({
         onPrompt: showTutorialPrompt,
@@ -460,10 +469,15 @@ function powerupList(state) {
   const list = Object.entries(state.powerups).map(([kind, remaining]) => ({
     kind,
     remaining,
-    total: GOATS.duration[kind],
+    total: GOATS.duration[kind] * (state.goatTime || 1),
   }));
   if (state.rocket > 0) {
-    list.push({ kind: "turbo", remaining: state.rocket, total: GOATS.duration.turbo, label: "Rakietka" });
+    list.push({
+      kind: "turbo",
+      remaining: state.rocket,
+      total: GOATS.duration.turbo * (state.goatTime || 1),
+      label: "Rakietka",
+    });
   }
   if (state.fever > 0) list.push({ kind: "goraczka", remaining: state.fever, total: FEVER.duration });
   return list;

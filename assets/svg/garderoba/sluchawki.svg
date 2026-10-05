@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <!-- Słuchawki (Sowi Butik): pałąk nad głową, różowe nauszniki po bokach. -->
+  <path d="M24 64 C18 14 110 14 104 64" fill="none" stroke="#3b2f4a" stroke-width="11" stroke-linecap="round"/>
+  <path d="M24 64 C18 14 110 14 104 64" fill="none" stroke="#4d9de0" stroke-width="5" stroke-linecap="round"/>
+  <g stroke="#3b2f4a" stroke-width="3.5" stroke-linejoin="round">
+    <rect x="13" y="52" width="17" height="27" rx="8" fill="#ff6f91"/>
+    <rect x="98" y="52" width="17" height="27" rx="8" fill="#ff6f91"/>
+  </g>
+  <path d="M18 58 L18 66 M103 58 L103 66" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round"/>
+</svg>

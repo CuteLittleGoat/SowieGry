@@ -9,6 +9,7 @@ import { createAtlas } from "../shared/engine/sprites.js";
 import { createView } from "../shared/engine/view.js";
 import { guideFor } from "../shared/meta/guides-data.js";
 import { EVENTS, progress } from "../shared/meta/progress.js";
+import { goatTimeFactor, linkSpecies } from "../shared/meta/shop.js";
 import { createHud, createPauseMenu, createResults, createToasts, openModal, renderGuide } from "../shared/ui/index.js";
 import { SPRITES, SVG_BASE } from "../shared/world/catalog.js";
 import { createOwlAnimator } from "../shared/world/owl.js";
@@ -54,6 +55,8 @@ const view = createView({
 });
 const camera = createRunCamera();
 const atlas = createAtlas({ catalog: SPRITES, baseUrl: SVG_BASE });
+// Gatunek sowy z Sowiego Butiku (przekolorowanie części sowy w atlasie).
+linkSpecies(atlas);
 const renderer = createRenderer({ canvas, view, camera, atlas });
 const particles = createParticles({ max: 240 });
 const animator = createOwlAnimator();
@@ -353,6 +356,7 @@ function startRun() {
     seed: seedFor(),
     cozy: cozyEnabled(),
     multiplier: tracker.multiplier,
+    goatTime: goatTimeFactor(cloud?.profile?.()),
     intro: withTutorial ? TUTORIAL_PATTERNS : [],
     safe: withTutorial,
   });
@@ -795,7 +799,7 @@ function render() {
     hud.setLives(state.cloud, CLOUD.steps);
     const active = Object.entries(state.powerups)
       .filter(([, remaining]) => remaining > 0)
-      .map(([kind, remaining]) => ({ kind, remaining, total: GOATS.duration[kind] }));
+      .map(([kind, remaining]) => ({ kind, remaining, total: GOATS.duration[kind] * (state.goatTime || 1) }));
     if (state.fever > 0) active.push({ kind: "goraczka", remaining: state.fever, total: FEVER.duration });
     hud.setPowerups(active);
     updateSplash(state);

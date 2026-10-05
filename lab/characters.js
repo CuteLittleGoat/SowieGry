@@ -136,7 +136,7 @@ function sections(state) {
     },
     {
       id: "garderoba",
-      title: "Garderoba (9 pozycji)",
+      title: `Garderoba (${Object.keys(COSMETIC_SPRITES).length} pozycji)`,
       items: Object.keys(COSMETIC_SPRITES).map((key) => wardrobeItem(key)),
     },
     {
