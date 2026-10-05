@@ -73,6 +73,8 @@ const REMOVED_MODULES = [
   "shared/game-enhancements.css",
   "shared/owl-gallery.css",
   "SowieOgrody/ogrody-runtime.js",
+  // E9b: Akademia jest modułem shared/meta/academy.js (importuje go SowieProgress).
+  "shared/sowie-academy.js",
 ];
 
 test("dawne moduły interfejsu gier zostały usunięte i nic ich nie ładuje", async () => {
@@ -154,8 +156,8 @@ test("każda strona ładuje config, platformę, SowieCloud i ekran hasła w tej 
       positions,
       `${path}: zła kolejność skryptów`,
     );
-    // Menu i gry (bez SowieCore): ekran hasła przed Akademią.
-    assert.ok(positions[3] < html.indexOf("shared/sowie-academy.js"), `${path}: SowieCloud musi być przed Akademią`);
+    // Moduły (menu, gra, a przez SowieProgress — Akademia) po skryptach klasycznych: SowieCloud jest już gotowy.
+    assert.ok(positions[3] < html.indexOf('type="module"'), `${path}: SowieCloud musi być przed modułami`);
     if (path === "index.html") assert.ok(html.indexOf("shared/owl-gallery.js") < html.indexOf("shared/menu/menu.js"));
   }
 });

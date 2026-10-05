@@ -236,6 +236,10 @@ test("zadania biegu: ukończone w biegu, po biegu nowe zadania i wyższy Sowi mn
   expect(ids).not.toContain("humbak");
   expect(doc.tasks.active.find((task) => task.id === "o-wlos").progress).toBeGreaterThanOrEqual(1);
   expect(doc.top10.arcade).toHaveLength(1);
+  // Sowia Akademia (E9b): liczniki całego biegu z SowieProgress w profilu (zadania „z dowolnej gry”, osiągnięcia).
+  const { academy } = await readDoc(project, "sowiegry/profil");
+  expect(academy.version).toBe(3);
+  expect(academy.metrics).toMatchObject({ runs: 1, goatsCaught: 1, runnerVisits: 1 });
 
   // Następny bieg liczy dystans z Sowim mnożnikiem ×2.
   await results.getByRole("button", { name: "Jeszcze raz" }).click();

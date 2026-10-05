@@ -1,92 +1,15 @@
-// SowieProgress — rdzeń postępu dla przebudowanych gier (Analiza 2, rozdz. 4.2; Analiza 3, E2d i „okres przejściowy”).
+// SowieProgress — rdzeń postępu gier (Analiza 2, rozdz. 4.2; Analiza 3, E2d i E9b).
 // Gry wysyłają zdarzenia (liście, kózki, trafienia, koniec biegu…). SowieProgress liczy statystyki biegu dla ekranu
-// wyników, a do czasu E9 cienki „most” przekazuje je do obecnej Sowiej Akademii (metryki → misje dnia i tygodnia),
-// od której zależy też odblokowywanie zdjęć w Galerii Sów.
+// wyników i przekazuje zdarzenia Sowiej Akademii (shared/meta/academy.js: metryki → zadania dnia i tygodnia,
+// osiągnięcia), od której zależy też odblokowywanie zdjęć w Galerii Sów.
 
-import { EVENTS } from "./progress-events.js";
+import { academyCalls, taskProgress } from "./academy.js";
 import { applyProfileUpdates, profileUpdates } from "./missions.js";
+import { EVENTS } from "./progress-events.js";
 
-export { EVENTS };
+export { EVENTS, academyCalls, taskProgress };
 
 const KNOWN = new Set(Object.values(EVENTS));
-const number = (value) => (Number.isFinite(Number(value)) ? Number(value) : null);
-
-/**
- * Most do Sowiej Akademii: zdarzenie → lista wywołań SowieAcademy.record(gra, metryka, wartość, tryb).
- * Te same metryki zapisywał dawny shared/gameplay-expansion.js (usunięty w E9a), więc misje i Galeria
- * działają z danymi zebranymi wcześniej. Czysta funkcja (testowana jednostkowo).
- */
-export function bridgeCalls(type, detail = {}) {
-  const calls = [];
-  const push = (gameId, metric, value, mode = "max") => {
-    const numeric = number(value);
-    if (numeric !== null) calls.push([gameId, metric, numeric, mode]);
-  };
-  const game = detail.gameId;
-  if (type === EVENTS.RUN_ENDED) {
-    if (game === "runner") {
-      push(game, "runnerScore", detail.score);
-      push(game, "runnerDistance", detail.distance);
-      push(game, "runnerLeafChain", detail.bestChain);
-    } else if (game === "jumper") {
-      push(game, "jumperScore", detail.score);
-      push(game, "jumperHeight", detail.height);
-      push(game, "jumperStreak", detail.bestStreak);
-    } else if (game === "sowa3") {
-      push(game, "sowa3Score", detail.score);
-      push(game, "sowa3Combo", detail.bestCombo);
-      if (detail.finished) push(game, "sowa3Finishes", 1, "add");
-    }
-  } else if (type === EVENTS.IDLE) {
-    if (game === "ogrody") {
-      push(game, "ogrodyLeaves", detail.lifetimeLeaves);
-      push(game, "ogrodyClicks", detail.clicks, "set");
-      push(game, "ogrodyBuys", detail.buys, "set");
-      push(game, "ogrodyWatering", detail.watering, "set");
-      push(game, "ogrodyPrestiges", detail.prestiges, "set");
-      push(game, "ogrodyPlants", detail.plants);
-    } else if (game === "szklarnia") {
-      push(game, "szklarniaRooms", detail.rooms);
-      push(game, "szklarniaPlants", detail.plants);
-      push(game, "szklarniaGoats", detail.goats, "set");
-      push(game, "szklarniaHybrids", detail.hybrids);
-    }
-  } else if (type === EVENTS.VISIT && game) {
-    push(game, `${game}Visits`, 1, "add");
-  }
-  return calls;
-}
-
-// Zadania z migawki Akademii (do ekranu wyników): misje dnia z postępem i misja tygodnia.
-export function taskProgress(snapshot) {
-  if (!snapshot?.daily) return [];
-  const metrics = snapshot.metrics || {};
-  const daily = (snapshot.daily.missions || []).map((mission) => {
-    const progress =
-      mission.type === "max"
-        ? Number(snapshot.daily.metrics?.[mission.metric] || 0)
-        : Number(metrics[mission.metric] || 0) - Number(mission.baseline || 0);
-    return {
-      id: mission.id,
-      label: mission.label,
-      progress: Math.max(0, Math.min(mission.target, progress)),
-      target: mission.target,
-      done: Boolean(mission.complete) || progress >= mission.target,
-    };
-  });
-  const weekly = snapshot.weekly
-    ? [
-        {
-          id: "weekly",
-          label: "Zagraj w 3 różne gry w tym tygodniu",
-          progress: Math.min(snapshot.weekly.target, snapshot.weekly.games?.length || 0),
-          target: snapshot.weekly.target,
-          done: Boolean(snapshot.weekly.complete),
-        },
-      ]
-    : [];
-  return [...daily, ...weekly];
-}
 
 function emptyRun(gameId, options = {}, now) {
   return {
@@ -154,7 +77,7 @@ export function createProgress({ getAcademy = () => globalThis.SowieAcademy, now
       count(type, payload);
       const academy = getAcademy();
       if (academy) {
-        for (const call of bridgeCalls(type, payload)) academy.record?.(...call);
+        for (const call of academyCalls(type, payload)) academy.record?.(...call);
         if (type === EVENTS.AWARD && payload.id) {
           academy.award?.(payload.id, payload.xp ?? 25, payload.feathers ?? 3, payload.label || "Nagroda");
         }
@@ -179,7 +102,7 @@ export function createProgress({ getAcademy = () => globalThis.SowieAcademy, now
       api.emit(EVENTS.RUN_STARTED, { gameId, difficulty: run.difficulty, daily: run.daily });
       return api.current();
     },
-    // Koniec biegu: zdarzenie run:ended (most do Akademii) i podsumowanie dla ekranu wyników.
+    // Koniec biegu: zdarzenie run:ended (Akademia, misje profilu) i podsumowanie dla ekranu wyników.
     endRun(result = {}) {
       if (!run) throw new Error("Bieg nie został rozpoczęty (beginRun)");
       const finished = run;
@@ -188,6 +111,14 @@ export function createProgress({ getAcademy = () => globalThis.SowieAcademy, now
         difficulty: finished.difficulty || undefined,
         ...result,
         gameId: finished.gameId,
+        // Liczniki całego biegu — zadania „z dowolnej gry” i osiągnięcia Akademii.
+        run: {
+          leaves: finished.leaves.total,
+          goats: Object.values(finished.goats).reduce((sum, value) => sum + value, 0),
+          nearMisses: finished.nearMisses,
+          whales: finished.whales,
+          fevers: finished.fevers,
+        },
       };
       api.emit(EVENTS.RUN_ENDED, detail);
       const after = taskProgress(getAcademy()?.snapshot?.());

@@ -284,6 +284,29 @@ test("zakładka „Sowa”: garderoba, ustawienia, rekordy i wylogowanie urządz
   expect(errors).toEqual([]);
 });
 
+test("zakładka „Sowa”: osiągnięcia Sowiej Akademii z postępem i nagrodą (E9b)", async ({ page }) => {
+  const errors = watchErrors(page);
+  await openMenu(page);
+  await page.getByRole("tab", { name: "Sowa" }).click();
+  const card = page.locator('[data-owl-card="osiagniecia"]');
+  await expect(card.locator("[data-achievements-count]")).toHaveText("0 / 13");
+  await expect(card.locator('[data-achievement="zbieraczka"]')).toContainText("0 / 1000");
+
+  await page.evaluate(() => window.SowieAcademy.record("runner", "leaves", 1000, "add"));
+  await expect(card.locator("[data-achievements-count]")).toHaveText("1 / 13");
+  const collector = card.locator("li").first();
+  await expect(collector).toHaveAttribute("data-achievement", "zbieraczka");
+  await expect(collector).toHaveClass(/is-done/);
+  await expect(collector).toContainText("Zdobyte!");
+  await expect(page.getByText("Osiągnięcie: Zbieraczka liści")).toBeVisible();
+  const academy = await page.evaluate(() => window.SowieCloud.profile().academy);
+  expect(academy.version).toBe(3);
+  expect(academy.achievements.zbieraczka).toBeGreaterThan(0);
+  expect(academy.awards["achievement:zbieraczka"]).toBeGreaterThan(0);
+  expect(academy.feathers).toBeGreaterThanOrEqual(8);
+  expect(errors).toEqual([]);
+});
+
 test("zakładka „Sowa”: „Powtórz samouczki we wszystkich grach” — `tutorialDone: false` w dokumentach gier z samouczkiem (emulator, uwaga G1)", async ({
   page,
 }, testInfo) => {

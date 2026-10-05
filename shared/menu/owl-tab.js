@@ -126,6 +126,36 @@ export function createOwlTab({ root, cloud, platform, academy, audio, atlas, onC
     </section>`;
   }
 
+  // Osiągnięcia Akademii (shared/meta/academy.js): zdobyte na górze listy, potem najbliższe ukończenia.
+  function achievementsCard() {
+    const list = academy()?.achievements?.() || [];
+    if (!list.length) return "";
+    const done = list.filter((item) => item.unlockedAt).length;
+    const ordered = [...list].sort(
+      (a, b) => Boolean(b.unlockedAt) - Boolean(a.unlockedAt) || b.progress.share - a.progress.share,
+    );
+    const rows = ordered
+      .map((item) => {
+        const goals = item.progress.goals;
+        const status = item.unlockedAt
+          ? "Zdobyte!"
+          : goals.length === 1
+            ? `${formatNumber(Math.floor(goals[0].value))} / ${formatNumber(goals[0].target)}`
+            : `${goals.filter((goal) => goal.done).length} / ${goals.length}`;
+        const share = item.unlockedAt ? 1 : Math.min(1, item.progress.share);
+        return `<li class="menu-achievement${item.unlockedAt ? " is-done" : ""}" data-achievement="${escapeHtml(item.id)}">
+          <span><strong><span aria-hidden="true">${item.icon}</span> ${escapeHtml(item.label)}</strong><small>${escapeHtml(item.text)} +${formatNumber(item.xp)} XP · +${formatNumber(item.feathers)} piórek</small></span>
+          <strong>${status}</strong>
+          <span class="menu-progress" role="progressbar" aria-label="Postęp: ${escapeHtml(item.label)}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(share * 100)}"><span style="transform:scaleX(${share})"></span></span>
+        </li>`;
+      })
+      .join("");
+    return `<section class="menu-card" data-owl-card="osiagniecia" aria-labelledby="sowa-osiagniecia">
+      <h3 id="sowa-osiagniecia">Osiągnięcia <small data-achievements-count>${done} / ${list.length}</small></h3>
+      <ul class="menu-list">${rows}</ul>
+    </section>`;
+  }
+
   function recordsCard() {
     const records = profile().records || {};
     const ready = cloud?.isReady?.();
@@ -167,6 +197,7 @@ export function createOwlTab({ root, cloud, platform, academy, audio, atlas, onC
     root.innerHTML = [
       profileCard(),
       tasksCard(),
+      achievementsCard(),
       wardrobeCard(),
       recordsCard(),
       '<div data-install-slot="sowa"></div>',

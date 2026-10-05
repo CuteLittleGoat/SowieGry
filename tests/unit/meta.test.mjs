@@ -1,28 +1,28 @@
-// Testy jednostkowe SowieProgress (most do Sowiej Akademii) i struktury instrukcji guides-data.js.
+// Testy jednostkowe SowieProgress (zdarzenia → Sowia Akademia) i struktury instrukcji guides-data.js.
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { bridgeCalls, createProgress, EVENTS, taskProgress } from "../../shared/meta/progress.js";
+import { academyCalls, createProgress, EVENTS, taskProgress } from "../../shared/meta/progress.js";
 import { GESTURES, GUIDES, guideFor, validateGuide } from "../../shared/meta/guides-data.js";
 import { SPRITES } from "../../shared/world/catalog.js";
 
-test("most do Akademii: metryki z końca biegu, postępu gier idle i wizyt", () => {
-  assert.deepEqual(bridgeCalls(EVENTS.RUN_ENDED, { gameId: "runner", score: 1500, distance: 820, bestChain: 6 }), [
+test("zdarzenia → Akademia: metryki z końca biegu, postępu gier idle i wizyt", () => {
+  assert.deepEqual(academyCalls(EVENTS.RUN_ENDED, { gameId: "runner", score: 1500, distance: 820, bestChain: 6 }), [
     ["runner", "runnerScore", 1500, "max"],
     ["runner", "runnerDistance", 820, "max"],
     ["runner", "runnerLeafChain", 6, "max"],
   ]);
-  assert.deepEqual(bridgeCalls(EVENTS.RUN_ENDED, { gameId: "jumper", score: 900, height: 140, bestStreak: 3 }), [
+  assert.deepEqual(academyCalls(EVENTS.RUN_ENDED, { gameId: "jumper", score: 900, height: 140, bestStreak: 3 }), [
     ["jumper", "jumperScore", 900, "max"],
     ["jumper", "jumperHeight", 140, "max"],
     ["jumper", "jumperStreak", 3, "max"],
   ]);
-  assert.deepEqual(bridgeCalls(EVENTS.RUN_ENDED, { gameId: "sowa3", score: 700, bestCombo: 5, finished: true }), [
+  assert.deepEqual(academyCalls(EVENTS.RUN_ENDED, { gameId: "sowa3", score: 700, bestCombo: 5, finished: true }), [
     ["sowa3", "sowa3Score", 700, "max"],
     ["sowa3", "sowa3Combo", 5, "max"],
     ["sowa3", "sowa3Finishes", 1, "add"],
   ]);
   assert.deepEqual(
-    bridgeCalls(EVENTS.IDLE, {
+    academyCalls(EVENTS.IDLE, {
       gameId: "ogrody",
       lifetimeLeaves: 5000,
       clicks: 80,
@@ -40,19 +40,33 @@ test("most do Akademii: metryki z końca biegu, postępu gier idle i wizyt", () 
       ["ogrody", "ogrodyPlants", 18, "max"],
     ],
   );
-  assert.deepEqual(bridgeCalls(EVENTS.IDLE, { gameId: "szklarnia", rooms: 4, plants: 6, goats: 2, hybrids: 1 }), [
+  assert.deepEqual(academyCalls(EVENTS.IDLE, { gameId: "szklarnia", rooms: 4, plants: 6, goats: 2, hybrids: 1 }), [
     ["szklarnia", "szklarniaRooms", 4, "max"],
     ["szklarnia", "szklarniaPlants", 6, "max"],
     ["szklarnia", "szklarniaGoats", 2, "set"],
     ["szklarnia", "szklarniaHybrids", 1, "max"],
   ]);
-  assert.deepEqual(bridgeCalls(EVENTS.VISIT, { gameId: "runner" }), [["runner", "runnerVisits", 1, "add"]]);
+  assert.deepEqual(academyCalls(EVENTS.VISIT, { gameId: "runner" }), [["runner", "runnerVisits", 1, "add"]]);
   // Brak wartości → brak wywołania; nieznana gra → nic.
-  assert.deepEqual(bridgeCalls(EVENTS.RUN_ENDED, { gameId: "runner", score: 10 }), [
+  assert.deepEqual(academyCalls(EVENTS.RUN_ENDED, { gameId: "runner", score: 10 }), [
     ["runner", "runnerScore", 10, "max"],
   ]);
-  assert.deepEqual(bridgeCalls(EVENTS.RUN_ENDED, { gameId: "laboratorium", score: 10 }), []);
-  assert.deepEqual(bridgeCalls(EVENTS.LEAF, { gameId: "runner" }), []);
+  assert.deepEqual(academyCalls(EVENTS.RUN_ENDED, { gameId: "laboratorium", score: 10, run: { leaves: 5 } }), []);
+  // Liczniki całego biegu (gry zręcznościowe): bieg, liście, kózki, uniki, humbak, gorączka (zera pomijane).
+  assert.deepEqual(
+    academyCalls(EVENTS.RUN_ENDED, {
+      gameId: "jumper",
+      run: { leaves: 40, goats: 2, nearMisses: 0, whales: 1, fevers: 1 },
+    }),
+    [
+      ["jumper", "runs", 1, "add"],
+      ["jumper", "leaves", 40, "add"],
+      ["jumper", "goatsCaught", 2, "add"],
+      ["jumper", "whaleRides", 1, "add"],
+      ["jumper", "fevers", 1, "add"],
+    ],
+  );
+  assert.deepEqual(academyCalls(EVENTS.LEAF, { gameId: "runner" }), []);
 });
 
 test("zadania z migawki Akademii: misje dnia (max i delta) oraz misja tygodnia", () => {
@@ -145,10 +159,17 @@ test("SowieProgress: bieg liczy liście, kózki, trafienia i combo, a koniec bie
   assert.equal(summary.durationMs, 60000);
   assert.equal(summary.score, 1234);
   assert.equal(summary.bestCombo, 4);
+  assert.deepEqual(summary.run, { leaves: 7, goats: 2, nearMisses: 1, whales: 1, fevers: 1 });
   assert.deepEqual(recorded, [
     ["runner", "runnerScore", 1234, "max"],
     ["runner", "runnerDistance", 620, "max"],
     ["runner", "runnerLeafChain", 5, "max"],
+    ["runner", "runs", 1, "add"],
+    ["runner", "leaves", 7, "add"],
+    ["runner", "goatsCaught", 2, "add"],
+    ["runner", "nearMisses", 1, "add"],
+    ["runner", "whaleRides", 1, "add"],
+    ["runner", "fevers", 1, "add"],
   ]);
   assert.deepEqual(summary.tasks[0], {
     id: "runner-distance",

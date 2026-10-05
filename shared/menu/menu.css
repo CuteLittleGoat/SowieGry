@@ -895,6 +895,17 @@ body.menu.has-photo {
   color: var(--monstera-ciemna);
 }
 
+.menu-card h3 small {
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.menu-achievement small {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+}
+
 .menu-records-row .menu-button {
   min-height: 48px;
   font-size: 15px;

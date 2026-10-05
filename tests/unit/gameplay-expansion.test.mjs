@@ -30,23 +30,24 @@ test("menu główne ma przycisk instrukcji przy każdej karcie i zakładkę „J
   assert.match(games, /data-guide="\$\{game\.id\}"/);
   assert.match(games, /Jak grać w \$\{game\.name\}\?/);
   assert.match(read("shared/menu/guides.js"), /GUIDE_ORDER/);
-  assert.match(read("index.html"), /shared\/sowie-academy\.js/);
 });
 
-test("każda gra ładuje Akademię, a nie dawny dok z instrukcją i rozszerzeniami", () => {
-  for (const file of gameIndexes) {
+test("każda gra dostaje Akademię przez SowieProgress, a nie dawny dok z instrukcją i rozszerzeniami", () => {
+  assert.match(read("shared/meta/progress.js"), /from "\.\/academy\.js"/);
+  for (const file of ["index.html", ...gameIndexes]) {
     const html = read(file);
-    assert.match(html, /shared\/sowie-academy\.js/, file);
-    assert.doesNotMatch(html, /game-enhancements\.css|game-guides\.js|gameplay-expansion\.js/, file);
+    assert.doesNotMatch(html, /sowie-academy\.js|game-enhancements\.css|game-guides\.js|gameplay-expansion\.js/, file);
+    assert.match(html, file === "index.html" ? /data-sowie-menu/ : /data-sowie-game="/, file);
   }
 });
 
 test("Akademia ma wersjonowany zapis i idempotentne nagrody", () => {
-  const source = read("shared/sowie-academy.js");
-  assert.match(source, /const VERSION = 2/);
+  const source = read("shared/meta/academy.js");
+  assert.match(source, /export const VERSION = 3/);
   assert.match(source, /academy\.awards\[id\]/);
   assert.match(source, /daily:/);
   assert.match(source, /weekly:/);
+  assert.match(source, /achievement:/);
   assert.match(source, /feathers/);
   assert.match(source, /daily\.metrics/);
 });
