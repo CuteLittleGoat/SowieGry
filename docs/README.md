@@ -39,6 +39,17 @@ W zakładce **Sowa** jest **Sowi Butik**. Płacisz w nim **piórkami**, które d
 
 Gdy piórek jest za mało, przycisk ceny jest wyszarzony.
 
+## Wersja demo
+
+Pod adresem **`demo.html`** (np. https://cutelittlegoat.github.io/SowieGry/demo.html) jest pokazowa wersja gier — do pokazania znajomym albo na spotkaniu:
+
+- bez hasła i bez logowania; własne, proste menu z pięcioma grami, przyciskami **Graj** i **Jak grać?** oraz muzyką (przycisk 🔊 / 🔇 w rogu wycisza muzykę menu);
+- **nic się nie zapisuje** — ani w chmurze, ani w telefonie; wyniki widać tylko na ekranie i znikają po wyjściu z gry;
+- bez Galerii, Sowiej Akademii, Sowiego Butiku i rekordów; w grach nie ma wyboru poziomu trudności (zawsze Arcade), trybu i wyzwania dnia;
+- każda gra zaczyna się od samouczka; przycisk **Menu** w grze wraca do menu demo.
+
+Wersja demo obowiązuje w tej karcie przeglądarki, dopóki jej nie zamkniesz. Żeby w tej samej karcie wrócić do pełnej wersji, otwórz adres z `?demo=0` (np. `…/SowieGry/?demo=0`) — albo po prostu nową kartę.
+
 ## Instalacja na telefonie (aplikacja)
 
 SowieGry można dodać do ekranu głównego telefonu — wtedy działają jak aplikacja: bez paska przeglądarki, na pełnym ekranie, a menu i gry otwierane wcześniej uruchamiają się także bez zasięgu.

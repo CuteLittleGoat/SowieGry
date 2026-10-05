@@ -922,3 +922,12 @@
 .sowie-reduced-effects .sowie-gesture-finger {
   animation: none !important;
 }
+
+/* Wersja demo (E10, SowieCloud dodaje klasę sowie-demo): bez wyboru poziomu trudności, trybu gry i wyzwania dnia. */
+.sowie-demo [data-difficulty],
+.sowie-demo [data-modes],
+.sowie-demo [data-mode-note],
+.sowie-demo [data-daily],
+.sowie-demo [data-daily-note] {
+  display: none !important;
+}

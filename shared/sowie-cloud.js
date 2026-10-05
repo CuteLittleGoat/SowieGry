@@ -11,6 +11,8 @@
   const SCHEMA_VERSION = 1;
   const DEVICE_KEY = "sowiegry:urzadzenie";
   const MODE_KEY = "sowiegry:tryb-chmury";
+  // Wersja demo (E10) — znacznik tej karty w sessionStorage (nigdy w localStorage).
+  const DEMO_KEY = "sowiegry:demo";
   const GAME_IDS = Object.freeze(["runner", "jumper", "sowa3", "ogrody", "szklarnia"]);
   const EMULATOR = Object.freeze({ host: "127.0.0.1", port: 8080, projectId: "demo-sowiegry" });
 
@@ -1086,9 +1088,51 @@
     return;
   }
 
-  // Tryb: ?cloud=memory | emulator | firestore (zapamiętany w tej karcie).
+  // Wersja demo (E10, uwaga właściciela G2): strona demo.html (`<html data-sowie-demo>`) albo `?demo=1` włącza ją
+  // w tej karcie, `?demo=0` wyłącza. W demo postęp jest tylko w pamięci strony (MemoryBackend, bez hasła, bez
+  // Firestore i bez localStorage), nie ma Akademii, Butiku ani Galerii, a wejście do menu głównego (np. „Menu”
+  // w grze) prowadzi do demo.html.
+  function resolveDemo() {
+    const page = document.documentElement.hasAttribute("data-sowie-demo");
+    const value = new URLSearchParams(location.search).get("demo");
+    try {
+      if (page || value === "1") sessionStorage.setItem(DEMO_KEY, "1");
+      else if (value === "0") sessionStorage.removeItem(DEMO_KEY);
+      return page || sessionStorage.getItem(DEMO_KEY) === "1";
+    } catch (_error) {
+      return page || value === "1";
+    }
+  }
+
+  const demo = resolveDemo();
+  // Katalog strony (folder z index.html) z adresu tego skryptu: shared/sowie-cloud.js → katalog nadrzędny.
+  const siteRoot = new URL("../", document.currentScript?.src || location.href);
+  if (demo) {
+    document.documentElement.classList.add("sowie-demo");
+    const page = new URL(location.pathname, location.origin).href;
+    if (page === siteRoot.href || page === new URL("index.html", siteRoot).href) {
+      location.replace(new URL("demo.html", siteRoot).href);
+    }
+  }
+
+  // Pamięć „urządzenia” w demo: odblokowane, bez sprzątania starych kluczy, nic nie trafia do localStorage.
+  function demoStorage() {
+    const items = new Map([[DEVICE_KEY, JSON.stringify({ unlocked: true, deviceId: "demo", cleaned: true })]]);
+    return {
+      get length() {
+        return items.size;
+      },
+      key: (index) => [...items.keys()][index] ?? null,
+      getItem: (key) => (items.has(key) ? items.get(key) : null),
+      setItem: (key, value) => items.set(key, String(value)),
+      removeItem: (key) => items.delete(key),
+    };
+  }
+
+  // Tryb: ?cloud=memory | emulator | firestore (zapamiętany w tej karcie); w demo zawsze pamięć.
   // Na localhost domyślnie pamięć — lokalne uruchomienie nigdy nie zapisuje do produkcyjnej bazy.
   function resolveMode() {
+    if (demo) return { mode: "memory", project: EMULATOR.projectId };
     const params = new URLSearchParams(location.search);
     let choice = null;
     const fromUrl = params.get("cloud");
@@ -1142,7 +1186,7 @@
 
   const cloud = createCloud({
     platform,
-    storage: window.localStorage,
+    storage: demo ? demoStorage() : window.localStorage,
     connect: () => (backendPromise ? backendPromise : Promise.resolve(new MemoryBackend())),
     gameId: currentGame?.id || null,
     gameKinds,
@@ -1159,6 +1203,7 @@
     submitRun: (gameId, result = {}) =>
       cloud.submitRun(gameId, { daily: urlParams.get("daily") === "1", seed: urlParams.get("seed"), ...result }),
     mode: () => mode,
+    demo,
     gameId: () => currentGame?.id || null,
     helpers: Object.freeze({ trimAwards, trimDaily, dayKey, recordKey }),
   });

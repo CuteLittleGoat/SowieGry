@@ -18,6 +18,7 @@ Identyfikatory w bazie są stałe (są wpisane w opublikowane reguły Firestore)
 
 ```text
 index.html                (menu główne — szkielet zakładek; treść rysuje shared/menu/)
+demo.html                 (wersja demo — własne menu gier bez hasła i zapisu; shared/menu/demo.js, demo.css)
 config/
   firebase-config.js      (window.firebaseConfig — projekt rpg-dataslate-relay)
 shared/
@@ -31,7 +32,7 @@ shared/
   world/                  (Sowi Świat — tokeny kolorów, czcionka, Sówka, gatunki sów, katalog grafik postaci)
   ui/                     (wspólny interfejs gier: HUD, komunikaty, okna, menu pauzy, ekran wyników, ui.css)
   meta/                   (SowieProgress — zdarzenia; academy.js — Sowia Akademia; shop.js — Sowi Butik; missions.js — misje garderoby; guides-data.js — instrukcje)
-  menu/                   (menu główne — moduły ES: zakładki Gry, Jak grać, Galeria, Sowa; menu.css)
+  menu/                   (menu główne — moduły ES: zakładki Gry, Jak grać, Galeria, Sowa; menu.css; menu wersji demo)
 SowiaUcieczka/            (Sowia Ucieczka — przebudowany SowaRunner, moduły ES na Sowim Silniku; docs/)
 SowieTory/                (Sowie Tory — przebudowana Sowa3 (E5), moduły ES na Sowim Silniku; docs/)
 SowaWChmurach/            (Sowa w Chmurach — przebudowana SowaJumper (E6), moduły ES na Sowim Silniku; docs/)
@@ -1180,6 +1181,27 @@ Każda nakładka zatrzymuje propagację zdarzeń klawiatury, wskaźnika, dotyku,
 
 - `tests/unit/sowie-cloud.test.mjs` (`node --test`, `MemoryBackend`, symulowany zegar i `localStorage`): hasło (`"huhu"`, `" Huhu "` ✔; `"hu hu"` ✘), kasowanie wyłącznie kluczy z listy (dane innych stron zostają), pierwsze uruchomienie (ekran hasła, `meta`, profil, w pamięci tylko `sowiegry:urzadzenie`), brak ponownych zapisów przy drugim starcie, `submitRun` (rekordy per poziom, top 10, historia, rekord dnia, 1 zapis na rozgrywkę), `submitRun` z trybem (`recordKey`, osobny rekord i top 10 `nieskonczony-arcade`, kampania bez zmian), przycinanie historii do 50, liczniki z dwóch urządzeń i rekordy tylko przy poprawie, ≤ 120 zapisów/h gry idle i 2 s dla ważnej akcji, `flush()`, zmiany sprzed startu, pytanie o nowszy stan z innego urządzenia, `lock()`, `diff`/`applyPatch`, przycinanie top 10 / rekordów dnia / nagród, zgodność wersji SDK z `package.json`;
 - `tests/rules/firestore-rules.test.mjs` (`@firebase/rules-unit-testing` 5.0.2 + `firebase` 12.19.0 na emulatorze, projekt `demo-sowiegry-reguly`): pełny dostęp drugiego projektu (odczyt, zapis, kasowanie, podkolekcje, nowa kolekcja, `collectionGroup`), walidacja `meta` i `profil` (`schemaVersion` całkowite, max 30 pól, zakaz kasowania), odrzucanie innych ścieżek pod `sowiegry`, lista 5 gier, zasady historii (`score` liczbowe, kasowanie tak, edycja nie).
+
+## Wersja demo (`demo.html`, E10 — uwaga właściciela G2)
+
+Pokazowa wersja gier pod osobnym adresem (`…/SowieGry/demo.html`): **własne menu**, **dźwięk i muzyka**, **bez Galerii**, bez hasła i **bez zapisu do Firestore**. Decyzje właściciela: 2026-10-04 (G2) i 2026-10-05 (własne menu, audio, bez galerii).
+
+**Włączanie (shared/sowie-cloud.js — jedyny moduł z pamięcią przeglądarki):** `resolveDemo()` — strona z `<html data-sowie-demo>` (demo.html) albo `?demo=1` zapisuje znacznik `sowiegry:demo` = `1` w **sessionStorage** (tylko ta karta; nic w localStorage), `?demo=0` go usuwa; bez sessionStorage działa sam adres. W demo:
+
+- `<html>` dostaje klasę `sowie-demo`;
+- wejście na menu główne (adres katalogu strony albo `index.html` — katalog liczony z adresu skryptu `shared/sowie-cloud.js`, więc działa także na GitHub Pages w podkatalogu) → `location.replace("demo.html")`; dzięki temu przyciski „Menu” w grach, ekran wyników i menu pauzy (wszystkie prowadzą do `../`) wracają do menu demo;
+- `resolveMode()` zawsze zwraca tryb `memory` (także przy `?cloud=emulator` / `firestore`) — postęp jest w `MemoryBackend`, czyli w pamięci strony, i znika po jej zamknięciu albo przejściu do innej strony;
+- `createCloud` dostaje zamiast `localStorage` pamięć `demoStorage()` (Map z wpisem urządzenia `{ unlocked: true, deviceId: "demo", cleaned: true }`): bez ekranu „Hasło sowy”, bez sprzątania starych kluczy i bez żadnego zapisu w localStorage;
+- `SowieCloud.demo` = `true` — `shared/meta/academy.js` nie tworzy wtedy Sowiej Akademii (brak zadań dnia, osiągnięć i piórek), a `shared/owl-gallery.js` kończy się od razu (brak `window.SowieOwlGallery`);
+- `shared/ui/ui.css`: `.sowie-demo [data-difficulty], [data-modes], [data-mode-note], [data-daily], [data-daily-note] { display: none !important }` — gry zręcznościowe bez wyboru poziomu (domyślny Arcade), Sowie Tory bez wyboru trybu (Kampania), Sowia Ucieczka bez wyzwania dnia. Samouczek pokazuje się przy pierwszym biegu na każdej stronie (pamięć nie ma `tutorialDone`); „Samouczek” i „Jak grać?” zostają.
+
+**demo.html:** `<html lang="pl" data-sowie-demo>`, tytuł „SowieGry — wersja demo”, opis strony, ikony (bez manifestu PWA — instalacja dotyczy pełnej wersji), `preload` Fredoka 700, style `world/tokens.css`, `ui/ui.css`, `menu/menu.css`, `menu/demo.css`; skrypty `shared/sowie-platform.js`, `shared/sowie-cloud.js`, `shared/pwa.js` (service worker — demo działa też bez zasięgu po pierwszym wejściu) i moduł `shared/menu/demo.js` (bez `config/firebase-config.js`, `password-gate.js`, `owl-gallery.js`). `<body class="menu demo" data-sowie-demo-menu>`: niebo z trzema chmurami jak w menu, nagłówek (`.menu-topbar`: „SowieGry”, plakietka `.demo-badge` „Wersja demo”, przycisk `[data-demo-sound]` 🔊 / 🔇), Sówka w dymku („Hu-hu! To wersja pokazowa — wybierz grę i graj od razu!”), `main` z sekcją `#gry` (ukryty nagłówek „Gry”), notka `[data-demo-note]` („Bez logowania i bez zapisu: wyniki widać tylko na ekranie i znikają po zamknięciu strony. Każda gra zaczyna się od krótkiego samouczka.”) i ścieżka kart `[data-game-path]`; bez dolnych zakładek.
+
+**shared/menu/demo.js** (moduł ES): `demoGameUrl(ścieżka)` → `ścieżka?demo=1`; dźwięk jak w menu (`assets/audio/audio.json`, `createAudio` z `preloadOnUnlock: ["klik", "hu-hu"]`, odblokowanie pierwszym dotknięciem poza odnośnikami, muzyka `menu` po odblokowaniu, gdy włączona; „klik” przy przyciskach); przycisk muzyki przełącza `musicOn` (`aria-pressed`, etykieta „Muzyka w menu: włączona / wyłączona”, `playMusic("menu")` / `stopMusic()`; tylko w tej karcie — w grach dźwięk ustawia się w menu pauzy); Sówka w dymku (`createOwlAnimator`, skok 0,55 s z radością 1,1 s po stuknięciu, 4 powitania, „hu-hu”); karty `renderGameCards` z `shared/menu/games.js` (ilustracje `drawCardArt`, osobna sowa na kartę) z odnośnikami „Graj” `?demo=1` i oknem „Jak grać — <gra>” (`renderGuide`, przyciski „Rozumiem” i „Graj”); układ ścieżki i płócien kart po zmianie rozmiaru, rysowanie tylko widocznych kart (`IntersectionObserver`), pętla 30 kl./s, przy ograniczeniu ruchu klatka statyczna; atlas `80 × min(2, DPR)`; `window.SowieDemo` (testy): `atlas`, `audio()`, `musicOn()`, `animating()`.
+
+**shared/menu/demo.css:** `.demo-badge` (złota pigułka min. 36 px, cień `--zloto-ciemne`, 15 px pogrubione), przycisk muzyki 22 px, `.demo .menu-main` z dolnym odstępem 24 px (bez zakładek), `.demo-note` (biel 85%, zaokrąglenie 18 px, 15 px), ukryte `.game-card-record` i `.game-card-new`.
+
+Service worker (v12) ma w `SHELL` także `demo.html`, `shared/menu/demo.js` i `shared/menu/demo.css`. Testy: `tests/unit/architecture.test.mjs` (demo.html bez konfiguracji Firestore, hasła i Galerii; tryb pamięci, `demoStorage`, Akademia i Galeria wyłączone, pliki w SW) i `tests/e2e/telefon/demo.spec.js` (urządzenie bez hasła: menu demo z 5 kartami, plakietką, notką i odnośnikami `?demo=1`, bez rekordów, „Nowe!” i zakładek; instrukcja Sowich Torów; wyciszenie muzyki; Sowia Ucieczka bez ekranu hasła, bez wyboru poziomu i wyzwania dnia, `SowieCloud.demo`, tryb `memory`, brak Akademii i Galerii; „Menu” → `demo.html`; localStorage pusty, znacznik w sessionStorage; `/?demo=0` → pełna wersja z ekranem „Hasło sowy”; Sowie Tory, Sowa w Chmurach, Sowie Ogrody i Łącz i Hoduj z `?demo=1&cloud=emulator` — bez hasła, tryb `memory`, bez Akademii, bez wyboru trudności / trybu, pusty localStorage).
 
 ## Dokumentacja planu
 

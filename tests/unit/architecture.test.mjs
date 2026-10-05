@@ -250,3 +250,21 @@ test("SowieOgrody/nowa.html (dawny adres podglądu) przekierowuje do ./ z parame
   assert.doesNotMatch(platform, /nowa\.html"/);
   assert.match(platform, /id: "ogrody",[\s\S]*?saveVersion: 3,\s*rebuilt: true/);
 });
+
+test("wersja demo (E10): demo.html bez konfiguracji Firestore, hasła i Galerii; SowieCloud w demo tylko w pamięci", async () => {
+  const html = await read("demo.html");
+  assert.match(html, /<html lang="pl" data-sowie-demo>/);
+  assert.ok(html.indexOf("shared/sowie-platform.js") < html.indexOf("shared/sowie-cloud.js"));
+  assert.ok(html.indexOf("shared/sowie-cloud.js") < html.indexOf("shared/menu/demo.js"));
+  assert.doesNotMatch(html, /firebase-config|password-gate|owl-gallery|menu\/menu\.js/);
+  const cloud = await read("shared/sowie-cloud.js");
+  assert.match(cloud, /if \(demo\) return \{ mode: "memory"/);
+  assert.match(cloud, /storage: demo \? demoStorage\(\) : window\.localStorage/);
+  assert.match(cloud, /const DEMO_KEY = "sowiegry:demo"/);
+  // Akademia i Galeria nie powstają w demo.
+  assert.match(await read("shared/meta/academy.js"), /!window\.SowieCloud\.demo/);
+  assert.match(await read("shared/owl-gallery.js"), /if \(cloud\?\.demo\) return;/);
+  const sw = await read("sw.js");
+  for (const file of ["demo.html", "shared/menu/demo.js", "shared/menu/demo.css"])
+    assert.ok(sw.includes(`"${file}"`), file);
+});

@@ -1,0 +1,38 @@
+/* Menu wersji demo (E10, demo.html) — dodatki do menu.css: plakietka „Wersja demo”, notka o braku zapisu, bez dolnych
+   zakładek (mniejszy odstęp na dole), karty gier bez rekordów i znaczka „Nowe!”. */
+
+.demo-badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  color: var(--kontur);
+  background: var(--zloto);
+  box-shadow: inset 0 -3px 0 var(--zloto-ciemne);
+  font-size: 15px;
+  font-weight: var(--czcionka-pogrubiona);
+  white-space: nowrap;
+}
+
+.demo [data-demo-sound] {
+  font-size: 22px;
+  line-height: 1;
+}
+
+.demo .menu-main {
+  padding-bottom: calc(24px + env(safe-area-inset-bottom));
+}
+
+.demo-note {
+  margin: 0 0 12px;
+  padding: 10px 14px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.85);
+  font-size: 15px;
+}
+
+.demo .game-card-record,
+.demo .game-card-new {
+  display: none;
+}

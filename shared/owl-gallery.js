@@ -4,6 +4,8 @@
 
   const scriptUrl = document.currentScript?.src;
   const cloud = window.SowieCloud;
+  // Wersja demo (E10): bez Galerii Sów.
+  if (cloud?.demo) return;
   const VERSION = 2;
 
   // goals: lista celów [źródło, próg] — źródło to level, achievements (liczba osiągnięć), feathers albo metryka

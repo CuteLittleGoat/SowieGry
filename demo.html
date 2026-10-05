@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="pl" data-sowie-demo>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#bfe9ff" />
+  <meta name="description" content="SowieGry — wersja demo: pięć gier z Sówką do wypróbowania bez logowania i bez zapisu." />
+  <link rel="icon" href="assets/icons/icon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png" />
+  <title>SowieGry — wersja demo</title>
+  <link rel="preload" href="assets/fonts/fredoka-700.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="stylesheet" href="shared/world/tokens.css" />
+  <link rel="stylesheet" href="shared/ui/ui.css" />
+  <link rel="stylesheet" href="shared/menu/menu.css" />
+  <link rel="stylesheet" href="shared/menu/demo.css" />
+  <script src="shared/sowie-platform.js"></script>
+  <script src="shared/sowie-cloud.js"></script>
+  <script src="shared/pwa.js"></script>
+  <script type="module" src="shared/menu/demo.js"></script>
+</head>
+<body class="menu demo" data-sowie-demo-menu>
+  <div class="menu-sky" aria-hidden="true">
+    <span class="menu-cloud is-1"></span>
+    <span class="menu-cloud is-2"></span>
+    <span class="menu-cloud is-3"></span>
+  </div>
+
+  <header class="menu-header">
+    <div class="menu-topbar">
+      <h1 class="menu-logo">SowieGry</h1>
+      <span class="demo-badge">Wersja demo</span>
+      <button type="button" class="menu-icon-button" data-demo-sound aria-pressed="true" aria-label="Muzyka w menu"></button>
+    </div>
+    <div class="menu-hero">
+      <button type="button" class="menu-hero-owl" data-hero-owl aria-label="Sówka — dotknij, żeby się przywitała">
+        <canvas width="120" height="120" aria-hidden="true"></canvas>
+      </button>
+      <div class="menu-bubble">
+        <p class="menu-bubble-text" data-hero-text>Hu-hu! To wersja pokazowa — wybierz grę i graj od razu!</p>
+      </div>
+    </div>
+  </header>
+
+  <main class="menu-main">
+    <section class="menu-panel" id="gry" aria-labelledby="demo-gry">
+      <h2 class="menu-visually-hidden" id="demo-gry">Gry</h2>
+      <p class="demo-note" data-demo-note>
+        Bez logowania i bez zapisu: wyniki widać tylko na ekranie i znikają po zamknięciu strony. Każda gra zaczyna
+        się od krótkiego samouczka.
+      </p>
+      <div class="menu-path" data-game-path></div>
+    </section>
+  </main>
+</body>
+</html>

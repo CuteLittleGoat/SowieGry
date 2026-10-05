@@ -680,11 +680,12 @@ export function createAcademy({ getCloud = () => globalThis.SowieCloud, now = ()
   return api;
 }
 
-// Jedna Akademia na stronę — tylko menu (`data-sowie-menu`) i gry (`data-sowie-game`) z SowieCloud; Laboratorium
-// i testy jednostkowe jej nie tworzą.
+// Jedna Akademia na stronę — tylko menu (`data-sowie-menu`) i gry (`data-sowie-game`) z SowieCloud; Laboratorium,
+// wersja demo (E10) i testy jednostkowe jej nie tworzą.
 export const academy =
   typeof window !== "undefined" &&
   window.SowieCloud &&
+  !window.SowieCloud.demo &&
   window.document?.querySelector?.("[data-sowie-menu], [data-sowie-game]")
     ? (window.SowieAcademy ||= Object.freeze(createAcademy()))
     : null;
