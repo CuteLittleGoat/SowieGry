@@ -5,7 +5,7 @@ import { bridgeCalls, createProgress, EVENTS, taskProgress } from "../../shared/
 import { GESTURES, GUIDES, guideFor, validateGuide } from "../../shared/meta/guides-data.js";
 import { SPRITES } from "../../shared/world/catalog.js";
 
-test("most do Akademii: te same metryki co shared/gameplay-expansion.js", () => {
+test("most do Akademii: metryki z końca biegu, postępu gier idle i wizyt", () => {
   assert.deepEqual(bridgeCalls(EVENTS.RUN_ENDED, { gameId: "runner", score: 1500, distance: 820, bestChain: 6 }), [
     ["runner", "runnerScore", 1500, "max"],
     ["runner", "runnerDistance", 820, "max"],
@@ -215,8 +215,4 @@ test("instrukcje obecnych gier: każda gra z rejestru ma przewodnik (treść z d
   // „szklarnia” to od E8e Łącz i Hoduj, „ogrody” od E7e — nowa odsłona Sowich Ogrodów.
   assert.equal(guideFor("szklarnia").title, "Łącz i Hoduj");
   assert.equal(guideFor("ogrody").cards.length, 7);
-  // Klasyczny skrypt gier nie ma już własnej kopii treści.
-  const legacy = readFileSync(new URL("../../shared/game-guides.js", import.meta.url), "utf8");
-  assert.doesNotMatch(legacy, /summary:/);
-  assert.match(legacy, /meta\/guides-data\.js/);
 });

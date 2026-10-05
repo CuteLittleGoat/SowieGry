@@ -59,10 +59,30 @@ test("wszystkie gry ładują platformę; obecne gry — wspólny menedżer powia
   }
 });
 
-test("runtime nie podmienia metod SowieCore", async () => {
-  const runtime = await read("shared/sowie-runtime.js");
-  assert.doesNotMatch(runtime, /core\.(registerGame|play|recordStat|progressMission)\s*=/);
-  await assert.rejects(read("SowieOgrody/ogrody-runtime.js"));
+// E9a (Analiza 3, 9.4): dawny interfejs gier (SowieCore z paskiem narzędzi i dokiem, menedżer powiadomień, instrukcje,
+// rozszerzenia, okno Rekordów, obsługa modali, runtime) został usunięty — nie ładuje go już żadna strona.
+const REMOVED_MODULES = [
+  "shared/sowie-core.js",
+  "shared/notification-manager.js",
+  "shared/game-guides.js",
+  "shared/gameplay-expansion.js",
+  "shared/records.js",
+  "shared/modal-accessibility.js",
+  "shared/sowie-runtime.js",
+  "shared/sowie-smoke-hook.js",
+  "shared/game-enhancements.css",
+  "shared/owl-gallery.css",
+  "SowieOgrody/ogrody-runtime.js",
+];
+
+test("dawne moduły interfejsu gier zostały usunięte i nic ich nie ładuje", async () => {
+  for (const file of REMOVED_MODULES) await assert.rejects(read(file), file);
+  const sw = await read("sw.js");
+  for (const path of ["index.html", ...gamePages, "sw.js"]) {
+    const source = path === "sw.js" ? sw : await read(path);
+    for (const file of REMOVED_MODULES)
+      assert.ok(!source.includes(file.replace(/^shared\//, "shared/")), `${path}: ${file}`);
+  }
 });
 
 // Wszystkie pliki JavaScript gier, modułów wspólnych (także podkatalogów), Laboratorium i service worker.
@@ -109,9 +129,10 @@ test("stare moduły zapisu lokalnego zostały usunięte", async () => {
   for (const removed of ["migrateProfile", "backupValue", "exportData", "importData", "readProfile", "writeProfile"]) {
     assert.doesNotMatch(platform, new RegExp(removed), `sowie-platform.js nadal zawiera ${removed}`);
   }
-  const core = await read("shared/sowie-core.js");
-  assert.doesNotMatch(core, /Eksportuj zapis|Importuj zapis/);
-  assert.match(core, /Wyloguj to urządzenie/);
+  // Wylogowanie urządzenia jest w ustawieniach menu (zakładka „Sowa”); eksportu i importu zapisu nie ma.
+  const owlTab = await read("shared/menu/owl-tab.js");
+  assert.doesNotMatch(owlTab, /Eksportuj zapis|Importuj zapis/);
+  assert.match(owlTab, /Wyloguj to urządzenie/);
 });
 
 test("każda strona ładuje config, platformę, SowieCloud i ekran hasła w tej kolejności", async () => {

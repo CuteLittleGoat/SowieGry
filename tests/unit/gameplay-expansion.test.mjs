@@ -23,7 +23,6 @@ test("katalog instrukcji (shared/meta/guides-data.js) obejmuje pięć gier i „
   for (const id of ["runner", "jumper", "sowa3", "ogrody", "szklarnia"]) {
     assert.ok(GUIDES[id].summary && GUIDES[id].cards.length >= 4, id);
   }
-  assert.match(read("shared/game-guides.js"), /meta\/guides-data\.js/);
 });
 
 test("menu główne ma przycisk instrukcji przy każdej karcie i zakładkę „Jak grać”", () => {
@@ -50,15 +49,4 @@ test("Akademia ma wersjonowany zapis i idempotentne nagrody", () => {
   assert.match(source, /weekly:/);
   assert.match(source, /feathers/);
   assert.match(source, /daily\.metrics/);
-});
-
-test("rozszerzenia zawierają mechanikę dla każdej obecnej gry (bez gier podmienionych na nowe)", () => {
-  const source = read("shared/gameplay-expansion.js");
-  // SowaRunner, Sowa3 i SowaJumper zastąpiły Sowia Ucieczka, Sowie Tory i Sowa w Chmurach (własne zadania i combo).
-  assert.doesNotMatch(source, /initializeRunner|sowarunner|initializeSowa3|"sowa3"|initializeJumper|sowajumper/);
-  assert.doesNotMatch(source, /data-start-daily|Precyzyjne lądowania/);
-  assert.doesNotMatch(source, /initializeGardens|sowieogrody|Kontrakty ogrodnicze/);
-  assert.match(source, /initializeGreenhouse/);
-  assert.match(source, /Kontrakty/);
-  assert.match(source, /Album cech/);
 });

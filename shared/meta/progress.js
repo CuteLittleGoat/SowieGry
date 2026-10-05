@@ -13,8 +13,8 @@ const number = (value) => (Number.isFinite(Number(value)) ? Number(value) : null
 
 /**
  * Most do Sowiej Akademii: zdarzenie → lista wywołań SowieAcademy.record(gra, metryka, wartość, tryb).
- * Te same metryki zapisuje dziś shared/gameplay-expansion.js dla obecnych gier, więc misje i Galeria działają
- * tak samo dla starych i nowych gier. Czysta funkcja (testowana jednostkowo).
+ * Te same metryki zapisywał dawny shared/gameplay-expansion.js (usunięty w E9a), więc misje i Galeria
+ * działają z danymi zebranymi wcześniej. Czysta funkcja (testowana jednostkowo).
  */
 export function bridgeCalls(type, detail = {}) {
   const calls = [];

@@ -45,7 +45,7 @@ const settingsButton = document.querySelector("[data-open-settings]");
 settingsButton.innerHTML = ICONS.settings;
 
 const toasts = createToasts({ root: document.body });
-// Akademia i Galeria wysyłają komunikaty przez window.SowieNotifications (w grach: shared/notification-manager.js).
+// Akademia i Galeria wysyłają komunikaty przez window.SowieNotifications (gry ustawiają własne — shared/ui/toasts.js).
 window.SowieNotifications ||= {
   toast({ title = "", detail = "", reward = "", kind = "info" } = {}) {
     const text = [title, detail, reward].filter(Boolean).join(" · ");

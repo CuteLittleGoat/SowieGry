@@ -1,10 +1,9 @@
-// Misje garderoby i statystyki profilu dla przebudowanych gier (Analiza 3, „okres przejściowy” do E9).
-// Obecne gry posuwają je przez SowieCore.progressMission / recordStat (shared/sowie-core.js). Przebudowane gry
-// wysyłają zdarzenia SowieProgress, a ten moduł zamienia je na te same zmiany profilu: profil.missions
+// Misje garderoby i statystyki profilu (dawniej SowieCore.progressMission / recordStat; moduł usunięty w E9a).
+// Gry wysyłają zdarzenia SowieProgress, a ten moduł zamienia je na zmiany profilu: profil.missions
 // (postęp, ukończenie), profil.stats (liczniki) i profil.cosmetics.unlocked (nagroda za misję).
 import { EVENTS } from "./progress-events.js";
 
-// Opisy misji (klucze jak w SowiePlatform.DEFAULT_MISSIONS; te same teksty ma shared/sowie-core.js).
+// Opisy misji (klucze jak w SowiePlatform.DEFAULT_MISSIONS).
 export const MISSION_LABELS = Object.freeze({
   leaves20: "Zbierz 20 liści monster",
   extraLife: "Zdobądź dodatkowe życie",

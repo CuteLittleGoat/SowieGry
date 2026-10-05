@@ -69,7 +69,8 @@ test("katalog galerii ma trzydzieści trwałych nagród i warunki z pięciu gier
     assert.match(source, new RegExp(metric));
   }
   assert.match(source, /gallery:complete/);
-  assert.match(source, /data-gallery-favorite/);
+  // Okno Galerii w grach (dok) usunięte w E9a — Galeria jest w zakładce menu (shared/menu/gallery.js).
+  assert.doesNotMatch(source, /data-gallery-fab|ensureModal/);
 });
 
 test("menu i wszystkie gry ładują skrypt galerii; gry także jej okno (style)", () => {

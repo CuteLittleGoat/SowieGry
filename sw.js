@@ -1,7 +1,7 @@
 // Service worker SowieGry (PWA): start bez zasięgu i szybkie ponowne wejścia.
 // Wersjonowana pamięć podręczna — przy każdej zmianie listy SHELL albo strategii podnieś VERSION.
 // Nie obsługuje żądań do Firestore (firestore.googleapis.com) — zapisami offline zajmuje się SDK (IndexedDB).
-const VERSION = "sowiegry-v8";
+const VERSION = "sowiegry-v9";
 const SHELL = [
   "./",
   "index.html",
@@ -19,15 +19,10 @@ const SHELL = [
   "shared/world/tokens.css",
   "shared/ui/ui.css",
   "shared/menu/menu.css",
-  "shared/game-enhancements.css",
-  "shared/owl-gallery.css",
   "shared/sowie-platform.js",
   "shared/sowie-cloud.js",
   "shared/password-gate.js",
   "shared/pwa.js",
-  "shared/sowie-core.js",
-  "shared/notification-manager.js",
-  "shared/game-guides.js",
   "shared/sowie-academy.js",
   "shared/owl-gallery.js",
   "shared/menu/menu.js",

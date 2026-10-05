@@ -337,9 +337,6 @@
 
   let state = defaultState();
   let loaded = false;
-  let modal = null;
-  let previousFocus = null;
-  let selectedId = null;
 
   function defaultState() {
     return {
@@ -414,9 +411,7 @@
           title: "Nowa fotografia w Galerii Sów!",
           detail:
             newlyUnlocked.length === 1 ? newlyUnlocked[0].title : `Odblokowano ${newlyUnlocked.length} fotografie`,
-          reward: document.querySelector("[data-sowie-menu]")
-            ? "Zobacz w zakładce Galeria"
-            : "Otwórz Galerię przyciskiem 🖼️",
+          reward: "Zobacz w zakładce Galeria",
           kind: "important",
         });
       }
@@ -436,114 +431,6 @@
     );
   }
 
-  function focusableElements() {
-    if (!modal) return [];
-    return [...modal.querySelectorAll('a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])')].filter(
-      (element) => !element.hidden,
-    );
-  }
-
-  function trapFocus(event) {
-    if (event.key === "Escape") {
-      event.preventDefault();
-      close();
-      return;
-    }
-    if (event.key !== "Tab") return;
-    const focusable = focusableElements();
-    if (!focusable.length) return;
-    const first = focusable[0];
-    const last = focusable[focusable.length - 1];
-    if (event.shiftKey && document.activeElement === first) {
-      event.preventDefault();
-      last.focus();
-    } else if (!event.shiftKey && document.activeElement === last) {
-      event.preventDefault();
-      first.focus();
-    }
-  }
-
-  function ensureModal() {
-    if (modal) return modal;
-    modal = document.createElement("section");
-    modal.className = "sowie-modal-backdrop sowie-gallery-backdrop";
-    modal.hidden = true;
-    modal.innerHTML = `
-      <article class="sowie-modal-card sowie-gallery-modal" role="dialog" aria-modal="true" aria-labelledby="galleryTitle">
-        <div class="sowie-gallery-heading">
-          <div><p class="sowie-gallery-eyebrow">nagrody fotograficzne</p><h2 id="galleryTitle">🖼️ Galeria Sów</h2></div>
-          <strong data-gallery-progress></strong>
-        </div>
-        <div data-gallery-content></div>
-        <div class="sowie-modal-actions"><button type="button" data-gallery-close>Zamknij</button></div>
-      </article>`;
-    modal.addEventListener("click", (event) => {
-      if (event.target === modal || event.target.closest("[data-gallery-close]")) close();
-      const openButton = event.target.closest("[data-gallery-open]");
-      if (openButton) openPhoto(openButton.dataset.galleryOpen);
-      const backButton = event.target.closest("[data-gallery-back]");
-      if (backButton) {
-        selectedId = null;
-        render();
-      }
-      const favoriteButton = event.target.closest("[data-gallery-favorite]");
-      if (favoriteButton) toggleFavorite(favoriteButton.dataset.galleryFavorite);
-    });
-    modal.addEventListener("keydown", trapFocus);
-    document.body.appendChild(modal);
-    return modal;
-  }
-
-  function galleryCards() {
-    return PHOTOS.map((photo, index) => {
-      const unlocked = state.unlocked.includes(photo.id);
-      const viewed = state.viewed.includes(photo.id);
-      const favorite = state.favorite === photo.id;
-      if (!unlocked) {
-        return `<article class="sowie-gallery-card is-locked" data-gallery-photo="${photo.id}">
-          <div class="sowie-gallery-lock" aria-hidden="true">🔒</div>
-          <div><strong>Fotografia ${index + 1}</strong><p>${photo.requirement}</p></div>
-        </article>`;
-      }
-      return `<article class="sowie-gallery-card" data-gallery-photo="${photo.id}">
-        <button type="button" class="sowie-gallery-thumb" data-gallery-open="${photo.id}" aria-label="Otwórz fotografię: ${photo.title}">
-          <img src="${thumbUrl(photo, 400)}" srcset="${thumbUrl(photo, 400)} 400w, ${thumbUrl(photo, 600)} 600w" sizes="(max-width: 700px) 45vw, 220px" alt="${photo.alt}" loading="lazy" decoding="async" width="400" height="300" />
-          <span>${favorite ? "⭐" : viewed ? "✓" : "NOWA"}</span>
-        </button>
-        <div><strong>${photo.title}</strong><p>Fot. ${photo.photographer}</p></div>
-      </article>`;
-    }).join("");
-  }
-
-  function detailView(photo) {
-    const favorite = state.favorite === photo.id;
-    return `<div class="sowie-gallery-detail">
-      <button class="sowie-feature-button" type="button" data-gallery-back>← Wróć do kolekcji</button>
-      <figure>
-        <img src="${photoUrl(photo)}" alt="${photo.alt}" width="1200" height="900" />
-        <figcaption>
-          <h3>${photo.title}</h3>
-          <p>${photo.alt}</p>
-          <p>Fotografia: <strong>${photo.photographer}</strong> · źródło: <a href="${photo.sourceUrl}" target="_blank" rel="noopener noreferrer">Pexels</a></p>
-        </figcaption>
-      </figure>
-      <button class="sowie-feature-button" type="button" data-gallery-favorite="${photo.id}">${favorite ? "⭐ Ulubiona fotografia" : "☆ Ustaw jako ulubioną"}</button>
-    </div>`;
-  }
-
-  function render() {
-    if (!modal) return;
-    refreshUnlocks();
-    const progress = modal.querySelector("[data-gallery-progress]");
-    const content = modal.querySelector("[data-gallery-content]");
-    const unlockedCount = state.unlocked.length;
-    progress.textContent = `${unlockedCount}/${PHOTOS.length} odblokowanych`;
-    const selected = PHOTOS.find((photo) => photo.id === selectedId && state.unlocked.includes(photo.id));
-    content.innerHTML = selected
-      ? detailView(selected)
-      : `<p>Zdobywaj poziomy i realizuj cele w pięciu grach, aby odkrywać kolejne fotografie. Nagrody pozostają odblokowane na stałe.</p><div class="sowie-gallery-grid">${galleryCards()}</div>`;
-  }
-
   // Oznacza zdjęcie jako obejrzane (po obejrzeniu wszystkich 30 — nagroda Akademii).
   function markViewed(id) {
     if (!loaded || !state.unlocked.includes(id) || state.viewed.includes(id)) return false;
@@ -553,14 +440,6 @@
       window.SowieAcademy?.award?.("gallery:complete", 100, 10, "Kompletna Galeria Sów");
     }
     return true;
-  }
-
-  function openPhoto(id) {
-    if (!state.unlocked.includes(id)) return;
-    selectedId = id;
-    markViewed(id);
-    render();
-    modal.querySelector("[data-gallery-back]")?.focus();
   }
 
   // Ulubione zdjęcie (jedno) — ponowne wybranie zdejmuje wyróżnienie.
@@ -579,73 +458,18 @@
     return true;
   }
 
-  function toggleFavorite(id) {
-    if (!state.unlocked.includes(id)) return;
-    setFavorite(id);
-    render();
-    modal?.querySelector(`[data-gallery-favorite="${id}"]`)?.focus();
-  }
-
-  function open(trigger = document.activeElement) {
-    refreshUnlocks({ notify: true });
-    const node = ensureModal();
-    previousFocus = trigger instanceof HTMLElement ? trigger : null;
-    selectedId = null;
-    render();
-    node.hidden = false;
-    node.querySelector("[data-gallery-close]").focus();
-  }
-
-  function close() {
-    if (!modal || modal.hidden) return;
-    modal.hidden = true;
-    selectedId = null;
-    previousFocus?.focus?.();
-    previousFocus = null;
-  }
-
-  function attachButton() {
-    if (document.getElementById("galleryButton") || document.querySelector("[data-gallery-fab]")) return;
-    // Nowe menu główne (E3) ma własną zakładkę, a przebudowane gry (E4+) — ekran wyników; nie doklejamy przycisku.
-    if (document.querySelector("[data-sowie-menu], [data-sowie-game]")) return;
-    const onMenu = Boolean(document.querySelector("[data-game-cards]"));
-    const button = document.createElement("button");
-    button.type = "button";
-    button.title = "Galeria Sów";
-    button.setAttribute("aria-label", "Otwórz Galerię Sów");
-    if (onMenu) {
-      button.id = "galleryButton";
-      button.className = "sowie-gallery-button";
-      button.textContent = "🖼️ Galeria Sów";
-      const actions =
-        document.querySelector(".sowie-header-actions") || document.querySelector("header") || document.body;
-      actions.appendChild(button);
-    } else {
-      button.className = "sowie-tool-button";
-      button.dataset.galleryFab = "true";
-      button.textContent = "🖼️";
-      (window.SowieGameGuides?.getDock?.() || document.body).appendChild(button);
-    }
-    button.addEventListener("click", () => open(button));
-  }
-
   function loadFromCloud() {
     state = load();
     loaded = true;
     refreshUnlocks({ notify: true });
-    if (modal && !modal.hidden) render();
   }
 
   cloud?.ready.then(loadFromCloud);
   cloud?.onProfileReload(loadFromCloud);
   window.addEventListener("sowie:academy-changed", () => refreshUnlocks({ notify: true }));
-  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", attachButton, { once: true });
-  else attachButton();
 
   window.SowieOwlGallery = Object.freeze({
     PHOTOS,
-    open,
-    close,
     refreshUnlocks,
     snapshot,
     progressOf,
