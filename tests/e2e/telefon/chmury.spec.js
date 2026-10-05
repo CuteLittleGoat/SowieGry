@@ -55,12 +55,21 @@ test("Sowa w Chmurach: strefa Blok po 150 m, upadek — kózka ratuje sowę (−
   const errors = watchErrors(page);
   await openGame(page);
   await page.locator("[data-start]").click();
-  await page.evaluate(() => window.SowaWChmurach.warp(160));
+  // Logika wstrzymana (`hold`) i przewijana `advance` — wolne klatki pod obciążeniem nie dokładają trafień ani
+  // drugiego upadku między krokami testu.
+  await page.evaluate(() => {
+    window.SowaWChmurach.hold(true);
+    window.SowaWChmurach.warp(160);
+    window.SowaWChmurach.advance(0.1);
+  });
   await expect(page.locator(".sowie-toast-chip", { hasText: "Strefa: Blok!" })).toBeVisible();
   await expect(page.locator(".chmury-height")).toContainText("m · Blok");
   expect((await state(page)).lives).toBe(3);
-  await page.evaluate(() => window.SowaWChmurach.fall());
-  await expect.poll(async () => (await state(page)).phase).toBe("rescue");
+  await page.evaluate(() => {
+    window.SowaWChmurach.fall();
+    window.SowaWChmurach.advance(0.1);
+  });
+  expect((await state(page)).phase).toBe("rescue");
   await expect(page.locator(".sowie-toast-chip", { hasText: "Kózka łapie sowę" })).toBeVisible();
   expect((await state(page)).lives).toBe(2);
   await page.evaluate(() => window.SowaWChmurach.advance(2));
