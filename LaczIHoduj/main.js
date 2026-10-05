@@ -4,7 +4,7 @@
 // zamówienia sąsiadek (oddanie stuknięciem karty albo przeciągnięciem rośliny na kartę), okno odnawiania pomieszczeń
 // szklarni (stuknięcie portfela), przeszkody Pracu i Amic (stuknięcie przeszkody), kózki-wzmacniacze (stuknięcie albo
 // przeciągnięcie), Basen Humbaka (runda bonusowa na osobnej planszy), pakiet startowy z dawnej Szklarni, samouczek
-// pierwszego wejścia (z powtórzeniem), „Jak grać?”, komunikaty i haki testowe.
+// pierwszego wejścia (z powtórzeniem), „Jak grać?”, klawiatura na komputerze, komunikaty i haki testowe.
 import { connectAudioSettings, createAudio } from "../shared/engine/audio.js";
 import { EVENTS, progress } from "../shared/meta/progress.js";
 import { guideFor } from "../shared/meta/guides-data.js";
@@ -758,6 +758,59 @@ function dropOnOrder(index, slot) {
   play("klik", { pitch: 0.6, volume: 0.5 });
 }
 
+// Klawiatura (komputer): kursor pola rysowany ramką, gdy płótno ma fokus i ostatnio użyto klawiszy.
+let cursor = -1;
+let keyboard = false;
+
+// Kursor o krok w kierunku na ekranie (w obróconej planszy kolumna na ekranie to rząd logiczny).
+function moveCursor(dx, dy) {
+  const { transposed } = renderer.layout();
+  const start = cursor >= 0 ? cursor : selected >= 0 ? selected : Math.floor((BOARD.cols * BOARD.rows) / 2);
+  const col = start % BOARD.cols;
+  const row = Math.floor(start / BOARD.cols);
+  const [x, y] = transposed ? [row, col] : [col, row];
+  const [width, height] = transposed ? [BOARD.rows, BOARD.cols] : [BOARD.cols, BOARD.rows];
+  const nx = Math.min(width - 1, Math.max(0, x + dx));
+  const ny = Math.min(height - 1, Math.max(0, y + dy));
+  const [nextCol, nextRow] = transposed ? [ny, nx] : [nx, ny];
+  cursor = nextRow * BOARD.cols + nextCol;
+  describeCursor();
+}
+
+// Podpowiedź (czytana przez czytnik ekranu) z polem pod kursorem.
+function describeCursor() {
+  const board = active();
+  const block = board.blocks[cursor];
+  const what = block
+    ? { note: "karteczka Pracu", phone: "telefon Pracu", crate: "skrzynia Amic", canister: "kanister Amic" }[block.type]
+    : itemName(board.cells[cursor]) || "puste pole";
+  if (!pool) hint(`Kolumna ${(cursor % BOARD.cols) + 1}, rząd ${Math.floor(cursor / BOARD.cols) + 1}: ${what}`);
+}
+
+canvas.addEventListener("keydown", (event) => {
+  if (!ready || event.altKey || event.ctrlKey || event.metaKey) return;
+  const arrows = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] };
+  let handled = true;
+  keyboard = true;
+  if (arrows[event.key]) moveCursor(...arrows[event.key]);
+  else if (event.key === "Enter" || event.key === " ") {
+    if (cursor < 0) moveCursor(0, 0);
+    else tapCell(cursor);
+  } else if (event.key === "Delete" || event.key === "Backspace") {
+    const index = selected >= 0 ? selected : cursor;
+    if (!pool && index >= 0) {
+      compostAt(index);
+      selected = -1;
+    }
+  } else if (event.key === "Escape") selected = -1;
+  else if (event.key === "d" || event.key === "D") potButton.click();
+  else handled = false;
+  if (handled) event.preventDefault();
+});
+canvas.addEventListener("blur", () => {
+  keyboard = false;
+});
+
 // Czy z pola da się wziąć roślinę (jest i nie leży pod karteczką).
 const movable = (index) => Boolean(active().cells[index]) && !active().blocks[index];
 
@@ -829,10 +882,17 @@ function finishPress(event, cancelled = false) {
     }
     return;
   }
-  // Stuknięcie: zaznaczenie rośliny, potem stuknięcie w pole docelowe (to samo — odznaczenie); przeszkoda —
-  // odklejanie karteczki albo podpowiedź. Palec przesunięty bez rośliny — nic.
-  const index = current.index;
-  if (index < 0 || current.moved) return;
+  // Palec przesunięty bez rośliny — nic.
+  if (current.index < 0 || current.moved) return;
+  keyboard = false;
+  tapCell(current.index);
+}
+
+/**
+ * Stuknięcie pola (palcem, myszą albo Enterem): zaznaczenie rośliny, potem stuknięcie w pole docelowe (to samo —
+ * odznaczenie); przeszkoda — odklejanie karteczki albo podpowiedź; kózka — moc albo zaznaczenie.
+ */
+function tapCell(index) {
   if (active().blocks[index]) {
     // Zaznaczona Kózka Taran stuknięciem przeszkody ją rozbija.
     if (active().cells[selected]?.goat === "taran") moveTo(selected, index);
@@ -939,6 +999,7 @@ function frame(time) {
       game.board.blocks.some((block) => block?.type === "phone") &&
       game.state.phoneMoves >= OBSTACLES.ringEvery - 2,
     selected,
+    cursor: keyboard && document.activeElement === canvas ? cursor : -1,
     drag: dragView(),
     time: time / 1000,
     dt,
@@ -1061,6 +1122,7 @@ window.LaczIHoduj = Object.freeze({
     handleEvents();
   },
   tutorial: () => tutorial?.progress() ?? null,
+  cursor: () => cursor,
   setStars: (stars) => {
     game.state.stars = stars;
     updateHud();

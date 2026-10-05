@@ -365,13 +365,14 @@ export function createBoardRenderer({ canvas, cols, rows }) {
      * draw({ cells, blocks, ringing, selected, drag: { from, x, y, target, kind } | null, time, dt }) — `kind` pola
      * docelowego: "merge" (zielone), "move" / "swap" (niebieskie), "compost" (bez podświetlenia pola); `blocks` —
      * warstwa przeszkód, `ringing` — telefon Pracu zaraz zadzwoni, `theme` — "greenhouse" (półki) albo "pool"
-     * (Basen Humbaka — woda).
+     * (Basen Humbaka — woda), `cursor` — pole kursora klawiatury (−1 — bez ramki).
      */
     draw({
       cells,
       blocks = null,
       ringing = false,
       selected = -1,
+      cursor = -1,
       drag = null,
       time = 0,
       dt = 0,
@@ -418,6 +419,18 @@ export function createBoardRenderer({ canvas, cols, rows }) {
         context.beginPath();
         context.roundRect(rect.x + 1, rect.y + 1, s - 2, s - 2, s * 0.2);
         context.stroke();
+      }
+      // Kursor klawiatury: niebieska przerywana ramka.
+      if (cursor >= 0 && !drag) {
+        const rect = cellRect(cursor);
+        context.save();
+        context.strokeStyle = COLORS.niebieski;
+        context.lineWidth = 3;
+        context.setLineDash([6, 4]);
+        context.beginPath();
+        context.roundRect(rect.x + 3, rect.y + 3, s - 6, s - 6, s * 0.18);
+        context.stroke();
+        context.restore();
       }
       if (drag && cells[drag.from]) {
         // Przedmiot uniesiony nad palcem (powiększony, z cieniem).

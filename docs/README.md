@@ -105,7 +105,7 @@ W menu głównym ustawienia są w zakładce **Sowa** (przycisk z kołem zębatym
 - suwaki **Głośność ogólna**, **Muzyka** i **Efekty dźwiękowe** (muzyka albo efekty na 0 wyłączają je też w grach),
 - **Efekty (wstrząsy, cząsteczki)**, **Wibracje** (tylko Android), **Tryb Przytulny** (wolniej, bez końca gry — zadziała w nowych wersjach gier), **Komentarze sowy**,
 - stan zapisu (np. „Postęp jest zapisany w chmurze.”),
-- **Powtórz samouczki we wszystkich grach** — po potwierdzeniu przy następnym wejściu do Sowiej Ucieczki, Sowich Torów, Sowy w Chmurach, nowych Sowich Ogrodów i Łącz i Hoduj samouczek pokaże się jeszcze raz (postęp i rekordy zostają). Samouczek jednej gry powtórzysz też przyciskiem **Samouczek** na jej ekranie startowym.
+- **Powtórz samouczki we wszystkich grach** — po potwierdzeniu przy następnym wejściu do Sowiej Ucieczki, Sowich Torów, Sowy w Chmurach, nowych Sowich Ogrodów i Łącz i Hoduj samouczek pokaże się jeszcze raz (postęp i rekordy zostają). Samouczek jednej gry powtórzysz też przyciskiem **Samouczek** na jej ekranie startowym (w nowych Ogrodach — w zakładce Kolekcja, w Łącz i Hoduj — w oknie pomieszczeń).
 - **Wyloguj to urządzenie** — po potwierdzeniu urządzenie zapomina hasło i pokazuje ekran „Hasło sowy”. Postęp zostaje w chmurze.
 
 Ustawienia zapisują się w profilu, więc obowiązują na każdym urządzeniu.

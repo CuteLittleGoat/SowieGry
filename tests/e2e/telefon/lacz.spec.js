@@ -405,6 +405,38 @@ test("Łącz i Hoduj: Basen Humbaka — zaproszenie, runda na wodzie (darmowa do
   expect(errors).toEqual([]);
 });
 
+test("Łącz i Hoduj: klawiatura — strzałki i Enter łączą, D — doniczka, Delete — kompost, ramka kursora", async ({
+  page,
+}) => {
+  const errors = watchErrors(page);
+  await openGame(page);
+  await game(page, "hold", true);
+  const canvas = page.locator("[data-canvas]");
+  await canvas.focus();
+  // Pierwszy Enter stawia kursor na środku planszy (pole 31 — nasionko), drugi zaznacza roślinę.
+  await page.keyboard.press("Enter");
+  expect(await game(page, "cursor")).toBe(31);
+  await expect(page.locator("[data-hint]")).toHaveText("Kolumna 4, rząd 5: Nasionko");
+  await page.keyboard.press("Enter");
+  expect(await game(page, "selected")).toBe(31);
+  // Pole 30 leży na ekranie na lewo od 31 (w obróconej planszy — nad nim).
+  await page.keyboard.press((await game(page, "transposed")) ? "ArrowUp" : "ArrowLeft");
+  expect(await game(page, "cursor")).toBe(30);
+  await page.keyboard.press("Enter");
+  let board = await cells(page);
+  expect(board[30]).toEqual({ chain: "monstera", level: 2 });
+  expect(board[31]).toBeNull();
+  // D — Sowia doniczka.
+  await page.keyboard.press("d");
+  await expect(page.locator("[data-charges]")).toHaveText("11/12");
+  // Delete — kompost rośliny pod kursorem.
+  await page.keyboard.press("Delete");
+  board = await cells(page);
+  expect(board[30]).toBeNull();
+  await expect(page.locator("[data-hint]")).toHaveText("Kompost: Kiełek → +2 liści");
+  expect(errors).toEqual([]);
+});
+
 test("Łącz i Hoduj: zapis w polu `preview` — dawna Szklarnia (pole `state`) bez zmian, pakiet startowy z niej, plansza wraca po wejściu (emulator)", async ({
   page,
 }, testInfo) => {

@@ -184,8 +184,15 @@ Gdy obrócisz telefon **poziomo**, plansza staje się szersza niż wyższa (9 ko
 przyciski Sowiej doniczki i kompostu przechodzą na prawą stronę. Układ roślin obraca się razem z planszą — rośliny, które stały obok
 siebie, nadal są sąsiadkami.
 
-Na komputerze plansza stoi na środku, a rośliny przesuwa się myszą tak samo jak palcem.
+Na komputerze plansza stoi na środku, a rośliny przesuwa się myszą tak samo jak palcem. Można też grać **klawiaturą**
+(najpierw kliknij planszę albo przejdź do niej klawiszem Tab):
+
+- **strzałki** — przesuwają niebieską przerywaną ramkę (kursor) po polach; podpowiedź mówi, co jest w polu,
+- **Enter** albo **spacja** — jak stuknięcie: zaznacza roślinę, a na innym polu ją tam przenosi albo łączy (działa też
+  z kózkami i przeszkodami),
+- **Delete** — kompostuje zaznaczoną roślinę (albo tę pod kursorem),
+- **D** — Sowia doniczka, **Escape** — odznaczenie.
 
 ## Co dalej
 
-Gra wciąż rośnie. Na komputerze dojdzie jeszcze sterowanie klawiaturą.
+Gra jest w podglądzie — czeka na akceptację właściciela, potem zastąpi dawną Sowią Szklarnię.
