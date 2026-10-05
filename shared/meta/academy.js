@@ -355,10 +355,11 @@ export function createWeekly(now = Date.now()) {
   return { week: weekKey(now), games: [], target: WEEKLY.target, complete: false, rewarded: false };
 }
 
-/** Wartość źródła celu (osiągnięcia, zdjęcia Galerii): poziom, piórka albo metryka. */
+/** Wartość źródła celu (osiągnięcia, zdjęcia Galerii): poziom, piórka, liczba osiągnięć albo metryka. */
 export function goalValue(state, source) {
   if (source === "level") return levelInfo(state.xp).level;
   if (source === "feathers") return Number(state.feathers || 0);
+  if (source === "achievements") return Object.keys(state.achievements || {}).length;
   return Number(state.metrics?.[source] || 0);
 }
 

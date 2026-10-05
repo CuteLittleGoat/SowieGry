@@ -19,6 +19,7 @@ Wersje do sprawdzenia (menu → „Wypróbuj nową wersję: …”):
 | 2026-10-05 | **Zgoda na podmiany:** „Masz zgodę na podmiany.” — E5f (Sowa3 → Sowie Tory), E6f (SowaJumper → Sowa w Chmurach), E7e (dawne Sowie Ogrody → nowa odsłona), E8e (Sowia Szklarnia → Łącz i Hoduj), potem E9 i E10. |
 | 2026-10-05 | **Wersja demo (E10):** „Wersja demo ma mieć własne menu. W wersji demo ma być audio, ale bez galerii.” |
 | 2026-10-05 | „Testy i ewentualne błędy zgłoszę po zakończeniu wszystkich prac w nowym oknie.” — prace E5f–E10 idą bez czekania na kolejne akceptacje. |
+| 2026-10-05 | **Do przejrzenia przy testach (E9d, propozycja nowych wymagań Galerii — Analiza 3, zadanie 9.3):** piórka da się teraz wydać w Sowim Butiku, więc zdjęcia nie wymagają już salda piórek. Zmienione: nr 8 „Zdobądź 3 osiągnięcia Sowiej Akademii” (było: 5. poziom i 30 piórek), nr 10 „Zbierz 300 liści w grach zręcznościowych” (12 piórek), nr 25 „Złap 10 skaczących kózek” (40 piórek), nr 27 „Zrób 20 uników „O włos!” i 3 razy wybierz się na przygodę z humbakiem” (6. poziom i 50 piórek), nr 30 „Zdobądź 8 osiągnięć i osiągnij 8. poziom” (8. poziom, 80 piórek i 5 pomieszczeń); nr 28 — tylko nowe nazwy gier. Pozostałe 24 bez zmian. Już odblokowane zdjęcia zostają. Inne progi — wystarczy napisać. |
 | 2026-10-04 | Łącz i Hoduj: **prototypy ekranów zaakceptowane** (zrzuty: przeciąganie na telefonie, 320 × 568, telefon poziomo). Decyzja o samej rozgrywce (merge czy wariant zapasowy) — po teście na telefonie. |
 
 ## Ogólne (wszystkie gry)

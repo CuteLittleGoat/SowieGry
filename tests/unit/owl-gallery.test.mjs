@@ -121,7 +121,12 @@ test("cele galerii są danymi: warunek odblokowania i postęp do paska", async (
   for (const photo of gallery.PHOTOS) {
     assert.ok(Array.isArray(photo.goals), photo.id);
     for (const [source, target] of photo.goals) {
-      assert.match(source, /^(level|feathers|[a-z0-9]+[A-Z]\w+)$/, `${photo.id}: ${source}`);
+      // Od E9d bez salda piórek (wydaje się je w Sowim Butiku): poziom, liczba osiągnięć albo metryka Akademii.
+      assert.match(
+        source,
+        /^(level|achievements|leaves|goatsCaught|nearMisses|whaleRides|[a-z0-9]+[A-Z]\w+)$/,
+        `${photo.id}: ${source}`,
+      );
       assert.ok(target > 0, photo.id);
     }
   }
@@ -132,12 +137,14 @@ test("cele galerii są danymi: warunek odblokowania i postęp do paska", async (
   assert.equal(gallery.progressOf("owl-01", academy).share, 1);
   assert.equal(gallery.progressOf("owl-03", academy).share, 0.5);
   assert.equal(gallery.progressOf("owl-03", academy).done, false);
-  const both = gallery.progressOf("owl-08", academy);
+  const both = gallery.progressOf("owl-30", { ...academy, achievements: { zbieraczka: 1, wytrwala: 2 } });
   assert.deepEqual(plain(both.goals.map((goal) => [goal.source, goal.value, goal.target, goal.done])), [
-    ["level", 5, 5, true],
-    ["feathers", 15, 30, false],
+    ["achievements", 2, 8, false],
+    ["level", 5, 8, false],
   ]);
-  assert.equal(both.share, 0.75);
+  assert.equal(both.share, (2 / 8 + 5 / 8) / 2);
+  assert.equal(gallery.progressOf("owl-08", { level: 1, achievements: { a: 1, b: 1, c: 1 } }).done, true);
+  assert.equal(gallery.progressOf("owl-27", { level: 1, metrics: { nearMisses: 20, whaleRides: 2 } }).done, false);
   assert.equal(gallery.progressOf("owl-26", { level: 1, feathers: 0, metrics: {} }).goals.length, 5);
   assert.equal(gallery.progressOf("nie-ma", academy), null);
 });
@@ -157,4 +164,25 @@ test("miniatury WebP 400 i 600 px dla każdego zdjęcia, siatka poniżej 1 MB", 
   }
   assert.ok(total400 < 1024 * 1024, `miniatury 400 px: ${total400} B`);
   assert.equal(fs.readdirSync(path.join(root, "assets/gallery-thumbs")).length, 60);
+});
+
+test("każdy cel zdjęcia powstaje ze zdarzeń gier (Sowia Akademia, E9d) albo to poziom / liczba osiągnięć", async () => {
+  const gallery = await loadGallery();
+  const { academyCalls } = await import("../../shared/meta/academy.js");
+  const { EVENTS } = await import("../../shared/meta/progress-events.js");
+  const run = { leaves: 1, goats: 1, nearMisses: 1, whales: 1, fevers: 1 };
+  const events = [
+    [EVENTS.RUN_ENDED, { gameId: "runner", score: 1, distance: 1, bestChain: 1, run }],
+    [EVENTS.RUN_ENDED, { gameId: "jumper", score: 1, height: 1, bestStreak: 1, run }],
+    [EVENTS.RUN_ENDED, { gameId: "sowa3", score: 1, bestCombo: 1, finished: true, run }],
+    [EVENTS.IDLE, { gameId: "ogrody", lifetimeLeaves: 1, clicks: 1, buys: 1, watering: 1, prestiges: 1, plants: 1 }],
+    [EVENTS.IDLE, { gameId: "szklarnia", rooms: 1, plants: 1, goats: 1, hybrids: 1 }],
+    ...["runner", "jumper", "sowa3", "ogrody", "szklarnia"].map((gameId) => [EVENTS.VISIT, { gameId }]),
+  ];
+  const metrics = new Set(events.flatMap(([type, detail]) => academyCalls(type, detail).map((call) => call[1])));
+  for (const photo of gallery.PHOTOS) {
+    for (const [source] of photo.goals) {
+      assert.ok(["level", "achievements"].includes(source) || metrics.has(source), `${photo.id}: ${source}`);
+    }
+  }
 });

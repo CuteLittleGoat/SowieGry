@@ -102,6 +102,12 @@ test("osiągnięcia Akademii z Firestore trwale odblokowują komplet trzydziestu
         szklarniaGoats: 20,
         szklarniaHybrids: 5,
         szklarniaVisits: 1,
+        // Od E9d: liczniki z całych biegów (Akademia przyzna z nich osiągnięcia — zdjęcia 8 i 30 wymagają ich liczby).
+        leaves: 1000,
+        goatsCaught: 30,
+        nearMisses: 60,
+        whaleRides: 12,
+        runs: 50,
       },
       daily: null,
       weekly: null,
@@ -135,5 +141,6 @@ test("osiągnięcia Akademii z Firestore trwale odblokowują komplet trzydziestu
   const profile = await readDoc(project, "sowiegry/profil");
   expect(profile.gallery.unlocked).toHaveLength(30);
   expect(profile.academy.xp).toBeGreaterThanOrEqual(6000);
+  expect(Object.keys(profile.academy.achievements).length).toBeGreaterThanOrEqual(8);
   expect(errors).toEqual([]);
 });

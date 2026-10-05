@@ -6,8 +6,10 @@
   const cloud = window.SowieCloud;
   const VERSION = 2;
 
-  // goals: lista celów [źródło, próg] — źródło to level, feathers albo metryka Sowiej Akademii;
-  // zdjęcie odblokowuje się, gdy wszystkie cele są osiągnięte (pusta lista = od początku).
+  // goals: lista celów [źródło, próg] — źródło to level, achievements (liczba osiągnięć), feathers albo metryka
+  // Sowiej Akademii; zdjęcie odblokowuje się, gdy wszystkie cele są osiągnięte (pusta lista = od początku).
+  // Od E9d (Analiza 3, zadanie 9.3) żadne zdjęcie nie wymaga salda piórek — piórka wydaje się w Sowim Butiku;
+  // zamiast tego osiągnięcia i liczniki z całych biegów (liście, kózki, uniki, humbak).
   const PHOTOS = Object.freeze([
     {
       id: "owl-01",
@@ -86,8 +88,8 @@
       alt: "Sowa odpoczywająca na trawie i patrząca w stronę aparatu.",
       photographer: "Marian Havenga",
       sourceUrl: "https://www.pexels.com/photo/25728668/",
-      requirement: "Osiągnij 5. poziom Akademii i zdobądź 30 piórek.",
-      goals: [["level", 5], ["feathers", 30]],
+      requirement: "Zdobądź 3 osiągnięcia Sowiej Akademii.",
+      goals: [["achievements", 3]],
     },
     {
       id: "owl-09",
@@ -106,8 +108,8 @@
       alt: "Młoda sówka siedząca na gałęzi pośród zielonych liści.",
       photographer: "Twórca w serwisie Pexels",
       sourceUrl: "https://www.pexels.com/photo/23654842/",
-      requirement: "Zdobądź 12 piórek w Sowiej Akademii.",
-      goals: [["feathers", 12]],
+      requirement: "Zbierz 300 liści w grach zręcznościowych.",
+      goals: [["leaves", 300]],
     },
     {
       id: "owl-11",
@@ -256,8 +258,8 @@
       alt: "Jasna młoda płomykówka odpoczywająca w koszyku.",
       photographer: "Twórca w serwisie Pexels",
       sourceUrl: "https://www.pexels.com/photo/5237543/",
-      requirement: "Zdobądź 40 piórek w Sowiej Akademii.",
-      goals: [["feathers", 40]],
+      requirement: "Złap 10 skaczących kózek.",
+      goals: [["goatsCaught", 10]],
     },
     {
       id: "owl-26",
@@ -276,8 +278,8 @@
       alt: "Młoda sowa ukryta w bujnych kolumbijskich liściach.",
       photographer: "Twórca w serwisie Pexels",
       sourceUrl: "https://www.pexels.com/photo/28699294/",
-      requirement: "Osiągnij 6. poziom Akademii i zdobądź 50 piórek.",
-      goals: [["level", 6], ["feathers", 50]],
+      requirement: "Zrób 20 uników „O włos!” i 3 razy wybierz się na przygodę z humbakiem.",
+      goals: [["nearMisses", 20], ["whaleRides", 3]],
     },
     {
       id: "owl-28",
@@ -286,7 +288,7 @@
       alt: "Młoda puszczykowata sowa siedząca wysoko na drzewie.",
       photographer: "Twórca w serwisie Pexels",
       sourceUrl: "https://www.pexels.com/photo/24012038/",
-      requirement: "Przebiegnij 2500 m w Runnerze i osiągnij 400 m w Jumperze.",
+      requirement: "Przebiegnij 2500 m w Sowiej Ucieczce i wznieś się na 400 m w Sowie w Chmurach.",
       goals: [["runnerDistance", 2500], ["jumperHeight", 400]],
     },
     {
@@ -306,8 +308,8 @@
       alt: "Kilka uroczych sów siedzących razem pośród wiosennych gałęzi.",
       photographer: "Twórca w serwisie Pexels",
       sourceUrl: "https://www.pexels.com/photo/31922777/",
-      requirement: "Osiągnij 8. poziom Akademii, zdobądź 80 piórek i odnów 5 pomieszczeń w Łącz i Hoduj.",
-      goals: [["level", 8], ["feathers", 80], ["szklarniaRooms", 5]],
+      requirement: "Zdobądź 8 osiągnięć i osiągnij 8. poziom Sowiej Akademii.",
+      goals: [["achievements", 8], ["level", 8]],
     },
   ]);
 
@@ -315,6 +317,7 @@
   function goalValue(academy, source) {
     if (source === "level") return Number(academy.level || 1);
     if (source === "feathers") return Number(academy.feathers || 0);
+    if (source === "achievements") return Object.keys(academy.achievements || {}).length;
     return Number(academy.metrics?.[source] || 0);
   }
 
