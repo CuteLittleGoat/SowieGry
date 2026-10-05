@@ -19,12 +19,18 @@ test("rekordy gry: top 10 na poziom, wysokość i liczba rozgrywek (Sowa w Chmur
     }
     await window.SowieCloud.flush();
   });
+  expect(errors).toEqual([]);
 
-  await page.goto(cloudUrl("/?seed=daily-rekordy", project), { waitUntil: "load" });
-  await waitForCloud(page);
-  await page.getByRole("tab", { name: "Sowa" }).tap();
-  await page.locator('[data-records="jumper"]').tap();
-  const dialog = page.getByRole("dialog", { name: /Rekordy — Sowa w Chmurach/ });
+  // Menu w nowej karcie tego samego telefonu zamiast przejścia w tej samej — WebKit zgłasza przerwane przejściem
+  // długie zapytania kanału Firestore jako błędy strony („…due to access control checks”), jak w tory.spec.js.
+  const menu = await page.context().newPage();
+  await page.close();
+  const menuErrors = watchErrors(menu);
+  await menu.goto(cloudUrl("/?seed=daily-rekordy", project), { waitUntil: "load" });
+  await waitForCloud(menu);
+  await menu.getByRole("tab", { name: "Sowa" }).tap();
+  await menu.locator('[data-records="jumper"]').tap();
+  const dialog = menu.getByRole("dialog", { name: /Rekordy — Sowa w Chmurach/ });
   await expect(dialog).toBeVisible();
   await expect(dialog.locator("[data-best]")).toHaveText(/1\s?234 pkt/);
   await expect(dialog).toContainText("Wysokość");
@@ -36,5 +42,5 @@ test("rekordy gry: top 10 na poziom, wysokość i liczba rozgrywek (Sowa w Chmur
   await expect(dialog.getByRole("button", { name: "Chaos" })).toHaveAttribute("aria-pressed", "true");
   await expect(dialog).toContainText("Brak rozgrywek na tym poziomie");
   await expect(dialog.locator("[data-best]")).toHaveText("0 pkt");
-  expect(errors).toEqual([]);
+  expect(menuErrors).toEqual([]);
 });
