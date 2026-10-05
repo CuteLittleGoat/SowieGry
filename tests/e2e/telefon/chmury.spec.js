@@ -371,7 +371,14 @@ test("Sowa w Chmurach: pauza z HUD i wznowienie przez odliczanie", async ({ page
   expect((await state(page)).owl.y).toBe(frozen);
   await menu.getByRole("button", { name: "Wznów" }).click();
   await expect(page.locator(".sowie-countdown")).toHaveText("3");
-  await expect.poll(async () => (await state(page)).owl.y, { timeout: 8000 }).not.toBe(frozen);
+  // Po odliczaniu gra rusza. W WebKit w CI czas gry płynie wolniej niż rzeczywisty (CI 40decd2: sowa nie ruszyła
+  // w 8 s), więc czekamy na koniec odliczania, a ruch sprawdzamy, przewijając logikę o 0,5 s (hak `advance`).
+  await expect(page.locator(".sowie-countdown")).toBeHidden({ timeout: 15_000 });
+  await page.evaluate(() => {
+    window.SowaWChmurach.hold(true);
+    window.SowaWChmurach.advance(0.5);
+  });
+  expect((await state(page)).owl.y).not.toBe(frozen);
   expect(errors).toEqual([]);
 });
 
