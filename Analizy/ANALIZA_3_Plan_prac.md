@@ -388,11 +388,15 @@ Jeżeli plików E5b (`props.js`, `scenery.js`) nie ma w repo (sesja sklonowana p
 | E1 | ✅ reguły opublikowane; do zrobienia przez właściciela: pierwsze wejście na stronę produkcyjną (`huhu`) i sprawdzenie kolekcji `sowiegry` w konsoli |
 | E2, E3 | ✅ zaakceptowane (Fredoka, syntezowane dźwięki, postacie, menu; „Kasuj wszystko co stare i zbędne”) |
 | E4 | ✅ podgląd zaakceptowany wstępnie, podmiana wykonana (E4f) |
-| E5 | czeka: test podglądu Sowich Torów na telefonie (4 plansze, dziki, finał z basenem, Humbacze Tory, kózki, Gorączka, Nieskończony, samouczek, muzyka) i zielone światło na podmianę (E5f) |
-| E6 | w toku (E6a): rdzeń Sowy w Chmurach do obejrzenia w menu („Wypróbuj nową wersję: Sowa w Chmurach”); akceptacja całości po E6e |
+| E5 | ✅ podgląd przetestowany, zgoda na podmianę (2026-10-05) — podmiana E5f wykonana (a3c6b09) |
+| E6 | ✅ zgoda na podmianę (2026-10-05) — E6f wykonana (e2d8d68) |
 | Dane testowe | 2026-10-04: rekordy i zapisy w bazie z okresu testów to dane testowe — mogą przepaść, **migracje stanu i kopie zapasowe nie są potrzebne** (przy podmianach E5f–E8 nowa gra może zacząć od zera; pakiet startowy z dawnej Szklarni i migracja Ogrodów v2 → v3 — opcjonalne). Zasady dostępu do bazy (tylko kolekcja `sowiegry`, reguły bez zmian, testy na emulatorze) bez zmian. |
-| Testy podglądów | od 2026-10-04 właściciel testuje podglądy E5–E8 i zgłasza uwagi — **zapisywane w `Analizy/UWAGI_WLASCICIELA.md`**; kodu nie zmieniamy, dopóki właściciel nie napisze, że skończył (potem poprawki według tego pliku, małymi commitami) |
-| E8 | ekrany prototypu zaakceptowane (2026-10-04); czeka: **punkt kontrolny prototypu merge** — zagrać w „Łącz i Hoduj” (menu → karta Sowiej Szklarni → „Wypróbuj nową wersję: Łącz i Hoduj”) i zdecydować: merge zostaje (dalej kroki 8.1–8.3) albo wariant zapasowy (Analiza 2, rozdz. 3.5) |
+| Testy podglądów | (2026-10-04 – 2026-10-05, zakończone) od 2026-10-04 właściciel testuje podglądy E5–E8 i zgłasza uwagi — **zapisywane w `Analizy/UWAGI_WLASCICIELA.md`**; kodu nie zmieniamy, dopóki właściciel nie napisze, że skończył (potem poprawki według tego pliku, małymi commitami) |
+| E8 | ✅ ekrany prototypu zaakceptowane (2026-10-04); punkt kontrolny prototypu merge zaliczony — merge zostaje (kroki E8b–E8d wykonane, zamiast wariantu zapasowego z Analizy 2, rozdz. 3.5) |
+| E7, E8 (podmiany) | ✅ zgoda na podmiany (2026-10-05) — E7e (5c30411) i E8e (f66fb24) wykonane |
+| E9d | do przejrzenia: propozycja nowych wymagań 5 zdjęć Galerii (`UWAGI_WLASCICIELA.md`, tabela „Decyzje”) |
+| E10 | ✅ decyzje (2026-10-05): demo z własnym menu i muzyką, bez Galerii — wykonane (6e58876) |
+| Testy po E10 | od 2026-10-06 właściciel testuje wszystkie gry i wersję demo; uwagi zgłosi w nowym oknie (trafią do `UWAGI_WLASCICIELA.md`), stan prac: `Analizy/STAN_PRAC.md` |
 
 ### 8.7. E6 — Sowa w Chmurach: plan kroków i miejsce wznowienia
 

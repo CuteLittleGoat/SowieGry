@@ -63,7 +63,7 @@ Po instalacji Safari nie zapomina hasła po 7 dniach bez wizyty.
 
 Strona testowa `lab/` (adres strony + `/lab/`) służy do sprawdzania na telefonie nowego silnika gier:
 
-- **Postacie** (otwiera się od razu) — wszyscy bohaterowie nowych gier w ruchu: Sówka (stoi i mruga, biegnie, skacze, szybuje, jest oszołomiona, cieszy się), 9 dodatków z garderoby, 5 skaczących kózek, humbak z pluskiem, rodzina Pracu Pracu (dymek, telefon, telefon od Magdy, stos papierów, maile, tablica „Przyjmiesz zmianę?”, budzik), rodzina Amic (dystrybutor, cysterna, znak z cenami, wózek z kanistrami, barierka, kanister, sterowiec), liście monstery (zielony, złoty, tęczowy) i serduszka-życia. Przyciski u góry zakładają wybrany dodatek animowanym sowom (wygląd postaci zaakceptowany przez właściciela);
+- **Postacie** (otwiera się od razu) — wszyscy bohaterowie nowych gier w ruchu: Sówka (stoi i mruga, biegnie, skacze, szybuje, jest oszołomiona, cieszy się), sowa w każdym z 12 dodatków z garderoby (i bez dodatku), 5 skaczących kózek, humbak z pluskiem, rodzina Pracu Pracu (dymek, telefon, telefon od Magdy, stos papierów, maile, tablica „Przyjmiesz zmianę?”, budzik), rodzina Amic (dystrybutor, cysterna, znak z cenami, wózek z kanistrami, barierka, kanister, sterowiec), liście monstery (zielony, złoty, tęczowy) i serduszka-życia. Przyciski u góry zakładają wybrany dodatek animowanym sowom (wygląd postaci zaakceptowany przez właściciela);
 - **Dźwięk** — pierwsze dotknięcie włącza dźwięk. Suwaki: głośność ogólna, muzyka i efekty (0–100, zapisują się w profilu i działają na każdym urządzeniu); wibracje (tylko Android); muzyka: „Motyw menu” i „Pieśń humbaka” (grają w kółko bez przerwy), „Ścisz muzykę (jak w bonusie)”, „Zatrzymaj muzykę”; przyciski wszystkich 27 efektów (skok, liść, trafienie przez Pracu i Amic, kózka, plusk humbaka, rekord, koniec gry „hu-hu”…) i „Seria liści (combo)” — każdy kolejny liść brzmi wyżej. Na iPhonie (iOS 17 i nowsze) dźwięk gry respektuje przełącznik wyciszenia i nie wyłącza muzyki z innych aplikacji;
 - **Interfejs** — wspólne elementy nowych gier na małej planszy z biegnącą sową: licznik punktów i liści, serduszka-życia, licznik power-upu, komunikaty (w trakcie gry zawsze jeden, u góry — nie zasłania sowy), menu pauzy (Wznów, Zacznij od nowa, Jak grać, Ustawienia z suwakami dźwięku, wibracjami i Trybem Przytulnym, Garderoba, Wyjdź do menu), odliczanie 3-2-1 po wznowieniu i ekran wyników („Nowy rekord!”, miejsce w top 10, zadania, „Jeszcze raz”). Przyciski pod planszą symulują grę: liście, kózka, trafienie, pięć komunikatów naraz, pauza, koniec gry, okno „Poznaj Sowi Świat”;
 - **Gesty** — stuknij, przytrzymaj, przesuń w cztery strony; różowe pasy przy krawędziach to „martwe strefy” (gest „cofnij” przeglądarki i pasek domowy iPhone’a nie uruchamiają gry);
@@ -117,7 +117,9 @@ Stare wyniki zapisane w przeglądarce przed przejściem na chmurę zostały skas
 
 W grach zręcznościowych zapisywane są najlepszy wynik (i dystans lub wysokość) dla każdego poziomu trudności, 10 najlepszych rozgrywek, ostatnie gry oraz rekordy wyzwania dnia.
 
-Przycisk **🏆** w prawym górnym rogu gry otwiera okno **Rekordy**: przełącz poziom (Chill / Arcade / Chaos), zobacz najlepszy wynik, top 10, ostatnie 10 gier i rekordy wyzwania dnia. W grach idle okno pokazuje podsumowanie postępu (np. liście zebrane w całej grze).
+Rekordy ogląda się w menu głównym: zakładka **Sowa** → sekcja **Rekordy** → przycisk **Rekordy** przy grze. W grach zręcznościowych okno pokazuje wybrany poziom (Chill / Arcade / Chaos; w Sowich Torach także **Kampania** / **Nieskończony**): najlepszy wynik, dystans (Sowia Ucieczka) albo wysokość (Sowa w Chmurach), liczbę rozgrywek i 10 najlepszych gier z datami. W grach idle okno pokazuje podsumowanie postępu (np. liście zebrane w całej grze, odnowione pomieszczenia).
+
+W samej grze rekord widać na ekranie startowym, a po biegu ekran wyników pokazuje „Nowy rekord!” i miejsce w Twoim top 10.
 
 ## Ustawienia i wylogowanie
 
@@ -131,17 +133,16 @@ W menu głównym ustawienia są w zakładce **Sowa** (przycisk z kołem zębatym
 
 Ustawienia zapisują się w profilu, więc obowiązują na każdym urządzeniu.
 
-Przycisk ⚙ w grze otwiera okno **Ustawienia**:
+W Sowiej Ucieczce, Sowich Torach i Sowie w Chmurach ustawienia są też w **menu pauzy** (przycisk pauzy w lewym górnym rogu → **Ustawienia**):
 
-- muzyka, efekty dźwiękowe, komentarze sowy i ograniczone efekty (włącz/wyłącz),
-- **Zapis postępu** — stan połączenia (np. „zapisano w chmurze ☁️”, „zapisywanie…”, „tryb offline”),
-- **Wyloguj to urządzenie** — urządzenie zapomina hasło i pokazuje ekran „Hasło sowy”. Postęp zostaje w chmurze.
+- suwaki **Głośność ogólna**, **Muzyka** i **Efekty dźwiękowe**,
+- **Efekty (wstrząsy, cząsteczki)**, **Wibracje** i **Tryb Przytulny** (wolniej, bez końca gry).
+
+W menu pauzy jest też **Garderoba** (wybór dodatku sowy). Sowie Ogrody i Łącz i Hoduj nie mają menu pauzy — ich ustawienia zmienia się w menu głównym (przycisk **Menu** w grze wraca do menu).
 
 ## Testy
 
-Test uruchomieniowy w przeglądarce: otwórz `tests/smoke.html` przez lokalny serwer (np. `npm run serve`, potem `http://127.0.0.1:4173/tests/smoke.html`). Ten test działa w trybie pamięci i nie zapisuje niczego w chmurze.
-
-Pełne testy automatyczne (dla osoby rozwijającej gry):
+Testy automatyczne (dla osoby rozwijającej gry):
 
 1. Zainstaluj Node.js 22 i Javę 21 (potrzebna emulatorowi bazy Firestore).
 2. `npm install`

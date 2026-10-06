@@ -31,9 +31,9 @@ SowaWChmurach/
 
 Jednostki: **metry i sekundy**. Świat: kolumna szeroka na 9 m — `x` od 0 do 9 (lewa krawędź 0), za krawędzią sowa wychodzi z drugiej strony; `y` — wysokość nad ziemią ogródka (ziemia na `y = 0`). Rysowanie: oś y ekranu w dół, więc punkt świata (x, y) rysujemy w (x, −y).
 
-## Checklista smaczków obecnej SowaJumper (krok 6.0)
+## Checklista smaczków dawnej SowaJumper (krok 6.0)
 
-Z obecnych plików `SowaJumper/` (`script.js`, `difficulty.js`, `cute-rework.js`, `extra-lives.js`, `bonus-fix.js`, `bonus-lanes.js`, `safety-balance.js`, `platform-expansion.js`, `animation-polish.js`, `pause-final.js`). ✅ — jest w Sowie w Chmurach, ⏳ — w kolejnym kroku E6.
+Z ówczesnych plików `SowaJumper/` (usunięte w E6f) (`script.js`, `difficulty.js`, `cute-rework.js`, `extra-lives.js`, `bonus-fix.js`, `bonus-lanes.js`, `safety-balance.js`, `platform-expansion.js`, `animation-polish.js`, `pause-final.js`). ✅ — jest w Sowie w Chmurach, ⏳ — w kolejnym kroku E6.
 
 | Smaczek obecnej wersji                                                                                                                                                                   | Sowa w Chmurach                                                                                                                                                                                        |
 | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -60,7 +60,7 @@ Z obecnych plików `SowaJumper/` (`script.js`, `difficulty.js`, `cute-rework.js`
 
 ## `index.html`
 
-- `<html lang="pl" class="sowie-shell">`; `<head>`: `viewport` z `viewport-fit=cover`, `theme-color` `#bfe9ff`, opis („Sowa w Chmurach — wspinaczka w górę: od ogródka przez blok i chmury aż do zorzy i kosmosu.”), tytuł „Sowa w Chmurach — SowieGry”, manifest i ikony PWA, `mobile-web-app-capable`, `apple-mobile-web-app-capable`, `apple-mobile-web-app-title` „SowieGry”; skrypty w kolejności: `../config/firebase-config.js`, `../shared/sowie-platform.js`, `../shared/sowie-cloud.js`, `../shared/password-gate.js`, `../shared/pwa.js`; `preload` czcionki `../assets/fonts/fredoka-700.woff2`; style: `../shared/cute-ui.css`, `../shared/world/tokens.css`, `../shared/engine/shell.css`, `../shared/ui/ui.css`, `style.css`; `../shared/sowie-academy.js` i `../shared/owl-gallery.js` z `defer`; moduł `main.js`. Strona nie ładuje `sowie-core.js` ani plików `SowaJumper/`.
+- `<html lang="pl" class="sowie-shell">`; `<head>`: `viewport` z `viewport-fit=cover`, `theme-color` `#bfe9ff`, opis („Sowa w Chmurach — wspinaczka w górę: od ogródka przez blok i chmury aż do zorzy i kosmosu.”), tytuł „Sowa w Chmurach — SowieGry”, manifest i ikony PWA, `mobile-web-app-capable`, `apple-mobile-web-app-capable`, `apple-mobile-web-app-title` „SowieGry”; skrypty w kolejności: `../config/firebase-config.js`, `../shared/sowie-platform.js`, `../shared/sowie-cloud.js`, `../shared/password-gate.js`, `../shared/pwa.js`; `preload` czcionki `../assets/fonts/fredoka-700.woff2`; style: `../shared/cute-ui.css`, `../shared/world/tokens.css`, `../shared/engine/shell.css`, `../shared/ui/ui.css`, `style.css`; `../shared/owl-gallery.js` z `defer`; moduł `main.js` (Sowia Akademia od E9b przychodzi z modułem gry — `shared/meta/progress.js` importuje `shared/meta/academy.js`; do E9b była tu klasycznym `../shared/sowie-academy.js` z `defer`). Strona nie ładuje plików `SowaJumper/`; dawnego `sowie-core.js` od E9a nie ma w repozytorium.
 - `<body data-sowie-game="jumper">` → `<main class="sowie-stage chmury-stage" data-stage aria-label="Sowa w Chmurach">` z płótnem `[data-canvas]` (`aria-hidden`) i ekranem tytułowym `section.chmury-title[data-title]` (`aria-labelledby="chmury-title-heading"`) z kartą `.chmury-title-card`:
   - `h1#chmury-title-heading` „Sowa w Chmurach”, `p.chmury-title-lead` „Wspinaj się coraz wyżej! Przeciągnij palcem w bok (najlepiej w dolnej części ekranu) — sowa sama odbija się od gałązek.”;
   - grupa `.chmury-difficulty[data-difficulty]` (`role="group"`, „Poziom trudności”) z `button.sowie-ui-chip[data-level]` Chill / Arcade / Chaos (`aria-pressed`, domyślnie Arcade);
@@ -253,7 +253,7 @@ Bonus z Analizy 2 (rozdz. 3.3) — następca „Humbakowego bonusu” obecnej So
 
 - `shared/sowie-platform.js` — wpis `jumper`: „Sowa w Chmurach”, `SowaWChmurach/`, `rebuilt: true` (od E6f; w E6a–E6e `preview: { path: "SowaWChmurach/", name: "Sowa w Chmurach" }` przy dawnej SowaJumper).
 - `shared/menu/games.js` — karta „Chmury” (ilustracja: sowa podskakująca na chmurze, sterowiec Amic, złoty liść).
-- `shared/gameplay-expansion.js` i `shared/game-guides.js` — bez części SowaJumper (od E6f: panel „Precyzja i wyzwanie dnia SowaJumper”, liczenie precyzyjnych lądowań z globalnego `state`); seria idealnych lądowań trafia do Akademii jako `jumperStreak` przez SowieProgress (`bestStreak` w `run:ended`).
+- dawne `shared/gameplay-expansion.js` i `shared/game-guides.js` (w E9a usunięte w całości) — bez części SowaJumper (od E6f: panel „Precyzja i wyzwanie dnia SowaJumper”, liczenie precyzyjnych lądowań z globalnego `state`); seria idealnych lądowań trafia do Akademii jako `jumperStreak` przez SowieProgress (`bestStreak` w `run:ended`).
 - `eslint.config.js` (moduły ES), `package.json` (`format`, `format:check`, `html`), `tests/unit/architecture.test.mjs`, `tests/unit/pwa.test.mjs`, `tests/unit/owl-gallery.test.mjs` — nowy folder na listach.
 
 ## Testy
