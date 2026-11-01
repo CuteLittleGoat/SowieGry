@@ -1,10 +1,11 @@
 # Analiza 4 — uwagi z testów (listopad 2026): poprawki i rozbudowa gier
 
 > Data: 2026-11-01 · Podstawa: uwagi z testów przekazane 2026-11-01 (plik `uwagi.txt`, przepisany dosłownie
-> w [rozdziale 1](#1-uwagi-dosłownie-i-numery)) i kod na `main` (commit `18b09d7`) · Status: **analiza i plan prac —
-> kod gier jeszcze bez zmian.** Prace ruszają po odpowiedziach na pytania z
-> [rozdziału 6](#6-pytania-do-właściciela-prostym-językiem); poprawki błędów (P1, P2) mogą ruszyć od razu po zgodzie
-> właściciela. · Zasady pracy bez zmian: [`ANALIZA_3_Plan_prac.md`, rozdz. 8.1](ANALIZA_3_Plan_prac.md).
+> w [rozdziale 1](#1-uwagi-dosłownie-i-numery)) i kod na `main` (commit `18b09d7`) · Status: **w realizacji od
+> 2026-11-01** — odpowiedzi właściciela i poprawiony plan: [rozdział 7](#7-odpowiedzi-właściciela-i-zmiany-planu-2026-11-01);
+> stan poszczególnych uwag: tabela „Uwagi z testów — 2026-11-01” w [`UWAGI_WLASCICIELA.md`](UWAGI_WLASCICIELA.md);
+> testy na telefonie krok po kroku: [`TESTY_NA_TELEFONIE.md`](TESTY_NA_TELEFONIE.md). · Zasady pracy bez zmian:
+> [`ANALIZA_3_Plan_prac.md`, rozdz. 8.1](ANALIZA_3_Plan_prac.md).
 
 Pomiary w tej analizie robiłem w przeglądarce Chromium na profilach telefonów (gry w trybie pamięci, `?cloud=memory`)
 i na samej logice gier w Node — **nic nie trafiło do produkcyjnej bazy** ([Załącznik A](#załącznik-a-jak-mierzyłem)).
@@ -689,6 +690,37 @@ na dwie krainy; (C) najwyżej dwa razy w całym biegu.
 **9. Kolejność i wdrażanie.** Czy poprawki błędów (Butik, liczby, podpowiedzi, humbak, zdjęcie nr 2) mogą trafiać na
 stronę od razu, jedna po drugiej? Które nowości najpierw: Ogrody, Łącz i Hoduj czy Sowa w Chmurach? Czy nowe treści
 wolisz najpierw obejrzeć na obrazkach (proponuję), czy pod osobnym adresem, zanim trafią do gry?
+
+---
+
+## 7. Odpowiedzi właściciela i zmiany planu (2026-11-01)
+
+| Pytanie | Odpowiedź | Co zmienia w planie |
+|---|---|---|
+| 1a | tylko na telefonie | — |
+| 1b | „najpierw wchodziłam do menu głównego. Tam przez chwilę był nowy kolor, a potem wracał stary” | kolor wracał **na tej samej stronie menu**, bez wejścia do gry — główną przyczyną jest punkt 3 z 3.1 (spóźniona odpowiedź serwera podmieniała profil). Potwierdzone testem jednostkowym: na dawnym kodzie nie przechodzi, po poprawce przechodzi |
+| 1c | „Płomykówka na przykład nie działa. Mam sufke śnieżną i nie mogę jej teraz zmienić na płomykówke i cofa kupno płomykówki” | test e2e na emulatorze z dokładnie tym przypadkiem (Śnieżna wybrana, zakup Płomykówki, ponowne wejście do menu) |
+| 1d | „Dej.” | 50 piórek jednorazowo dla profilu z zakupem gatunku sprzed poprawki |
+| 2 | (B) ostatnich roślin w ogóle nie da się zobaczyć | to **błąd**, nie tylko wygoda; najbardziej prawdopodobne: lista budowana od nowa 2 razy na sekundę przy „Sowie zakupowej” (iPhone przerywa wtedy przewijanie) i bardzo małe okno listy — P3 bez zmian w treści, wyżej w kolejności |
+| 3 | „Tak. Dużo plansz.” | P4: więcej niż 4 nowe rozdziały (np. 8), dodawane etapami |
+| 4 | (A) | P3.3: tylko wybór tła z ukończonych rozdziałów w zakładce Kolekcja (bez tła „podróży”) |
+| 5a–d | tak, tak (+ „Chcę baobaba też”), tak, tak | P5: 5 nowych roślin — Storczyk, Słonecznik, Truskawka, Lotos i **Baobab**; poziomy 6–7, pomieszczenia 11–16, Kram za liście |
+| 6 | raz na krainę | P2.3: ustawienie B (150 liści, bąbelki co 900–1500 m, 600 m przerwy po rejsie) |
+| 7a | 3400 m | nowe strefy zaczynają się niedaleko rekordu (od ok. 1900 m, co ok. 400 m), dalsze są celem na później |
+| 7b | „Sowie zaświaty i żeby było spooky 😁” | najwyższa strefa: **Sowie Zaświaty** — straszno-zabawna (duszki-sówki, mgła, świece, nietoperze), w stylu gry, bez prawdziwej grozy |
+| 7c | tak | Mgławica jako pierwsza strefa po Kosmosie |
+| dodatkowo | „tła inspirowane mitologiami świata: nordycka, egipska, grecka, japońska, aztecka, chińska, hinduska. Motyw snów, zaświatów i tak dalej” | P6: strefy mitologiczne między Mgławicą a Sowimi Zaświatami — krajobrazy, budowle i symbole (np. tęczowy most i zorza, piramidy i łódź słońca, kolumny i obłoki Olimpu, bramy torii i lampiony, schodkowe piramidy i nagietki, smoki z chmur i pałac, lotos i góra Meru), **bez wizerunków bóstw**, z szacunkiem dla wierzeń |
+| 8a–c | 10 zdjęć; „Zaskocz mnie i sam wgraj”; podmiana par — tak | P2.4: nowe zdjęcia pod numerami 2, 12, 22, 25 i 26; P7: 10 nowych zdjęć z Pexels |
+| 9 | „Mogą jedna po drugiej. Najpierw sowie ogrody, potem sowa w chmurach, potem dowolność. Od razu pracuj na stronie o ile nie skasuje to postępu.” | kolejność: **P1 → P2 → P3 → P4 → P6 → P5 → P7 → P8**, każdy krok od razu na `main` po zielonych testach; zasada „nic nie ginie” (rozdział 2) bez zmian |
+| dodatkowo | „Jeżeli potrzebujesz innych testów to przygotuj nowy plik w Analizy (prostym językiem) i pisz krok po kroku co klikać i co powinno się dziać.” | [`TESTY_NA_TELEFONIE.md`](TESTY_NA_TELEFONIE.md) — testy po każdej poprawce |
+
+**Poprawiona kolejność etapów:**
+
+```
+P1 Sowi Butik (G3) → P2 szybkie poprawki (O5, L4, U1, G5) → P3 Ogrody: lista roślin i wybór tła (O4, O7)
+ → P4 Ogrody: dużo nowych plansz, roślin i ulepszeń (O2, O3, O6) → P6 Sowa w Chmurach: Mgławica, strefy
+ mitologiczne, Sowie Zaświaty (C2) → P5 Łącz i Hoduj z Baobabem (L2, L3, L5) → P7 Galeria (G4) → P8 zamknięcie
+```
 
 ---
 
