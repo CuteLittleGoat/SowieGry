@@ -570,8 +570,9 @@ test("tęczowy liść: Gorączka Monster 8 s — liście ×2 i dodatkowy rząd l
   assert.equal(game.state.leafCount - count, FEVER.multiplier);
 });
 
-test("Plusk-o-metr: 60 liści albo 3 bąbelki; pełny — „Rejs na humbaku” 20 s bez przeszkód, potem premia", () => {
-  assert.equal(SPLASH.leaves, 60);
+test("Plusk-o-metr: 150 liści albo 3 bąbelki; pełny — „Rejs na humbaku” 20 s bez przeszkód, potem premia i przerwa", () => {
+  assert.equal(SPLASH.leaves, 150);
+  assert.equal(SPLASH.rest, 600);
   const game = createRun({ difficulty: "arcade", seed: "humbak" });
   const owl = game.state.owl;
   for (let index = 0; index < SPLASH.bubbles; index += 1) {
@@ -603,6 +604,56 @@ test("Plusk-o-metr: 60 liści albo 3 bąbelki; pełny — „Rejs na humbaku” 
   assert.ok(game.state.patternCount > before);
   const next = PATTERNS.find((item) => item.id === game.state.patterns.at(before - game.state.patternCount));
   assert.ok(next.tags.includes("breather"), `po rejsie oddech, a jest ${next.id}`);
+  // Uwaga U1: po rejsie humbak odpoczywa 600 m — bąbelek i liście nie napełniają Plusk-o-metru, bąbelków nie ma.
+  const state = game.state;
+  const start = state.owl.x - state.distance;
+  // Bieg bez sterowania — trafienia się nie liczą (inaczej chmura kończy bieg w trakcie przerwy).
+  game.setSafe(true);
+  assert.ok(Math.abs(state.restUntil - (state.distance + SPLASH.rest)) < 1, "przerwa 600 m od końca rejsu");
+  state.bubbles.push({ x: state.owl.x + 0.1, y: -0.5, taken: false, phase: 0 });
+  game.update(DT);
+  assert.equal(state.splash, 0, "w przerwie bąbelek nie napełnia Plusk-o-metru");
+  let leavesInRest = 0;
+  for (let time = 0; time < 30 && state.distance < state.restUntil - 50; time += DT) {
+    game.update(DT);
+    leavesInRest += game.takeEvents().filter((event) => event.type === "leaf").length;
+  }
+  assert.equal(state.ended, false);
+  assert.ok(leavesInRest > 0, "sowa zbiera liście w przerwie");
+  assert.equal(state.splash, 0, "w przerwie liście nie napełniają Plusk-o-metru");
+  assert.ok(
+    state.bubbles.every((bubble) => bubble.taken || bubble.x - start >= state.restUntil),
+    "w przerwie nie ma nowych bąbelków",
+  );
+  game.warp(SPLASH.rest);
+  const splashBefore = state.splash;
+  state.bubbles.push({ x: state.owl.x + 0.1, y: -0.5, taken: false, phase: 0 });
+  game.update(DT);
+  assert.ok(state.splash - splashBefore >= 1 / SPLASH.bubbles - 1e-9, "po przerwie bąbelek znowu napełnia o 1/3");
+});
+
+test("częstość rejsów (uwaga U1): dobry gracz ok. raz na krainę — najwyżej 4 rejsy na 3 km, odstęp ≥ 900 m", () => {
+  // Bot jak dobry gracz: tryb bez trafień, liście przyciągane jak przez Kózkę Magnes przez cały bieg.
+  for (const seed of ["krainy-a", "krainy-b"]) {
+    const game = createRun({ difficulty: "arcade", seed, safe: true });
+    const starts = [];
+    let was = false;
+    for (let time = 0; time < 900 && game.state.distance < 3000; time += DT) {
+      game.state.powerups.magnes = 999;
+      game.update(DT);
+      game.takeEvents();
+      if (game.state.bonus && !was) starts.push(game.state.distance);
+      was = Boolean(game.state.bonus);
+    }
+    assert.ok(game.state.distance >= 3000, `bieg doszedł do 3 km (${Math.round(game.state.distance)} m)`);
+    assert.ok(starts.length >= 1 && starts.length <= 4, `${seed}: rejsy ${starts.map(Math.round)}`);
+    for (let index = 1; index < starts.length; index += 1) {
+      assert.ok(
+        starts[index] - starts[index - 1] >= 900,
+        `${seed}: odstęp ${Math.round(starts[index] - starts[index - 1])} m`,
+      );
+    }
+  }
 });
 
 test("biomy co 1000 m (6), przenikanie 60 m, kolejne okrążenie szybciej (najwyżej +10%)", () => {

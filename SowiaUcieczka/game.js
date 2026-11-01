@@ -167,6 +167,8 @@ export function createRun({
     fever: 0,
     riding: null,
     splash: 0,
+    // Po rejsie humbak odpoczywa do tego dystansu (m): Plusk-o-metr się nie napełnia, bąbelków nie ma.
+    restUntil: 0,
     bonus: null,
     bonusCount: 0,
     bonusPoints: 0,
@@ -193,6 +195,9 @@ export function createRun({
   function emit(type, detail = {}) {
     events.push({ type, ...detail });
   }
+
+  // Przerwa po rejsie (uwaga U1): humbak odpoczywa, Plusk-o-metr stoi.
+  const resting = () => !state.bonus && state.distance < state.restUntil;
 
   // Wzór → obiekty świata (od pozycji `start`).
   function place(chosen, start) {
@@ -268,7 +273,7 @@ export function createRun({
       if (middle >= state.nextGoatAt) {
         state.goats.push({ kind: pickGoat(), x: middle + startDistance, phase: rng(), taken: false });
         state.nextGoatAt = middle + GOATS.every[0] + rng() * (GOATS.every[1] - GOATS.every[0]);
-      } else if (middle >= state.nextBubbleAt) {
+      } else if (middle >= state.nextBubbleAt && middle >= state.restUntil) {
         state.bubbles.push({ x: middle + startDistance, y: -SPLASH.bubbleHeight, taken: false, phase: rng() * 6 });
         state.nextBubbleAt = middle + SPLASH.bubbleEvery[0] + rng() * (SPLASH.bubbleEvery[1] - SPLASH.bubbleEvery[0]);
       }
@@ -315,7 +320,8 @@ export function createRun({
     const multiplier = (state.powerups.podwajaczka > 0 ? 2 : 1) * (state.fever > 0 ? FEVER.multiplier : 1);
     const points = SCORE.leaf[item.kind] * multiplier;
     const count = SCORE.leafCount[item.kind] * multiplier;
-    if (!state.bonus) state.splash = Math.min(1, state.splash + SCORE.leafCount[item.kind] / SPLASH.leaves);
+    if (!state.bonus && !resting())
+      state.splash = Math.min(1, state.splash + SCORE.leafCount[item.kind] / SPLASH.leaves);
     state.streak += count;
     state.combo = comboLevel(state.streak);
     state.bestCombo = Math.max(state.bestCombo, state.combo);
@@ -399,6 +405,9 @@ export function createRun({
     state.invulnerable = Math.max(state.invulnerable, 1);
     state.trackEnd = owl.x + 6;
     track.rest();
+    // Humbak odpoczywa: przez `SPLASH.rest` m Plusk-o-metr się nie napełnia, a pierwszy bąbelek dopiero po przerwie.
+    state.restUntil = state.distance + SPLASH.rest;
+    state.nextBubbleAt = Math.max(state.nextBubbleAt, state.restUntil);
     emit("bonusEnd", { premium, leaves: bonus.leaves });
   }
 
@@ -522,7 +531,7 @@ export function createRun({
       const dy = Math.max(box.top - bubble.y, 0, bubble.y - box.bottom);
       if (dx * dx + dy * dy <= 0.45 * 0.45) {
         bubble.taken = true;
-        state.splash = Math.min(1, state.splash + 1 / SPLASH.bubbles);
+        if (!resting()) state.splash = Math.min(1, state.splash + 1 / SPLASH.bubbles);
         emit("bubble", { x: bubble.x, y: bubble.y, splash: state.splash });
       }
     }

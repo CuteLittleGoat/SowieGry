@@ -115,7 +115,8 @@ const pause = createPauseMenu({
 });
 const results = createResults({ root: stage, onAgain: () => startRun(), onMenu: () => location.assign("../") });
 
-// Plusk-o-metr (pod przyciskiem pauzy): 60 liści albo 3 bąbelki → „Rejs na humbaku”; w rejsie — pozostały czas.
+// Plusk-o-metr (pod przyciskiem pauzy): 150 liści albo 3 bąbelki → „Rejs na humbaku”; w rejsie — pozostały czas,
+// po nim przerwa humbaka (przygaszony z 💤).
 const splashNode = document.createElement("div");
 splashNode.className = "ucieczka-splash";
 splashNode.hidden = true;
@@ -130,16 +131,29 @@ let splashShown = -1;
 
 function updateSplash(state) {
   const bonus = state.bonus;
+  // Po rejsie humbak odpoczywa (uwaga U1): Plusk-o-metr przygaszony i pusty.
+  const resting = !bonus && state.distance < (state.restUntil || 0);
   const share = bonus ? Math.max(0, bonus.time / WHALE.duration) : state.splash;
   const percent = Math.round(share * 100);
-  if (percent === splashShown && splashNode.classList.contains("is-bonus") === Boolean(bonus)) return;
+  const rest = resting ? Math.ceil((state.restUntil - state.distance) / 50) * 50 : 0;
+  const same =
+    splashNode.classList.contains("is-bonus") === Boolean(bonus) &&
+    splashNode.classList.contains("is-resting") === resting &&
+    splashNode.dataset.rest === String(rest);
+  if (percent === splashShown && same) return;
   splashShown = percent;
   splashFill.style.transform = `scaleX(${share})`;
   splashNode.classList.toggle("is-bonus", Boolean(bonus));
+  splashNode.classList.toggle("is-resting", resting);
+  splashNode.dataset.rest = String(rest);
   splashNode.setAttribute("aria-valuenow", String(percent));
   splashNode.setAttribute(
     "aria-label",
-    bonus ? `Rejs na humbaku: ${Math.ceil(bonus.time)} s` : `Plusk-o-metr: ${percent}%`,
+    bonus
+      ? `Rejs na humbaku: ${Math.ceil(bonus.time)} s`
+      : resting
+        ? `Plusk-o-metr: humbak odpoczywa jeszcze ok. ${rest} m`
+        : `Plusk-o-metr: ${percent}%`,
   );
 }
 

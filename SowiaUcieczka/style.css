@@ -170,6 +170,17 @@
   background: var(--zloto);
 }
 
+/* Po rejsie humbak odpoczywa (uwaga U1): Plusk-o-metr przygaszony, z ikoną snu. */
+.ucieczka-splash.is-resting {
+  opacity: 0.55;
+}
+
+.ucieczka-splash.is-resting::after {
+  content: "💤";
+  font-size: 12px;
+  line-height: 1;
+}
+
 /* Samouczek: podpowiedź w górnej części planszy (sowa biegnie nisko, przy lewej krawędzi), nie łapie dotyku. */
 .ucieczka-tutorial {
   position: absolute;

@@ -147,12 +147,15 @@ export const GOATS = Object.freeze({
 // Gorączka Monster (tęczowy liść): 8 s, liście ×2 i gęstsze układy liści, bez dodatkowych przeszkód.
 export const FEVER = Object.freeze({ duration: 8, multiplier: 2, extraHeight: 3.1, extraSpacing: 1.3 });
 
-// Plusk-o-metr: 60 liści albo 3 bąbelki humbaka → „Rejs na humbaku”.
+// Plusk-o-metr: 150 liści albo 3 bąbelki humbaka → „Rejs na humbaku”; po rejsie `rest` m przerwy (metr się nie
+// napełnia, bąbelków nie ma). Uwaga U1 (2026-11-01): przy 60 liściach i bąbelkach co 500–900 m dobry gracz miał średnio
+// 13 rejsów na bieg 5 km (ok. 40% biegu na humbaku); teraz ok. 4 — mniej więcej raz na krainę (symulacja w teście).
 export const SPLASH = Object.freeze({
-  leaves: 60,
+  leaves: 150,
   bubbles: 3,
-  bubbleEvery: Object.freeze([500, 900]),
+  bubbleEvery: Object.freeze([900, 1500]),
   bubbleHeight: 2.6,
+  rest: 600,
 });
 
 // „Rejs na humbaku”: 20 s bez przeszkód, stuknięcie = humbak wyskakuje z wody, łuki liści w powietrzu.

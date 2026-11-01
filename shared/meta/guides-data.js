@@ -123,7 +123,7 @@ export const GUIDES = Object.freeze({
       {
         id: "bonusy",
         title: "Kózki i humbak",
-        text: "Złap skaczącą kózkę: Sprężynka, Tarcza, Magnes, Turbo albo Podwajaczka. 60 liści albo 3 bąbelki napełniają Plusk-o-metr — wtedy 20 s rejsu na humbaku bez przeszkód.",
+        text: "Złap skaczącą kózkę: Sprężynka, Tarcza, Magnes, Turbo albo Podwajaczka. 150 liści albo 3 bąbelki napełniają Plusk-o-metr — wtedy 20 s rejsu na humbaku bez przeszkód, a potem humbak chwilę odpoczywa (💤).",
         sprite: "kozka-magnes-skok",
         tip: "Każde 3 zadania biegu podnoszą Sowi mnożnik, który mnoży punkty za dystans.",
       },
