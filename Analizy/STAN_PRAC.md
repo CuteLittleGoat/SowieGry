@@ -8,7 +8,11 @@ z testów: `UWAGI_WLASCICIELA.md`.
 w Chmurach, Sowi Butik i Galeria). Diagnoza, plan prac i wdrożeń (etapy P0–P8) oraz pytania do właściciela:
 [`ANALIZA_4_Uwagi_z_testow_poprawki_i_rozbudowa.md`](ANALIZA_4_Uwagi_z_testow_poprawki_i_rozbudowa.md); uwagi
 w tabeli „Uwagi z testów — 2026-11-01” w `UWAGI_WLASCICIELA.md`. Najpilniejszy jest błąd zapisu zakupów w Sowim
-Butiku (G3, etap P1). Kod gier jeszcze bez zmian — prace ruszą po odpowiedziach na pytania z rozdziału 6 analizy.
+Butiku (G3, etap P1). Odpowiedzi właściciela są w rozdziale 7 analizy; kolejność: P1 → P2 → P3 → P4 → P6 → P5 → P7 → P8.
+Zrobione i na stronie: **P1** Sowi Butik (zakupy i kolory się nie cofają, przeprosinowe piórka), **P2** szybkie poprawki
+(liczby w Ogrodach, podpowiedzi w Łącz i Hoduj, humbak raz na krainę, nowe zdjęcia zamiast podobnych), **P3** lista
+roślin i wybór tła w Sowich Ogrodach. Następny: **P4** — nowe rozdziały, rośliny i ulepszenia Sowich Ogrodów. Testy dla
+osoby testującej na telefonie: [`TESTY_NA_TELEFONIE.md`](TESTY_NA_TELEFONIE.md).
 
 **W skrócie (stan z 2026-10-06):** wszystkie etapy planu (E0–E10) są na `main` i na stronie. Testy automatyczne w GitHubie są zielone od
 commita b4fae30 (5 października wieczorem). Od 6 października testujesz gry i wersję demo — uwagi zgłosisz w nowym

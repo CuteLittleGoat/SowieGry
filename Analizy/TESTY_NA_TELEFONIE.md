@@ -15,12 +15,13 @@ telefonie — i jeśli się da, zrób zrzut ekranu.
 
 ## Spis
 
-| Test | Co sprawdza | Od kiedy |
-|---|---|---|
-| O1 | Sowie Ogrody: duże liczby pokazują się dobrze (150 mln) | 2026-11-01 |
-| L1 | Łącz i Hoduj: podpowiedzi widać w całości | 2026-11-01 |
-| U1 | Sowia Ucieczka: humbak mniej więcej raz na krainę | 2026-11-01 |
-| G1 | Galeria: zamiast podobnych zdjęć — nowe | 2026-11-01 |
+| Test  | Co sprawdza                                                           | Od kiedy   |
+| ----- | --------------------------------------------------------------------- | ---------- |
+| O2–O3 | Sowie Ogrody: lista roślin do samego końca, „Rozwiń listę”, wybór tła | 2026-11-01 |
+| O1    | Sowie Ogrody: duże liczby pokazują się dobrze (150 mln)               | 2026-11-01 |
+| L1    | Łącz i Hoduj: podpowiedzi widać w całości                             | 2026-11-01 |
+| U1    | Sowia Ucieczka: humbak mniej więcej raz na krainę                     | 2026-11-01 |
+| G1    | Galeria: zamiast podobnych zdjęć — nowe                               | 2026-11-01 |
 | B1–B4 | Sowi Butik: zakupy i kolory sowy nie cofają się, przeprosinowe piórka | 2026-11-01 |
 
 ---
@@ -69,6 +70,37 @@ cofnąć zakupu. Kolory i stroje, które wcześniej zniknęły, a były zapisane
 2. **Powinno być:** wszystkie stroje kupione kiedyś w Butiku są odblokowane (bez kłódki) i da się je wybrać.
 
 ---
+
+## O2 — Sowie Ogrody: lista roślin do samego końca
+
+Poprawka: lista roślin nie buduje się już od nowa przy każdym zakupie (także gdy kupuje Sowa zakupowa), więc
+przewijanie się nie zatrzymuje. Karty roślin są niższe, a przycisk **⤢** daje liście prawie cały ekran.
+
+1. Otwórz **Sowie Ogrody**, trzymaj telefon **pionowo**. Na dole zakładka **Rośliny**.
+2. Przewiń listę palcem do samego dołu.
+3. **Powinno być:** widać ostatnią roślinę z listy razem z jej przyciskami **Kup**, **×10** i **max**. Na każdym
+   przycisku jest cena (na „max” także, ile sztuk kupisz, np. „max ×7”).
+4. Jeśli masz ulepszenie **Sowa zakupowa** — poczekaj chwilę na dole listy. **Powinno być:** lista stoi w miejscu,
+   nie skacze do góry, a liczby „×…” przy roślinach rosną.
+5. Stuknij przycisk **⤢** obok zakładek (prawy górny róg panelu).
+6. **Powinno być:** ogród zwija się do niskiego paska, cele rozdziału się chowają, a lista roślin zajmuje prawie cały
+   ekran. Przycisk zmienia się na **⤡**.
+7. Stuknij **⤡**. **Powinno być:** wszystko wraca jak było.
+8. Obróć telefon poziomo. **Powinno być:** przycisku ⤢ nie ma (panel i tak jest na całą wysokość z prawej strony).
+
+## O3 — Sowie Ogrody: wybór tła ogrodu
+
+Poprawka: po ukończeniu rozdziałów można wybrać tło każdego ukończonego rozdziału (wcześniej zostawało na zawsze
+tło ostatniego).
+
+1. W Sowich Ogrodach stuknij zakładkę **Kolekcja** i przewiń do **Tło ogrodu**.
+2. **Powinno być:** przycisk **Automatyczne** (zaznaczony) i po jednym przycisku na każdy ukończony rozdział (np.
+   Parapet, Balkon, Działka…).
+3. Stuknij **Parapet**. **Powinno być:** za sową od razu widać okno parapetu, a przycisk „Parapet” jest zaznaczony.
+4. Zamknij aplikację i otwórz ją ponownie (albo poczekaj 3 sekundy i odśwież). **Powinno być:** tło dalej jest
+   z Parapetu.
+5. Stuknij **Automatyczne**. **Powinno być:** wraca tło bieżącego rozdziału.
+6. Jeśli robisz **Wielkie Przesadzanie** — **powinno być:** wybrane tło zostaje.
 
 ## O1 — Sowie Ogrody: duże liczby
 
