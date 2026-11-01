@@ -309,7 +309,6 @@ body {
 /* Dolny panel: zakładki i przewijana lista. */
 .ogrod-sheet {
   display: grid;
-  grid-template-rows: auto minmax(0, 1fr) auto;
   min-height: 0;
   border-radius: 20px 20px 0 0;
   background: rgba(255, 246, 227, 0.97);
@@ -545,4 +544,126 @@ body {
     grid-row: 1 / span 3;
     border-radius: 20px;
   }
+}
+
+/* Karta rośliny (uwaga O4): zwarta — nazwa z liczbą sztuk i opis w dwóch krótkich wierszach, pod nimi trzy przyciski
+   z cenami (Kup, ×10, max). */
+.ogrod-card.is-plant {
+  gap: 4px 8px;
+  padding: 6px 8px;
+}
+
+.ogrod-card.is-plant h3 {
+  font-size: 14px;
+}
+
+/* Opis zawsze na wysokość dwóch wierszy: karta nie zmienia wysokości, gdy liczby w opisie się wydłużają albo skracają
+   (lista przewinięta na dół nie podskakuje przy zakupach). */
+.ogrod-card.is-plant p {
+  min-height: 2.6em;
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.3;
+}
+
+.ogrod-card.is-plant .ogrod-swatch {
+  width: 24px;
+  height: 24px;
+}
+
+.ogrod-buy .sowie-ui-button.is-stacked {
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 1px;
+  padding: 2px 4px;
+  font-size: 13px;
+  line-height: 1.1;
+}
+
+.ogrod-buy .is-stacked [data-cost] {
+  font-size: 11px;
+  opacity: 0.8;
+}
+
+/* Rozwiń listę (uwaga O4): przycisk obok zakładek; telefon w pionie — ogród zwija się do paska, cel rozdziału się
+   chowa, lista dostaje prawie cały ekran. Na komputerze i telefonie poziomo panel i tak ma całą wysokość. */
+.ogrod-sheet {
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-rows: auto minmax(0, 1fr);
+}
+
+.ogrod-tabs {
+  grid-column: 1;
+}
+
+.ogrod-expand {
+  display: none;
+  grid-column: 2;
+  grid-row: 1;
+  align-self: end;
+  min-width: 44px;
+  min-height: 44px;
+  margin: 6px 6px 0 0;
+  padding: 0;
+  font-size: 20px;
+}
+
+.ogrod-panel {
+  grid-column: 1 / -1;
+}
+
+@media (orientation: portrait) and (max-width: 899px) {
+  .ogrod-expand {
+    display: inline-grid;
+    place-items: center;
+  }
+
+  .ogrod.is-list-open {
+    grid-template-rows: auto minmax(72px, 12vh) minmax(0, 1fr);
+  }
+
+  .ogrod.is-list-open .ogrod-goal {
+    display: none;
+  }
+
+  /* Zakładki obok przycisku: kolumna nie węższa niż jej napis (na 320 px „Ulepszenia” nachodziły na „Prestiż”). */
+  .ogrod-tabs {
+    grid-template-columns: repeat(4, minmax(min-content, 1fr));
+    gap: 2px;
+  }
+
+  .ogrod-tab {
+    padding: 0 4px;
+  }
+}
+
+@media (orientation: portrait) and (max-width: 359px) {
+  .ogrod-tab {
+    font-size: 13px;
+  }
+}
+
+/* Tło ogrodu (uwaga O7): wybór w Kolekcji. */
+.ogrod-scenes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.ogrod-chip {
+  min-height: 44px;
+  padding: 6px 12px;
+  border: 2px solid rgba(59, 47, 74, 0.15);
+  border-radius: 999px;
+  background: var(--bialy);
+  font: inherit;
+  font-size: 13px;
+  color: inherit;
+  cursor: pointer;
+}
+
+.ogrod-chip[aria-pressed="true"] {
+  border-color: var(--monstera);
+  background: var(--monstera-jasna);
 }

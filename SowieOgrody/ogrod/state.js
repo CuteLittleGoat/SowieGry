@@ -51,6 +51,8 @@ export function defaultState(now = Date.now()) {
     tutorialDone: false,
     // Kontrakty dnia (E7d3, daily.js): { date, baseline, claimed } albo null przed pierwszym wejściem.
     daily: null,
+    // Tło ogrodu (uwaga O7): „auto” (bieżący rozdział) albo identyfikator ukończonego rozdziału.
+    scene: "auto",
   };
 }
 
@@ -190,6 +192,7 @@ export function loadState(raw, now = Date.now()) {
     bay: null,
   };
   for (const key of ["leaves", "runLeaves", "lifetimeLeaves", "seeds", "splash"]) state[key] = number(state[key]);
+  if (typeof state.scene !== "string") state.scene = "auto";
   // Zatoka przerwana zamknięciem gry — Plusk-o-metr wraca pełny (można zagrać jeszcze raz).
   if (raw.bay) state.splash = 1;
   if (!state.truck) state.blocked = null;

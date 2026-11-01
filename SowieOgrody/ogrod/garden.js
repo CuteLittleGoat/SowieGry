@@ -25,6 +25,18 @@ export function chapterIndex(state) {
   return index < 0 ? CHAPTERS.length - 1 : index;
 }
 
+/**
+ * Tło ogrodu (uwaga O7): rozdział wybrany w Kolekcji (`state.scene`), jeśli jest ukończony; inaczej — „auto” —
+ * bieżący rozdział (po ukończeniu wszystkich zostawało na zawsze tło ostatniego).
+ */
+export function sceneId(state) {
+  const chosen = state.scene;
+  if (chosen && chosen !== "auto" && state.chapters?.[chosen] && CHAPTERS.some((chapter) => chapter.id === chosen)) {
+    return chosen;
+  }
+  return CHAPTERS[chapterIndex(state)].id;
+}
+
 /** Czy rozdział `id` jest dostępny (bieżący albo wcześniejszy). */
 export function chapterOpen(state, id) {
   return CHAPTERS.findIndex((chapter) => chapter.id === id) <= chapterIndex(state);
@@ -191,6 +203,7 @@ export function createGarden({
       daily: state.daily,
       createdAt: state.createdAt,
       splash: state.splash,
+      scene: state.scene,
     };
     const fresh = defaultState(now());
     for (const key of Object.keys(state)) delete state[key];

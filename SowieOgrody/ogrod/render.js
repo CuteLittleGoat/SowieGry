@@ -5,7 +5,7 @@ import { drawOwl } from "../../shared/world/owl.js";
 import { COLORS, font } from "../../shared/world/tokens.js";
 import { CHAPTERS, GARDEN_EVENTS, PLANTS } from "./config.js";
 import { formatNumber, plantStage } from "./economy.js";
-import { chapterIndex } from "./garden.js";
+import { sceneId } from "./garden.js";
 
 // Tło rozdziału: [niebo u góry, niebo u dołu, podłoże].
 const SCENES = {
@@ -393,8 +393,7 @@ export function createGardenRenderer({ canvas, atlas }) {
     draw({ state, now, time, dt = 0, animator = null, cosmetic = "none" }) {
       if (!size.width) resize();
       context.setTransform(size.ratio, 0, 0, size.ratio, 0, 0);
-      const chapter = CHAPTERS[chapterIndex(state)];
-      background(chapter.id, time);
+      background(sceneId(state), time);
       owl(animator, cosmetic);
       shelf(state, time);
       truck(state);

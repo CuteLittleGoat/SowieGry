@@ -27,7 +27,7 @@ import {
   UPGRADES,
 } from "./config.js";
 import { formatNumber, formatTime, hasUpgrade, plantById, prestigeSeeds, production, waterStats } from "./economy.js";
-import { chapterIndex, createGarden } from "./garden.js";
+import { chapterIndex, createGarden, sceneId } from "./garden.js";
 import { createPanel } from "./panel.js";
 import { createGardenRenderer, gardenUnit } from "./render.js";
 import { defaultState, loadState } from "./state.js";
@@ -162,6 +162,25 @@ const panel = createPanel({
   onClaim: (id) => claimDaily(id),
   // Powtórzenie samouczka z zakładki Kolekcja (uwaga właściciela G1).
   onTutorial: () => startTutorial(),
+  // Tło ogrodu z Kolekcji (uwaga O7): „auto” albo ukończony rozdział; zapis po 2 s.
+  onScene: (id) => {
+    const state = garden.state;
+    state.scene = id !== "auto" && state.chapters?.[id] ? id : "auto";
+    play("klik");
+    panel.refresh();
+    save({ immediate: true });
+  },
+});
+
+// „Rozwiń listę” (uwaga O4): na telefonie w pionie ogród zwija się do paska, lista roślin dostaje prawie cały ekran.
+const expandButton = root.querySelector("[data-expand]");
+expandButton.addEventListener("click", () => {
+  const open = !root.classList.contains("is-list-open");
+  root.classList.toggle("is-list-open", open);
+  expandButton.setAttribute("aria-pressed", String(open));
+  expandButton.setAttribute("aria-label", open ? "Zwiń listę — pokaż cały ogród" : "Rozwiń listę");
+  expandButton.textContent = open ? "⤡" : "⤢";
+  resize();
 });
 
 // Kontrakty dnia (E7d3): nagroda przez SowieProgress (zdarzenie `award` → SowieAcademy.award; ten sam identyfikator
@@ -764,6 +783,7 @@ window.SowieOgrody = Object.freeze({
   },
   hit: (name) => renderer.hits()[name] ?? null,
   music: () => audio?.currentMusic?.() ?? null,
+  scene: () => sceneId(garden.state),
   tutorial: () => tutorial?.progress() ?? null,
   contracts: () => dailyContracts(garden.state, now()),
   // Testy: wstrzymanie logiki w klatkach (np. liście Zatoki stoją w miejscu do stuknięcia); `advance` działa dalej.

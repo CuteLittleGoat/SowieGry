@@ -24,7 +24,7 @@ import {
   prestigeSeeds,
   production,
 } from "../../SowieOgrody/ogrod/economy.js";
-import { chapterIndex, chapterOpen, createGarden } from "../../SowieOgrody/ogrod/garden.js";
+import { chapterIndex, chapterOpen, createGarden, sceneId } from "../../SowieOgrody/ogrod/garden.js";
 import { defaultState, loadState, migrateV2 } from "../../SowieOgrody/ogrod/state.js";
 
 const near = (actual, expected, tolerance, message) =>
@@ -322,6 +322,38 @@ test("liczby i czas po polsku", () => {
       "−150 mln",
     ],
   );
+});
+
+test("tło ogrodu (uwaga O7): „auto” — bieżący rozdział, wybór — tylko ukończony rozdział, zostaje po przesadzaniu", () => {
+  const state = defaultState(0);
+  assert.equal(state.scene, "auto");
+  assert.equal(sceneId(state), "parapet");
+  state.scene = "balkon";
+  assert.equal(sceneId(state), "parapet", "nieukończony rozdział — tło bieżącego");
+  state.chapters = { parapet: true, balkon: true };
+  assert.equal(sceneId(state), "balkon");
+  state.scene = "parapet";
+  assert.equal(sceneId(state), "parapet");
+  state.scene = "nie-ma-takiego";
+  assert.equal(sceneId(state), "dzialka");
+  // Po ukończeniu wszystkich rozdziałów „auto” to ostatni, a wybór dalej działa.
+  state.chapters = Object.fromEntries(CHAPTERS.map((chapter) => [chapter.id, true]));
+  state.scene = "auto";
+  assert.equal(sceneId(state), CHAPTERS.at(-1).id);
+  state.scene = "basen";
+  assert.equal(sceneId(state), "basen");
+  // Zapis: pole zostaje, zła wartość → „auto”.
+  assert.equal(loadState({ version: SAVE_VERSION, scene: "parapet" }, 1).state.scene, "parapet");
+  assert.equal(loadState({ version: SAVE_VERSION, scene: 7 }, 1).state.scene, "auto");
+  assert.equal(loadState({ version: SAVE_VERSION }, 1).state.scene, "auto");
+  // Wielkie Przesadzanie nie zmienia wybranego tła.
+  const ready = defaultState(0);
+  ready.chapters = Object.fromEntries(CHAPTERS.slice(0, 5).map((chapter) => [chapter.id, true]));
+  ready.runLeaves = 1e11;
+  ready.scene = "balkon";
+  const { garden: g } = garden(ready);
+  assert.ok(g.prestige() > 0);
+  assert.equal(g.state.scene, "balkon");
 });
 
 // Generator liczb z ziarnem (powtarzalny symulator): mulberry32.

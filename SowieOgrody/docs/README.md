@@ -22,15 +22,20 @@ zaczyna od parapetu, a kolejne rozdziały z celami prowadzą przez Balkon, Dzia�
 - **Cel rozdziału:** pod licznikiem jest bieżący rozdział (np. „Rozdział 1/6: Parapet”) i jego cele z postępem.
   Po wykonaniu wszystkich otwiera się kolejny rozdział z nowymi roślinami i ulepszeniami.
 - **Panel na dole** (na komputerze i telefonie poziomo — po prawej) ma cztery zakładki:
-  - **Rośliny** — kup ×1 (cena na przycisku), ×10 albo **max** (ile Cię stać). Przy 10, 25, 50 i 100 sztukach
-    roślina zmienia wygląd, a przy 25 i 100 produkuje dwa razy więcej;
+  - **Rośliny** — kup ×1, ×10 albo **max** (ile Cię stać) — cena jest na każdym przycisku. Przy 10, 25, 50
+    i 100 sztukach roślina zmienia wygląd, a przy 25 i 100 produkuje dwa razy więcej. Lista nie skacze, gdy coś
+    kupujesz (także Sowa zakupowa), więc spokojnie przewiniesz ją do ostatniej rośliny;
+  - **„Rozwiń listę”** (przycisk **⤢** obok zakładek, telefon trzymany pionowo) — ogród zwija się do paska, a lista
+    dostaje prawie cały ekran. Drugie stuknięcie (**⤡**) wraca do zwykłego widoku;
   - **Ulepszenia** — od najtańszych; m.in. **Konewka sowy**, po której zakupie u góry pojawia się przycisk
     **„Podlej”** (ładunki, np. 3/3): podlanie podwaja produkcję na chwilę, a ładunki same się odnawiają;
   - **Prestiż** — **Wielkie Przesadzanie** (po Szklarni): ogród zaczyna od nowa, ale dostajesz nasiona na stałe
     ulepszenia w drzewku (Korzenie, Woda, Sen). Przed przesadzeniem gra zapyta, czy na pewno;
   - **Kolekcja** — na górze **kontrakty dnia** (25 stuknięć, 6 kupionych roślin, 2 podlania — liczone od pierwszego
     wejścia danego dnia); wykonany kontrakt odbierasz przyciskiem **„Odbierz”** i dostajesz XP oraz piórka Sowiej
-    Akademii. Niżej rozdziały, gatunki w ogrodzie i statystyki.
+    Akademii. Niżej rozdziały, **„Tło ogrodu”**, gatunki w ogrodzie i statystyki. W „Tle ogrodu” wybierasz tło
+    każdego ukończonego rozdziału (np. Parapet albo Basen); **„Automatyczne”** pokazuje tło bieżącego rozdziału.
+    Wybór zostaje też po Wielkim Przesadzaniu;
 - **Wydarzenia w ogrodzie** (przycisk pojawia się przy dolnej krawędzi ogrodu; możesz też stuknąć w samą postać):
   - **telefon Pracu Pracu** (od Balkonu, co kilka minut) — dopóki dzwoni, ogród rośnie o 30% wolniej. Stuknij
     **„Odrzuć”** albo telefon w lewym górnym rogu. Ulepszenie **Tryb samolotowy** wycisza go samo po 10 s;

@@ -209,6 +209,27 @@ test.describe("nowe Sowie Ogrody — najmniejszy telefon (320 × 568)", () => {
       const box = await locator.boundingBox();
       expect(box.height).toBeGreaterThanOrEqual(44);
     }
+    // Uwaga O4: obok zakładek przycisk „Rozwiń listę” (44 × 44 px) — napisy zakładek się nie nakładają ani nie
+    // wychodzą poza zakładkę, a ostatnia zakładka kończy się przed przyciskiem.
+    const layout = await page.evaluate(() => {
+      const range = document.createRange();
+      const tabs = [...document.querySelectorAll(".ogrod-tab")].map((tab) => {
+        range.selectNodeContents(tab);
+        const text = range.getBoundingClientRect();
+        const box = tab.getBoundingClientRect();
+        return { left: box.left, right: box.right, textLeft: text.left, textRight: text.right };
+      });
+      const expand = document.querySelector("[data-expand]").getBoundingClientRect();
+      return { tabs, expand: { left: expand.left, width: expand.width, height: expand.height } };
+    });
+    for (const [index, tab] of layout.tabs.entries()) {
+      expect(tab.textLeft).toBeGreaterThanOrEqual(tab.left - 0.5);
+      expect(tab.textRight).toBeLessThanOrEqual(tab.right + 0.5);
+      if (index) expect(tab.textLeft).toBeGreaterThan(layout.tabs[index - 1].textRight);
+    }
+    expect(layout.expand.width).toBeGreaterThanOrEqual(44);
+    expect(layout.expand.height).toBeGreaterThanOrEqual(44);
+    expect(layout.tabs.at(-1).right).toBeLessThanOrEqual(layout.expand.left);
     expect(errors).toEqual([]);
   });
 });
@@ -431,5 +452,132 @@ test("nowe Sowie Ogrody: kontrakt dnia — 25 stuknięć, komunikat, „Odbierz�
   expect(academy.xp).toBeGreaterThanOrEqual(xpBefore + 30);
   const claimed = await page.evaluate(() => window.SowieOgrody.contracts().find((item) => item.id === "clicks"));
   expect(claimed.claimed).toBe(true);
+  expect(errors).toEqual([]);
+});
+
+// Wszystkie rozdziały do Szklarni otwarte (hakami testowymi gry, jak w teście Parapetu) — 10 roślin na liście
+// (do Mutanta monstery). Cele kosztują ok. 100 mln liści, więc zostaje ok. 900 mln.
+async function openToGreenhouse(page) {
+  await page.evaluate(() => {
+    const g = window.SowieOgrody;
+    g.give(1e9);
+    g.tap(30);
+    g.buy("monstera", 30);
+    g.buy("pilea", 1);
+    g.upgrade("konewka");
+  });
+  for (let index = 0; index < 3; index += 1) await page.locator("[data-water]").click();
+  await page.evaluate(() => {
+    const g = window.SowieOgrody;
+    g.buy("paproc", 5);
+    g.buy("alokazja", 10);
+    g.buy("kaktus", 5);
+    g.advance(0.2);
+    g.buy("slonecznik", 10);
+    g.buy("storczyk", 5);
+    g.advance(0.2);
+  });
+  await expect(page.locator("[data-goal]")).toContainText("Szklarnia");
+}
+
+test("lista roślin (uwaga O4): przy Sowie zakupowej karty nie są budowane od nowa, ostatnia roślina zostaje w widoku", async ({
+  page,
+}) => {
+  const errors = watchErrors(page);
+  await openGarden(page);
+  await openToGreenhouse(page);
+  // Liście tylko na Sową zakupową (30 mld): reszta (ok. 900 mln) nie wystarczy na Mutanta monstery (12,5 mld), więc
+  // Szklarnia się nie kończy i układ listy (nowy rozdział — nowa roślina) się nie zmienia.
+  await page.evaluate(() => {
+    window.SowieOgrody.give(3e10);
+    window.SowieOgrody.upgrade("zakupy");
+  });
+  // Zakładka Rośliny jest wybrana od startu (stuknięcie w nią przebudowałoby listę przy najbliższym odświeżeniu).
+  // Cel i panel odświeżają się w tym samym kroku, więc lista jest już zbudowana dla Szklarni.
+  await expect(page.getByRole("tab", { name: "Rośliny" })).toHaveAttribute("aria-selected", "true");
+  const panel = page.locator("[data-panel]");
+  const last = panel.locator("[data-plant]").last();
+  await expect(last).toHaveAttribute("data-plant", "mutant");
+  // Znacznik na kartach i przewinięcie listy do końca.
+  await page.evaluate(() => {
+    for (const card of document.querySelectorAll("[data-plant]")) card.dataset.mark = "1";
+    const node = document.querySelector("[data-panel]");
+    node.scrollTop = node.scrollHeight;
+  });
+  const bought = (await state(page)).stats.buys;
+  // Sowa zakupowa kupuje co 0,5 s — po 2 s lista wciąż ma te same karty (bez przebudowy) i stoi na dole.
+  await expect.poll(async () => (await state(page)).stats.buys, { timeout: 10_000 }).toBeGreaterThan(bought + 2);
+  const after = await page.evaluate(() => {
+    const node = document.querySelector("[data-panel]");
+    return {
+      marked: [...node.querySelectorAll("[data-plant]")].every((card) => card.dataset.mark === "1"),
+      atBottom: node.scrollTop + node.clientHeight >= node.scrollHeight - 2,
+    };
+  });
+  expect(after.marked, "karty nie są budowane od nowa przy zakupie").toBe(true);
+  // Lista nie wraca na górę (przy przebudowie `innerHTML` przewinięcie skakało) i zostaje na samym dole — karty mają
+  // stałą wysokość, choć liczby w opisach się zmieniają (panel może tylko urosnąć, gdy wykonany cel znika z listy).
+  expect(after.atBottom, "lista zostaje przewinięta na dół").toBe(true);
+  const panelBox = await panel.boundingBox();
+  const buyBox = await last.locator('[data-amount="1"]').boundingBox();
+  expect(buyBox.y + buyBox.height).toBeLessThanOrEqual(panelBox.y + panelBox.height + 1);
+  expect(buyBox.y).toBeGreaterThanOrEqual(panelBox.y - 1);
+  // Liczba sztuk i ceny odświeżają się w miejscu.
+  const monstera = (await state(page)).plants.monstera;
+  await expect(panel.locator('[data-plant="monstera"] [data-owned]')).toHaveText(`×${monstera}`);
+  expect(errors).toEqual([]);
+});
+
+test("lista roślin (uwaga O4): „Rozwiń listę” zwija ogród do paska i daje liście więcej miejsca", async ({ page }) => {
+  const errors = watchErrors(page);
+  await openGarden(page);
+  const panel = page.locator("[data-panel]");
+  const expand = page.locator("[data-expand]");
+  const portrait = await page.evaluate(() => innerHeight > innerWidth && innerWidth < 900);
+  if (!portrait) {
+    // Telefon poziomo i komputer mają panel obok ogrodu na całą wysokość — przycisku nie ma.
+    await expect(expand).toBeHidden();
+    expect(errors).toEqual([]);
+    return;
+  }
+  const before = (await panel.boundingBox()).height;
+  await expect(expand).toHaveAttribute("aria-pressed", "false");
+  await expand.click();
+  await expect(expand).toHaveAttribute("aria-pressed", "true");
+  await expect(page.locator("[data-goal]")).toBeHidden();
+  const open = (await panel.boundingBox()).height;
+  expect(open).toBeGreaterThan(before * 1.6);
+  const garden = await page.locator("[data-canvas]").boundingBox();
+  expect(garden.height).toBeGreaterThanOrEqual(60);
+  await expand.click();
+  await expect(expand).toHaveAttribute("aria-pressed", "false");
+  await expect(page.locator("[data-goal]")).toBeVisible();
+  expect(Math.abs((await panel.boundingBox()).height - before)).toBeLessThan(2);
+  expect(errors).toEqual([]);
+});
+
+test("tło ogrodu (uwaga O7): w Kolekcji wybór tła z ukończonych rozdziałów albo „Automatyczne”", async ({ page }) => {
+  const errors = watchErrors(page);
+  await openGarden(page);
+  await page.getByRole("tab", { name: "Kolekcja" }).click();
+  const scenes = page.locator(".ogrod-scenes [data-scene]");
+  await expect(scenes).toHaveCount(1);
+  await expect(page.locator('[data-scene="auto"]')).toHaveAttribute("aria-pressed", "true");
+  await page.evaluate(() => {
+    window.SowieOgrody.tap(30);
+    window.SowieOgrody.give(5000);
+    window.SowieOgrody.buy("monstera", 5);
+    window.SowieOgrody.buy("pilea", 1);
+  });
+  await expect(page.locator("[data-goal]")).toContainText("Balkon");
+  await expect(scenes).toHaveCount(2);
+  expect(await page.evaluate(() => window.SowieOgrody.scene())).toBe("balkon");
+  await page.locator('[data-scene="parapet"]').click();
+  await expect(page.locator('[data-scene="parapet"]')).toHaveAttribute("aria-pressed", "true");
+  expect(await page.evaluate(() => window.SowieOgrody.scene())).toBe("parapet");
+  expect((await state(page)).scene).toBe("parapet");
+  await page.locator('[data-scene="auto"]').click();
+  await expect(page.locator('[data-scene="auto"]')).toHaveAttribute("aria-pressed", "true");
+  expect(await page.evaluate(() => window.SowieOgrody.scene())).toBe("balkon");
   expect(errors).toEqual([]);
 });
