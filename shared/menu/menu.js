@@ -6,7 +6,7 @@ import { createLoop } from "../engine/loop.js";
 import { createAtlas } from "../engine/sprites.js";
 import { guideFor } from "../meta/guides-data.js";
 import { taskProgress } from "../meta/progress.js";
-import { linkSpecies } from "../meta/shop.js";
+import { grantApology, linkSpecies } from "../meta/shop.js";
 import { renderGuide } from "../ui/guide-view.js";
 import { ICONS } from "../ui/icons.js";
 import { openModal } from "../ui/modal.js";
@@ -418,6 +418,8 @@ function refreshAll() {
 cloud?.onStatus?.(showStatus);
 cloud?.ready?.then(refreshAll);
 cloud?.onProfileReload?.(refreshAll);
+// Przeprosinowe piórka za błąd zapisu zakupów w Sowim Butiku (uwaga G3) — raz, gdy w profilu jest zakup sprzed poprawki.
+cloud?.ready?.then(() => grantApology({ cloud, academy: window.SowieAcademy }));
 window.addEventListener("sowie:academy-changed", () => {
   renderHeroTasks();
   if (current === "sowa") renderOwlTab();

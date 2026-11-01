@@ -39,6 +39,11 @@ W zakładce **Sowa** jest **Sowi Butik**. Płacisz w nim **piórkami**, które d
 
 Gdy piórek jest za mało, przycisk ceny jest wyszarzony.
 
+Zakup i wybór gatunku zapisują się od razu (w ułamku sekundy). Wcześniej zapis czekał pół minuty i na wolnym
+internecie zakup mógł się po chwili „cofnąć” — ten błąd jest naprawiony (listopad 2026), a kupione gatunki i stroje,
+które zniknęły, wracają same. Jeśli przed poprawką był kupiony gatunek sowy, przy wejściu do menu pojawi się
+jednorazowo **„Przeprosiny za Sowi Butik”** i 50 piórek.
+
 ## Wersja demo
 
 Pod adresem **`demo.html`** (np. https://cutelittlegoat.github.io/SowieGry/demo.html) jest pokazowa wersja gier — do pokazania znajomym albo na spotkaniu:

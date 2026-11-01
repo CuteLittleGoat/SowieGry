@@ -3,11 +3,15 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { test } from "node:test";
 import {
+  APOLOGY,
+  apologyDue,
   buy,
   GOAT_LEVELS,
   goatTimeFactor,
+  grantApology,
   linkSpecies,
   OUTFIT_PRICES,
+  SAVE_DELAY_MS,
   selectSpecies,
   selectedSpecies,
   shopOffer,
@@ -29,14 +33,17 @@ const svg = (file) => readFileSync(new URL(`../../assets/svg/${file}`, import.me
 function fakeCloud(profile = {}) {
   const state = { cosmetics: { unlocked: ["none", "bow"], selected: "none" }, ...profile };
   let saves = 0;
+  let lastDelay;
   return {
     profile: () => state,
     isReady: () => true,
-    updateProfile(mutator) {
+    updateProfile(mutator, options = {}) {
       mutator(state);
       saves += 1;
+      lastDelay = options.delayMs;
     },
     saves: () => saves,
+    lastDelay: () => lastDelay,
   };
 }
 function fakeAcademy(feathers, level = 1) {
@@ -157,6 +164,59 @@ test("zakupy: piórka z Akademii, strój do garderoby, gatunek wybrany od razu, 
   assert.equal(selectSpecies("puchacz", { cloud }), false, "nieposiadana");
   assert.equal(selectedSpecies(cloud.profile()), "sowka");
   assert.equal(events.length, 4);
+});
+
+test("uwaga G3: gatunki i kózki także z dziennika zakupów, wybór i zakup zapisują się od razu", () => {
+  // Tablica posiadanych gatunków nadpisana zapisem ze strony ze starszym profilem — dziennik zakupów ma Płomykówkę.
+  const profile = {
+    shop: {
+      species: { owned: ["sowka", "sniezna"], selected: "sniezna" },
+      goatLevel: 0,
+      purchases: { "species:sniezna": 1, "species:plomykowka": 2, "goat:1": 3, "species:nie-ma": 4 },
+    },
+  };
+  assert.deepEqual(shopState(profile).species, { owned: ["sowka", "sniezna", "plomykowka"], selected: "sniezna" });
+  assert.equal(shopState(profile).goatLevel, 1);
+  const cloud = fakeCloud(profile);
+  assert.equal(selectSpecies("plomykowka", { cloud }), true, "Płomykówkę da się wybrać");
+  assert.ok(SAVE_DELAY_MS <= 1000);
+  assert.equal(cloud.lastDelay(), SAVE_DELAY_MS, "wybór zapisuje się od razu, a nie po 30 s");
+  assert.deepEqual(cloud.profile().shop.species, {
+    owned: ["sowka", "sniezna", "plomykowka"],
+    selected: "plomykowka",
+  });
+  assert.deepEqual(buy("species:puszczyk", { cloud, academy: fakeAcademy(100, 6), now: () => 9 }), { ok: true });
+  assert.equal(cloud.lastDelay(), SAVE_DELAY_MS, "zakup zapisuje się od razu");
+  assert.deepEqual(cloud.profile().shop.species.owned, ["sowka", "sniezna", "plomykowka", "puszczyk"]);
+});
+
+test("uwaga G3: przeprosinowe piórka — raz, tylko z zakupem gatunku sprzed poprawki", () => {
+  const academy = () => {
+    const awards = {};
+    let feathers = 0;
+    return {
+      snapshot: () => ({ awards: { ...awards }, feathers }),
+      award(id, xp, amount) {
+        if (!awards[id]) {
+          awards[id] = 1;
+          feathers += amount;
+        }
+        return true;
+      },
+      feathers: () => feathers,
+    };
+  };
+  const tester = academy();
+  const before = fakeCloud({ shop: { purchases: { "species:sniezna": APOLOGY.before - 60_000 } } });
+  assert.equal(apologyDue(before.profile()), true);
+  assert.equal(grantApology({ cloud: before, academy: tester }), true);
+  assert.equal(grantApology({ cloud: before, academy: tester }), false, "tylko raz");
+  assert.equal(tester.feathers(), APOLOGY.feathers);
+  assert.equal(APOLOGY.feathers, 50);
+  const after = fakeCloud({ shop: { purchases: { "species:sniezna": APOLOGY.before + 60_000, "outfit:crown": 1 } } });
+  assert.equal(apologyDue(after.profile()), false, "zakup po poprawce i strój — bez przeprosin");
+  assert.equal(grantApology({ cloud: fakeCloud({}), academy: academy() }), false, "bez zakupów — nic");
+  assert.equal(grantApology({ cloud: { ...before, isReady: () => false }, academy: academy() }), false);
 });
 
 test("linkSpecies: atlas dostaje przekolorowanie po wczytaniu chmury i po zmianie w Butiku", async () => {

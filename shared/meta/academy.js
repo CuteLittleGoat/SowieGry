@@ -561,9 +561,9 @@ export function createAcademyState({ state = defaultAcademy(), now = () => Date.
       }
       return evaluate() || changed;
     },
-    award(id, xp = 25, feathers = 3, title = "Nagroda dodatkowa") {
+    award(id, xp = 25, feathers = 3, title = "Nagroda dodatkowa", detail = undefined) {
       const changed = ensurePeriods();
-      return grant(id, xp, feathers, title) || changed;
+      return grant(id, xp, feathers, title, detail) || changed;
     },
     // Wydanie piórek (Sowi Butik): false, gdy za mało.
     spend(feathers) {
@@ -639,9 +639,9 @@ export function createAcademy({ getCloud = () => globalThis.SowieCloud, now = ()
       });
       return core.snapshot();
     },
-    award(id, xp, feathers, title) {
+    award(id, xp, feathers, title, detail) {
       whenLoaded(() => {
-        if (core.award(id, xp, feathers, title)) save();
+        if (core.award(id, xp, feathers, title, detail)) save();
       });
       return Boolean(core.state().awards[id]);
     },

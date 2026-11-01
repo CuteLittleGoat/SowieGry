@@ -38,15 +38,40 @@ export const GOAT_LEVELS = Object.freeze([
   { level: 3, factor: 1.6, price: 100 },
 ]);
 
+// Zakup i wybór gatunku zapisują się po tylu ms (a nie po 30 s jak zwykłe zmiany profilu) — uwaga G3: zmiana czekająca
+// na zapis mogła przepaść albo zostać cofnięta, zanim doszła do bazy.
+export const SAVE_DELAY_MS = 300;
+
 const list = (value) => (Array.isArray(value) ? value.filter((item) => typeof item === "string") : []);
 
-/** Stan Butiku z profilu (brak → domyślny): { version, species: { owned, selected }, goatLevel, purchases }. */
+/** Klucze z dziennika zakupów (`purchases`) o danym rodzaju, np. „species:puszczyk” → „puszczyk”. */
+const purchased = (purchases, kind) =>
+  Object.keys(purchases)
+    .filter((key) => key.startsWith(`${kind}:`))
+    .map((key) => key.slice(kind.length + 1));
+
+/**
+ * Stan Butiku z profilu (brak → domyślny): { version, species: { owned, selected }, goatLevel, purchases }.
+ * Posiadane gatunki i poziom kózek to suma listy w profilu i dziennika zakupów `purchases` (mapa „rodzaj:klucz” →
+ * czas): dziennik zapisuje się po jednym kluczu, więc nie gubi zakupów, a tablica `species.owned` zapisuje się w całości
+ * — zapis ze strony ze starszym profilem mógł z niej usunąć kupiony gatunek (uwaga G3).
+ */
 export function shopState(profile = {}) {
   const raw = profile?.shop && typeof profile.shop === "object" ? profile.shop : {};
-  const owned = [...new Set([DEFAULT_SPECIES, ...list(raw.species?.owned).filter((id) => speciesById(id))])];
-  const selected = owned.includes(raw.species?.selected) ? raw.species.selected : DEFAULT_SPECIES;
-  const goatLevel = Math.max(0, Math.min(GOAT_LEVELS.length, Math.floor(Number(raw.goatLevel) || 0)));
   const purchases = raw.purchases && typeof raw.purchases === "object" ? { ...raw.purchases } : {};
+  const owned = [
+    ...new Set(
+      [DEFAULT_SPECIES, ...list(raw.species?.owned), ...purchased(purchases, "species")].filter((id) =>
+        speciesById(id),
+      ),
+    ),
+  ];
+  const selected = owned.includes(raw.species?.selected) ? raw.species.selected : DEFAULT_SPECIES;
+  const boughtLevels = purchased(purchases, "goat").map((level) => Math.floor(Number(level)) || 0);
+  const goatLevel = Math.max(
+    0,
+    Math.min(GOAT_LEVELS.length, Math.max(Math.floor(Number(raw.goatLevel) || 0), ...boughtLevels)),
+  );
   return { version: SHOP_VERSION, species: { owned, selected }, goatLevel, purchases };
 }
 
@@ -124,20 +149,23 @@ export function buy(id, { cloud, academy, cosmetics = {}, now = () => Date.now()
   if (entry.locked) return { ok: false, reason: "level" };
   if (!academy.spend(entry.price)) return { ok: false, reason: "feathers" };
   const [kind, key] = id.split(":");
-  cloud.updateProfile((profile) => {
-    const state = shopState(profile);
-    state.purchases[id] = now();
-    if (kind === "outfit") {
-      profile.cosmetics ||= { unlocked: ["none"], selected: "none" };
-      profile.cosmetics.unlocked = [...new Set([...list(profile.cosmetics.unlocked), key])];
-    } else if (kind === "species") {
-      state.species.owned = [...new Set([...state.species.owned, key])];
-      state.species.selected = key;
-    } else if (kind === "goat") {
-      state.goatLevel = Number(key);
-    }
-    profile.shop = state;
-  });
+  cloud.updateProfile(
+    (profile) => {
+      const state = shopState(profile);
+      state.purchases[id] = now();
+      if (kind === "outfit") {
+        profile.cosmetics ||= { unlocked: ["none"], selected: "none" };
+        profile.cosmetics.unlocked = [...new Set([...list(profile.cosmetics.unlocked), key])];
+      } else if (kind === "species") {
+        state.species.owned = [...new Set([...state.species.owned, key])];
+        state.species.selected = key;
+      } else if (kind === "goat") {
+        state.goatLevel = Number(key);
+      }
+      profile.shop = state;
+    },
+    { delayMs: SAVE_DELAY_MS },
+  );
   changed();
   return { ok: true };
 }
@@ -146,17 +174,47 @@ export function buy(id, { cloud, academy, cosmetics = {}, now = () => Date.now()
 export function selectSpecies(id, { cloud } = {}) {
   const state = shopState(cloud?.profile?.());
   if (!state.species.owned.includes(id) || state.species.selected === id || !cloud?.updateProfile) return false;
-  cloud.updateProfile((profile) => {
-    const next = shopState(profile);
-    next.species.selected = id;
-    profile.shop = next;
-  });
+  cloud.updateProfile(
+    (profile) => {
+      const next = shopState(profile);
+      next.species.selected = id;
+      profile.shop = next;
+    },
+    { delayMs: SAVE_DELAY_MS },
+  );
   changed();
   return true;
 }
 
 function changed() {
   globalThis.dispatchEvent?.(new CustomEvent("sowie:shop-changed"));
+}
+
+// Przeprosiny za błąd zapisu zakupów (uwaga G3, 2026-11-01): profil, w którym przed poprawką (`before`) kupiono
+// gatunek sowy, dostaje raz `feathers` piórek. Nagroda Akademii o stałym identyfikatorze — Akademia daje ją tylko raz,
+// a klucz bez daty dnia nie jest przycinany (`trimAwards`).
+export const APOLOGY = Object.freeze({
+  id: "przeprosiny:butik-2026-11",
+  feathers: 50,
+  before: Date.UTC(2026, 10, 1, 13, 0),
+  title: "Przeprosiny za Sowi Butik",
+  detail: "Zakupy w Butiku zapisują się już od razu",
+});
+
+/** Czy profilowi należą się przeprosinowe piórka (zakup gatunku sprzed poprawki). */
+export function apologyDue(profile = {}) {
+  const { purchases } = shopState(profile);
+  return Object.entries(purchases).some(
+    ([key, at]) => key.startsWith("species:") && Number(at) > 0 && Number(at) < APOLOGY.before,
+  );
+}
+
+/** Przyznaje przeprosinowe piórka (raz; tylko z zakupem sprzed poprawki). → true, gdy przyznano teraz. */
+export function grantApology({ cloud, academy } = {}) {
+  if (!academy?.award || !cloud?.isReady?.() || !apologyDue(cloud.profile())) return false;
+  if (academy.snapshot?.()?.awards?.[APOLOGY.id]) return false;
+  academy.award(APOLOGY.id, 0, APOLOGY.feathers, APOLOGY.title, APOLOGY.detail);
+  return true;
 }
 
 /**

@@ -361,6 +361,103 @@ test("flush wysyła kolejkę od razu (przejście aplikacji w tło)", async () =>
   assert.equal((await backend.getDoc(PATHS.profile)).missions.leaves20.progress, 7);
 });
 
+// Baza jak Firestore z pamięcią telefonu: profil z pamięci (`cache`) od razu, odpowiedź serwera — stan z chwili
+// zapytania, oddany dopiero po `release()` (wolna sieć na telefonie).
+function slowServerBackend(memory, { cached = null } = {}) {
+  let release = () => {};
+  const gate = new Promise((resolve) => {
+    release = resolve;
+  });
+  return {
+    release: () => release(),
+    backend: {
+      kind: "firestore",
+      async getDoc(path, source = "default") {
+        if (source === "server" && path === PATHS.profile) {
+          const atRequest = await memory.getDoc(path);
+          await gate;
+          return atRequest;
+        }
+        if (source === "cache" && path === PATHS.profile && cached) return JSON.parse(JSON.stringify(cached));
+        return memory.getDoc(path);
+      },
+      commit: (ops) => memory.commit(ops),
+      query: (...args) => memory.query(...args),
+      subscribe: (...args) => memory.subscribe(...args),
+    },
+  };
+}
+
+test("odświeżenie z serwera: spóźniona odpowiedź sprzed zapisu z tej strony nie cofa profilu (uwaga G3)", async () => {
+  const memory = new MemoryBackend();
+  await memory.commit([
+    {
+      type: "set",
+      path: PATHS.profile,
+      data: { schemaVersion: 1, shop: { species: { owned: ["sowka", "sniezna"], selected: "sniezna" } } },
+    },
+  ]);
+  const slow = slowServerBackend(memory);
+  const { cloud } = makeCloud({ backend: slow.backend });
+  await cloud.ready;
+  // Zakup w Butiku w czasie, gdy zapytanie o świeży profil jeszcze wisi; zapis dochodzi do bazy.
+  cloud.updateProfile((profile) => {
+    profile.shop.species.owned.push("plomykowka");
+    profile.shop.species.selected = "plomykowka";
+  });
+  await cloud.flush();
+  const reloaded = [];
+  cloud.onProfileReload((profile) => reloaded.push(profile));
+  slow.release();
+  for (let index = 0; index < 5; index += 1) await tick();
+  assert.equal(reloaded.length, 0, "stara odpowiedź serwera nie podmienia profilu");
+  assert.equal(cloud.profile().shop.species.selected, "plomykowka");
+  assert.deepEqual(cloud.profile().shop.species.owned, ["sowka", "sniezna", "plomykowka"]);
+  assert.equal((await memory.getDoc(PATHS.profile)).shop.species.selected, "plomykowka");
+});
+
+test("odświeżenie z serwera: nowszy profil z innego urządzenia zastępuje profil z pamięci telefonu", async () => {
+  const memory = new MemoryBackend();
+  // Pełny profil zapisany przez grę (pierwsze uruchomienie) — taki jest w pamięci telefonu.
+  const first = makeCloud({ backend: memory });
+  await first.cloud.ready;
+  await first.cloud.flush();
+  const cached = await memory.getDoc(PATHS.profile);
+  // Inne urządzenie zapisuje 9 piórek; pamięć tego telefonu ma jeszcze 0.
+  await memory.commit([{ type: "set", path: PATHS.profile, data: { academy: { feathers: 9 } } }]);
+  const slow = slowServerBackend(memory, { cached });
+  const { cloud } = makeCloud({ backend: slow.backend });
+  await cloud.ready;
+  assert.equal(cloud.profile().academy.feathers, 0);
+  const reloaded = [];
+  cloud.onProfileReload((profile) => reloaded.push(profile));
+  slow.release();
+  for (let index = 0; index < 5; index += 1) await tick();
+  assert.equal(reloaded.length, 1);
+  assert.equal(cloud.profile().academy.feathers, 9);
+});
+
+test("stroje z dziennika zakupów Butiku wracają do listy strojów, gdy zapis ze starszej strony je usunął (uwaga G3)", async () => {
+  const backend = new MemoryBackend();
+  await backend.commit([
+    {
+      type: "set",
+      path: PATHS.profile,
+      data: {
+        schemaVersion: 1,
+        cosmetics: { unlocked: ["none", "bow"], selected: "glasses" },
+        shop: { purchases: { "outfit:glasses": 1700000000000, "outfit:nieznany": 1700000000001 } },
+      },
+    },
+  ]);
+  const { cloud } = makeCloud({ backend });
+  await cloud.ready;
+  assert.deepEqual(cloud.profile().cosmetics.unlocked, ["none", "bow", "glasses"], "nieznany strój pominięty");
+  assert.equal(cloud.profile().cosmetics.selected, "glasses", "wybrany strój zostaje, bo jest kupiony");
+  await cloud.flush();
+  assert.deepEqual((await backend.getDoc(PATHS.profile)).cosmetics.unlocked, ["none", "bow", "glasses"]);
+});
+
 test("zmiany sprzed startu są stosowane do wczytanego profilu, a nie do wartości domyślnych", async () => {
   const backend = new MemoryBackend();
   await backend.commit([

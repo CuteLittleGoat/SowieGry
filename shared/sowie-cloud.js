@@ -297,8 +297,13 @@
     }
     const cosmetics = isPlainObject(input.cosmetics) ? input.cosmetics : {};
     const known = Object.keys(platform.COSMETICS || {});
+    // Stroje kupione w Sowim Butiku są też w dzienniku zakupów (`shop.purchases`, klucze „outfit:<strój>”). Dziennik
+    // zapisuje się po jednym kluczu, więc nie gubi wpisów, a tablica `cosmetics.unlocked` zapisuje się w całości —
+    // zapis ze strony ze starszym profilem mógł z niej usunąć zakup (uwaga G3). Suma przywraca takie stroje.
+    const purchases = isPlainObject(input.shop?.purchases) ? Object.keys(input.shop.purchases) : [];
+    const bought = purchases.filter((key) => key.startsWith("outfit:")).map((key) => key.slice("outfit:".length));
     result.cosmetics = {
-      unlocked: Array.from(new Set([...base.cosmetics.unlocked, ...(cosmetics.unlocked || [])])).filter(
+      unlocked: Array.from(new Set([...base.cosmetics.unlocked, ...(cosmetics.unlocked || []), ...bought])).filter(
         (key) => !known.length || known.includes(key),
       ),
       selected: "none",
@@ -490,6 +495,9 @@
     let profileKnown = false;
     let profile = defaultProfile(platform);
     let profileBase = clone(profile);
+    // Zapisy profilu z tej strony: wysłane i zakończone (refreshProfileFromServer: odpowiedź starsza niż zapis).
+    let profileWrites = 0;
+    let profileSettled = 0;
     let fallbackReason = null;
     let timer = null;
     let dueAt = Infinity;
@@ -706,14 +714,20 @@
       return games.get(gameId);
     }
 
+    // Profil z serwera po starcie z pamięci telefonu (zmiany z innego urządzenia). Odpowiedź przychodzi z opóźnieniem
+    // (wolna sieć) i może pokazywać stan sprzed zapisu z tej strony — np. sprzed zakupu w Sowim Butiku, który już
+    // poszedł do bazy. Taka odpowiedź nie może podmienić profilu (uwaga G3: zakup „cofał się” po chwili), więc
+    // pomijamy ją, gdy w czasie zapytania strona zapisała profil albo zapis był jeszcze w drodze.
     async function refreshProfileFromServer() {
+      const writesBefore = profileWrites;
+      const unsettledBefore = profileSettled < profileWrites;
       let fresh = null;
       try {
         fresh = await backend.getDoc(PATHS.profile, "server");
       } catch (_error) {
         return;
       }
-      if (!fresh || hasLocalProfileChanges()) return;
+      if (!fresh || unsettledBefore || profileWrites !== writesBefore || hasLocalProfileChanges()) return;
       profile = normalizeProfile(fresh, platform);
       profileBase = clone(fresh);
       delete profileBase.createdAt;
@@ -747,15 +761,22 @@
       if (ops.length) {
         inFlight += 1;
         refreshStatus();
+        // Numer zapisu profilu w tej paczce (buildOps) — po zakończeniu zapisu profil przestaje być „w drodze”.
+        const profileSeq = ops.some((op) => op.path === PATHS.profile) ? profileWrites : 0;
+        const settle = () => {
+          if (profileSeq) profileSettled = Math.max(profileSettled, profileSeq);
+        };
         const task = Promise.resolve()
           .then(() => backend.commit(ops))
           .then(
             () => {
               inFlight -= 1;
+              settle();
               refreshStatus();
             },
             (error) => {
               inFlight -= 1;
+              settle();
               setStatus("blad");
               logError("SowieCloud: zapis w Firestore nie powiódł się", error);
             },
@@ -777,6 +798,7 @@
           data.updatedAt = serverTime();
           data.lastSeenAt = serverTime();
           ops.push({ type: "set", path: PATHS.profile, data });
+          profileWrites += 1;
         }
       }
       profileBase = clone(profile);

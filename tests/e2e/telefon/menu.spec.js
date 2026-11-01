@@ -377,6 +377,60 @@ test("zakładka „Sowa”: Sowi Butik — gatunek sowy, dłuższe kózki i str�
   expect(errors).toEqual([]);
 });
 
+test("Sowi Butik (uwaga G3): zakup Płomykówki zostaje po ponownym wejściu, przeprosinowe piórka raz (emulator)", async ({
+  page,
+}, testInfo) => {
+  const project = uniqueProject(testInfo);
+  // Profil jak u osoby testującej: Śnieżna kupiona przed poprawką i wybrana, poziom 6 Akademii, 200 piórek.
+  await seedDoc(project, "sowiegry/profil", {
+    schemaVersion: 1,
+    academy: { version: 3, xp: 1000, feathers: 200, metrics: {}, awards: {}, achievements: {} },
+    shop: {
+      version: 1,
+      species: { owned: ["sowka", "sniezna"], selected: "sniezna" },
+      goatLevel: 0,
+      purchases: { "species:sniezna": Date.UTC(2026, 9, 20) },
+    },
+  });
+  const errors = watchErrors(page);
+  await page.goto(cloudUrl("/?seed=butik-g3", project), { waitUntil: "load" });
+  await waitForCloud(page);
+  await expect(page.getByText(/Przeprosiny za Sowi Butik/).first()).toBeVisible();
+  await page.getByRole("tab", { name: "Sowa" }).click();
+  const shop = page.locator('[data-owl-card="butik"]');
+  await expect(shop.locator("[data-shop-feathers]")).toHaveText("🪶 250 piórek");
+  await expect(shop.locator('[data-species="sniezna"]')).toHaveAttribute("aria-pressed", "true");
+  await shop.locator('[data-buy="species:plomykowka"]').click();
+  const dialog = page.getByRole("dialog", { name: "Kupić w Sowim Butiku?" });
+  await dialog.getByRole("button", { name: "Kup", exact: true }).click();
+  await expect(shop.locator('[data-species="plomykowka"]')).toHaveAttribute("aria-pressed", "true");
+  await expect(shop.locator("[data-shop-feathers]")).toHaveText("🪶 180 piórek");
+  // Zakup idzie do bazy od razu (nie po 30 s).
+  await expect
+    .poll(async () => (await readDoc(project, "sowiegry/profil")).shop?.species?.selected, { timeout: 5000 })
+    .toBe("plomykowka");
+  // Ponowne wejście do menu (nowa karta tego samego telefonu — ta sama pamięć bazy): zakup i wybór zostają,
+  // piórka odjęte raz, przeprosin drugi raz nie ma.
+  const again = await page.context().newPage();
+  const errorsAgain = watchErrors(again);
+  await again.goto(cloudUrl("/?seed=butik-g3", project), { waitUntil: "load" });
+  await waitForCloud(again);
+  await again.getByRole("tab", { name: "Sowa" }).click();
+  const shopAgain = again.locator('[data-owl-card="butik"]');
+  await expect(shopAgain.locator('[data-species="plomykowka"]')).toHaveAttribute("aria-pressed", "true");
+  await expect(shopAgain.locator('[data-species="sniezna"]')).toHaveAttribute("aria-pressed", "false");
+  await expect(shopAgain.locator("[data-shop-feathers]")).toHaveText("🪶 180 piórek");
+  await again.waitForTimeout(1500);
+  await expect(shopAgain.locator('[data-species="plomykowka"]')).toHaveAttribute("aria-pressed", "true");
+  const saved = await readDoc(project, "sowiegry/profil");
+  expect(saved.academy.feathers).toBe(180);
+  expect(saved.academy.awards["przeprosiny:butik-2026-11"]).toBeGreaterThan(0);
+  expect(saved.shop.purchases["species:plomykowka"]).toBeGreaterThan(0);
+  expect(saved.shop.species.owned).toEqual(["sowka", "sniezna", "plomykowka"]);
+  expect(errors).toEqual([]);
+  expect(errorsAgain).toEqual([]);
+});
+
 test("zakładka „Sowa”: „Powtórz samouczki we wszystkich grach” — `tutorialDone: false` w dokumentach gier z samouczkiem (emulator, uwaga G1)", async ({
   page,
 }, testInfo) => {
