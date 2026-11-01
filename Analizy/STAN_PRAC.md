@@ -4,7 +4,13 @@ Podsumowanie dla właściciela: co jest zrobione, co zostało, jakie są decyzje
 z testami automatycznymi. Szczegóły techniczne: `docs/Documentation.md`, plan: `ANALIZA_3_Plan_prac.md`, uwagi
 z testów: `UWAGI_WLASCICIELA.md`.
 
-**W skrócie:** wszystkie etapy planu (E0–E10) są na `main` i na stronie. Testy automatyczne w GitHubie są zielone od
+**Aktualizacja 2026-11-01:** przyszły uwagi z testów (15 punktów: Sowie Ogrody, Łącz i Hoduj, Sowia Ucieczka, Sowa
+w Chmurach, Sowi Butik i Galeria). Diagnoza, plan prac i wdrożeń (etapy P0–P8) oraz pytania do właściciela:
+[`ANALIZA_4_Uwagi_z_testow_poprawki_i_rozbudowa.md`](ANALIZA_4_Uwagi_z_testow_poprawki_i_rozbudowa.md); uwagi
+w tabeli „Uwagi z testów — 2026-11-01” w `UWAGI_WLASCICIELA.md`. Najpilniejszy jest błąd zapisu zakupów w Sowim
+Butiku (G3, etap P1). Kod gier jeszcze bez zmian — prace ruszą po odpowiedziach na pytania z rozdziału 6 analizy.
+
+**W skrócie (stan z 2026-10-06):** wszystkie etapy planu (E0–E10) są na `main` i na stronie. Testy automatyczne w GitHubie są zielone od
 commita b4fae30 (5 października wieczorem). Od 6 października testujesz gry i wersję demo — uwagi zgłosisz w nowym
 oknie. Do tego czasu w kodzie gier nic się nie zmienia; 6 października doszły tylko poprawki dokumentacji i usunięcie
 jednego przestarzałego pliku testowego (punkt 1.1).

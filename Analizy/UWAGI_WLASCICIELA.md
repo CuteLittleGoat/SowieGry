@@ -4,6 +4,9 @@ Zbierane od 2026-10-04. **Zasada:** uwagi tylko zapisujemy — kod zmieniamy dop
 testy. Wtedy poprawki małymi commitami (każdy z zielonym `npm test`), a przy każdej uwadze stan: ⏳ czeka → ✅ zrobione
 (z commitem).
 
+**Druga runda uwag (2026-11-01)** — po wdrożeniu E0–E10: tabela [„Uwagi z testów — 2026-11-01”](#uwagi-z-testów--2026-11-01)
+na końcu pliku; diagnoza, plan prac i pytania: [`ANALIZA_4_Uwagi_z_testow_poprawki_i_rozbudowa.md`](ANALIZA_4_Uwagi_z_testow_poprawki_i_rozbudowa.md).
+
 Wersje do sprawdzenia (menu → „Wypróbuj nową wersję: …”):
 
 - Sowie Tory — https://cutelittlegoat.github.io/SowieGry/SowieTory/
@@ -55,3 +58,27 @@ Wersje do sprawdzenia (menu → „Wypróbuj nową wersję: …”):
 | # | Uwaga właściciela (dosłownie) | Do zrobienia | Stan |
 |---|---|---|---|
 | L1 | „W Sowie Ogrody oraz Łącz i Hoduj nie ma audio.” | Prototyp (krok 8.0) nie ma jeszcze żadnego dźwięku — w planie muzyka i dźwięki są w kroku 8.3. Dodać wcześniej: efekty (podniesienie, upuszczenie, połączenie — wyższy ton na wyższym poziomie, Złota Monstera, nasionko z doniczki, kompost, pełne półki) i spokojną muzykę szklarni, przez Sowi Silnik (`shared/engine/audio.js`, `scripts/make-audio.mjs`, budżet < 800 KB), z ustawieniami dźwięku z menu. | ✅ motyw szklarni `szklarnia` (76 BPM, G-dur, łagodna sinusoida — `scripts/make-audio.mjs`) i 6 efektów z istniejącego zestawu: podniesienie, odstawienie, połączenie (wyższy ton na wyższym poziomie, fanfara przy Złotej Monsterze), nasionko z doniczki, kompost, pusta doniczka / pełne półki; głośność z ustawień menu; test budżetu (< 800 KB) i e2e (motyw zamówiony) |
+
+## Uwagi z testów — 2026-11-01
+
+Druga runda uwag (po wdrożeniu E0–E10). Diagnoza, propozycje, plan prac i wdrożeń (etapy P0–P8) oraz pytania do
+właściciela: [`ANALIZA_4_Uwagi_z_testow_poprawki_i_rozbudowa.md`](ANALIZA_4_Uwagi_z_testow_poprawki_i_rozbudowa.md).
+Kod zmieniamy po odpowiedziach na pytania z rozdziału 6 analizy.
+
+| # | Gra | Uwaga (dosłownie) | Do zrobienia | Stan |
+|---|---|---|---|---|
+| O2 | Sowie Ogrody | „więcej roślinek” | 8 roślin z własnymi kształtami w nowych rozdziałach (Analiza 4, 3.2) | ⏳ etap P4 |
+| O3 | Sowie Ogrody | „Więcej plansz” | rozdziały 7–10 z własnymi tłami (Analiza 4, 3.2) | ⏳ etap P4 |
+| O4 | Sowie Ogrody | „Przewijanie w dół nie pokazuje wszystkich roślinek i ich cen” | okno listy ma tylko 1,4–2,9 karty; zwarte karty, „Rozwiń listę”, ceny na ×10 i max, rośliny kolejnych rozdziałów (Analiza 4, 3.2) | ⏳ etap P3 |
+| O5 | Sowie Ogrody | „Przy dużych liczbach nie pokazuje się 0 (np. 150mln a jest napisane 15mln)” | błąd w `formatNumber` (obcina zera z końca liczby) (Analiza 4, 3.2) | ⏳ etap P2.1 |
+| O6 | Sowie Ogrody | „Więcej ulepszeń” | nawozy gatunków, ulepszenia nowych rozdziałów, 4. gałąź drzewka (Analiza 4, 3.2) | ⏳ etap P4 |
+| O7 | Sowie Ogrody | „Po zakończeniu jest tylko jedno tło, to ostatnie” | wybór tła w Kolekcji i tło „podróży” w cyklu (Analiza 4, 3.2) | ⏳ etap P3 |
+| L2 | Łącz i Hoduj | „Więcej typów roślinek” | 4 nowe łańcuchy i hybrydy (Analiza 4, 3.3) | ⏳ etap P5 |
+| L3 | Łącz i Hoduj | „Żeby było więcej poziomów roślinki” | poziomy 6–7 ponad złotym (Analiza 4, 3.3) | ⏳ etap P5 |
+| L4 | Łącz i Hoduj | „Podpowiedzi się nie przewijają na ekranie i nie widać całości” | pasek podpowiedzi w jednej linijce ucina tekst; dwa wiersze i krótsze teksty (Analiza 4, 3.3) | ⏳ etap P2.2 |
+| L5 | Łącz i Hoduj | „Więcej rozwinięć” | pomieszczenia 11–16 i „Kram ogrodnika” za liście (Analiza 4, 3.3) | ⏳ etap P5 |
+| U1 | Sowia Ucieczka | „Poziom z humbakiem jest za często i pojawia się nawet kilkanaście razy na jedną mapę” | Plusk-o-metr: więcej liści, rzadsze bąbelki, przerwa po rejsie (Analiza 4, 3.4) | ⏳ etap P2.3 (decyzja) |
+| C2 | Sowa w Chmurach | „Coś wyżej niż kosmos bo na koniec się już tło nie zmienia (może Immaterium z uniwersum Warhammer 40k?)” | Mgławica i własne „Immaterium”, potem kolejne odcienie (Analiza 4, 3.5) | ⏳ etap P6 |
+| G3 | Ogólne | „Działa tylko jeden kolor sowy. Kupiłam kilka i cofało zakupy oraz automatycznie zmienia mi na białą sufke jak mam kupione inne kolory” | błąd zapisu Butiku (zapis po 30 s, wyjście do gry bez czekania, odświeżenie z serwera, tablice zapisywane w całości) (Analiza 4, 3.1) | ⏳ etap P1 (najpilniejsze) |
+| G4 | Ogólne | „Nowe zdjęcia sówek w galerii.” | 10 nowych zdjęć z wymaganiami z nowych treści (Analiza 4, 3.6) | ⏳ etap P7 |
+| G5 | Ogólne | „W galerii sufek są dwie takie same - z zoomem i bez zooma” | zdjęcia nr 1 i 2 to ta sama fotografia; nowa fotografia pod `owl-02` (Analiza 4, 3.6) | ⏳ etap P2.4 |
