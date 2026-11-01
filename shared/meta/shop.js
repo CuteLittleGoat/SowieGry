@@ -190,13 +190,13 @@ function changed() {
   globalThis.dispatchEvent?.(new CustomEvent("sowie:shop-changed"));
 }
 
-// Przeprosiny za błąd zapisu zakupów (uwaga G3, 2026-11-01): profil, w którym przed poprawką (`before`) kupiono
-// gatunek sowy, dostaje raz `feathers` piórek. Nagroda Akademii o stałym identyfikatorze — Akademia daje ją tylko raz,
-// a klucz bez daty dnia nie jest przycinany (`trimAwards`).
+// Przeprosiny za błąd zapisu zakupów (uwaga G3, 2026-11-01): profil, w którym przed wdrożeniem poprawki (`before` —
+// commit c38cbef na stronie o 18:34 UTC) kupiono gatunek sowy, dostaje raz `feathers` piórek. Nagroda Akademii o stałym
+// identyfikatorze — Akademia daje ją tylko raz, a klucz bez daty dnia nie jest przycinany (`trimAwards`).
 export const APOLOGY = Object.freeze({
   id: "przeprosiny:butik-2026-11",
   feathers: 50,
-  before: Date.UTC(2026, 10, 1, 13, 0),
+  before: Date.UTC(2026, 10, 1, 18, 35),
   title: "Przeprosiny za Sowi Butik",
   detail: "Zakupy w Butiku zapisują się już od razu",
 });
