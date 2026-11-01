@@ -303,6 +303,25 @@ test("liczby i czas po polsku", () => {
     "4 bln",
   ]);
   assert.deepEqual([35, 250, 600, 3 * 3600 + 5 * 60].map(formatTime), ["35 s", "4 min 10 s", "10 min", "3 h 05 min"]);
+  // Uwaga O5: zera części całkowitej zostają (dawniej 150 mln → „15 mln”), zaokrąglenie przechodzi na następny
+  // przyrostek (999 600 → „1 mln”, a nie „1 tys.”), dalsze przyrostki dla nowych rozdziałów.
+  assert.deepEqual(
+    [100_000, 120_000, 150e6, 200e6, 999_600, 999_999, 9.999, 10e9, 105e9, 1e24, 2.5e27, -150e6].map(formatNumber),
+    [
+      "100 tys.",
+      "120 tys.",
+      "150 mln",
+      "200 mln",
+      "1 mln",
+      "1 mln",
+      "10",
+      "10 mld",
+      "105 mld",
+      "1 kwadryl.",
+      "2,5 kwadryld",
+      "−150 mln",
+    ],
+  );
 });
 
 // Generator liczb z ziarnem (powtarzalny symulator): mulberry32.

@@ -16,7 +16,9 @@ zaczyna od parapetu, a kolejne rozdziały z celami prowadzą przez Balkon, Dzia�
   mówi, co zostało, i ile liści (oraz nasion) dostajesz za ulepszenia, których w nowej wersji nie ma. Postęp
   z wersji próbnej (przycisk „Wypróbuj nową wersję”) też zostaje — bez dodatkowego okna.
 - **Liście:** stukaj w ogród — każde stuknięcie daje liście (napis „+N” w miejscu palca). U góry widać liczbę liści
-  i ile przybywa na sekundę.
+  i ile przybywa na sekundę. Duże liczby są skracane: „tys.” (tysiąc), „mln” (milion), „mld” (miliard), „bln”
+  (bilion), „bld” (biliard), „tryl.” (trylion), „tryld” (tryliard), „kwadryl.” (kwadrylion) i dalej — np. „150 mln”
+  to 150 milionów.
 - **Cel rozdziału:** pod licznikiem jest bieżący rozdział (np. „Rozdział 1/6: Parapet”) i jego cele z postępem.
   Po wykonaniu wszystkich otwiera się kolejny rozdział z nowymi roślinami i ulepszeniami.
 - **Panel na dole** (na komputerze i telefonie poziomo — po prawej) ma cztery zakładki:

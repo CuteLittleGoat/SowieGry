@@ -130,7 +130,27 @@ export function prestigeSeeds(state) {
   return Math.max(PRESTIGE.min, Math.floor(base * (1 + prestigeLevel(state, "pamiecNasion") * 0.1)));
 }
 
-const SUFFIXES = ["", " tys.", " mln", " mld", " bln", " bld", " tryl.", " tryld"];
+// Przyrostki co 1000 (polska długa skala): tysiąc, milion, miliard, bilion, biliard, trylion, tryliard, kwadrylion…
+export const SUFFIXES = Object.freeze([
+  "",
+  " tys.",
+  " mln",
+  " mld",
+  " bln",
+  " bld",
+  " tryl.",
+  " tryld",
+  " kwadryl.",
+  " kwadryld",
+  " kwintyl.",
+  " kwintyld",
+  " sekstyl.",
+  " sekstyld",
+]);
+
+// Zaokrąglenie do `digits` miejsc po przecinku jako tekst z przecinkiem; zera po przecinku znikają („2,50” → „2,5”),
+// a zera części całkowitej zostają („150” — uwaga O5: dawniej wyrażenie /\.?0+$/ zamieniało 150 mln na „15 mln”).
+const decimal = (amount, digits) => String(Number(amount.toFixed(digits))).replace(".", ",");
 
 /** Liczba po polsku: do 1000 — całe (poniżej 10 z jednym miejscem po przecinku), wyżej z przyrostkiem. */
 export function formatNumber(value) {
@@ -138,8 +158,8 @@ export function formatNumber(value) {
   const sign = value < 0 ? "−" : "";
   let amount = Math.abs(value);
   if (amount < 1000) {
-    const text = amount < 10 && amount % 1 ? amount.toFixed(1) : String(Math.floor(amount));
-    return sign + text.replace(".", ",");
+    const rounded = amount < 10 && amount % 1 ? Number(amount.toFixed(1)) : Math.floor(amount);
+    return sign + decimal(rounded, 1);
   }
   let index = 0;
   while (amount >= 1000 && index < SUFFIXES.length - 1) {
@@ -147,11 +167,13 @@ export function formatNumber(value) {
     index += 1;
   }
   const digits = amount >= 100 ? 0 : amount >= 10 ? 1 : 2;
-  const text = amount
-    .toFixed(digits)
-    .replace(/\.?0+$/, "")
-    .replace(".", ",");
-  return sign + text + SUFFIXES[index];
+  // Po zaokrągleniu 999,6 tys. to już „1 mln”, a nie „1000 tys.”.
+  if (Number(amount.toFixed(digits)) >= 1000 && index < SUFFIXES.length - 1) {
+    amount /= 1000;
+    index += 1;
+    return sign + decimal(amount, 2) + SUFFIXES[index];
+  }
+  return sign + decimal(amount, digits) + SUFFIXES[index];
 }
 
 /** Czas po polsku: „2 h 05 min”, „4 min 10 s”, „10 min” (pełne minuty), „35 s”. */
