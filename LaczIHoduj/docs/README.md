@@ -66,6 +66,9 @@ sąsiadka, z cyfrą poziomu; **„×2”** w rogu znaczy, że chce dwie takie ro
   przeciągniesz inną roślinę, niż chce sąsiadka, roślina wraca na półkę, a podpowiedź mówi, o co prosi.
 - Stuknięcie karty, której jeszcze nie da się oddać, pokazuje w podpowiedzi, czego potrzeba.
 
+**Podpowiedź** nad planszą ma dwie linijki, więc widać ją w całości. Gdyby jakaś była jeszcze dłuższa (kończy się
+wtedy „…”), stuknij ją — cały tekst pojawi się w dymku.
+
 Za zamówienie dostajesz **liście** i **gwiazdki odnowy ⭐** (licznik pod liśćmi): im wyższy poziom rośliny, tym więcej
 (kiełek — 4 liście i 1 gwiazdka, roślina 5. poziomu — 45 liści i 3 gwiazdki; za drugą sztukę dodatkowa gwiazdka).
 Sąsiadka od razu prosi o coś nowego. Z czasem zamówienia są trudniejsze (wyższe poziomy, nowe rośliny z doniczki),

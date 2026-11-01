@@ -560,6 +560,41 @@ test.describe("Łącz i Hoduj — najmniejszy telefon (320 × 568)", () => {
     }
     expect(errors).toEqual([]);
   });
+
+  test("podpowiedź w dwóch wierszach: najdłuższe widać w całości, plansza się nie zmniejsza (uwaga L4)", async ({
+    page,
+  }) => {
+    const errors = watchErrors(page);
+    await openGame(page);
+    const setHint = (text) =>
+      page.evaluate((value) => {
+        const node = document.querySelector("[data-hint]");
+        node.textContent = value;
+        return { clipped: node.scrollHeight > node.clientHeight + 1, height: node.getBoundingClientRect().height };
+      }, text);
+    const short = await setHint("Kiełek!");
+    // Najdłuższe podpowiedzi gry (z najdłuższymi imionami i nazwami) — w jednym wierszu były ucięte.
+    for (const text of [
+      "Dryń! Karteczka Pracu na półce — połącz rośliny obok albo stuknij ją 3 razy",
+      "Kózka Dżoker: przeciągnij ją na roślinę (albo roślinę na nią) — roślina urośnie",
+      "Płomykówka Pola prosi: Alopaproć Wachlarzowa, nie Monpilea Przytulna",
+      "Kózka Zjadaczka czeka — w jej rzędzie i kolumnie nie ma karteczek",
+      "Skrzynia otwarta! W środku Kózka Sprężynka. +5 liści, +1 ⭐",
+    ]) {
+      const result = await setHint(text);
+      expect(result.clipped, text).toBe(false);
+      expect(result.height, "stała wysokość paska — plansza nie skacze").toBeCloseTo(short.height, 0);
+    }
+    await page.evaluate(() => window.dispatchEvent(new Event("resize")));
+    expect(await game(page, "cellSize")).toBeGreaterThanOrEqual(44);
+    // Tekst dłuższy niż dwa wiersze — wielokropek, a stuknięcie pokazuje całość w komunikacie.
+    const long =
+      "Pani Puszczykowa prosi: Alopaproć Wachlarzowa, Monpilea Przytulna, Złotolistka i jeszcze dwie Złote Monstery z doniczki";
+    expect((await setHint(long)).clipped).toBe(true);
+    await page.locator("[data-hint]").click();
+    await expect(page.locator(".sowie-toast-chip", { hasText: "jeszcze dwie Złote Monstery" })).toBeVisible();
+    expect(errors).toEqual([]);
+  });
 });
 
 for (const [width, height] of [

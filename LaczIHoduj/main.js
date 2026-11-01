@@ -136,6 +136,12 @@ function hint(text) {
   if (hintNode.textContent !== text) hintNode.textContent = text;
 }
 
+// Podpowiedź ucięta po dwóch wierszach (bardzo długie nazwy) — stuknięcie pokazuje cały tekst w komunikacie (uwaga L4).
+const hintClipped = () => hintNode.scrollHeight > hintNode.clientHeight + 1;
+hintNode.addEventListener("click", () => {
+  if (hintClipped()) toasts.show(hintNode.textContent, { kind: "info", key: "podpowiedz", priority: 2 });
+});
+
 // Zamówienie słowami: „2 × Kiełek” albo „Monpilea Przytulna”.
 const orderText = (order) => `${order.count > 1 ? `${order.count} × ` : ""}${itemName(order)}`;
 

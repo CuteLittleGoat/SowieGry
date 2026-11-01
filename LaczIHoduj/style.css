@@ -171,14 +171,20 @@ body {
 }
 
 /* Podpowiedź zawsze w jednym wierszu (dłuższa kończy się wielokropkiem) — plansza nie skacze. */
+/* Podpowiedź: zawsze dwa wiersze (stała wysokość — plansza nie skacze, gdy tekst się zmienia); dłuższy tekst kończy się
+   wielokropkiem, a stuknięcie pokazuje całość w komunikacie (uwaga L4 — w jednym wierszu ucinało się 10 z 25 podpowiedzi
+   na telefonie 320 px; plansza ma tam dalej pola 45 px). */
 .lacz-hint {
+  display: -webkit-box;
+  min-height: 2.6em;
   margin: 0;
   overflow: hidden;
   font-size: 14px;
   line-height: 1.3;
   text-align: center;
-  white-space: nowrap;
-  text-overflow: ellipsis;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
 }
 
 /* Gniazdo planszy: zajmuje resztę wysokości; płótno (rozmiar ustawia render.js — siatka z ramką) stoi na środku
@@ -294,8 +300,6 @@ body {
 
   .lacz-hint {
     grid-area: hint;
-    min-height: 2.6em;
-    white-space: normal;
   }
 
   .lacz-board {
