@@ -78,6 +78,39 @@ test("Sowa w Chmurach: strefa Blok po 150 m, upadek — kózka ratuje sowę (−
   expect(errors).toEqual([]);
 });
 
+test("Sowa w Chmurach (uwaga C2): ponad Kosmosem Mgławica, krainy z mitologii świata i Sowie Zaświaty", async ({
+  page,
+}) => {
+  const errors = watchErrors(page);
+  await openGame(page);
+  await page.locator("[data-start]").click();
+  // Logika wstrzymana (`hold`) — przeskok o kolejne strefy hakiem `warp` (metry w górę od bieżącej wysokości).
+  await page.evaluate(() => {
+    window.SowaWChmurach.hold(true);
+    window.SowaWChmurach.warp(1950);
+    window.SowaWChmurach.advance(0.1);
+  });
+  await expect(page.locator(".chmury-height")).toContainText("m · Mgławica");
+  await expect(page.locator(".sowie-toast-chip", { hasText: "Strefa: Mgławica!" })).toBeVisible();
+  for (const name of ["Tęczowy Most", "Złota Pustynia", "Olimp"]) {
+    await page.evaluate(() => {
+      window.SowaWChmurach.warp(400);
+      window.SowaWChmurach.advance(0.1);
+    });
+    await expect(page.locator(".chmury-height")).toContainText(`m · ${name}`);
+  }
+  await page.evaluate(() => {
+    window.SowaWChmurach.warp(2000);
+    window.SowaWChmurach.advance(0.1);
+  });
+  await expect(page.locator(".chmury-height")).toContainText("m · Sowie Zaświaty");
+  const zone = await page.evaluate(() => window.SowaWChmurach.state().zoneIndex);
+  expect(zone).toBe(13);
+  // Plansza rysuje się w nowych krainach (płótno ma piksele, bez błędów strony).
+  await page.waitForTimeout(300);
+  expect(errors).toEqual([]);
+});
+
 test("Sowa w Chmurach: dymek Pracu zdeptany z góry (+50), sterowiec Amic trafia (−1 życie)", async ({ page }) => {
   const errors = watchErrors(page);
   await openGame(page);

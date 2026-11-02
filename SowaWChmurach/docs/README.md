@@ -14,7 +14,16 @@ Zaczynasz w ogródku, a potem lecisz przez kolejne strefy:
 2. **Blok** (150–400 m) — ściany bloku z oknami i balkonami,
 3. **Chmury** (400–800 m) — wielkie, miękkie chmury,
 4. **Zorza** (800–1500 m) — kolorowe wstęgi zorzy na nocnym niebie,
-5. **Kosmos** (od 1500 m) — planety i gwiazdozbiory w kształcie humbaków.
+5. **Kosmos** (1500–1900 m) — planety i gwiazdozbiory w kształcie humbaków,
+6. **Mgławica** (od 1900 m) — kolorowe obłoki gazu i gwiazdy,
+7. **Tęczowy Most** (od 2300 m) — kraina z mitów nordyckich: zorza, tęczowy most i drzewo świata,
+8. **Złota Pustynia** (od 2700 m) — kraina egipska: piramidy na obłokach i łódź słońca,
+9. **Olimp** (od 3100 m) — kraina grecka: świątynia z kolumnami na obłokach i złote liście laurowe,
+10. **Kraina Torii** (od 3500 m) — kraina japońska: brama torii, góra ze śnieżnym szczytem, lampiony i płatki sakury,
+11. **Słoneczne Schody** (od 3900 m) — kraina aztecka: tarcza słońca, schodkowa piramida i płatki nagietków,
+12. **Smocze Chmury** (od 4300 m) — kraina chińska: smok z chmur, pagoda i czerwone lampiony,
+13. **Lotosowa Góra** (od 4700 m) — kraina hinduska: mandala, góra ze złotym szczytem, lotosy i lampki,
+14. **Sowie Zaświaty** (od 5100 m) — trochę strasznie, trochę śmiesznie: księżyc, nietoperze, duszki-sówki i świeczki.
 
 Pasek pod przyciskiem pauzy pokazuje wysokość, nazwę strefy i ile zostało do następnej.
 

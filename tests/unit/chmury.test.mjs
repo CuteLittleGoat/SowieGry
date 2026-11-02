@@ -361,7 +361,7 @@ test("bieg: krucha gałązka łamie się pod sową, chmurka znika po odbiciu", (
   assert.ok(owl.vy > 0);
 });
 
-test("strefy: Ogródek → Blok (150 m) → Chmury (400 m) → Zorza (800 m) → Kosmos (1500 m)", () => {
+test("strefy: Ogródek → Blok (150 m) → Chmury (400 m) → Zorza (800 m) → Kosmos (1500 m) → krainy co 400 m (uwaga C2)", () => {
   assert.deepEqual(
     ZONES.map((zone) => [zone.id, zone.from]),
     [
@@ -370,11 +370,24 @@ test("strefy: Ogródek → Blok (150 m) → Chmury (400 m) → Zorza (800 m) →
       ["chmury", 400],
       ["zorza", 800],
       ["kosmos", 1500],
+      ["mglawica", 1900],
+      ["nordycka", 2300],
+      ["egipska", 2700],
+      ["grecka", 3100],
+      ["japonska", 3500],
+      ["aztecka", 3900],
+      ["chinska", 4300],
+      ["hinduska", 4700],
+      ["zaswiaty", 5100],
     ],
   );
   assert.equal(zoneAt(149), 0);
   assert.equal(zoneAt(150), 1);
-  assert.equal(zoneAt(2000), 4);
+  assert.equal(zoneAt(1899), 4);
+  assert.equal(zoneAt(2000), 5);
+  assert.equal(ZONES[zoneAt(3400)].name, "Olimp", "rekord właścicielki: 3400 m");
+  assert.equal(ZONES[zoneAt(5100)].name, "Sowie Zaświaty");
+  assert.equal(zoneAt(1e6), ZONES.length - 1, "dalej zostają Sowie Zaświaty");
 });
 
 test("autopilot wspina się na 1600 m bez ratunku na każdym poziomie: strefy, balkony, pułapki ominięte", () => {

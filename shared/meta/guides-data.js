@@ -201,14 +201,14 @@ export const GUIDES = Object.freeze({
     id: "jumper",
     title: "Sowa w Chmurach",
     summary:
-      "Sowa wspina się coraz wyżej — sama odbija się od gałązek, a Ty prowadzisz ją w bok. Od ogródka przez blok i chmury aż do zorzy i kosmosu.",
+      "Sowa wspina się coraz wyżej — sama odbija się od gałązek, a Ty prowadzisz ją w bok. Od ogródka przez blok, chmury, zorzę i kosmos aż po krainy z mitologii świata i Sowie Zaświaty.",
     cards: [
       {
         id: "cel",
         title: "Cel gry",
         text: "Leć jak najwyżej: 1 pkt za każdy metr. Liście monstery i idealne lądowania podbijają combo (do ×5).",
         sprite: "sowa-skok",
-        tip: "Pięć stref: Ogródek, Blok (150 m), Chmury (400 m), Zorza (800 m), Kosmos (1500 m).",
+        tip: "Strefy: Ogródek, Blok (150 m), Chmury (400 m), Zorza (800 m), Kosmos (1500 m), a od 1900 m co 400 m nowa kraina — aż do Sowich Zaświatów (5100 m).",
       },
       {
         id: "sterowanie",

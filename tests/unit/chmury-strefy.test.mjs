@@ -1,4 +1,5 @@
-// Sowa w Chmurach (Analiza 3, E6d): oprawa stref (udziały stref zgodne z kolorami nieba, rysowanie każdej strefy)
+// Sowa w Chmurach (Analiza 3, E6d; od uwagi C2 także krainy ponad Kosmosem): oprawa stref (udziały stref zgodne
+// z kolorami nieba, rysowanie każdej strefy)
 // i przechylanie telefonu (kąt w bok według obrotu ekranu, martwa strefa, nasycenie, ruch sowy, pierwszeństwo
 // przeciągania i klawiatury).
 import assert from "node:assert/strict";
@@ -8,6 +9,7 @@ import { createRun } from "../../SowaWChmurach/game.js";
 import { createOwlBody, stepOwl, steerBy, wrapDelta } from "../../SowaWChmurach/physics.js";
 import { mix, skyAt } from "../../SowaWChmurach/render.js";
 import { BLEND, createScenery, zoneWeights } from "../../SowaWChmurach/scenery.js";
+import { REALMS } from "../../SowaWChmurach/realms.js";
 import { sideAngle, tiltSpeed } from "../../SowaWChmurach/tilt.js";
 
 const STEP = 1 / 120;
@@ -21,6 +23,7 @@ function fakeContext() {
     globalAlpha: 1,
     calls,
     createLinearGradient: () => ({ addColorStop() {} }),
+    createRadialGradient: () => ({ addColorStop() {} }),
     fill: () => (calls.fill += 1),
     stroke: () => (calls.stroke += 1),
     fillRect: () => (calls.fillRect += 1),
@@ -36,13 +39,15 @@ function fakeContext() {
 
 test("strefy: udziały w oprawie sumują się do 1 i przechodzą płynnie w ostatnich 60 m — jak kolory nieba", () => {
   assert.equal(BLEND, 60);
-  assert.deepEqual(zoneWeights(0), [1, 0, 0, 0, 0]);
-  assert.deepEqual(zoneWeights(ZONES[1].from), [0, 1, 0, 0, 0]);
-  assert.deepEqual(zoneWeights(5000), [0, 0, 0, 0, 1]);
+  const only = (index) => ZONES.map((zone, position) => (position === index ? 1 : 0));
+  assert.deepEqual(zoneWeights(0), only(0));
+  assert.deepEqual(zoneWeights(ZONES[1].from), only(1));
+  assert.deepEqual(zoneWeights(2000), only(5), "Mgławica");
+  assert.deepEqual(zoneWeights(9000), only(ZONES.length - 1), "Sowie Zaświaty bez końca");
   const half = zoneWeights(ZONES[2].from - BLEND / 2);
   near(half[1], 0.5, 1e-9, "połowa przejścia Blok → Chmury");
   near(half[2], 0.5, 1e-9, "połowa przejścia Blok → Chmury");
-  for (let height = 0; height <= 2200; height += 7) {
+  for (let height = 0; height <= 5600; height += 7) {
     const weights = zoneWeights(height);
     near(
       weights.reduce((sum, value) => sum + value, 0),
@@ -75,6 +80,20 @@ test("oprawa: każda strefa coś rysuje, przezroczystość wraca do 1, także w 
       assert.equal(context.globalAlpha, 1, `${zone.id}: przezroczystość`);
     }
   }
+});
+
+test("krainy ponad Kosmosem (uwaga C2): każda ma oprawę z realms.js, własne niebo i nazwę; co 400 m od 1900 m", () => {
+  const above = ZONES.slice(ZONES.findIndex((zone) => zone.id === "kosmos") + 1);
+  assert.equal(above.length, 9);
+  assert.equal(new Set(ZONES.map((zone) => zone.id)).size, ZONES.length);
+  assert.equal(new Set(ZONES.map((zone) => zone.name)).size, ZONES.length);
+  above.forEach((zone, index) => {
+    assert.equal(zone.from, 1900 + index * 400, zone.id);
+    assert.equal(typeof REALMS[zone.id], "function", zone.id);
+    for (const color of zone.sky) assert.match(color, /^#[0-9a-f]{6}$/, zone.id);
+    assert.ok(zone.name.length <= 16, `${zone.id}: nazwa mieści się w pasku wysokości`);
+  });
+  assert.deepEqual(Object.keys(REALMS).sort(), above.map((zone) => zone.id).sort());
 });
 
 test("przechylanie: kąt w bok według obrotu ekranu (pion — gamma, poziom — beta ze znakiem strony)", () => {

@@ -4,6 +4,7 @@
 // (telefon poziomo, komputer) oprawa wypełnia cały ekran.
 import { COLORS } from "../shared/world/tokens.js";
 import { WORLD, ZONES } from "./config.js";
+import { REALMS } from "./realms.js";
 
 // Przejście między strefami: ostatnie `BLEND` m przed granicą (jak kolory nieba w `skyAt`).
 export const BLEND = 60;
@@ -262,12 +263,22 @@ export function createScenery({ context }) {
      */
     draw(layout, bottom, time) {
       const weights = zoneWeights(Math.max(0, bottom + WORLD.height / 2));
-      const [ogrodek, blok, chmury, zorza, kosmos] = weights;
-      if (ogrodek > 0) garden(layout, bottom, ogrodek);
-      if (blok > 0) block(layout, bottom, blok);
-      if (chmury > 0) bigClouds(layout, bottom, chmury);
-      if (zorza > 0) aurora(layout, bottom, time, zorza);
-      if (kosmos > 0) space(layout, bottom, kosmos);
+      // Oprawa każdej strefy według identyfikatora (od uwagi C2 — także krainy ponad Kosmosem z realms.js).
+      ZONES.forEach((zone, index) => {
+        const alpha = weights[index];
+        if (alpha <= 0) return;
+        if (zone.id === "ogrodek") garden(layout, bottom, alpha);
+        else if (zone.id === "blok") block(layout, bottom, alpha);
+        else if (zone.id === "chmury") bigClouds(layout, bottom, alpha);
+        else if (zone.id === "zorza") aurora(layout, bottom, time, alpha);
+        else if (zone.id === "kosmos") space(layout, bottom, alpha);
+        else if (REALMS[zone.id]) {
+          // Krainy ustawiają też np. zakończenia linii — po rysowaniu stan płótna wraca.
+          context.save();
+          REALMS[zone.id](context, layout, bottom, time, alpha);
+          context.restore();
+        }
+      });
       context.globalAlpha = 1;
       return weights;
     },

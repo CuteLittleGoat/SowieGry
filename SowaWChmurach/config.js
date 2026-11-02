@@ -268,13 +268,24 @@ export const OCEAN = Object.freeze({
 // do prędkości z przechyłu z szybkością `response` (1/s).
 export const TILT = Object.freeze({ dead: 3, full: 25, speed: 9, response: 10 });
 
-// Strefy wysokości (Analiza 2, rozdz. 3.3): kolory nieba (góra, dół) i nazwy.
+// Strefy wysokości (Analiza 2, rozdz. 3.3): kolory nieba (góra, dół) i nazwy. Od uwagi C2 (2026-11-01) ponad
+// Kosmosem co 400 m: Mgławica, siedem krain z mitologii świata (krajobrazy i symbole, bez wizerunków bóstw — realms.js)
+// i straszno-zabawne Sowie Zaświaty. Identyfikatory na zawsze (podsumowanie lotu i rekordy zapisują `id`).
 export const ZONES = Object.freeze([
   Object.freeze({ id: "ogrodek", name: "Ogródek", from: 0, sky: ["#bfe9ff", "#fff6e3"] }),
   Object.freeze({ id: "blok", name: "Blok", from: 150, sky: ["#a8dcf5", "#ffe1c4"] }),
   Object.freeze({ id: "chmury", name: "Chmury", from: 400, sky: ["#8fcff2", "#dff5fb"] }),
   Object.freeze({ id: "zorza", name: "Zorza", from: 800, sky: ["#2d3b6e", "#4f9f8f"] }),
   Object.freeze({ id: "kosmos", name: "Kosmos", from: 1500, sky: ["#14122b", "#3b2f4a"] }),
+  Object.freeze({ id: "mglawica", name: "Mgławica", from: 1900, sky: ["#24123f", "#6b3b8f"] }),
+  Object.freeze({ id: "nordycka", name: "Tęczowy Most", from: 2300, sky: ["#0d2238", "#2c6a68"] }),
+  Object.freeze({ id: "egipska", name: "Złota Pustynia", from: 2700, sky: ["#1d1946", "#c98a3a"] }),
+  Object.freeze({ id: "grecka", name: "Olimp", from: 3100, sky: ["#78bde8", "#f6efdf"] }),
+  Object.freeze({ id: "japonska", name: "Kraina Torii", from: 3500, sky: ["#f2b8cf", "#fff0e4"] }),
+  Object.freeze({ id: "aztecka", name: "Słoneczne Schody", from: 3900, sky: ["#ff8f3a", "#ffe08a"] }),
+  Object.freeze({ id: "chinska", name: "Smocze Chmury", from: 4300, sky: ["#7d1a29", "#f0ac48"] }),
+  Object.freeze({ id: "hinduska", name: "Lotosowa Góra", from: 4700, sky: ["#3a1d6e", "#ff9fb2"] }),
+  Object.freeze({ id: "zaswiaty", name: "Sowie Zaświaty", from: 5100, sky: ["#0b0a1a", "#2b1840"] }),
 ]);
 
 // Efekty wczytywane po pierwszym dotknięciu (tylko używane przez grę).
