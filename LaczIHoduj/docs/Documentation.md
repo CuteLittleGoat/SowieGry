@@ -109,24 +109,24 @@ Na 320 × 568: nagłówek 44 px (Menu, trzy karty zamówień po 72 × 44 px, por
 
 `CHAINS` (`{ name, color, levels, hybrid? }`; `color` — zieleń rysunku, `levels` — nazwy poziomów od 1):
 
-| Klucz         | `name`      | `color`   | `levels`                                                                                                                                         |
-| ------------- | ----------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `monstera`    | Monstera    | `#3fae6a` | Nasionko, Kiełek, Sadzonka, Monstera, Złota Monstera, Diamentowa Monstera, Tęczowa Monstera                                                      |
-| `pilea`       | Pilea       | `#72bd68` | Ziarenko pilei, Listek pilei, Pieniążek, Pilea, Złota Pilea, Diamentowa Pilea, Tęczowa Pilea                                                     |
-| `paproc`      | Paproć      | `#4b9e72` | Zarodnik, Pastorał, Młoda paproć, Paproć, Złota Paproć, Diamentowa Paproć, Tęczowa Paproć                                                        |
-| `kaktus`      | Kaktus      | `#5ba760` | Pestka kaktusa, Kuleczka, Kaktusik, Kaktus, Kwitnący Kaktus, Diamentowy Kaktus, Tęczowy Kaktus                                                   |
-| `monpilea`    | Monpilea    | `#68c582` | Monpilea Przytulna (`hybrid: true` — jeden poziom, nie łączy się z taką samą)                                                                    |
-| `alopaproc`   | Alopaproć   | `#3fa976` | Alopaproć Wachlarzowa (`hybrid: true`)                                                                                                           |
-| `zlotolistka` | Złotolistka | `#caa34a` | Złotolistka (`hybrid: true`)                                                                                                                     |
-| `storczyk`    | Storczyk    | `#d96faf` | Nasionko storczyka, Korzonek, Pąk storczyka, Storczyk, Złoty Storczyk, Diamentowy Storczyk, Tęczowy Storczyk (P5.2)                              |
-| `slonecznik`  | Słonecznik  | `#e8b62e` | Pestka słonecznika, Kiełek słonecznika, Młody słonecznik, Słonecznik, Złoty Słonecznik, Diamentowy Słonecznik, Tęczowy Słonecznik                |
-| `truskawka`   | Truskawka   | `#e8505b` | Nasionko truskawki, Rozetka, Kwitnąca truskawka, Truskawka, Złota Truskawka, Diamentowa Truskawka, Tęczowa Truskawka                             |
-| `lotos`       | Lotos       | `#ff9fb2` | Nasionko lotosu, Pływający listek, Pąk lotosu, Lotos, Złoty Lotos, Diamentowy Lotos, Tęczowy Lotos                                               |
+| Klucz         | `name`      | `color`   | `levels`                                                                                                                                               |
+| ------------- | ----------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `monstera`    | Monstera    | `#3fae6a` | Nasionko, Kiełek, Sadzonka, Monstera, Złota Monstera, Diamentowa Monstera, Tęczowa Monstera                                                            |
+| `pilea`       | Pilea       | `#72bd68` | Ziarenko pilei, Listek pilei, Pieniążek, Pilea, Złota Pilea, Diamentowa Pilea, Tęczowa Pilea                                                           |
+| `paproc`      | Paproć      | `#4b9e72` | Zarodnik, Pastorał, Młoda paproć, Paproć, Złota Paproć, Diamentowa Paproć, Tęczowa Paproć                                                              |
+| `kaktus`      | Kaktus      | `#5ba760` | Pestka kaktusa, Kuleczka, Kaktusik, Kaktus, Kwitnący Kaktus, Diamentowy Kaktus, Tęczowy Kaktus                                                         |
+| `monpilea`    | Monpilea    | `#68c582` | Monpilea Przytulna (`hybrid: true` — jeden poziom, nie łączy się z taką samą)                                                                          |
+| `alopaproc`   | Alopaproć   | `#3fa976` | Alopaproć Wachlarzowa (`hybrid: true`)                                                                                                                 |
+| `zlotolistka` | Złotolistka | `#caa34a` | Złotolistka (`hybrid: true`)                                                                                                                           |
+| `storczyk`    | Storczyk    | `#d96faf` | Nasionko storczyka, Korzonek, Pąk storczyka, Storczyk, Złoty Storczyk, Diamentowy Storczyk, Tęczowy Storczyk (P5.2)                                    |
+| `slonecznik`  | Słonecznik  | `#e8b62e` | Pestka słonecznika, Kiełek słonecznika, Młody słonecznik, Słonecznik, Złoty Słonecznik, Diamentowy Słonecznik, Tęczowy Słonecznik                      |
+| `truskawka`   | Truskawka   | `#e8505b` | Nasionko truskawki, Rozetka, Kwitnąca truskawka, Truskawka, Złota Truskawka, Diamentowa Truskawka, Tęczowa Truskawka                                   |
+| `lotos`       | Lotos       | `#ff9fb2` | Nasionko lotosu, Pływający listek, Pąk lotosu, Lotos, Złoty Lotos, Diamentowy Lotos, Tęczowy Lotos                                                     |
 | `baobab`      | Baobab      | `#b07a4a` | Nasionko baobabu, Kiełek baobabu, Młody baobab, Baobab, Złoty Baobab, Diamentowy Baobab, Tęczowy Baobab (odpowiedź 5b z Analizy 4: „Chcę baobaba też”) |
-| `storslonek`  | Storsłonek  | `#e889c8` | Storsłonek Promienny (`hybrid: true`)                                                                                                            |
-| `truslotos`   | Truslotos   | `#ff8fa0` | Truslotos Słodki (`hybrid: true`)                                                                                                                |
-| `baobonstera` | Baobonstera | `#7aa35a` | Baobonstera Olbrzymia (`hybrid: true`)                                                                                                           |
-| `teczokwiat`  | Tęczokwiat  | `#b98be8` | Tęczokwiat (`hybrid: true`)                                                                                                                      |
+| `storslonek`  | Storsłonek  | `#e889c8` | Storsłonek Promienny (`hybrid: true`)                                                                                                                  |
+| `truslotos`   | Truslotos   | `#ff8fa0` | Truslotos Słodki (`hybrid: true`)                                                                                                                      |
+| `baobonstera` | Baobonstera | `#7aa35a` | Baobonstera Olbrzymia (`hybrid: true`)                                                                                                                 |
+| `teczokwiat`  | Tęczokwiat  | `#b98be8` | Tęczokwiat (`hybrid: true`)                                                                                                                            |
 
 `HYBRIDS` (`{ parents, leaves, compost }`):
 
