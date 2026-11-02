@@ -1,32 +1,50 @@
-# Stan prac — 2026-10-06
+# Stan prac — 2026-11-02
 
 Podsumowanie dla właściciela: co jest zrobione, co zostało, jakie są decyzje do podjęcia i na czym polegają problemy
-z testami automatycznymi. Szczegóły techniczne: `docs/Documentation.md`, plan: `ANALIZA_3_Plan_prac.md`, uwagi
-z testów: `UWAGI_WLASCICIELA.md`.
+z testami automatycznymi. Szczegóły techniczne: `docs/Documentation.md`; plany: `ANALIZA_3_Plan_prac.md` (etapy
+E0–E10) i `ANALIZA_4_Uwagi_z_testow_poprawki_i_rozbudowa.md` (etapy P1–P8); uwagi z testów: `UWAGI_WLASCICIELA.md`;
+testy na telefonie krok po kroku: `TESTY_NA_TELEFONIE.md`.
 
-**Aktualizacja 2026-11-01:** przyszły uwagi z testów (15 punktów: Sowie Ogrody, Łącz i Hoduj, Sowia Ucieczka, Sowa
-w Chmurach, Sowi Butik i Galeria). Diagnoza, plan prac i wdrożeń (etapy P0–P8) oraz pytania do właściciela:
-[`ANALIZA_4_Uwagi_z_testow_poprawki_i_rozbudowa.md`](ANALIZA_4_Uwagi_z_testow_poprawki_i_rozbudowa.md); uwagi
-w tabeli „Uwagi z testów — 2026-11-01” w `UWAGI_WLASCICIELA.md`. Najpilniejszy jest błąd zapisu zakupów w Sowim
-Butiku (G3, etap P1). Odpowiedzi właściciela są w rozdziale 7 analizy; kolejność: P1 → P2 → P3 → P4 → P6 → P5 → P7 → P8.
-Zrobione i na stronie: **P1** Sowi Butik (zakupy i kolory się nie cofają, przeprosinowe piórka), **P2** szybkie poprawki
-(liczby w Ogrodach, podpowiedzi w Łącz i Hoduj, humbak raz na krainę, nowe zdjęcia zamiast podobnych), **P3** lista
-roślin i wybór tła w Sowich Ogrodach, **P4** — 8 nowych rozdziałów, 16 roślin, nawozy, nowe ulepszenia i gałąź
-„Słońce” w Sowich Ogrodach, **P6** — krainy ponad Kosmosem w Sowie w Chmurach (Mgławica, mitologie świata, Sowie
-Zaświaty), **P5** — Łącz i Hoduj (bezpiecznik zapisu, poziomy 6–7, Baobab i nowe rośliny, 6 pomieszczeń, Kram ogrodnika),
-**P7** — 10 nowych zdjęć w Galerii (nr 31–40, za nowe krainy, rozdziały, rośliny i pomieszczenia). Następny: **P8** —
-porządki po wdrożeniu (stan uwag, dokumentacja, testy na GitHubie). Testy dla osoby testującej na telefonie:
-[`TESTY_NA_TELEFONIE.md`](TESTY_NA_TELEFONIE.md).
+**W skrócie (2026-11-02):** wszystkie 15 uwag z testów z 1 listopada są zrobione (etapy P1–P7) i są na stronie
+(https://cutelittlegoat.github.io/SowieGry/). Teraz: Twoje testy na telefonie według
+[`TESTY_NA_TELEFONIE.md`](TESTY_NA_TELEFONIE.md) i jedno pytanie — czy usuwamy stare adresy gier (punkt 3.1).
+Testy automatyczne w GitHubie od rana 2 listopada nie mogły wystartować, bo GitHub zmienił system na swoich
+maszynach — poprawione (punkt 4.5); gry nie miały z tym nic wspólnego.
 
-**W skrócie (stan z 2026-10-06):** wszystkie etapy planu (E0–E10) są na `main` i na stronie. Testy automatyczne w GitHubie są zielone od
-commita b4fae30 (5 października wieczorem). Od 6 października testujesz gry i wersję demo — uwagi zgłosisz w nowym
-oknie. Do tego czasu w kodzie gier nic się nie zmienia; 6 października doszły tylko poprawki dokumentacji i usunięcie
-jednego przestarzałego pliku testowego (punkt 1.1).
+## 0. Poprawki po testach z 2026-11-01 (etapy P1–P8)
 
-## 1. Co jest zrobione
+Diagnoza i plan: [`ANALIZA_4_Uwagi_z_testow_poprawki_i_rozbudowa.md`](ANALIZA_4_Uwagi_z_testow_poprawki_i_rozbudowa.md);
+uwagi w tabeli „Uwagi z testów — 2026-11-01” w `UWAGI_WLASCICIELA.md` — wszystkie 15 mają stan ✅ z numerem commita.
+Kolejność według Twojej odpowiedzi: P1 → P2 → P3 → P4 → P6 → P5 → P7 → P8.
+
+| Etap | Co | Uwagi | Commit na `main` |
+| --- | --- | --- | --- |
+| P1 | Sowi Butik: zakup i wybór koloru sowy się nie cofają, zapis od razu, 50 piórek przeprosin | G3 | c38cbef, 1e9771c |
+| P2 | duże liczby w Ogrodach („150 mln” zamiast „15 mln”), podpowiedzi w Łącz i Hoduj w dwóch wierszach, humbak mniej więcej raz na krainę, nowe zdjęcia zamiast podobnych | O5, L4, U1, G5 | ecf6e36, c25dafb, 8583f63, aad4394 |
+| P3 | Sowie Ogrody: lista roślin do samego końca, „Rozwiń listę”, wybór tła ogrodu | O4, O7 | 8ba7f5c |
+| P4 | Sowie Ogrody: 8 nowych rozdziałów (7–14), 16 roślin, 24 ulepszenia, 26 nawozów, gałąź „Słońce” | O2, O3, O6 | 57baf87 |
+| P6 | Sowa w Chmurach: od 1900 m Mgławica, 7 krain z mitów świata i Sowie Zaświaty | C2 | 803ab38 |
+| P5 | Łącz i Hoduj: bezpiecznik zapisu, poziomy 6–7 (diamentowy, tęczowy), 5 nowych roślin z Baobabem, 4 hybrydy, 6 pomieszczeń, Kram ogrodnika | L2, L3, L5 | 822c60d, 8f351ef |
+| P7 | Galeria: 10 nowych zdjęć (nr 31–40) za nowe krainy, rozdziały, rośliny i pomieszczenia | G4 | a549fdb, 651d539 |
+| — | testy w GitHubie na maszynie z Ubuntu 24.04 (punkt 4.5) | — | f7dbb86 |
+| P8 | zamknięcie: ten plik, stan uwag, pytanie o zadanie 9.5 (punkt 3.1) | — | commit „P8: …” z 2026-11-02 |
+
+**Zmiany niczego nie kasują z postępu.** Każda zmiana tylko dopisuje: nowe pola zapisu dostają wartości domyślne,
+identyfikatory roślin, rozdziałów, pomieszczeń i zdjęć są tylko dopisywane na końcu (żadnego nie usunąłem ani nie
+zmieniłem), a gra, która trafi na zapis z nowszej wersji (np. z drugiego telefonu ze świeższą wersją), nie kasuje
+nieznanych rzeczy, tylko je odkłada (Łącz i Hoduj — schowek, Galeria — nieznane zdjęcia zostają w zapisie). Do
+produkcyjnej bazy nic nie zapisywałem ręcznie ani testami — testy działają na emulatorze (`demo-sowiegry`) albo
+w pamięci.
+
+Każdy etap przed wypchnięciem przeszedł u mnie pełny `npm test` (składnia, ESLint, Prettier, HTML, testy jednostkowe
+— dziś 320, reguły Firestore i testy przeglądarkowe w Chromium na emulatorze — dziś ok. 600).
+
+## 1. Co jest zrobione — plan E0–E10 (stan z 2026-10-06)
 
 Wszystkie etapy planu E0–E10 są na gałęzi `main`, więc są też na stronie
-(https://cutelittlegoat.github.io/SowieGry/). Wyjątek: zadanie 9.5 jest celowo odłożone (punkt 3).
+(https://cutelittlegoat.github.io/SowieGry/). Wyjątek: zadanie 9.5 jest celowo odłożone (punkt 3.1). Od 6 do
+31 października w kodzie gier nic się nie zmieniało (tylko porządki w dokumentacji, 18b09d7) — trwały Twoje
+testy; poprawki po nich są w rozdziale 0.
 
 | Etap | Co | Commit na `main` |
 | --- | --- | --- |
@@ -83,14 +101,35 @@ W repozytorium nie ma innych plików tymczasowych. Na GitHubie została stara ga
 
 | # | Sprawa | Stan |
 | --- | --- | --- |
-| 1 | **Twoje testy gier** po wszystkich zmianach (podmiany, Akademia, Butik, Galeria, demo) | w toku (od 2026-10-06); uwagi w nowym oknie |
-| 2 | **Propozycja nowych wymagań Galerii (E9d)** — zmienione zdjęcia nr 8, 10, 25, 27, 30; opis w `UWAGI_WLASCICIELA.md` (tabela „Decyzje”, 2026-10-05) | do przejrzenia — inne progi wystarczy napisać |
-| 3 | **Zadanie 9.5** — usunięcie kodu kasującego stare klucze `localStorage` i stron-przekierowań (`SowaRunner/`, `Sowa3/`, `SowaJumper/`, `SowiaSzklarnia/`, `SowieOgrody/nowa.html`) | odłożone: plan mówi „gdy od E1 minie 1–2 miesiące”, a minął tydzień; najwcześniej w listopadzie 2026 |
+| 1 | **Twoje testy na telefonie** po poprawkach P1–P7 — krok po kroku w `TESTY_NA_TELEFONIE.md` (B1–B4, G1–G2, O1–O4, L1–L2, U1, C1) | do zrobienia; uwagi w nowym oknie |
+| 2 | **Wymagania zdjęć Galerii** — zmienione w E9d zdjęcia nr 8, 10, 25, 27, 30 (opis w `UWAGI_WLASCICIELA.md`, tabela „Decyzje”, 2026-10-05) i nowe zdjęcia nr 31–40 (test G2 w `TESTY_NA_TELEFONIE.md`) | do przejrzenia — inne progi wystarczy napisać |
+| 3 | **Zadanie 9.5** — usunięcie kodu kasującego stare klucze `localStorage` i stron-przekierowań (`SowaRunner/`, `Sowa3/`, `SowaJumper/`, `SowiaSzklarnia/`, `SowieOgrody/nowa.html`) | **pytanie do Ciebie — punkt 3.1**; do Twojej odpowiedzi nic nie usuwam |
 | 4 | **Ceny w Sowim Butiku i progi osiągnięć** — ustawione tak, żeby za zadania (ok. 15 piórek dziennie + 15 tygodniowo + osiągnięcia) pierwszy gatunek był po 2–3 dniach gry, a Puchacz po kilku tygodniach | do oceny przy testach |
-| 5 | **Testy automatyczne WebKit w GitHubie** — punkt 4 niżej | ✅ zielone od b4fae30; obserwuję testy, które przechodzą dopiero w powtórce (4.3 d) |
+| 5 | **Testy automatyczne WebKit w GitHubie** — punkt 4 niżej | ✅ zielone od b4fae30 do f22ac7a (przebieg 248); przebiegi 249–251 nie wystartowały przez zmianę po stronie GitHuba — poprawione w f7dbb86 (4.5); obserwuję testy, które przechodzą dopiero w powtórce (4.3 d) |
 | 6 | **Do sprawdzenia przy testach (spostrzeżenie z przeglądu):** na ekranie tytułowym Sowich Torów w pionie górna część ekranu jest jasnym, pustym tłem (tak samo przed zmianami E9) | do oceny — jeśli przeszkadza, dodam niebo/sufit sklepu |
 | 7 | **Wydajność:** w kontenerze bez karty graficznej przy spowolnionym procesorze (×4) Sowie Tory mają ok. 23 kl./s, pozostałe gry 45–56 kl./s; na telefonie płótno jest przyspieszane sprzętowo, a Tory same obniżają rozdzielczość, gdy klatek jest za mało | bez zmian; jeśli na którymś telefonie Tory się „tną”, napisz który |
 | 8 | **Stara gałąź `claude/loving-fermat-76mtxr`** na GitHubie (włączona do `main`) | do decyzji — mogę usunąć, jeśli chcesz |
+
+### 3.1. Pytanie: czy usuwamy stare adresy gier? (zadanie 9.5)
+
+Od pierwszego zapisu w chmurze (koniec września) minął ponad miesiąc, więc według planu można posprzątać dwie
+rzeczy z okresu przejściowego. **Żadna z nich nie dotyka postępu w chmurze** — ani rekordów, ani zakupów, ani roślin.
+
+**a) Stare adresy gier.** Pod dawnymi adresami (`…/SowaRunner/`, `…/Sowa3/`, `…/SowaJumper/`, `…/SowiaSzklarnia/`
+i `…/SowieOgrody/nowa.html`) są malutkie strony (razem ok. 4 KB), które od razu przenoszą do nowych gier. Jeśli je
+usunę, zakładka, ikona na ekranie telefonu albo link wysłany komuś z takim starym adresem pokaże „nie znaleziono
+strony” (404). Aplikacja zainstalowana z menu („Zainstaluj SowieGry na telefonie”) działa dalej, bo otwiera menu.
+
+**b) Sprzątanie starej pamięci telefonu.** Przy pierwszym wejściu po wrześniowej zmianie gra raz kasuje z pamięci
+przeglądarki stare zapisy sprzed chmury (już nieużywane, tylko klucze SowieGry z listy — dane innych stron zostają).
+Jeśli usunę ten kod, na telefonie, którego nikt nie otwierał od września, stare zapisy po prostu zostaną w pamięci
+przeglądarki (nic nie ważą, gra ich nie czyta). Na telefonach, które już raz otworzyły SowieGry po wrześniu,
+niczego to nie zmienia — tam stare zapisy są już skasowane.
+
+**Moja rada:** a) **zostawić** — strony nic nie kosztują, a chronią stare zakładki i ikony (chyba że wiesz, że nikt
+ich nie ma); b) **usunąć** — to tylko porządek w kodzie, bez żadnego wpływu na grę.
+
+Odpowiedz krótko, np. „a — zostaw, b — usuń”, „usuń wszystko” albo „zostaw wszystko”.
 
 ## 4. Problemy z testami automatycznymi — na czym polegają
 
@@ -168,10 +207,21 @@ naprawić w testach — powtórka zwykle przechodzi.
 - **Dwa przestoje 5 października:** restart kontenera przerwał testy E5f (powtórzone od nowa) oraz mój błąd
   w skrypcie kolejki — proces obserwujący kolejkę blokował ją (ok. 40 minut). Naprawione, bez wpływu na kod gier.
 
+### 4.5. 2026-11-02: GitHub zmienił system na maszynach testów (naprawione w f7dbb86)
+
+Od rana 2 listopada GitHub uruchamia testy („ubuntu-latest”) na nowym systemie Ubuntu 26.04. Narzędzie do testów
+w przeglądarkach (Playwright 1.56.1, przypięte w projekcie) nie umie zainstalować tam przeglądarek: „Playwright does
+not support chromium on ubuntu26.04-x64”. Dlatego przebiegi 249–251 (commity 0fca752, 82e325b, 822c60d) kończyły
+się po minucie, **zanim jakikolwiek test ruszył** — czerwony znaczek nie oznaczał błędu w grach (u mnie te same
+testy przechodziły w całości). Poprawka: testy w GitHubie biegną na stałe na Ubuntu 24.04 (na nim przeszedł ostatni
+przebieg 248, f22ac7a). Na Ubuntu 26.04 wrócimy razem z nowszą wersją Playwrighta — to osobna, większa zmiana
+(inne wersje przeglądarek mogą zmienić zachowanie części testów WebKit).
+
 ## 5. Co dalej
 
-1. Twoje testy i uwagi (w nowym oknie) → wpis w `UWAGI_WLASCICIELA.md` → poprawki małymi commitami, każdy z zielonym
-   `npm test`, z aktualizacją dokumentacji gry i tego pliku.
-2. Decyzja o wymaganiach Galerii (E9d) i ewentualnie o cenach w Butiku.
-3. Jeśli któryś test WebKit w CI nie przejdzie także przy powtórce — poprawić go tak jak w 4.3 c i d.
-4. Listopad 2026: zadanie 9.5 (usunięcie sprzątania `localStorage` i stron-przekierowań).
+1. Twoje testy na telefonie (`TESTY_NA_TELEFONIE.md`) i uwagi (w nowym oknie) → wpis w `UWAGI_WLASCICIELA.md` →
+   poprawki małymi commitami, każdy z zielonym `npm test`, z aktualizacją dokumentacji gry i tego pliku.
+2. Twoja odpowiedź na pytanie z punktu 3.1 (zadanie 9.5) — wtedy je zrobię albo zamknę.
+3. Ewentualnie inne wymagania zdjęć Galerii (punkt 3, wiersz 2) i ceny w Butiku albo w Kramie ogrodnika.
+4. Jeśli któryś test WebKit w CI nie przejdzie także przy powtórce — poprawić go tak jak w 4.3 c i d.
+5. Kiedyś: nowsza wersja Playwrighta i powrót testów w GitHubie na najnowszy system (punkt 4.5).

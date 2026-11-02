@@ -1,8 +1,9 @@
 # Analiza 4 — uwagi z testów (listopad 2026): poprawki i rozbudowa gier
 
 > Data: 2026-11-01 · Podstawa: uwagi z testów przekazane 2026-11-01 (plik `uwagi.txt`, przepisany dosłownie
-> w [rozdziale 1](#1-uwagi-dosłownie-i-numery)) i kod na `main` (commit `18b09d7`) · Status: **w realizacji od
-> 2026-11-01** — odpowiedzi właściciela i poprawiony plan: [rozdział 7](#7-odpowiedzi-właściciela-i-zmiany-planu-2026-11-01);
+> w [rozdziale 1](#1-uwagi-dosłownie-i-numery)) i kod na `main` (commit `18b09d7`) · Status: **zrobione — etapy
+> P1–P8 wdrożone 2026-11-01 i 2026-11-02** (etapy i commity: [`STAN_PRAC.md`, rozdział 0](STAN_PRAC.md); zostaje
+> decyzja o zadaniu 9.5 — tamże, punkt 3.1) — odpowiedzi właściciela i poprawiony plan: [rozdział 7](#7-odpowiedzi-właściciela-i-zmiany-planu-2026-11-01);
 > stan poszczególnych uwag: tabela „Uwagi z testów — 2026-11-01” w [`UWAGI_WLASCICIELA.md`](UWAGI_WLASCICIELA.md);
 > testy na telefonie krok po kroku: [`TESTY_NA_TELEFONIE.md`](TESTY_NA_TELEFONIE.md). · Zasady pracy bez zmian:
 > [`ANALIZA_3_Plan_prac.md`, rozdz. 8.1](ANALIZA_3_Plan_prac.md).
