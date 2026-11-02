@@ -1,4 +1,4 @@
-// Galeria Sów: 30 fotografii odblokowywanych celami Akademii. Stan w profilu (profil.gallery) przez SowieCloud.
+// Galeria Sów: 40 fotografii odblokowywanych celami Akademii. Stan w profilu (profil.gallery) przez SowieCloud.
 (() => {
   "use strict";
 
@@ -313,6 +313,108 @@
       requirement: "Zdobądź 8 osiągnięć i osiągnij 8. poziom Sowiej Akademii.",
       goals: [["achievements", 8], ["level", 8]],
     },
+    // Fotografie 31–40 (uwaga G4, 2026-11-02) — wymagania z nowych treści: krainy ponad Kosmosem w Sowie w Chmurach,
+    // nowe rozdziały Sowich Ogrodów, diamentowe i tęczowe rośliny oraz nowe pomieszczenia w Łącz i Hoduj.
+    {
+      id: "owl-31",
+      file: "sowa-31-oczy-puchacza.jpg",
+      title: "Oczy puchacza",
+      alt: "Zbliżenie pyska puchacza plamistego z wielkimi pomarańczowymi oczami.",
+      photographer: "Jean van der Meulen",
+      sourceUrl: "https://www.pexels.com/photo/1543417/",
+      requirement: "Wznieś się na 1900 m w Sowie w Chmurach — do Mgławicy.",
+      goals: [["jumperHeight", 1900]],
+    },
+    {
+      id: "owl-32",
+      file: "sowa-32-plomykowka-w-locie.jpg",
+      title: "Płomykówka w locie",
+      alt: "Płomykówka z rozpostartymi skrzydłami na tle błękitnego nieba.",
+      photographer: "Mark A Jenkins",
+      sourceUrl: "https://www.pexels.com/photo/24035369/",
+      requirement: "Doleć do Olimpu — 3100 m w Sowie w Chmurach.",
+      goals: [["jumperHeight", 3100]],
+    },
+    {
+      id: "owl-33",
+      file: "sowa-33-puchacz-nad-laka.jpg",
+      title: "Puchacz nad łąką",
+      alt: "Puchacz w locie nisko nad zieloną łąką, za nim drewniany płot.",
+      photographer: "Manuel Torres Garcia",
+      sourceUrl: "https://www.pexels.com/photo/27043544/",
+      requirement: "Dotrzyj do Sowich Zaświatów — 5100 m w Sowie w Chmurach.",
+      goals: [["jumperHeight", 5100]],
+    },
+    {
+      id: "owl-34",
+      file: "sowa-34-zza-pnia.jpg",
+      title: "Zza pnia",
+      alt: "Mała sówka zerkająca zza pnia drzewa.",
+      photographer: "Twórca w serwisie Pexels",
+      sourceUrl: "https://www.pexels.com/photo/12232364/",
+      requirement: "Ukończ 6 rozdziałów Sowich Ogrodów — aż do Palmiarni.",
+      goals: [["ogrodyChapters", 6]],
+    },
+    {
+      id: "owl-35",
+      file: "sowa-35-sowka-w-cieniu.jpg",
+      title: "Sówka w cieniu",
+      alt: "Mała cętkowana sówka w cieniu ciemnych liści.",
+      photographer: "Kalidasan Gopi",
+      sourceUrl: "https://www.pexels.com/photo/19182794/",
+      requirement: "Ukończ 9 rozdziałów Sowich Ogrodów — Ogród japoński.",
+      goals: [["ogrodyChapters", 9]],
+    },
+    {
+      id: "owl-36",
+      file: "sowa-36-kto-tam.jpg",
+      title: "Kto tam?",
+      alt: "Sowa wyglądająca jednym okiem z otworu w gliniastej skale.",
+      photographer: "Twórca w serwisie Pexels",
+      sourceUrl: "https://www.pexels.com/photo/31338878/",
+      requirement: "Ukończ wszystkie 14 rozdziałów Sowich Ogrodów.",
+      goals: [["ogrodyChapters", 14]],
+    },
+    {
+      id: "owl-37",
+      file: "sowa-37-czarno-biala.jpg",
+      title: "Czarno-biała płomykówka",
+      alt: "Czarno-białe zdjęcie płomykówki z rozłożonymi skrzydłami.",
+      photographer: "Stuart Robinson",
+      sourceUrl: "https://www.pexels.com/photo/33615139/",
+      requirement: "Wyhoduj diamentową roślinę w Łącz i Hoduj.",
+      goals: [["szklarniaBest", 6]],
+    },
+    {
+      id: "owl-38",
+      file: "sowa-38-puchacz-wirginijski.jpg",
+      title: "Puchacz wirginijski",
+      alt: "Puchacz wirginijski z uszkami z piór siedzący wśród gałęzi.",
+      photographer: "Leonardo Merlo",
+      sourceUrl: "https://www.pexels.com/photo/28794105/",
+      requirement: "Wyhoduj tęczową roślinę w Łącz i Hoduj.",
+      goals: [["szklarniaBest", 7]],
+    },
+    {
+      id: "owl-39",
+      file: "sowa-39-dwie-pojdzki.jpg",
+      title: "Dwie pójdźki",
+      alt: "Dwie małe sówki przytulone na sękatej gałęzi.",
+      photographer: "Twórca w serwisie Pexels",
+      sourceUrl: "https://www.pexels.com/photo/7002648/",
+      requirement: "Odnów 12 pomieszczeń w Łącz i Hoduj.",
+      goals: [["szklarniaRooms", 12]],
+    },
+    {
+      id: "owl-40",
+      file: "sowa-40-norkowa-na-kamieniu.jpg",
+      title: "Norkowa na kamieniu",
+      alt: "Sowa norkowa patrząca znad kamienia.",
+      photographer: "Stefan Messing",
+      sourceUrl: "https://www.pexels.com/photo/3622695/",
+      requirement: "Odnów wszystkie 16 pomieszczeń w Łącz i Hoduj i osiągnij 10. poziom Sowiej Akademii.",
+      goals: [["szklarniaRooms", 16], ["level", 10]],
+    },
   ]);
 
   // Wartość źródła celu w migawce Akademii.
@@ -363,10 +465,12 @@
         ...defaultState(),
         ...raw,
         version: VERSION,
+        // Identyfikatory zostają także nieznane tej wersji (np. zdjęcia dodane w nowszej wersji, otwartej na innym
+        // urządzeniu) — zapis ich nie gubi; liczniki i lista Galerii biorą tylko znane zdjęcia (`snapshot`).
         unlocked: Array.isArray(raw.unlocked)
-          ? raw.unlocked.filter((id) => PHOTOS.some((photo) => photo.id === id))
+          ? [...new Set(raw.unlocked.filter((id) => typeof id === "string"))]
           : ["owl-01"],
-        viewed: Array.isArray(raw.viewed) ? raw.viewed.filter((id) => PHOTOS.some((photo) => photo.id === id)) : [],
+        viewed: Array.isArray(raw.viewed) ? [...new Set(raw.viewed.filter((id) => typeof id === "string"))] : [],
         background: PHOTOS.some((photo) => photo.id === raw.background) ? raw.background : null,
       }),
     );
@@ -436,12 +540,12 @@
     );
   }
 
-  // Oznacza zdjęcie jako obejrzane (po obejrzeniu wszystkich 30 — nagroda Akademii).
+  // Oznacza zdjęcie jako obejrzane (po obejrzeniu wszystkich — nagroda Akademii, przyznawana raz).
   function markViewed(id) {
     if (!loaded || !state.unlocked.includes(id) || state.viewed.includes(id)) return false;
     state.viewed.push(id);
     save();
-    if (state.viewed.length === PHOTOS.length) {
+    if (PHOTOS.every((photo) => state.viewed.includes(photo.id))) {
       window.SowieAcademy?.award?.("gallery:complete", 100, 10, "Kompletna Galeria Sów");
     }
     return true;

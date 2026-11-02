@@ -129,6 +129,7 @@ function reportProgress() {
     watering: state.stats.waterings,
     prestiges: state.stats.prestiges,
     plants: Object.values(state.plants).reduce((sum, count) => sum + count, 0),
+    chapters: Object.values(state.chapters || {}).filter(Boolean).length,
   });
 }
 

@@ -36,9 +36,19 @@ const photoFiles = [
   "sowa-28-puszczykowata-na-drzewie.jpg",
   "sowa-29-norkowa-na-lace.jpg",
   "sowa-30-wiosenna-rodzina.jpg",
+  "sowa-31-oczy-puchacza.jpg",
+  "sowa-32-plomykowka-w-locie.jpg",
+  "sowa-33-puchacz-nad-laka.jpg",
+  "sowa-34-zza-pnia.jpg",
+  "sowa-35-sowka-w-cieniu.jpg",
+  "sowa-36-kto-tam.jpg",
+  "sowa-37-czarno-biala.jpg",
+  "sowa-38-puchacz-wirginijski.jpg",
+  "sowa-39-dwie-pojdzki.jpg",
+  "sowa-40-norkowa-na-kamieniu.jpg",
 ];
 
-test("folder Obrazki zawiera trzydzieści poprawnych, zoptymalizowanych plików JPEG", () => {
+test("folder Obrazki zawiera czterdzieści poprawnych, zoptymalizowanych plików JPEG", () => {
   for (const filename of photoFiles) {
     const file = path.join(root, "Obrazki", filename);
     assert.equal(fs.existsSync(file), true, `Brak ${filename}`);
@@ -59,9 +69,9 @@ test("dokumentacja podaje licencję i źródło każdego zdjęcia", () => {
   for (const filename of photoFiles) assert.match(documentation, new RegExp(filename.replaceAll(".", "\\.")));
 });
 
-test("katalog galerii ma trzydzieści trwałych nagród i warunki z pięciu gier", () => {
+test("katalog galerii ma czterdzieści trwałych nagród i warunki z pięciu gier", () => {
   const source = read("shared/owl-gallery.js");
-  assert.equal((source.match(/id: "owl-\d\d"/g) || []).length, 30);
+  assert.equal((source.match(/id: "owl-\d\d"/g) || []).length, 40);
   assert.match(source, /profile\?\.\(\)\.gallery/);
   assert.match(source, /profile\.gallery = stored/);
   assert.match(source, /const VERSION = 2/);
@@ -117,7 +127,20 @@ async function loadGallery() {
 
 test("cele galerii są danymi: warunek odblokowania i postęp do paska", async () => {
   const gallery = await loadGallery();
-  assert.equal(gallery.PHOTOS.length, 30);
+  assert.equal(gallery.PHOTOS.length, 40);
+  // Zdjęcia 31–40 (uwaga G4): wymagania z nowych treści — Mgławica, Olimp, Sowie Zaświaty, rozdziały Ogrodów, diamentowa
+  // i tęczowa roślina, nowe pomieszczenia Łącz i Hoduj.
+  // Kopia JSON — tablice z piaskownicy `vm` mają inny prototyp niż tablice testu.
+  const goalsOf = (id) => JSON.parse(JSON.stringify(gallery.PHOTOS.find((photo) => photo.id === id).goals));
+  assert.deepEqual(goalsOf("owl-31"), [["jumperHeight", 1900]]);
+  assert.deepEqual(goalsOf("owl-33"), [["jumperHeight", 5100]]);
+  assert.deepEqual(goalsOf("owl-36"), [["ogrodyChapters", 14]]);
+  assert.deepEqual(goalsOf("owl-38"), [["szklarniaBest", 7]]);
+  assert.deepEqual(goalsOf("owl-40"), [
+    ["szklarniaRooms", 16],
+    ["level", 10],
+  ]);
+  assert.equal(new Set(gallery.PHOTOS.map((photo) => photo.file)).size, 40);
   for (const photo of gallery.PHOTOS) {
     assert.ok(Array.isArray(photo.goals), photo.id);
     for (const [source, target] of photo.goals) {
@@ -163,7 +186,7 @@ test("miniatury WebP 400 i 600 px dla każdego zdjęcia, siatka poniżej 1 MB", 
     }
   }
   assert.ok(total400 < 1024 * 1024, `miniatury 400 px: ${total400} B`);
-  assert.equal(fs.readdirSync(path.join(root, "assets/gallery-thumbs")).length, 60);
+  assert.equal(fs.readdirSync(path.join(root, "assets/gallery-thumbs")).length, 80);
 });
 
 test("każdy cel zdjęcia powstaje ze zdarzeń gier (Sowia Akademia, E9d) albo to poziom / liczba osiągnięć", async () => {
@@ -175,8 +198,11 @@ test("każdy cel zdjęcia powstaje ze zdarzeń gier (Sowia Akademia, E9d) albo t
     [EVENTS.RUN_ENDED, { gameId: "runner", score: 1, distance: 1, bestChain: 1, run }],
     [EVENTS.RUN_ENDED, { gameId: "jumper", score: 1, height: 1, bestStreak: 1, run }],
     [EVENTS.RUN_ENDED, { gameId: "sowa3", score: 1, bestCombo: 1, finished: true, run }],
-    [EVENTS.IDLE, { gameId: "ogrody", lifetimeLeaves: 1, clicks: 1, buys: 1, watering: 1, prestiges: 1, plants: 1 }],
-    [EVENTS.IDLE, { gameId: "szklarnia", rooms: 1, plants: 1, goats: 1, hybrids: 1 }],
+    [
+      EVENTS.IDLE,
+      { gameId: "ogrody", lifetimeLeaves: 1, clicks: 1, buys: 1, watering: 1, prestiges: 1, plants: 1, chapters: 1 },
+    ],
+    [EVENTS.IDLE, { gameId: "szklarnia", rooms: 1, plants: 1, goats: 1, hybrids: 1, best: 1 }],
     ...["runner", "jumper", "sowa3", "ogrody", "szklarnia"].map((gameId) => [EVENTS.VISIT, { gameId }]),
   ];
   const metrics = new Set(events.flatMap(([type, detail]) => academyCalls(type, detail).map((call) => call[1])));
@@ -185,4 +211,45 @@ test("każdy cel zdjęcia powstaje ze zdarzeń gier (Sowia Akademia, E9d) albo t
       assert.ok(["level", "achievements"].includes(source) || metrics.has(source), `${photo.id}: ${source}`);
     }
   }
+});
+
+test("zapis Galerii nie gubi zdjęć nieznanych tej wersji (np. z nowszej wersji na innym urządzeniu)", async () => {
+  const vm = await import("node:vm");
+  const element = () => ({ dataset: {}, setAttribute() {}, addEventListener() {}, appendChild() {}, append() {} });
+  let saved = null;
+  const stored = { unlocked: ["owl-01", "owl-02", "owl-99"], viewed: ["owl-99"], favorite: null, background: null };
+  const cloud = {
+    ready: Promise.resolve(),
+    onProfileReload() {},
+    profile: () => ({ gallery: stored }),
+    updateProfile(mutate) {
+      const profile = {};
+      mutate(profile);
+      saved = profile.gallery;
+    },
+  };
+  const window = { addEventListener() {}, dispatchEvent() {}, SowieCloud: cloud };
+  const document = {
+    currentScript: { src: "https://example.test/shared/owl-gallery.js" },
+    readyState: "complete",
+    getElementById: () => null,
+    querySelector: () => null,
+    createElement: element,
+    body: element(),
+  };
+  const context = vm.createContext({ window, document, URL, CustomEvent: class {}, console });
+  vm.runInContext(read("shared/owl-gallery.js"), context);
+  await Promise.resolve();
+  await Promise.resolve();
+  const gallery = window.SowieOwlGallery;
+  assert.equal(gallery.isLoaded(), true);
+  // Liczniki i lista — tylko znane zdjęcia.
+  // Kopie JSON — tablice z piaskownicy `vm` mają inny prototyp niż tablice testu.
+  const plain = (value) => JSON.parse(JSON.stringify(value));
+  assert.deepEqual(plain(gallery.snapshot().unlocked), ["owl-01", "owl-02"]);
+  assert.equal(gallery.snapshot().unlockedCount, 2);
+  // Zapis (np. ulubione) zachowuje nieznany identyfikator.
+  assert.equal(gallery.setFavorite("owl-02"), true);
+  assert.deepEqual(plain(saved.unlocked), ["owl-01", "owl-02", "owl-99"]);
+  assert.deepEqual(plain(saved.viewed), ["owl-99"]);
 });

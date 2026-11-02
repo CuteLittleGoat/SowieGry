@@ -128,6 +128,7 @@ function reportProgress() {
     plants: state.cells.filter((item) => item?.chain).length,
     goats: state.stats.goats,
     hybrids: state.stats.hybrids,
+    best: state.stats.best,
   });
 }
 

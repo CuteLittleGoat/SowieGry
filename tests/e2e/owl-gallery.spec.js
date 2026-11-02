@@ -23,17 +23,17 @@ test("Galeria Sów w menu: odblokowane i zablokowane zdjęcia, przeglądarka, ul
 
   await page.getByRole("tab", { name: "Galeria" }).click();
   const panel = page.locator("#galeria");
-  await expect(panel.locator("[data-gallery-count]")).toHaveText("1 / 30");
-  await expect(panel.locator(".menu-tile")).toHaveCount(30);
-  await expect(panel.locator(".menu-tile.is-locked")).toHaveCount(29);
+  await expect(panel.locator("[data-gallery-count]")).toHaveText("1 / 40");
+  await expect(panel.locator(".menu-tile")).toHaveCount(40);
+  await expect(panel.locator(".menu-tile.is-locked")).toHaveCount(39);
   // Zablokowane: wymaganie i pasek postępu; siatka używa miniatur WebP zamiast pełnych zdjęć.
-  await expect(panel.locator(".menu-tile.is-locked [role=progressbar]")).toHaveCount(29);
+  await expect(panel.locator(".menu-tile.is-locked [role=progressbar]")).toHaveCount(39);
   await expect(panel.locator('[data-photo="owl-02"] .menu-tile-need')).not.toBeEmpty();
   await expect(panel.locator('[data-photo="owl-01"] img')).toHaveAttribute("src", /gallery-thumbs\/.+-400\.webp$/);
   await expect(panel.locator('[data-open-photo="owl-01"]')).toHaveClass(/is-new/);
 
   await panel.getByRole("button", { name: "Do zdobycia" }).click();
-  await expect(panel.locator(".menu-tile")).toHaveCount(29);
+  await expect(panel.locator(".menu-tile")).toHaveCount(39);
   await panel.getByRole("button", { name: "Odblokowane" }).click();
   await expect(panel.locator(".menu-tile")).toHaveCount(1);
   await panel.getByRole("button", { name: "Wszystkie" }).click();
@@ -66,7 +66,7 @@ test("Galeria Sów w menu: odblokowane i zablokowane zdjęcia, przeglądarka, ul
   expect(errors).toEqual([]);
 });
 
-test("osiągnięcia Akademii z Firestore trwale odblokowują komplet trzydziestu fotografii", async ({
+test("osiągnięcia Akademii z Firestore trwale odblokowują komplet czterdziestu fotografii", async ({
   page,
 }, testInfo) => {
   // Profil zapisany wcześniej w bazie (emulator) — jak postęp z innego urządzenia.
@@ -82,7 +82,7 @@ test("osiągnięcia Akademii z Firestore trwale odblokowują komplet trzydziestu
         runnerScore: 6000,
         runnerLeafChain: 20,
         runnerVisits: 1,
-        jumperHeight: 1000,
+        jumperHeight: 5200,
         jumperScore: 5000,
         jumperStreak: 20,
         jumperVisits: 1,
@@ -96,8 +96,10 @@ test("osiągnięcia Akademii z Firestore trwale odblokowują komplet trzydziestu
         ogrodyWatering: 50,
         ogrodyPlants: 100,
         ogrodyPrestiges: 2,
+        ogrodyChapters: 14,
         ogrodyVisits: 1,
-        szklarniaRooms: 10,
+        szklarniaRooms: 16,
+        szklarniaBest: 7,
         szklarniaPlants: 30,
         szklarniaGoats: 20,
         szklarniaHybrids: 5,
@@ -121,25 +123,25 @@ test("osiągnięcia Akademii z Firestore trwale odblokowują komplet trzydziestu
   await page.getByRole("tab", { name: "Galeria" }).click();
   const panel = page.locator("#galeria");
 
-  await expect(panel.locator("[data-gallery-count]")).toHaveText("30 / 30");
+  await expect(panel.locator("[data-gallery-count]")).toHaveText("40 / 40");
   await expect(panel.locator(".menu-tile.is-locked")).toHaveCount(0);
-  await expect(panel.locator("[data-open-photo] img")).toHaveCount(30);
+  await expect(panel.locator("[data-open-photo] img")).toHaveCount(40);
 
   // Przeglądarka przechodzi między odblokowanymi zdjęciami (strzałki na klawiaturze, przyciski).
   await panel.locator('[data-open-photo="owl-01"]').click();
   const viewer = page.getByRole("dialog", { name: /^Zdjęcie: / });
-  await expect(viewer.locator("[data-viewer-count]")).toHaveText("1 / 30");
+  await expect(viewer.locator("[data-viewer-count]")).toHaveText("1 / 40");
   await page.keyboard.press("ArrowRight");
-  await expect(viewer.locator("[data-viewer-count]")).toHaveText("2 / 30");
+  await expect(viewer.locator("[data-viewer-count]")).toHaveText("2 / 40");
   await viewer.getByRole("button", { name: "Poprzednie zdjęcie" }).click();
   await viewer.getByRole("button", { name: "Poprzednie zdjęcie" }).click();
-  await expect(viewer.locator("[data-viewer-count]")).toHaveText("30 / 30");
+  await expect(viewer.locator("[data-viewer-count]")).toHaveText("40 / 40");
   await viewer.getByRole("button", { name: "Zamknij zdjęcie" }).click();
   await expect(viewer).toBeHidden();
 
   await page.evaluate(() => window.SowieCloud.flush());
   const profile = await readDoc(project, "sowiegry/profil");
-  expect(profile.gallery.unlocked).toHaveLength(30);
+  expect(profile.gallery.unlocked).toHaveLength(40);
   expect(profile.academy.xp).toBeGreaterThanOrEqual(6000);
   expect(Object.keys(profile.academy.achievements).length).toBeGreaterThanOrEqual(8);
   expect(errors).toEqual([]);

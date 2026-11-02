@@ -186,9 +186,9 @@ test("galeria: nowe zdjęcia, zablokowane z postępem i przeglądarka z gestami"
   });
   await page.getByRole("tab", { name: "Galeria" }).click();
   const panel = page.locator("#galeria");
-  await expect(panel.locator("[data-gallery-count]")).toHaveText("3 / 30");
+  await expect(panel.locator("[data-gallery-count]")).toHaveText("3 / 40");
   await expect(panel.locator(".menu-tile.is-new")).toHaveCount(3);
-  await expect(panel.locator(".menu-tile.is-locked")).toHaveCount(27);
+  await expect(panel.locator(".menu-tile.is-locked")).toHaveCount(37);
   const locked = panel.locator(".menu-tile.is-locked").first();
   await expect(locked.locator(".menu-tile-lock")).toBeVisible();
   await expect(locked.locator("[role=progressbar]")).toHaveAttribute("aria-valuenow", /^\d+$/);

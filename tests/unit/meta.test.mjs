@@ -40,6 +40,13 @@ test("zdarzenia → Akademia: metryki z końca biegu, postępu gier idle i wizyt
       ["ogrody", "ogrodyPlants", 18, "max"],
     ],
   );
+  // P7: ukończone rozdziały Ogrodów i najwyższy poziom rośliny w Łącz i Hoduj (zdjęcia Galerii 34–40).
+  assert.deepEqual(academyCalls(EVENTS.IDLE, { gameId: "ogrody", chapters: 7 }), [
+    ["ogrody", "ogrodyChapters", 7, "max"],
+  ]);
+  assert.deepEqual(academyCalls(EVENTS.IDLE, { gameId: "szklarnia", best: 6 }), [
+    ["szklarnia", "szklarniaBest", 6, "max"],
+  ]);
   assert.deepEqual(academyCalls(EVENTS.IDLE, { gameId: "szklarnia", rooms: 4, plants: 6, goats: 2, hybrids: 1 }), [
     ["szklarnia", "szklarniaRooms", 4, "max"],
     ["szklarnia", "szklarniaPlants", 6, "max"],

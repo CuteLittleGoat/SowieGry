@@ -1,4 +1,4 @@
-// Zakładka „Galeria”: 30 zdjęć sów (window.SowieOwlGallery), filtry, zablokowane z wymaganiem i paskiem postępu,
+// Zakładka „Galeria”: 40 zdjęć sów (window.SowieOwlGallery), filtry, zablokowane z wymaganiem i paskiem postępu,
 // „Nowe!” z animacją odwrócenia oraz przeglądarka pełnoekranowa (przesuwanie, powiększanie, ulubione, tło menu).
 import { ICONS } from "../ui/icons.js";
 import { focusableIn } from "../ui/modal.js";

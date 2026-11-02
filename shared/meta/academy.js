@@ -416,11 +416,15 @@ export function academyCalls(type, detail = {}) {
       push(game, "ogrodyWatering", detail.watering, "set");
       push(game, "ogrodyPrestiges", detail.prestiges, "set");
       push(game, "ogrodyPlants", detail.plants);
+      // Ukończone rozdziały Sowich Ogrodów (P7, zdjęcia Galerii z nowych rozdziałów).
+      push(game, "ogrodyChapters", detail.chapters);
     } else if (game === "szklarnia") {
       push(game, "szklarniaRooms", detail.rooms);
       push(game, "szklarniaPlants", detail.plants);
       push(game, "szklarniaGoats", detail.goats, "set");
       push(game, "szklarniaHybrids", detail.hybrids);
+      // Najwyższy wyhodowany poziom rośliny w Łącz i Hoduj (P7: 6 — diamentowa, 7 — tęczowa).
+      push(game, "szklarniaBest", detail.best);
     }
   } else if (type === EVENTS.VISIT && game) {
     push(game, `${game}Visits`, 1, "add");

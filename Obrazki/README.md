@@ -1,11 +1,15 @@
 # Fotografie w Galerii Sów
 
-Folder zawiera 30 fotografii wykorzystywane jako odblokowywane nagrody w grze. Pliki zostały pobrane z serwisu Pexels i technicznie przetworzone na potrzeby projektu: wykadrowane do proporcji 4:3, zmniejszone do 1200 × 900 px oraz skompresowane jako progresywne pliki JPEG.
+Folder zawiera 40 fotografii wykorzystywane jako odblokowywane nagrody w grze. Pliki zostały pobrane z serwisu Pexels i technicznie przetworzone na potrzeby projektu: wykadrowane do proporcji 4:3, zmniejszone do 1200 × 900 px oraz skompresowane jako progresywne pliki JPEG.
 
 **Podmiany (2026-11-01, uwaga G5):** zdjęcia nr 2, 12, 22, 25 i 26 były bardzo podobnymi ujęciami tej samej sowy co
 inne zdjęcia Galerii (nr 2 — ta sama fotografia co nr 1, tylko przybliżona). Dostały nowe fotografie pod tymi samymi
 numerami (identyfikatory `owl-02`, `owl-12`, `owl-22`, `owl-25`, `owl-26` i wymagania bez zmian — odblokowane zdjęcia
 zostają odblokowane); pliki mają nowe nazwy, żeby telefony nie pokazywały starych zdjęć z pamięci aplikacji.
+
+**Nowe fotografie (2026-11-02, uwaga G4):** zdjęcia nr 31–40 (`owl-31` … `owl-40`) odblokowują nowe treści: krainy ponad
+Kosmosem w Sowie w Chmurach (1900, 3100 i 5100 m), nowe rozdziały Sowich Ogrodów (6, 9 i 14 ukończonych), diamentowe
+i tęczowe rośliny oraz nowe pomieszczenia w Łącz i Hoduj (12 i 16). Właścicielka: „Zaskocz mnie i sam wgraj”.
 
 ## Licencja
 
@@ -55,6 +59,16 @@ Galeria pokazuje autora lub informację o twórcy w serwisie Pexels oraz odnośn
 | `sowa-28-puszczykowata-na-drzewie.jpg` | Pexels — twórca na stronie źródłowej | https://www.pexels.com/photo/24012038/ |
 | `sowa-29-norkowa-na-lace.jpg` | Pexels — twórca na stronie źródłowej | https://www.pexels.com/photo/5651223/ |
 | `sowa-30-wiosenna-rodzina.jpg` | Pexels — twórca na stronie źródłowej | https://www.pexels.com/photo/31922777/ |
+| `sowa-31-oczy-puchacza.jpg` | Pexels — Jean van der Meulen | https://www.pexels.com/photo/1543417/ |
+| `sowa-32-plomykowka-w-locie.jpg` | Pexels — Mark A Jenkins | https://www.pexels.com/photo/24035369/ |
+| `sowa-33-puchacz-nad-laka.jpg` | Pexels — Manuel Torres Garcia | https://www.pexels.com/photo/27043544/ |
+| `sowa-34-zza-pnia.jpg` | Pexels — twórca na stronie źródłowej | https://www.pexels.com/photo/12232364/ |
+| `sowa-35-sowka-w-cieniu.jpg` | Pexels — Kalidasan Gopi | https://www.pexels.com/photo/19182794/ |
+| `sowa-36-kto-tam.jpg` | Pexels — twórca na stronie źródłowej | https://www.pexels.com/photo/31338878/ |
+| `sowa-37-czarno-biala.jpg` | Pexels — Stuart Robinson | https://www.pexels.com/photo/33615139/ |
+| `sowa-38-puchacz-wirginijski.jpg` | Pexels — Leonardo Merlo | https://www.pexels.com/photo/28794105/ |
+| `sowa-39-dwie-pojdzki.jpg` | Pexels — twórca na stronie źródłowej | https://www.pexels.com/photo/7002648/ |
+| `sowa-40-norkowa-na-kamieniu.jpg` | Pexels — Stefan Messing | https://www.pexels.com/photo/3622695/ |
 
 ## Zasady dalszej rozbudowy
 
