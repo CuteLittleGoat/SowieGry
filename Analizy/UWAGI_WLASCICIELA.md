@@ -68,11 +68,11 @@ Kod zmieniamy po odpowiedziach na pytania z rozdziału 6 analizy.
 
 | # | Gra | Uwaga (dosłownie) | Do zrobienia | Stan |
 |---|---|---|---|---|
-| O2 | Sowie Ogrody | „więcej roślinek” | 8 roślin z własnymi kształtami w nowych rozdziałach (Analiza 4, 3.2) | ⏳ etap P4 |
-| O3 | Sowie Ogrody | „Więcej plansz” | rozdziały 7–10 z własnymi tłami (Analiza 4, 3.2) | ⏳ etap P4 |
+| O2 | Sowie Ogrody | „więcej roślinek” | 8 roślin z własnymi kształtami w nowych rozdziałach (Analiza 4, 3.2) | ✅ 57baf87 — 16 nowych roślin z własnymi kształtami (palma, bambus, sakura, agawa, grzybienie, lawenda, gwiezdny kwiat…) |
+| O3 | Sowie Ogrody | „Więcej plansz” | rozdziały 7–10 z własnymi tłami (Analiza 4, 3.2) | ✅ 57baf87 — 8 nowych rozdziałów (7–14, od Palmiarni do Księżycowego ogrodu) z własnymi tłami; tempo z symulatora — ok. 29 h aktywnej gry po Arboretum; test |
 | O4 | Sowie Ogrody | „Przewijanie w dół nie pokazuje wszystkich roślinek i ich cen” | okno listy ma tylko 1,4–2,9 karty; zwarte karty, „Rozwiń listę”, ceny na ×10 i max, rośliny kolejnych rozdziałów (Analiza 4, 3.2) | ✅ 8ba7f5c — lista nie przebudowuje się przy zakupach (to przerywało przewijanie), zwarte karty z cenami na Kup / ×10 / max, „Rozwiń listę”; testy e2e (rośliny kolejnych rozdziałów — P4) |
 | O5 | Sowie Ogrody | „Przy dużych liczbach nie pokazuje się 0 (np. 150mln a jest napisane 15mln)” | błąd w `formatNumber` (obcina zera z końca liczby) (Analiza 4, 3.2) | ✅ ecf6e36 — `formatNumber` bez obcinania zer, nowe przyrostki; test |
-| O6 | Sowie Ogrody | „Więcej ulepszeń” | nawozy gatunków, ulepszenia nowych rozdziałów, 4. gałąź drzewka (Analiza 4, 3.2) | ⏳ etap P4 |
+| O6 | Sowie Ogrody | „Więcej ulepszeń” | nawozy gatunków, ulepszenia nowych rozdziałów, 4. gałąź drzewka (Analiza 4, 3.2) | ✅ 57baf87 — 24 ulepszenia nowych rozdziałów, 26 nawozów, gałąź „Słońce” w drzewku prestiżu |
 | O7 | Sowie Ogrody | „Po zakończeniu jest tylko jedno tło, to ostatnie” | wybór tła w Kolekcji i tło „podróży” w cyklu (Analiza 4, 3.2) | ✅ 8ba7f5c — „Tło ogrodu” w Kolekcji: „Automatyczne” albo dowolny ukończony rozdział, zostaje po przesadzaniu; testy |
 | L2 | Łącz i Hoduj | „Więcej typów roślinek” | 4 nowe łańcuchy i hybrydy (Analiza 4, 3.3) | ⏳ etap P5 |
 | L3 | Łącz i Hoduj | „Żeby było więcej poziomów roślinki” | poziomy 6–7 ponad złotym (Analiza 4, 3.3) | ⏳ etap P5 |

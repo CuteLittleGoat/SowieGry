@@ -15,14 +15,15 @@ telefonie — i jeśli się da, zrób zrzut ekranu.
 
 ## Spis
 
-| Test  | Co sprawdza                                                           | Od kiedy   |
-| ----- | --------------------------------------------------------------------- | ---------- |
-| O2–O3 | Sowie Ogrody: lista roślin do samego końca, „Rozwiń listę”, wybór tła | 2026-11-01 |
-| O1    | Sowie Ogrody: duże liczby pokazują się dobrze (150 mln)               | 2026-11-01 |
-| L1    | Łącz i Hoduj: podpowiedzi widać w całości                             | 2026-11-01 |
-| U1    | Sowia Ucieczka: humbak mniej więcej raz na krainę                     | 2026-11-01 |
-| G1    | Galeria: zamiast podobnych zdjęć — nowe                               | 2026-11-01 |
-| B1–B4 | Sowi Butik: zakupy i kolory sowy nie cofają się, przeprosinowe piórka | 2026-11-01 |
+| Test  | Co sprawdza                                                                            | Od kiedy   |
+| ----- | -------------------------------------------------------------------------------------- | ---------- |
+| O4    | Sowie Ogrody: 8 nowych rozdziałów (od Palmiarni), nowe rośliny, nawozy, gałąź „Słońce” | 2026-11-01 |
+| O2–O3 | Sowie Ogrody: lista roślin do samego końca, „Rozwiń listę”, wybór tła                  | 2026-11-01 |
+| O1    | Sowie Ogrody: duże liczby pokazują się dobrze (150 mln)                                | 2026-11-01 |
+| L1    | Łącz i Hoduj: podpowiedzi widać w całości                                              | 2026-11-01 |
+| U1    | Sowia Ucieczka: humbak mniej więcej raz na krainę                                      | 2026-11-01 |
+| G1    | Galeria: zamiast podobnych zdjęć — nowe                                                | 2026-11-01 |
+| B1–B4 | Sowi Butik: zakupy i kolory sowy nie cofają się, przeprosinowe piórka                  | 2026-11-01 |
 
 ---
 
@@ -70,6 +71,25 @@ cofnąć zakupu. Kolory i stroje, które wcześniej zniknęły, a były zapisane
 2. **Powinno być:** wszystkie stroje kupione kiedyś w Butiku są odblokowane (bez kłódki) i da się je wybrać.
 
 ---
+
+## O4 — Sowie Ogrody: nowe rozdziały
+
+Poprawka: po Arboretum jest 8 nowych rozdziałów (Palmiarnia, Dżungla, Ogród japoński, Pustynna oaza, Ogród zimowy,
+Wodny ogród, Ogród na dachu, Księżycowy ogród) — każdy z własnym tłem i dwiema nowymi roślinami. Do tego nawozy dla
+każdej rośliny, nowe ulepszenia i czwarta gałąź drzewka: „Słońce”.
+
+1. Otwórz **Sowie Ogrody**.
+2. **Powinno być:** pod licznikiem liści napis „Rozdział … /14” (wcześniej było „/6”). Jeśli Arboretum było już
+   ukończone — „Rozdział 7/14: Palmiarnia”.
+3. **Powinno być:** wszystko, co było, zostało — rośliny, ulepszenia, nasiona i drzewko w zakładce **Prestiż**.
+4. Zakładka **Rośliny** (jeśli jesteś w Palmiarni). **Powinno być:** na dole listy **Palma** i **Strelicja** z cenami.
+5. Zakładka **Ulepszenia**. **Powinno być:** nowe ulepszenia (np. **Szklana kopuła**) i nawozy, np. **Nawóz: Pilea**
+   (podwaja zbiory jednej rośliny).
+6. Zakładka **Prestiż**. **Powinno być:** czwarta gałąź **Słońce** (Słoneczne korzenie, Poranny start, Wieczne lato).
+7. Kup **Palmę**. **Powinno być:** w ogrodzie pojawia się palma w doniczce (z pniem i liśćmi-piórami), a tło to
+   szklana kopuła palmiarni.
+8. Zakładka **Kolekcja** → **Tło ogrodu**. **Powinno być:** do wyboru także tła wszystkich ukończonych rozdziałów
+   (np. Arboretum).
 
 ## O2 — Sowie Ogrody: lista roślin do samego końca
 
