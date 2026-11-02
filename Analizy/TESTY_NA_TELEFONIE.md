@@ -17,6 +17,7 @@ telefonie — i jeśli się da, zrób zrzut ekranu.
 
 | Test  | Co sprawdza                                                                            | Od kiedy   |
 | ----- | -------------------------------------------------------------------------------------- | ---------- |
+| C1    | Sowa w Chmurach: nowe krainy ponad Kosmosem (od 1900 m) aż do Sowich Zaświatów         | 2026-11-02 |
 | O4    | Sowie Ogrody: 8 nowych rozdziałów (od Palmiarni), nowe rośliny, nawozy, gałąź „Słońce” | 2026-11-01 |
 | O2–O3 | Sowie Ogrody: lista roślin do samego końca, „Rozwiń listę”, wybór tła                  | 2026-11-01 |
 | O1    | Sowie Ogrody: duże liczby pokazują się dobrze (150 mln)                                | 2026-11-01 |
@@ -71,6 +72,25 @@ cofnąć zakupu. Kolory i stroje, które wcześniej zniknęły, a były zapisane
 2. **Powinno być:** wszystkie stroje kupione kiedyś w Butiku są odblokowane (bez kłódki) i da się je wybrać.
 
 ---
+
+## C1 — Sowa w Chmurach: krainy ponad Kosmosem
+
+Poprawka: ponad Kosmosem co 400 m jest nowa kraina — Mgławica, potem krainy z mitów świata (nordycka, egipska,
+grecka, japońska, aztecka, chińska, hinduska), a na samej górze Sowie Zaświaty.
+
+1. Otwórz **Sowę w Chmurach** i leć jak najwyżej (rekord to 3400 m — wystarczy, żeby zobaczyć kilka nowych krain).
+2. **Powinno być:** na wysokości **1900 m** komunikat „Strefa: Mgławica!”, a w tle kolorowe obłoki gazu i gwiazdy.
+3. **Powinno być:** co 400 m kolejna kraina i jej nazwa w pasku pod przyciskiem pauzy:
+   - 2300 m **Tęczowy Most** (zorza, tęczowy most, drzewo),
+   - 2700 m **Złota Pustynia** (piramidy na obłokach, łódź ze słońcem),
+   - 3100 m **Olimp** (biała świątynia z kolumnami na obłoku, złote listki),
+   - 3500 m **Kraina Torii** (czerwona brama, góra ze śniegiem, lampiony, płatki wiśni),
+   - 3900 m **Słoneczne Schody** (tarcza słońca, schodkowa piramida),
+   - 4300 m **Smocze Chmury** (smok z kółek, pagoda, czerwone lampiony),
+   - 4700 m **Lotosowa Góra** (kręcąca się mandala, lotosy z lampkami),
+   - 5100 m **Sowie Zaświaty** (księżyc, nietoperze, duszki-sówki i świeczki — trochę strasznie, trochę śmiesznie).
+4. **Powinno być:** platformy, liście i przeszkody dobrze widać na każdym tle.
+5. Po locie, na ekranie wyników — **powinno być:** nazwa strefy, do której doleciałaś (np. „Olimp”).
 
 ## O4 — Sowie Ogrody: nowe rozdziały
 
