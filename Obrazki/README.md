@@ -9,7 +9,7 @@ zostają odblokowane); pliki mają nowe nazwy, żeby telefony nie pokazywały st
 
 **Nowe fotografie (2026-11-02, uwaga G4):** zdjęcia nr 31–40 (`owl-31` … `owl-40`) odblokowują nowe treści: krainy ponad
 Kosmosem w Sowie w Chmurach (1900, 3100 i 5100 m), nowe rozdziały Sowich Ogrodów (6, 9 i 14 ukończonych), diamentowe
-i tęczowe rośliny oraz nowe pomieszczenia w Łącz i Hoduj (12 i 16). Właścicielka: „Zaskocz mnie i sam wgraj”.
+i tęczowe rośliny oraz nowe pomieszczenia w Łącz i Hoduj (12 i 16). Odpowiedź na pytanie 8b z Analizy 4: „Zaskocz mnie i sam wgraj”.
 
 ## Licencja
 

@@ -385,7 +385,7 @@ test("strefy: Ogródek → Blok (150 m) → Chmury (400 m) → Zorza (800 m) →
   assert.equal(zoneAt(150), 1);
   assert.equal(zoneAt(1899), 4);
   assert.equal(zoneAt(2000), 5);
-  assert.equal(ZONES[zoneAt(3400)].name, "Olimp", "rekord właścicielki: 3400 m");
+  assert.equal(ZONES[zoneAt(3400)].name, "Olimp", "rekord z testów (odpowiedź 7a): 3400 m");
   assert.equal(ZONES[zoneAt(5100)].name, "Sowie Zaświaty");
   assert.equal(zoneAt(1e6), ZONES.length - 1, "dalej zostają Sowie Zaświaty");
 });

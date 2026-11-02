@@ -146,7 +146,7 @@ grecka, japońska, aztecka, chińska, hinduska), a na samej górze Sowie Zaświa
    - 4700 m **Lotosowa Góra** (kręcąca się mandala, lotosy z lampkami),
    - 5100 m **Sowie Zaświaty** (księżyc, nietoperze, duszki-sówki i świeczki — trochę strasznie, trochę śmiesznie).
 4. **Powinno być:** platformy, liście i przeszkody dobrze widać na każdym tle.
-5. Po locie, na ekranie wyników — **powinno być:** nazwa strefy, do której doleciałaś (np. „Olimp”).
+5. Po locie, na ekranie wyników — **powinno być:** nazwa strefy, do której doleciała sowa (np. „Olimp”).
 
 ## O4 — Sowie Ogrody: nowe rozdziały
 
