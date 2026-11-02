@@ -208,7 +208,10 @@ Dzięki kompostowi plansza nigdy nie zablokuje się na dobre — zawsze możesz 
 ## Sowia Akademia i Galeria
 
 Postęp w Łącz i Hoduj liczy się do zadań Sowiej Akademii i zdjęć Galerii, tak jak w dawnej Szklarni: odnowione
-pomieszczenia liczą się jako pomieszczenia Szklarni, a do tego rośliny na półkach, użyte kózki i odkryte hybrydy.
+pomieszczenia liczą się jako pomieszczenia Szklarni, a do tego rośliny na półkach, użyte kózki, odkryte hybrydy
+i najwyższy poziom wyhodowanej rośliny. Nowe zdjęcia w Galerii Sów dostajesz za **diamentową** roślinę (nr 37),
+**tęczową** roślinę (nr 38), **12** odnowionych pomieszczeń (nr 39) i wszystkie **16** pomieszczeń razem z 10. poziomem
+Sowiej Akademii (nr 40) — po kilku sekundach pojawia się komunikat „Nowa fotografia w Galerii Sów!”.
 
 ## Dźwięk
 

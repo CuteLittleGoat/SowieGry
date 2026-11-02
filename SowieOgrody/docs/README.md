@@ -69,6 +69,14 @@ już Arboretum, przy następnym wejściu trafia od razu do Palmiarni — cały d
 
 Sowa ogrodniczka ma gatunek wybrany w **Sowim Butiku** (menu → zakładka **Sowa**) — np. Puszczyka albo Śnieżną; zmienia to tylko jej wygląd.
 
+## Sowia Akademia i Galeria
+
+Zbierane liście, stuknięcia, zakupy, podlania, przesadzania i ukończone rozdziały liczą się do zadań Sowiej Akademii
+i zdjęć Galerii Sów (menu → zakładka **Galeria**). Za ukończenie **6** rozdziałów (do Arboretum włącznie — jeśli
+grasz już w Palmiarni, zdjęcie dostajesz od razu po wejściu do gry), **9** (do Ogrodu japońskiego włącznie)
+i wszystkich **14** dostajesz nowe zdjęcia nr 34, 35 i 36 — po kilku sekundach pojawia się komunikat „Nowa fotografia
+w Galerii Sów!”.
+
 ## Zapis
 
 Gra zapisuje postęp automatycznie w chmurze (Firestore) — ten sam ogród na telefonie i komputerze. Przy pierwszym

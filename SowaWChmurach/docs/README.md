@@ -27,6 +27,10 @@ Zaczynasz w ogródku, a potem lecisz przez kolejne strefy:
 
 Pasek pod przyciskiem pauzy pokazuje wysokość, nazwę strefy i ile zostało do następnej.
 
+Wysokość w nowych krainach daje nowe zdjęcia w Galerii Sów: **1900 m** (Mgławica) — zdjęcie nr 31, **3100 m**
+(Olimp) — nr 32, **5100 m** (Sowie Zaświaty) — nr 33. Komunikat „Nowa fotografia w Galerii Sów!” pokazuje się na
+ekranie wyników.
+
 ## Samouczek i instrukcja
 
 Przy **pierwszym locie** włącza się krótki **samouczek** (5 kroków). Podpowiedź w górnej części ekranu (telefon

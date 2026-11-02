@@ -87,21 +87,24 @@ w nowych rozdziałach Sowich Ogrodów i za nowe rośliny i pomieszczenia w Łąc
    - nr 31 — wznieś się na 1900 m w Sowie w Chmurach (Mgławica),
    - nr 32 — doleć do Olimpu (3100 m),
    - nr 33 — dotrzyj do Sowich Zaświatów (5100 m),
-   - nr 34 — ukończ 6 rozdziałów Sowich Ogrodów (aż do Palmiarni),
-   - nr 35 — ukończ 9 rozdziałów (Ogród japoński),
+   - nr 34 — ukończ 6 rozdziałów Sowich Ogrodów (do Arboretum włącznie),
+   - nr 35 — ukończ 9 rozdziałów (do Ogrodu japońskiego włącznie),
    - nr 36 — ukończ wszystkie 14 rozdziałów,
    - nr 37 — wyhoduj diamentową roślinę w Łącz i Hoduj,
    - nr 38 — wyhoduj tęczową roślinę,
    - nr 39 — odnów 12 pomieszczeń w Łącz i Hoduj,
    - nr 40 — odnów wszystkie 16 pomieszczeń i osiągnij 10. poziom Sowiej Akademii.
 4. Stuknij filtr **Do zdobycia**. **Powinno być:** widać tylko zablokowane zdjęcia, w tym nowe.
-5. Zagraj w grę z jednego z celów (np. w Łącz i Hoduj połącz dwie złote rośliny w diamentową, albo w Sowie w Chmurach
+5. Jeśli w Sowich Ogrodach grasz już w Palmiarni (napis „Rozdział 7/14” albo dalej) — otwórz **Sowie Ogrody**
+   i poczekaj kilka sekund. **Powinno być:** komunikat „Nowa fotografia w Galerii Sów!” — „Zza pnia” (zdjęcie nr 34
+   za 6 ukończonych rozdziałów, które już masz).
+6. Zagraj w grę z jednego z celów (np. w Łącz i Hoduj połącz dwie złote rośliny w diamentową, albo w Sowie w Chmurach
    wznieś się na 1900 m). **Powinno być:** komunikat „Nowa fotografia w Galerii Sów!” (w Łącz i Hoduj i w Sowich
    Ogrodach — po kilku sekundach, w Sowie w Chmurach — na ekranie wyników), a w Galerii nowe zdjęcie ze znaczkiem
    **Nowe!**.
-6. Stuknij nowe zdjęcie. **Powinno być:** otwiera się na cały ekran, pod spodem autor i link do Pexels; po zamknięciu
+7. Stuknij nowe zdjęcie. **Powinno być:** otwiera się na cały ekran, pod spodem autor i link do Pexels; po zamknięciu
    znaczek „Nowe!” znika.
-7. Zamknij aplikację i otwórz ją ponownie, wejdź do **Galerii**. **Powinno być:** nowe zdjęcie dalej odblokowane.
+8. Zamknij aplikację i otwórz ją ponownie, wejdź do **Galerii**. **Powinno być:** nowe zdjęcie dalej odblokowane.
 
 ## L2 — Łącz i Hoduj: nowe poziomy, rośliny, pomieszczenia i Kram
 

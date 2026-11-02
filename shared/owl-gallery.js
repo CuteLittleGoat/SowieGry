@@ -352,7 +352,7 @@
       alt: "Mała sówka zerkająca zza pnia drzewa.",
       photographer: "Twórca w serwisie Pexels",
       sourceUrl: "https://www.pexels.com/photo/12232364/",
-      requirement: "Ukończ 6 rozdziałów Sowich Ogrodów — aż do Palmiarni.",
+      requirement: "Ukończ 6 rozdziałów Sowich Ogrodów — do Arboretum włącznie.",
       goals: [["ogrodyChapters", 6]],
     },
     {
@@ -362,7 +362,7 @@
       alt: "Mała cętkowana sówka w cieniu ciemnych liści.",
       photographer: "Kalidasan Gopi",
       sourceUrl: "https://www.pexels.com/photo/19182794/",
-      requirement: "Ukończ 9 rozdziałów Sowich Ogrodów — Ogród japoński.",
+      requirement: "Ukończ 9 rozdziałów Sowich Ogrodów — do Ogrodu japońskiego włącznie.",
       goals: [["ogrodyChapters", 9]],
     },
     {
