@@ -7,8 +7,8 @@ testy na telefonie krok po kroku: `TESTY_NA_TELEFONIE.md`.
 
 **W skrócie (2026-11-02):** wszystkie 15 uwag z testów z 1 listopada są zrobione (etapy P1–P7) i są na stronie
 (https://cutelittlegoat.github.io/SowieGry/). Teraz: Twoje testy na telefonie według
-[`TESTY_NA_TELEFONIE.md`](TESTY_NA_TELEFONIE.md). Zadanie 9.5 zamknięte według Twojej decyzji (punkt 3.1): sprzątanie
-starej pamięci telefonu usunięte (b), stare adresy gier zostają (a).
+[`TESTY_NA_TELEFONIE.md`](TESTY_NA_TELEFONIE.md). Zadanie 9.5 zamknięte według Twoich decyzji (punkt 3.1): sprzątanie
+starej pamięci telefonu (b) i stare adresy gier (a) usunięte — gry otwiera się z menu.
 Testy automatyczne w GitHubie od rana 2 listopada nie mogły wystartować, bo GitHub zmienił system na swoich
 maszynach — poprawione (punkt 4.5); gry nie miały z tym nic wspólnego.
 
@@ -29,7 +29,7 @@ Kolejność według Twojej odpowiedzi: P1 → P2 → P3 → P4 → P6 → P5 →
 | P7 | Galeria: 10 nowych zdjęć (nr 31–40) za nowe krainy, rozdziały, rośliny i pomieszczenia | G4 | a549fdb, 651d539 |
 | — | testy w GitHubie na maszynie z Ubuntu 24.04 (punkt 4.5) | — | f7dbb86 |
 | P8 | zamknięcie: ten plik, stan uwag, pytanie o zadanie 9.5 (punkt 3.1) | — | commit „P8: …” z 2026-11-02 |
-| 9.5 | Twoja decyzja „b — usuń”: SowieGry niczego nie kasuje z pamięci przeglądarki (usunięte jednorazowe sprzątanie dawnych zapisów); stare adresy gier (a) zostają | — | 1711584 |
+| 9.5 | Twoje decyzje: „b — usuń” — SowieGry niczego nie kasuje z pamięci przeglądarki (usunięte jednorazowe sprzątanie dawnych zapisów); „stare adresy gier (jeżeli już nie są potrzebne) też usuń” — usunięte `SowaRunner/`, `Sowa3/`, `SowaJumper/`, `SowiaSzklarnia/` i `SowieOgrody/nowa.html` | — | 1711584, 4bb58ca |
 
 **Zmiany niczego nie kasują z postępu.** Każda zmiana tylko dopisuje: nowe pola zapisu dostają wartości domyślne,
 identyfikatory roślin, rozdziałów, pomieszczeń i zdjęć są tylko dopisywane na końcu (żadnego nie usunąłem ani nie
@@ -105,7 +105,7 @@ W repozytorium nie ma innych plików tymczasowych. Na GitHubie została stara ga
 | --- | --- | --- |
 | 1 | **Twoje testy na telefonie** po poprawkach P1–P7 — krok po kroku w `TESTY_NA_TELEFONIE.md` (B1–B4, G1–G2, O1–O4, L1–L2, U1, C1) | do zrobienia; uwagi w nowym oknie |
 | 2 | **Wymagania zdjęć Galerii** — zmienione w E9d zdjęcia nr 8, 10, 25, 27, 30 (opis w `UWAGI_WLASCICIELA.md`, tabela „Decyzje”, 2026-10-05) i nowe zdjęcia nr 31–40 (test G2 w `TESTY_NA_TELEFONIE.md`) | do przejrzenia — inne progi wystarczy napisać |
-| 3 | **Zadanie 9.5** — usunięcie kodu kasującego stare klucze `localStorage` i stron-przekierowań (`SowaRunner/`, `Sowa3/`, `SowaJumper/`, `SowiaSzklarnia/`, `SowieOgrody/nowa.html`) | ✅ 2026-11-02: b — usunięte (1711584), a — strony-przekierowania zostają na stałe (punkt 3.1) |
+| 3 | **Zadanie 9.5** — usunięcie kodu kasującego stare klucze `localStorage` i stron-przekierowań (`SowaRunner/`, `Sowa3/`, `SowaJumper/`, `SowiaSzklarnia/`, `SowieOgrody/nowa.html`) | ✅ 2026-11-02: b — usunięte (1711584), a — stare adresy usunięte (4bb58ca) (punkt 3.1) |
 | 4 | **Ceny w Sowim Butiku i progi osiągnięć** — ustawione tak, żeby za zadania (ok. 15 piórek dziennie + 15 tygodniowo + osiągnięcia) pierwszy gatunek był po 2–3 dniach gry, a Puchacz po kilku tygodniach | do oceny przy testach |
 | 5 | **Testy automatyczne WebKit w GitHubie** — punkt 4 niżej | ✅ zielone od b4fae30 do f22ac7a (przebieg 248); przebiegi 249–251 nie wystartowały przez zmianę po stronie GitHuba — poprawione w f7dbb86 (4.5); przebieg 252 (d58f7ed, wszystkie etapy P1–P8) ✅; obserwuję testy, które przechodzą dopiero w powtórce (4.3 d) |
 | 6 | **Do sprawdzenia przy testach (spostrzeżenie z przeglądu):** na ekranie tytułowym Sowich Torów w pionie górna część ekranu jest jasnym, pustym tłem (tak samo przed zmianami E9) | do oceny — jeśli przeszkadza, dodam niebo/sufit sklepu |
@@ -115,8 +115,10 @@ W repozytorium nie ma innych plików tymczasowych. Na GitHubie została stara ga
 ### 3.1. Zadanie 9.5 — stare adresy gier i sprzątanie starej pamięci (decyzja z 2026-11-02)
 
 **Twoja decyzja: „b-usuń (i zaktualizuj dokumentację w repo).”** Zrobione w 1711584: SowieGry **niczego nie kasuje**
-z pamięci przeglądarki (pilnują tego testy). **a) — bez zmian:** stare adresy gier dalej przenoszą do nowych gier;
-gdyby kiedyś trzeba je było usunąć, wystarczy napisać.
+z pamięci przeglądarki (pilnują tego testy). **a) — też usunięte** na Twoją prośbę z tego samego dnia („Stare adresy
+gier (jeżeli już nie są potrzebne) też usuń.”) w 4bb58ca: nic z nich już nie korzystało (menu, aplikacja na telefonie
+i pamięć aplikacji wskazują tylko nowe gry). Stara zakładka albo ikona z takim adresem pokazuje teraz „nie znaleziono
+strony” (404) — gry otwiera się z menu, a zakładkę wystarczy zapisać na nowo.
 
 Opis z pytania (dla porządku):
 

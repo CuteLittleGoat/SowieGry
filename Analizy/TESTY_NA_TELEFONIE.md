@@ -17,7 +17,7 @@ telefonie — i jeśli się da, zrób zrzut ekranu.
 
 | Test  | Co sprawdza                                                                                             | Od kiedy   |
 | ----- | ------------------------------------------------------------------------------------------------------- | ---------- |
-| Z1    | Porządki (zadanie 9.5): gra pamięta odblokowanie telefonu, postęp i ustawienia jak przedtem             | 2026-11-02 |
+| Z1    | Porządki (zadanie 9.5): odblokowanie telefonu, postęp i ustawienia jak przedtem; stare adresy usunięte  | 2026-11-02 |
 | G2    | Galeria: 10 nowych zdjęć (nr 31–40) za nowe krainy, rozdziały, rośliny i pomieszczenia                  | 2026-11-02 |
 | L2    | Łącz i Hoduj: diamentowe i tęczowe rośliny, Baobab i nowe rośliny, 6 nowych pomieszczeń, Kram ogrodnika | 2026-11-02 |
 | C1    | Sowa w Chmurach: nowe krainy ponad Kosmosem (od 1900 m) aż do Sowich Zaświatów                          | 2026-11-02 |
@@ -79,14 +79,17 @@ cofnąć zakupu. Kolory i stroje, które wcześniej zniknęły, a były zapisane
 ## Z1 — porządki po zadaniu 9.5
 
 Poprawka: gra przestała sprzątać dawne zapisy sprzed chmury w pamięci przeglądarki — od teraz niczego tam nie
-usuwa. Na grę nie powinno to mieć żadnego wpływu; ten test tylko to potwierdza.
+usuwa — a stare adresy gier (np. `…/SowaRunner/`) są usunięte. Na grę nie powinno to mieć żadnego wpływu; ten test
+tylko to potwierdza.
 
 1. Otwórz SowieGry (odśwież dwa razy, jak zwykle po poprawce).
 2. **Powinno być:** menu otwiera się od razu, **bez pytania o hasło** „huhu” (telefon dalej pamięta, że już je
    wpisano).
 3. Zakładka **Sowa**. **Powinno być:** ten sam poziom Akademii, piórka, wybrany gatunek sowy i stroje co przedtem.
 4. Otwórz dowolną grę i wróć do menu. **Powinno być:** rekordy i postęp bez zmian.
-5. Stare adresy (np. zakładka do `…/SowaRunner/`) **dalej działają** — przenoszą do nowej gry.
+5. Jeśli masz zakładkę albo ikonę ze starym adresem (np. `…/SowaRunner/`, `…/SowieOgrody/nowa.html`) — otwórz ją.
+   **Powinno być:** strona „404” (nie znaleziono). Tak ma być: gry otwiera się z menu, a zakładkę albo ikonę wystarczy
+   zapisać na nowo.
 
 ## G2 — Galeria: 10 nowych zdjęć
 
