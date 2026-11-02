@@ -183,6 +183,9 @@ po każdym połączeniu i komposcie (po 2 sekundach), co 20 sekund gry oraz od r
 aplikację albo zamkniesz stronę. W menu głównym (zakładka **Sowa** → **Rekordy** przy Łącz i Hoduj) widać odnowione
 pomieszczenia, oddane zamówienia, hybrydy i rekord Basenu Humbaka.
 
+Jeśli grasz na dwóch urządzeniach, a na jednym działa jeszcze starsza wersja gry, rośliny i pomieszczenia, których
+ta wersja nie zna, nie znikają — czekają w zapisie i wracają po odświeżeniu strony.
+
 ## Telefon pionowo, poziomo i komputer
 
 Na telefonie trzymanym pionowo plansza zajmuje całą szerokość ekranu — nawet na najmniejszym (320 × 568) każde pole

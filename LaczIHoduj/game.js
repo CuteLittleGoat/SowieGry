@@ -33,6 +33,7 @@ import {
   serializeBlocks,
   serializeCells,
   spawnItem,
+  stashItems,
   spawnNear,
 } from "./board.js";
 
@@ -257,6 +258,8 @@ export function defaultState(now = Date.now(), random = Math.random) {
     poolBest: 0,
     tutorialDone: false,
     starter: false,
+    // Schowek przedmiotów, których ta wersja nie zna (P5.0): [{ index, item }].
+    stash: [],
     leaves: 0,
     stars: 0,
     renovation: 0,
@@ -271,13 +274,18 @@ export function loadState(raw, now = Date.now(), random = Math.random) {
   if (!raw || typeof raw !== "object" || Number(raw.version) !== SAVE_VERSION) return defaultState(now, random);
   const base = defaultState(now, random);
   const stats = { ...base.stats, ...(raw.stats || {}) };
-  const done = Math.min(RENOVATION_STEPS, Math.max(0, Math.floor(number(raw.renovation))));
+  // Etapy odnowy bez górnej granicy (P5.0): zapis nowszej wersji może mieć więcej pomieszczeń — ta wersja traktuje
+  // nadmiar jak „wszystko odnowione”, a przy zapisie go nie ucina.
+  const done = Math.max(0, Math.floor(number(raw.renovation)));
   const board = createBoard({ ...BOARD, cells: raw.cells, blocks: raw.blocks });
+  // Bezpiecznik (P5.0): nieznane przedmioty czekają w schowku, znane ze schowka wracają na planszę.
+  const stash = stashItems(board, raw.cells, raw.stash);
   const state = {
     ...base,
     ...raw,
     cells: serializeCells(board),
     blocks: serializeBlocks(board),
+    stash,
     phoneMoves: Math.min(OBSTACLES.ringEvery - 1, Math.max(0, Math.floor(number(raw.phoneMoves)))),
     leaves: number(raw.leaves),
     renovation: done,

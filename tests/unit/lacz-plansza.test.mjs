@@ -193,9 +193,54 @@ test("stan: nowa gra z przedmiotami startowymi, zapis i wczytanie, niepoprawne p
   assert.equal(loaded.leaves, 42);
   assert.equal(loaded.cells[0], null);
   assert.equal(loaded.cells[1], null);
+  // Bezpiecznik (P5.0): nieznane przedmioty nie znikają — czekają w schowku z numerem pola.
+  assert.deepEqual(loaded.stash, [
+    { index: 0, item: { chain: "palma", level: 2 } },
+    { index: 1, item: { chain: "monstera", level: 9 } },
+  ]);
   assert.equal(loaded.pot.charges, POT.max);
   assert.equal(loadState({ version: 1, leaves: 5 }, 0).leaves, 0, "stan dawnej Szklarni (v1) — nowa gra");
   assert.equal(loadState(null, 0).cells.length, 63);
+});
+
+test("bezpiecznik zapisu (P5.0): nieznane przedmioty czekają w schowku i wracają, gdy gra je zna; zapis ich nie gubi", () => {
+  const state = defaultState(1000);
+  const raw = JSON.parse(JSON.stringify(state));
+  raw.cells = raw.cells.map(() => null);
+  raw.cells[5] = { chain: "baobab", level: 3 };
+  raw.cells[6] = { goat: "nowaKozka" };
+  raw.cells[7] = { chain: "monstera", level: 2 };
+  // Znane już przedmioty ze schowka: na swoje pole (wolne), na pierwsze wolne (swoje zajęte); nieznany — dalej czeka.
+  raw.stash = [
+    { index: 10, item: { chain: "pilea", level: 3 } },
+    { index: 7, item: { goat: "skoczek" } },
+    { index: 20, item: { chain: "storczykX", level: 1, extra: { a: 1 } } },
+    null,
+    { index: 3 },
+  ];
+  const loaded = loadState(raw, 2000);
+  assert.deepEqual(loaded.cells[5], null);
+  assert.deepEqual(loaded.cells[7], { chain: "monstera", level: 2 });
+  assert.deepEqual(loaded.cells[10], { chain: "pilea", level: 3 });
+  assert.deepEqual(loaded.cells[0], { goat: "skoczek" }, "pole 7 zajęte — pierwsze wolne");
+  assert.deepEqual(loaded.stash, [
+    { index: 5, item: { chain: "baobab", level: 3 } },
+    { index: 6, item: { goat: "nowaKozka" } },
+    { index: 20, item: { chain: "storczykX", level: 1, extra: { a: 1 } } },
+  ]);
+  // Gra działa na znanych przedmiotach, a zapis i ponowne wczytanie zachowują schowek.
+  const game = createGame({ state: loaded, random: queue(0) });
+  game.tapPot();
+  const again = loadState(JSON.parse(JSON.stringify(game.state)), 3000);
+  assert.deepEqual(again.stash, loaded.stash);
+  // Pełna plansza: znany przedmiot ze schowka czeka, aż zwolni się pole.
+  const full = JSON.parse(JSON.stringify(state));
+  full.cells = full.cells.map(() => ({ chain: "kaktus", level: 1 }));
+  full.stash = [{ index: 2, item: { chain: "paproc", level: 4 } }];
+  const crowded = loadState(full, 0);
+  assert.deepEqual(crowded.stash, [{ index: 2, item: { chain: "paproc", level: 4 } }]);
+  crowded.cells[30] = null;
+  assert.deepEqual(loadState(JSON.parse(JSON.stringify(crowded)), 0).cells[30], { chain: "paproc", level: 4 });
 });
 
 test("cztery łańcuchy po 5 poziomów i trzy hybrydy z dawnej Szklarni; doniczka odblokowuje łańcuchy z połączeniami", () => {
@@ -517,12 +562,16 @@ test("ułatwienia pomieszczeń: doniczka, kiełki, kózki, kompost, hybrydy, zam
   });
   assert.deepEqual(orderReward(big, RENOVATION_STEPS), { leaves: Math.round(ORDERS.leaves[4] * 1.5), stars: 3 });
 
-  // Zapis: odnowa zostaje, poza zakresem — przycięta; ładunki do pojemności doniczki.
+  // Zapis: odnowa zostaje (od P5.0 bez górnej granicy — zapis nowszej wersji z większą liczbą pomieszczeń nie traci
+  // postępu), ujemna — 0; ładunki do pojemności doniczki.
   const saved = JSON.parse(JSON.stringify({ ...at("potting"), savedAt: 1000 }));
   saved.pot.charges = 99;
   assert.equal(loadState(saved, 1000).renovation, 3);
   assert.equal(loadState(saved, 1000).pot.charges, POT.max + PERKS.potBonus);
-  assert.equal(loadState({ ...saved, renovation: 999 }, 1000).renovation, RENOVATION_STEPS);
+  const beyond = loadState({ ...saved, renovation: 999 }, 1000);
+  assert.equal(beyond.renovation, 999);
+  assert.equal(renovation(beyond.renovation).room, null, "wszystko odnowione");
+  assert.ok(RENOVATION_STEPS < 999);
   assert.equal(loadState({ ...saved, renovation: -4 }, 1000).renovation, 0);
   // Kącik Drzemki: doniczka ładuje się, gdy gra jest zamknięta (bez niego — nie).
   const sleepy = { ...JSON.parse(JSON.stringify(at("nap"))), savedAt: 0 };

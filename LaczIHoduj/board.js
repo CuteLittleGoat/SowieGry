@@ -23,6 +23,14 @@ export const canGrow = (item) =>
 /** Najwyższy poziom łańcucha. */
 export const maxLevel = (chain) => CHAINS[chain]?.levels.length ?? 0;
 
+/**
+ * Czy ta wersja gry zna przedmiot z zapisu: kózka znanego rodzaju albo roślina znanego łańcucha z poziomem od 1 do
+ * najwyższego. Nieznane (np. z zapisu nowszej wersji) nie trafiają na planszę, ale nie znikają — zob. `stashItems`.
+ */
+export const knownItem = (item) =>
+  isGoat(item) ||
+  Boolean(item && CHAINS[item.chain] && Number(item.level) >= 1 && Number(item.level) <= maxLevel(item.chain));
+
 /** Nazwa przedmiotu, np. „Kiełek” albo „Kózka Skoczek”. */
 export const itemName = (item) =>
   item ? (GOATS[item.goat]?.name ?? CHAINS[item.chain]?.levels[item.level - 1] ?? "") : "";
@@ -36,9 +44,7 @@ export function createBoard({ cols, rows, cells = null, blocks = null }) {
   const list = Array.from({ length: size }, (_, index) => {
     const item = cells?.[index];
     if (isGoat(item)) return { goat: item.goat };
-    return item && CHAINS[item.chain] && item.level >= 1 && item.level <= maxLevel(item.chain)
-      ? { chain: item.chain, level: Math.floor(item.level) }
-      : null;
+    return knownItem(item) ? { chain: item.chain, level: Math.floor(item.level) } : null;
   });
   const layer = Array.from({ length: size }, (_, index) => {
     const block = blocks?.[index];
@@ -203,6 +209,38 @@ export function exits(board) {
     else if (item && !block) compost += 1;
   });
   return { merges: mergeablePairs(board), empty: emptyCells(board).length, compost, notes };
+}
+
+/**
+ * Bezpiecznik zapisu (P5.0, Analiza 4): przedmioty z zapisu, których ta wersja gry nie zna (łańcuch, poziom albo
+ * kózka spoza danych — np. z nowszej wersji gry otwartej na innym urządzeniu), nie znikają. `cells` — pola z zapisu,
+ * `stash` — schowek z zapisu (`[{ index, item }]`), `board` — plansza już bez nieznanych przedmiotów (`createBoard`).
+ * Zwraca nowy schowek: nieznane przedmioty z pól (z indeksem pola) i nieznane nadal ze schowka. Znane już przedmioty
+ * ze schowka wracają na planszę — na swoje pole, a gdy jest zajęte, na pierwsze wolne; przy pełnej planszy czekają.
+ */
+export function stashItems(board, cells, stash) {
+  const copy = (item) => JSON.parse(JSON.stringify(item));
+  const kept = [];
+  (Array.isArray(cells) ? cells : []).forEach((item, index) => {
+    if (item && typeof item === "object" && !knownItem(item)) kept.push({ index, item: copy(item) });
+  });
+  for (const entry of Array.isArray(stash) ? stash : []) {
+    if (!entry || !entry.item || typeof entry.item !== "object") continue;
+    if (!knownItem(entry.item)) {
+      kept.push({ index: Number(entry.index), item: copy(entry.item) });
+      continue;
+    }
+    const own = Number.isInteger(entry.index) && entry.index >= 0 && entry.index < board.cells.length;
+    const target = own && isFree(board, entry.index) ? entry.index : (emptyCells(board)[0] ?? -1);
+    if (target < 0) {
+      kept.push({ index: Number(entry.index), item: copy(entry.item) });
+      continue;
+    }
+    board.cells[target] = isGoat(entry.item)
+      ? { goat: entry.item.goat }
+      : { chain: entry.item.chain, level: Math.floor(entry.item.level) };
+  }
+  return kept;
 }
 
 /** Kopia pól do zapisu. */
