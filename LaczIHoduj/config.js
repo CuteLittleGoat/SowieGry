@@ -12,30 +12,68 @@ export const PREVIEW_FIELD = "preview";
 // Plansza: kolumny × rzędy (pole na telefonie co najmniej 44 px).
 export const BOARD = Object.freeze({ cols: 7, rows: 9 });
 
+// Poziom krzyżowania (P5.1, uwaga L3): 5. poziom — „złoty” (u Kaktusa kwitnący). Dwie różne złote rośliny
+// z przepisu `HYBRIDS` dają hybrydę; dwie takie same złote łączą się w 6. poziom (diamentowy), dwie diamentowe —
+// w 7. (tęczowy, szczyt łańcucha). Do P5.1 złoty poziom był szczytem i się nie łączył.
+export const CROSS_LEVEL = 5;
+
 // Łańcuchy roślin: połączenie dwóch takich samych przedmiotów daje następny poziom; najwyższy już się nie łączy
-// z takim samym. Hybrydy (`hybrid: true`, jeden poziom) powstają z dwóch różnych roślin najwyższego poziomu
+// z takim samym. Hybrydy (`hybrid: true`, jeden poziom) powstają z dwóch różnych roślin poziomu `CROSS_LEVEL`
 // (`HYBRIDS`) — rośliny i hybrydy z dawnej Sowiej Szklarni (Monstera Miziasta, Pilea Pieniążek, Paproć Puchata,
-// Kaktus Pracu; Monpilea Przytulna, Alopaproć Wachlarzowa, Złotolistka).
+// Kaktus Pracu; Monpilea Przytulna, Alopaproć Wachlarzowa, Złotolistka). Od P5.2 (uwaga L2) także Storczyk,
+// Słonecznik, Truskawka, Lotos i Baobab z hybrydami — dopisane na końcu (klucze na zawsze).
 export const CHAINS = Object.freeze({
   monstera: Object.freeze({
     name: "Monstera",
     color: "#3fae6a",
-    levels: Object.freeze(["Nasionko", "Kiełek", "Sadzonka", "Monstera", "Złota Monstera"]),
+    levels: Object.freeze([
+      "Nasionko",
+      "Kiełek",
+      "Sadzonka",
+      "Monstera",
+      "Złota Monstera",
+      "Diamentowa Monstera",
+      "Tęczowa Monstera",
+    ]),
   }),
   pilea: Object.freeze({
     name: "Pilea",
     color: "#72bd68",
-    levels: Object.freeze(["Ziarenko pilei", "Listek pilei", "Pieniążek", "Pilea", "Złota Pilea"]),
+    levels: Object.freeze([
+      "Ziarenko pilei",
+      "Listek pilei",
+      "Pieniążek",
+      "Pilea",
+      "Złota Pilea",
+      "Diamentowa Pilea",
+      "Tęczowa Pilea",
+    ]),
   }),
   paproc: Object.freeze({
     name: "Paproć",
     color: "#4b9e72",
-    levels: Object.freeze(["Zarodnik", "Pastorał", "Młoda paproć", "Paproć", "Złota Paproć"]),
+    levels: Object.freeze([
+      "Zarodnik",
+      "Pastorał",
+      "Młoda paproć",
+      "Paproć",
+      "Złota Paproć",
+      "Diamentowa Paproć",
+      "Tęczowa Paproć",
+    ]),
   }),
   kaktus: Object.freeze({
     name: "Kaktus",
     color: "#5ba760",
-    levels: Object.freeze(["Pestka kaktusa", "Kuleczka", "Kaktusik", "Kaktus", "Kwitnący Kaktus"]),
+    levels: Object.freeze([
+      "Pestka kaktusa",
+      "Kuleczka",
+      "Kaktusik",
+      "Kaktus",
+      "Kwitnący Kaktus",
+      "Diamentowy Kaktus",
+      "Tęczowy Kaktus",
+    ]),
   }),
   monpilea: Object.freeze({
     name: "Monpilea",
@@ -55,6 +93,95 @@ export const CHAINS = Object.freeze({
     hybrid: true,
     levels: Object.freeze(["Złotolistka"]),
   }),
+  storczyk: Object.freeze({
+    name: "Storczyk",
+    color: "#d96faf",
+    levels: Object.freeze([
+      "Nasionko storczyka",
+      "Korzonek",
+      "Pąk storczyka",
+      "Storczyk",
+      "Złoty Storczyk",
+      "Diamentowy Storczyk",
+      "Tęczowy Storczyk",
+    ]),
+  }),
+  slonecznik: Object.freeze({
+    name: "Słonecznik",
+    color: "#e8b62e",
+    levels: Object.freeze([
+      "Pestka słonecznika",
+      "Kiełek słonecznika",
+      "Młody słonecznik",
+      "Słonecznik",
+      "Złoty Słonecznik",
+      "Diamentowy Słonecznik",
+      "Tęczowy Słonecznik",
+    ]),
+  }),
+  truskawka: Object.freeze({
+    name: "Truskawka",
+    color: "#e8505b",
+    levels: Object.freeze([
+      "Nasionko truskawki",
+      "Rozetka",
+      "Kwitnąca truskawka",
+      "Truskawka",
+      "Złota Truskawka",
+      "Diamentowa Truskawka",
+      "Tęczowa Truskawka",
+    ]),
+  }),
+  lotos: Object.freeze({
+    name: "Lotos",
+    color: "#ff9fb2",
+    levels: Object.freeze([
+      "Nasionko lotosu",
+      "Pływający listek",
+      "Pąk lotosu",
+      "Lotos",
+      "Złoty Lotos",
+      "Diamentowy Lotos",
+      "Tęczowy Lotos",
+    ]),
+  }),
+  baobab: Object.freeze({
+    name: "Baobab",
+    color: "#b07a4a",
+    levels: Object.freeze([
+      "Nasionko baobabu",
+      "Kiełek baobabu",
+      "Młody baobab",
+      "Baobab",
+      "Złoty Baobab",
+      "Diamentowy Baobab",
+      "Tęczowy Baobab",
+    ]),
+  }),
+  storslonek: Object.freeze({
+    name: "Storsłonek",
+    color: "#e889c8",
+    hybrid: true,
+    levels: Object.freeze(["Storsłonek Promienny"]),
+  }),
+  truslotos: Object.freeze({
+    name: "Truslotos",
+    color: "#ff8fa0",
+    hybrid: true,
+    levels: Object.freeze(["Truslotos Słodki"]),
+  }),
+  baobonstera: Object.freeze({
+    name: "Baobonstera",
+    color: "#7aa35a",
+    hybrid: true,
+    levels: Object.freeze(["Baobonstera Olbrzymia"]),
+  }),
+  teczokwiat: Object.freeze({
+    name: "Tęczokwiat",
+    color: "#b98be8",
+    hybrid: true,
+    levels: Object.freeze(["Tęczokwiat"]),
+  }),
 });
 
 // Hybrydy: para (dowolna kolejność) → hybryda; liście za skrzyżowanie i za kompost hybrydy.
@@ -62,25 +189,38 @@ export const HYBRIDS = Object.freeze({
   monpilea: Object.freeze({ parents: Object.freeze(["monstera", "pilea"]), leaves: 60, compost: 50 }),
   alopaproc: Object.freeze({ parents: Object.freeze(["paproc", "kaktus"]), leaves: 60, compost: 50 }),
   zlotolistka: Object.freeze({ parents: Object.freeze(["monpilea", "alopaproc"]), leaves: 200, compost: 150 }),
+  storslonek: Object.freeze({ parents: Object.freeze(["storczyk", "slonecznik"]), leaves: 80, compost: 60 }),
+  truslotos: Object.freeze({ parents: Object.freeze(["truskawka", "lotos"]), leaves: 80, compost: 60 }),
+  baobonstera: Object.freeze({ parents: Object.freeze(["baobab", "monstera"]), leaves: 100, compost: 80 }),
+  teczokwiat: Object.freeze({ parents: Object.freeze(["storslonek", "truslotos"]), leaves: 260, compost: 200 }),
 });
 
 // Sowia doniczka: stuknięcie kładzie nasionko na losowym wolnym polu; ładunki (najwyżej `max`) wracają co `regen` s.
 // `chain` — łańcuch startowy; `chains` — łańcuchy doniczki z wagą losowania i liczbą połączeń, od której wchodzą.
+// `window` (P5.2): doniczka losuje z łańcucha startowego i `window` ostatnio odblokowanych (przy 9 łańcuchach plansza
+// 7 × 9 zapychałaby się różnymi nasionkami); starsze rośliny zostają na planszy, a Ogród na dachu pozwala je wybrać.
 export const POT = Object.freeze({
   max: 12,
   regen: 3,
   chain: "monstera",
+  window: 5,
   chains: Object.freeze([
     Object.freeze({ chain: "monstera", weight: 4, unlock: 0 }),
     Object.freeze({ chain: "pilea", weight: 3, unlock: 10 }),
     Object.freeze({ chain: "paproc", weight: 2, unlock: 30 }),
     Object.freeze({ chain: "kaktus", weight: 2, unlock: 60 }),
+    Object.freeze({ chain: "storczyk", weight: 2, unlock: 100 }),
+    Object.freeze({ chain: "slonecznik", weight: 2, unlock: 150 }),
+    Object.freeze({ chain: "truskawka", weight: 2, unlock: 220 }),
+    Object.freeze({ chain: "lotos", weight: 2, unlock: 300 }),
+    Object.freeze({ chain: "baobab", weight: 2, unlock: 400 }),
   ]),
 });
 
-// Liście monstery: za połączenie — według poziomu wyniku; za kompost — według poziomu usuniętego przedmiotu.
-export const MERGE_LEAVES = Object.freeze([0, 0, 1, 3, 8, 20]);
-export const COMPOST_LEAVES = Object.freeze([0, 1, 2, 4, 10, 25]);
+// Liście monstery: za połączenie — według poziomu wyniku; za kompost — według poziomu usuniętego przedmiotu (od P5.1
+// także poziomy 6 i 7).
+export const MERGE_LEAVES = Object.freeze([0, 0, 1, 3, 8, 20, 50, 120]);
+export const COMPOST_LEAVES = Object.freeze([0, 1, 2, 4, 10, 25, 60, 150]);
 
 // Sowie sąsiadki (krok 8.1, E8b2): każda ma zawsze jedno zamówienie; `color` — chustka (ramka karty, główka sowy).
 export const NEIGHBORS = Object.freeze([
@@ -89,18 +229,21 @@ export const NEIGHBORS = Object.freeze([
   Object.freeze({ id: "pojdzka", name: "Pójdźka Pela", color: "#8f9bb8" }),
 ]);
 
-// Zamówienia: najwyższy poziom rośnie co `levelEvery` wykonanych zamówień (od `startLevel` do 5, zakres 3 poziomów);
-// poziomy do `pairUpTo` czasem po dwie sztuki; od `hybridFrom` zamówień czasem hybryda (gdy jej składniki są
-// w doniczce). Nagroda: liście za sztukę (według poziomu) i gwiazdki odnowy za zamówienie (+1 za drugą sztukę).
+// Zamówienia: najwyższy poziom rośnie co `levelEvery` wykonanych zamówień (od `startLevel` do 5, zakres 3 poziomów),
+// od `diamondFrom` zamówień do 6., od `rainbowFrom` — do 7. (P5.1); poziomy do `pairUpTo` czasem po dwie sztuki; od
+// `hybridFrom` zamówień czasem hybryda (gdy jej składniki są w doniczce). Nagroda: liście za sztukę (według poziomu)
+// i gwiazdki odnowy za zamówienie (+1 za drugą sztukę).
 export const ORDERS = Object.freeze({
   startLevel: 2,
   levelEvery: 3,
+  diamondFrom: 60,
+  rainbowFrom: 120,
   pairUpTo: 3,
   pairChance: 0.35,
   hybridFrom: 8,
   hybridChance: 0.15,
-  leaves: Object.freeze([0, 2, 4, 9, 20, 45]),
-  stars: Object.freeze([0, 1, 1, 1, 2, 3]),
+  leaves: Object.freeze([0, 2, 4, 9, 20, 45, 100, 220]),
+  stars: Object.freeze([0, 1, 1, 1, 2, 3, 4, 6]),
   hybridLeaves: 90,
   hybridStars: 4,
 });
@@ -198,11 +341,66 @@ export const ROOMS = Object.freeze([
     ],
     "Zamówienia dają o połowę więcej liści",
   ),
+  // Pomieszczenia 11–16 (P5.3, uwaga L5: „więcej rozwinięć”) — dopisane na końcu (klucze na zawsze).
+  room(
+    "palm",
+    "🌴",
+    "Palmiarnia",
+    5,
+    ["Ustaw donice z palmami", "Zawieś wentylatory", "Rozłóż maty z trawy", "Postaw leżak"],
+    "Sowia doniczka mieści jeszcze 2 ładunki więcej",
+  ),
+  room(
+    "bees",
+    "🐝",
+    "Pasieka",
+    5,
+    ["Ustaw ule", "Posadź lawendę", "Rozłóż plastry miodu", "Zawieś tabliczkę „Uwaga, pszczółki!”"],
+    "Kompost złotej rośliny i wyższej daje też 1 gwiazdkę",
+  ),
+  room(
+    "tea",
+    "🍵",
+    "Herbaciarnia",
+    5,
+    ["Ustaw czajnik", "Rozłóż obrus", "Postaw filiżanki", "Zaparz miętę"],
+    "Basen Humbaka zaprasza co 4 zamówienia",
+  ),
+  room(
+    "stars",
+    "🔭",
+    "Obserwatorium",
+    6,
+    ["Zamontuj teleskop", "Rozwieś mapę nieba", "Ustaw krzesło", "Otwórz kopułę", "Zapal lampkę"],
+    "Zamówienia roślin 6. i 7. poziomu: +1 gwiazdka",
+  ),
+  room(
+    "butterflies",
+    "🦋",
+    "Motylarnia",
+    6,
+    ["Posadź kwiaty", "Rozwieś siatkę", "Ustaw poidełko z nektarem", "Wypuść motyle", "Zawieś huśtawkę"],
+    "Kózka przychodzi co 3. zamówienie",
+  ),
+  room(
+    "roof",
+    "🏙️",
+    "Ogród na dachu",
+    6,
+    ["Wnieś skrzynki", "Rozwieś girlandę", "Postaw ławeczkę", "Posadź zioła", "Rozłóż hamak", "Zapal lampiony"],
+    "Wybierasz nasiona w Sowiej doniczce (także dawnych roślin)",
+  ),
 ]);
 
-// Liczby ułatwień z odnowionych pomieszczeń.
+// Liczby ułatwień z odnowionych pomieszczeń (od P5.3: `palmBonus` — Palmiarnia, `beeStars` — Pasieka, `teaEvery` —
+// Herbaciarnia, `starStars` — Obserwatorium, `butterflyEvery` — Motylarnia).
 export const PERKS = Object.freeze({
   potBonus: 2,
+  palmBonus: 2,
+  beeStars: 1,
+  teaEvery: 4,
+  starStars: 1,
+  butterflyEvery: 3,
   regenGrow: 2.5,
   regenSeedling: 2,
   sproutChance: 0.15,
@@ -275,6 +473,62 @@ export const GOATS = Object.freeze({
     text: "przeciągnij ją na przeszkodę — usuwa kanister Amic, skrzynię, telefon albo karteczkę",
   }),
 });
+
+// Kram ogrodnika (P5.4, uwaga L5 — do P5.4 liści nie dało się na nic wydać): zakupy za liście. `kind`: "pot" (pełna
+// Sowia doniczka), "star" (gwiazdka odnowy), "goat" (kózka `goat` na losowej wolnej półce), "decor" (ozdoba
+// szklarni — kupowana raz, widać ją na planszy na zawsze).
+export const KRAM = Object.freeze([
+  Object.freeze({
+    id: "doniczka",
+    icon: "🌱",
+    name: "Pełna doniczka",
+    cost: 50,
+    kind: "pot",
+    text: "Sowia doniczka od razu pełna.",
+  }),
+  Object.freeze({
+    id: "gwiazdka",
+    icon: "⭐",
+    name: "Gwiazdka odnowy",
+    cost: 200,
+    kind: "star",
+    text: "Jedna gwiazdka na odnawianie pomieszczeń.",
+  }),
+  Object.freeze({
+    id: "taran",
+    icon: "🐐",
+    name: "Kózka Taran",
+    cost: 250,
+    kind: "goat",
+    goat: "taran",
+    text: "Kózka na wolnej półce — rozbija przeszkody.",
+  }),
+  Object.freeze({
+    id: "dzoker",
+    icon: "🐐",
+    name: "Kózka Dżoker",
+    cost: 300,
+    kind: "goat",
+    goat: "dzoker",
+    text: "Kózka na wolnej półce — pasuje do każdej rośliny.",
+  }),
+  Object.freeze({
+    id: "lampki",
+    icon: "💡",
+    name: "Girlanda lampek",
+    cost: 600,
+    kind: "decor",
+    text: "Kolorowe lampki nad i pod półkami — na zawsze.",
+  }),
+  Object.freeze({
+    id: "motyle",
+    icon: "🦋",
+    name: "Motyle w szklarni",
+    cost: 900,
+    kind: "decor",
+    text: "Trzy motyle fruwają nad półkami — na zawsze.",
+  }),
+]);
 
 // Kózki z zamówień: po zamówieniu, gdy `stats.orders % orderEvery === orderAt` (2., 6., 10.…); Skoczek łączy najwyżej
 // `jumpPairs` par.

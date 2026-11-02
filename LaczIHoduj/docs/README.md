@@ -20,26 +20,40 @@ grach”.
 ## Cel gry
 
 Na półkach szklarni (7 kolumn × 9 rzędów) stoją rośliny. **Dwie takie same rośliny połączone razem dają roślinę
-następnego poziomu.** Każda roślina ma swój łańcuch pięciu poziomów:
+następnego poziomu.** Każda roślina ma swój łańcuch **siedmiu poziomów** — 5. jest złoty, 6. diamentowy (błękitny,
+z iskrami), a 7. tęczowy (szczyt łańcucha):
 
-| Roślina      | 1              | 2            | 3            | 4        | 5 (szczyt)      |
-| ------------ | -------------- | ------------ | ------------ | -------- | --------------- |
-| **Monstera** | Nasionko       | Kiełek       | Sadzonka     | Monstera | Złota Monstera  |
-| **Pilea**    | Ziarenko pilei | Listek pilei | Pieniążek    | Pilea    | Złota Pilea     |
-| **Paproć**   | Zarodnik       | Pastorał     | Młoda paproć | Paproć   | Złota Paproć    |
-| **Kaktus**   | Pestka kaktusa | Kuleczka     | Kaktusik     | Kaktus   | Kwitnący Kaktus |
+| Roślina        | 1                  | 2                  | 3                  | 4          | 5 (złoty)        |
+| -------------- | ------------------ | ------------------ | ------------------ | ---------- | ---------------- |
+| **Monstera**   | Nasionko           | Kiełek             | Sadzonka           | Monstera   | Złota Monstera   |
+| **Pilea**      | Ziarenko pilei     | Listek pilei       | Pieniążek          | Pilea      | Złota Pilea      |
+| **Paproć**     | Zarodnik           | Pastorał           | Młoda paproć       | Paproć     | Złota Paproć     |
+| **Kaktus**     | Pestka kaktusa     | Kuleczka           | Kaktusik           | Kaktus     | Kwitnący Kaktus  |
+| **Storczyk**   | Nasionko storczyka | Korzonek           | Pąk storczyka      | Storczyk   | Złoty Storczyk   |
+| **Słonecznik** | Pestka słonecznika | Kiełek słonecznika | Młody słonecznik   | Słonecznik | Złoty Słonecznik |
+| **Truskawka**  | Nasionko truskawki | Rozetka            | Kwitnąca truskawka | Truskawka  | Złota Truskawka  |
+| **Lotos**      | Nasionko lotosu    | Pływający listek   | Pąk lotosu         | Lotos      | Złoty Lotos      |
+| **Baobab**     | Nasionko baobabu   | Kiełek baobabu     | Młody baobab       | Baobab     | Złoty Baobab     |
 
-Mała cyfra w rogu pola pokazuje poziom rośliny. Za każde połączenie dostajesz **liście monstery** (licznik 🍃 w prawym
-górnym rogu): poziom 2 — 1, poziom 3 — 3, poziom 4 — 8, poziom 5 — 20. Dwie takie same rośliny na szczycie łańcucha
-już się nie łączą — ale mogą dać **hybrydę**.
+Poziom 6 to np. **Diamentowa Monstera** (u Kaktusa — Diamentowy Kaktus), a poziom 7 — **Tęczowa Monstera**. Mała cyfra
+w rogu pola pokazuje poziom rośliny. Za każde połączenie dostajesz **liście monstery** (licznik 🍃 w prawym górnym
+rogu): poziom 2 — 1, poziom 3 — 3, poziom 4 — 8, poziom 5 — 20, poziom 6 — 50, poziom 7 — 120. **Dwie takie same złote
+rośliny łączą się w diamentową**, dwie diamentowe — w tęczową. Dwie tęczowe już się nie łączą. **Dwie różne złote
+rośliny** dają **hybrydę**.
 
 ## Hybrydy
 
-**Dwie różne rośliny na szczycie łańcucha** połączone razem dają hybrydę — jak w dawnej Sowiej Szklarni:
+**Dwie różne złote rośliny** (5. poziom) połączone razem dają hybrydę — jak w dawnej Sowiej Szklarni:
 
 - **Złota Monstera + Złota Pilea → Monpilea Przytulna** (+60 liści),
 - **Złota Paproć + Kwitnący Kaktus → Alopaproć Wachlarzowa** (+60 liści),
-- **Monpilea Przytulna + Alopaproć Wachlarzowa → Złotolistka** (+200 liści).
+- **Monpilea Przytulna + Alopaproć Wachlarzowa → Złotolistka** (+200 liści),
+- **Złoty Storczyk + Złoty Słonecznik → Storsłonek Promienny** (+80 liści),
+- **Złota Truskawka + Złoty Lotos → Truslotos Słodki** (+80 liści),
+- **Złoty Baobab + Złota Monstera → Baobonstera Olbrzymia** (+100 liści),
+- **Storsłonek Promienny + Truslotos Słodki → Tęczokwiat** (+260 liści).
+
+Diamentowe i tęczowe rośliny się nie krzyżują.
 
 Hybryda stoi w doniczce ze złotym rantem, świeci się złotą poświatą i ma w rogu **★** zamiast cyfry. Kolejność nie ma
 znaczenia (Pilea na Monsterę też działa). Gdy przeciągasz roślinę nad pole, z którym zrobi hybrydę, pole świeci się na
@@ -93,6 +107,31 @@ ułatwienie:
 | 🔬 Laboratorium Pyłku | 4 (5 etapów)     | zamówienia roślin 4. i 5. poziomu oraz hybryd: +1 gwiazdka     |
 | 🌙 Kącik Drzemki      | 4 (6 etapów)     | doniczka ładuje się też wtedy, gdy gra jest zamknięta          |
 | 🦉 Sowie Centrum      | 5 (6 etapów)     | zamówienia dają o połowę więcej liści                          |
+| 🌴 Palmiarnia         | 5 (4 etapy)      | Sowia doniczka mieści jeszcze 2 ładunki więcej (16)            |
+| 🐝 Pasieka            | 5 (4 etapy)      | kompost złotej rośliny i wyższej daje też 1 gwiazdkę           |
+| 🍵 Herbaciarnia       | 5 (4 etapy)      | Basen Humbaka zaprasza co 4 zamówienia                         |
+| 🔭 Obserwatorium      | 6 (5 etapów)     | zamówienia roślin 6. i 7. poziomu: +1 gwiazdka                 |
+| 🦋 Motylarnia         | 6 (5 etapów)     | kózka przychodzi co 3. zamówienie                              |
+| 🏙️ Ogród na dachu     | 6 (6 etapów)     | wybierasz nasiona w Sowiej doniczce (także dawnych roślin)     |
+
+Kto odnowił już 10 dawnych pomieszczeń, zaczyna od Palmiarni — nic z dawnej odnowy nie ginie. Po Ogrodzie na dachu
+w oknie pomieszczeń pojawia się pole **„Nasiona w Sowiej doniczce”**: wybierz roślinę (albo „Losowo”), a doniczka będzie
+dawać jej nasionka.
+
+## Kram ogrodnika
+
+W oknie **Pomieszczenia szklarni** jest przycisk **🛒 Kram ogrodnika** — tu wydajesz **liście**:
+
+| Oferta               | Cena   | Co daje                                                |
+| -------------------- | ------ | ------------------------------------------------------ |
+| 🌱 Pełna doniczka    | 50 🍃  | Sowia doniczka od razu pełna                           |
+| ⭐ Gwiazdka odnowy   | 200 🍃 | jedna gwiazdka na odnawianie pomieszczeń               |
+| 🐐 Kózka Taran       | 250 🍃 | kózka na wolnej półce — rozbija przeszkody             |
+| 🐐 Kózka Dżoker      | 300 🍃 | kózka na wolnej półce — pasuje do każdej rośliny       |
+| 💡 Girlanda lampek   | 600 🍃 | kolorowe migające lampki nad i pod półkami — na zawsze |
+| 🦋 Motyle w szklarni | 900 🍃 | trzy motyle fruwają nad półkami — na zawsze            |
+
+Gdy brakuje liści, przycisk jest wyłączony i widać, ile jeszcze potrzeba.
 
 ## Przeszkody: Pracu Pracu i Amic
 
@@ -130,13 +169,13 @@ będzie Taranem.
 
 ## Basen Humbaka
 
-Co **5 zamówień** humbak zaprasza do basenu — nad półkami pojawia się przycisk **🐋 Basen Humbaka — zagraj!**
+Co **5 zamówień** (z Herbaciarnią — co 4) humbak zaprasza do basenu — nad półkami pojawia się przycisk **🐋 Basen Humbaka — zagraj!**
 (zaproszenie czeka, aż z niego skorzystasz). Basen to **45-sekundowa runda** na osobnej planszy z wodą:
 
 - są tylko rośliny (bez przeszkód), a **Sowia doniczka jest darmowa** — stukaj ile chcesz (licznik pokazuje „∞”);
 - każde połączenie daje **punkty** (im wyższy poziom, tym więcej), a **szybkie połączenia po sobie** (w ciągu 2,5 s)
   podbijają mnożnik do ×3;
-- roślina, która dojdzie do **szczytu łańcucha**, robi **plusk** i znika z premią +150 pkt (zwalnia miejsce);
+- roślina, która dojdzie do **złotego poziomu**, robi **plusk** i znika z premią +150 pkt (zwalnia miejsce);
 - czas, punkty i mnożnik widać nad planszą; szklarnia czeka bez zmian.
 
 Po rundzie okno pokazuje wynik i **rekord osobisty**, a nagroda trafia do szklarni: **kózki** na półkach (1, za 600 pkt —
@@ -149,14 +188,17 @@ Przycisk **🌱 Sowia doniczka** na dole kładzie **nasionko** na losowym wolnym
 (licznik „12/12”); jeden ładunek wraca **co 3 sekundy**.
 
 Na początku doniczka daje tylko nasionka Monstery. Kolejne rośliny dochodzą z liczbą połączeń (hybrydy też się
-liczą): **Pilea po 10 połączeniach**, **Paproć po 30**, **Kaktus po 60** — gra ogłasza to komunikatem „Nowa roślina
-w Sowiej doniczce”. Potem doniczka losuje nasionko spośród odblokowanych roślin (Monstera najczęściej). Gdy półki są pełne, doniczka nic nie kładzie i nie zużywa
+liczą): **Pilea po 10 połączeniach**, **Paproć po 30**, **Kaktus po 60**, **Storczyk po 100**, **Słonecznik po 150**,
+**Truskawka po 220**, **Lotos po 300** i **Baobab po 400** — gra ogłasza to komunikatem „Nowa roślina w Sowiej
+doniczce”. Doniczka losuje nasionko spośród Monstery (najczęściej) i **pięciu ostatnio odblokowanych roślin** —
+starsze rośliny zostają na półkach, a po odnowieniu Ogrodu na dachu można je wybrać. Gdy półki są pełne, doniczka nic nie kładzie i nie zużywa
 ładunku — wtedy połącz albo skompostuj jakąś roślinę.
 
 ## Kompost
 
 Kompostownik usuwa roślinę i zwalnia pole — za liście (poziom 1 — 1, poziom 2 — 2, poziom 3 — 4, poziom 4 — 10,
-poziom 5 — 25; Monpilea i Alopaproć — 50, Złotolistka — 150). Możesz:
+poziom 5 — 25, poziom 6 — 60, poziom 7 — 150; Monpilea i Alopaproć — 50, Storsłonek i Truslotos — 60, Baobonstera — 80,
+Złotolistka — 150, Tęczokwiat — 200). Możesz:
 
 - **przeciągnąć roślinę na przycisk ♻️ Kompost** (przycisk podświetla się na zielono, gdy roślina jest nad nim), albo
 - **zaznaczyć roślinę stuknięciem i stuknąć ♻️ Kompost**.

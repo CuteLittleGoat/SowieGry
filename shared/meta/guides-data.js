@@ -333,13 +333,14 @@ export const GUIDES = Object.freeze({
       {
         id: "hybrydy",
         title: "Łańcuchy i hybrydy",
-        text: "Monstera, Pilea, Paproć i Kaktus mają po 5 poziomów. Dwie różne rośliny na szczycie łańcucha dają hybrydę.",
+        text: "Rośliny mają po 7 poziomów: 5. złoty, 6. diamentowy, 7. tęczowy. Dwie różne złote rośliny dają hybrydę, a dwie takie same złote — diamentową.",
+        tip: "Z czasem w doniczce pojawiają się Storczyk, Słonecznik, Truskawka, Lotos i Baobab.",
         sprite: "lisc-teczowy",
       },
       {
         id: "zamowienia",
         title: "Zamówienia i pomieszczenia",
-        text: "Trzy sąsiadki proszą o rośliny. Za zamówienia dostajesz liście i gwiazdki, a za gwiazdki odnawiasz 10 pomieszczeń — każde daje ułatwienie.",
+        text: "Trzy sąsiadki proszą o rośliny. Za zamówienia dostajesz liście i gwiazdki: za gwiazdki odnawiasz 16 pomieszczeń (każde daje ułatwienie), a liście wydajesz w Kramie ogrodnika.",
         sprite: "sowa-radosc",
       },
       {
@@ -357,7 +358,7 @@ export const GUIDES = Object.freeze({
       {
         id: "humbak",
         title: "Basen Humbaka",
-        text: "Co 5 zamówień humbak zaprasza do 45-sekundowej rundy: szybkie połączenia mnożą punkty, a szczyt łańcucha robi plusk. Pobij swój rekord!",
+        text: "Co 5 zamówień humbak zaprasza do 45-sekundowej rundy: szybkie połączenia mnożą punkty, a złota roślina robi plusk. Pobij swój rekord!",
         sprite: "humbak",
         tip: "Gwiazdki i kózki z basenu trafiają do szklarni.",
       },

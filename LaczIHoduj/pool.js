@@ -1,8 +1,8 @@
 // Łącz i Hoduj — Basen Humbaka (krok 8.2, E8c3; czysta logika, bez DOM): 45-sekundowa runda bonusowa na osobnej
 // planszy z wodą. Same rośliny (bez przeszkód i kózek), darmowa Sowia doniczka, punkty za połączenia z mnożnikiem
 // za szybkie połączenia po sobie, roślina na szczycie łańcucha znika z pluskiem (premia i wolne pole).
-import { BOARD, POOL } from "./config.js";
-import { createBoard, emptyCells, maxLevel, moveItem, spawnItem } from "./board.js";
+import { BOARD, CROSS_LEVEL, POOL } from "./config.js";
+import { createBoard, emptyCells, moveItem, spawnItem } from "./board.js";
 import { pickChain } from "./game.js";
 
 /** Punkty za połączenie w roślinę poziomu `level` przy mnożniku `combo`. */
@@ -56,8 +56,8 @@ export function createPool({ merges = 0, random = Math.random } = {}) {
     state.score += points;
     state.merges += 1;
     emit("merge", { from, to, item: result.item, points, combo: state.combo });
-    // Szczyt łańcucha: plusk — roślina znika z premią.
-    if (result.item.level >= maxLevel(result.item.chain)) {
+    // Złota roślina (poziom krzyżowania — do P5.1 szczyt łańcucha): plusk — roślina znika z premią.
+    if (result.item.level >= CROSS_LEVEL) {
       board.cells[to] = null;
       state.score += POOL.splashPoints;
       state.splashes += 1;

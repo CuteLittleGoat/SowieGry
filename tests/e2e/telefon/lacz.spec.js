@@ -114,7 +114,7 @@ test("Łącz i Hoduj: Sowia doniczka, kompostownik (przeciągnięcie i przycisk)
   expect(errors).toEqual([]);
 });
 
-test("Łącz i Hoduj: dwa różne szczyty łańcuchów — hybryda; po 10 połączeniach Pilea w Sowiej doniczce", async ({
+test("Łącz i Hoduj: dwie różne złote rośliny — hybryda; po 10 połączeniach Pilea w Sowiej doniczce", async ({
   page,
 }) => {
   const errors = watchErrors(page);
@@ -141,6 +141,64 @@ test("Łącz i Hoduj: dwa różne szczyty łańcuchów — hybryda; po 10 połą
   }
   expect((await game(page, "state")).stats.merges).toBe(10);
   await expect(page.getByText("Nowa roślina w Sowiej doniczce: Pilea!")).toBeVisible({ timeout: 15_000 });
+  expect(errors).toEqual([]);
+});
+
+test("Łącz i Hoduj (uwagi L2, L3, L5): złote → diamentowa → tęczowa, Baobab, Kram ogrodnika i wybór nasion", async ({
+  page,
+}) => {
+  const errors = watchErrors(page);
+  await openGame(page);
+  // Dwie Monstery 4. poziomu → złota (komunikat o krzyżowaniu i diamentowej).
+  await game(page, "place", 0, 4, "monstera");
+  await game(page, "place", 1, 4, "monstera");
+  await drag(page, 0, 1);
+  expect((await cells(page))[1]).toEqual({ chain: "monstera", level: 5 });
+  await expect(page.getByText("Złota Monstera! Skrzyżuj ją z inną złotą rośliną")).toBeVisible();
+  // Dwie złote → diamentowa, dwie diamentowe → tęczowa (szczyt łańcucha).
+  await game(page, "place", 2, 5, "monstera");
+  expect(await game(page, "move", 2, 1)).toBe("merge");
+  expect((await cells(page))[1]).toEqual({ chain: "monstera", level: 6 });
+  await expect(page.locator("[data-hint]")).toHaveText("Diamentowa Monstera!");
+  await game(page, "place", 2, 6, "monstera");
+  await drag(page, 2, 1);
+  expect((await cells(page))[1]).toEqual({ chain: "monstera", level: 7 });
+  await expect(page.getByText("Tęczowa Monstera! Szczyt łańcucha")).toBeVisible();
+  // Baobab: dwa Młode baobaby → Baobab.
+  await game(page, "place", 10, 3, "baobab");
+  await game(page, "place", 11, 3, "baobab");
+  await drag(page, 10, 11);
+  expect((await cells(page))[11]).toEqual({ chain: "baobab", level: 4 });
+  await expect(page.locator("[data-hint]")).toHaveText("Baobab!");
+  // Kram ogrodnika: z okna pomieszczeń; gwiazdka i girlanda lampek za liście.
+  await game(page, "setLeaves", 1000);
+  await page.locator("[data-rooms]").click();
+  await page.getByRole("button", { name: "🛒 Kram ogrodnika" }).click();
+  const kram = page.getByRole("dialog", { name: "Kram ogrodnika" });
+  await expect(kram).toBeVisible();
+  await expect(kram.locator(".lacz-offer")).toHaveCount(6);
+  const stars = (await game(page, "state")).stars;
+  await kram.locator('[data-offer="gwiazdka"]').getByRole("button", { name: "Kup — 🍃 200" }).click();
+  await kram.locator('[data-offer="lampki"]').getByRole("button", { name: "Kup — 🍃 600" }).click();
+  await expect(kram.locator('[data-offer="lampki"]')).toHaveClass(/is-done/);
+  await expect(kram.locator('[data-offer="motyle"]').getByRole("button")).toBeDisabled();
+  await expect(kram.locator('[data-offer="motyle"]')).toContainText("Potrzeba 900 🍃 (masz 200).");
+  const after = await game(page, "state");
+  expect(after.stars).toBe(stars + 1);
+  expect(after.leaves).toBe(200);
+  expect(after.decor).toEqual({ lampki: true });
+  await kram.getByRole("button", { name: "Zamknij" }).click();
+  // Ogród na dachu (wszystkie pomieszczenia odnowione): wybór nasion — Pilea, choć jest już poza oknem doniczki.
+  await game(page, "setMerges", 400);
+  await game(page, "setRenovation", 999);
+  await page.locator("[data-rooms]").click();
+  const rooms = page.getByRole("dialog", { name: "Pomieszczenia szklarni" });
+  await expect(rooms.locator(".lacz-room")).toHaveCount(16);
+  await rooms.locator("[data-seed]").selectOption("pilea");
+  expect((await game(page, "state")).seedChoice).toBe("pilea");
+  await rooms.getByRole("button", { name: "Zamknij" }).click();
+  const index = await game(page, "tapPot");
+  expect((await cells(page))[index].chain).toBe("pilea");
   expect(errors).toEqual([]);
 });
 
@@ -267,7 +325,7 @@ test("Łącz i Hoduj: odnawianie pomieszczeń — okno z portfela, etapy za gwia
   await wallet.click();
   const dialog = page.getByRole("dialog", { name: "Pomieszczenia szklarni" });
   await expect(dialog).toBeVisible();
-  await expect(dialog.locator(".lacz-room")).toHaveCount(10);
+  await expect(dialog.locator(".lacz-room")).toHaveCount(16);
   await expect(dialog.locator('[data-room="grow"]')).toContainText("🔒 Najpierw: Doniczarnia");
   // Trzy etapy Doniczarni po 1 gwiazdce.
   for (const step of ["Zamieść podłogę", "Umyj szyby", "Ustaw stół do sadzenia"]) {

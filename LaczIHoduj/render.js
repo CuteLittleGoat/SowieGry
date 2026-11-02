@@ -126,6 +126,69 @@ export function createBoardRenderer({ canvas, cols, rows }) {
     }
   }
 
+  // Ozdoby z Kramu ogrodnika (P5.4). Girlanda lampek: kolorowe żarówki na ramce nad i pod półkami (migoczą).
+  function lights(time) {
+    const { width, height } = size;
+    const colors = ["#ff6f91", "#f4c542", "#5cc8e8", "#9b6ddb", "#3fae6a"];
+    const radius = Math.max(2, Math.min(3.2, layout.gap + 1));
+    for (const y of [radius + 1, height - radius - 1]) {
+      context.strokeStyle = "rgba(59, 47, 74, 0.35)";
+      context.lineWidth = 1;
+      context.beginPath();
+      context.moveTo(0, y - radius);
+      context.lineTo(width, y - radius);
+      context.stroke();
+      let index = 0;
+      for (let x = radius * 3; x < width - radius; x += radius * 6, index += 1) {
+        context.globalAlpha = 0.55 + 0.45 * Math.sin(time * 3 + index * 1.7);
+        context.fillStyle = colors[index % colors.length];
+        context.beginPath();
+        context.arc(x, y, radius, 0, Math.PI * 2);
+        context.fill();
+      }
+    }
+    context.globalAlpha = 1;
+  }
+
+  // Motyle: trzy motyle krążą nad półkami (skrzydła trzepoczą), półprzezroczyste — nie zasłaniają roślin.
+  function butterflies(time) {
+    const { width, height } = size;
+    const colors = ["#ff9d4d", "#9b6ddb", "#4d9de0"];
+    const span = layout.size * 0.16;
+    colors.forEach((color, index) => {
+      const x = width * (0.2 + index * 0.3) + Math.sin(time * 0.7 + index * 2) * width * 0.15;
+      const y = height * (0.22 + index * 0.27) + Math.cos(time * 0.9 + index) * height * 0.06;
+      const flap = 0.35 + 0.65 * Math.abs(Math.sin(time * 9 + index));
+      context.globalAlpha = 0.85;
+      context.fillStyle = color;
+      for (const side of [-1, 1]) {
+        context.beginPath();
+        context.ellipse(
+          x + side * span * 0.5 * flap,
+          y - span * 0.15,
+          span * 0.5 * flap,
+          span * 0.42,
+          0,
+          0,
+          Math.PI * 2,
+        );
+        context.ellipse(
+          x + side * span * 0.35 * flap,
+          y + span * 0.28,
+          span * 0.32 * flap,
+          span * 0.26,
+          0,
+          0,
+          Math.PI * 2,
+        );
+        context.fill();
+      }
+      context.fillStyle = COLORS.kontur;
+      context.fillRect(x - 1, y - span * 0.4, 2, span * 0.85);
+    });
+    context.globalAlpha = 1;
+  }
+
   // Szklarnia: szybki w szkielecie, deski półek pod każdym rzędem, puste miejsca na doniczki.
   function background(time) {
     const { width, height } = size;
@@ -365,7 +428,8 @@ export function createBoardRenderer({ canvas, cols, rows }) {
      * draw({ cells, blocks, ringing, selected, drag: { from, x, y, target, kind } | null, time, dt }) — `kind` pola
      * docelowego: "merge" (zielone), "move" / "swap" (niebieskie), "compost" (bez podświetlenia pola); `blocks` —
      * warstwa przeszkód, `ringing` — telefon Pracu zaraz zadzwoni, `theme` — "greenhouse" (półki) albo "pool"
-     * (Basen Humbaka — woda), `cursor` — pole kursora klawiatury (−1 — bez ramki).
+     * (Basen Humbaka — woda), `cursor` — pole kursora klawiatury (−1 — bez ramki), `decor` — ozdoby z Kramu
+     * ogrodnika (P5.4: `lampki`, `motyle`; tylko w szklarni).
      */
     draw({
       cells,
@@ -377,12 +441,16 @@ export function createBoardRenderer({ canvas, cols, rows }) {
       time = 0,
       dt = 0,
       theme = "greenhouse",
+      decor = null,
     }) {
       if (!size.width) resize();
       context.setTransform(size.ratio, 0, 0, size.ratio, 0, 0);
       context.clearRect(0, 0, size.width, size.height);
       if (theme === "pool") water(time);
-      else background(time);
+      else {
+        background(time);
+        if (decor?.lampki) lights(time);
+      }
       const s = layout.size;
       if (drag && drag.target >= 0 && drag.kind !== "compost") {
         const rect = cellRect(drag.target);
@@ -412,6 +480,7 @@ export function createBoardRenderer({ canvas, cols, rows }) {
         const center = cellCenter(index);
         block(target, index, center.x, center.y, s, time, ringing);
       });
+      if (theme !== "pool" && decor?.motyle) butterflies(time);
       if (selected >= 0 && !drag) {
         const rect = cellRect(selected);
         context.strokeStyle = COLORS.zloto;

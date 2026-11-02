@@ -5,9 +5,11 @@ import {
   BOARD,
   CHAINS,
   COMPOST_LEAVES,
+  CROSS_LEVEL,
   GOAT_RULES,
   GOATS,
   HYBRIDS,
+  KRAM,
   MERGE_LEAVES,
   NEIGHBORS,
   OBSTACLES,
@@ -40,9 +42,23 @@ import {
 /** Łańcuchy doniczki dostępne przy danej liczbie połączeń (`stats.merges`). */
 export const potChains = (merges) => POT.chains.filter((entry) => merges >= entry.unlock);
 
-/** Łańcuch nasionka z doniczki: losowanie z wagami spośród odblokowanych. */
-export function pickChain(merges, random = Math.random) {
+/**
+ * Łańcuchy, z których doniczka losuje (P5.2): startowy (`POT.chain`) i `POT.window` ostatnio odblokowanych — przy
+ * 9 łańcuchach plansza 7 × 9 nie zapycha się różnymi nasionkami. Starsze rośliny zostają na planszy.
+ */
+export function activeChains(merges) {
   const list = potChains(merges);
+  const first = list.filter((entry) => entry.chain === POT.chain);
+  return [...first, ...list.filter((entry) => entry.chain !== POT.chain).slice(-POT.window)];
+}
+
+/**
+ * Łańcuch nasionka z doniczki: losowanie z wagami spośród `activeChains`; `chosen` (P5.3, Ogród na dachu) — łańcuch
+ * wybrany przez gracza, gdy jest odblokowany (wtedy bez losowania).
+ */
+export function pickChain(merges, random = Math.random, chosen = null) {
+  if (chosen && potChains(merges).some((entry) => entry.chain === chosen)) return chosen;
+  const list = activeChains(merges);
   const total = list.reduce((sum, entry) => sum + entry.weight, 0);
   let roll = random() * total;
   for (const entry of list) {
@@ -79,8 +95,9 @@ export function renovation(done) {
 /** Czy pomieszczenie `id` jest odnowione w stanie gry (ułatwienie działa). */
 export const hasPerk = (state, id) => renovation(state.renovation).finished.includes(id);
 
-/** Pojemność doniczki (Doniczarnia: +2). */
-export const potMax = (state) => POT.max + (hasPerk(state, "potting") ? PERKS.potBonus : 0);
+/** Pojemność doniczki (Doniczarnia: +2; od P5.3 Palmiarnia: kolejne +2). */
+export const potMax = (state) =>
+  POT.max + (hasPerk(state, "potting") ? PERKS.potBonus : 0) + (hasPerk(state, "palm") ? PERKS.palmBonus : 0);
 
 /** Co ile sekund wraca ładunek (Sala Upraw: 2,5 s; Sadzonkarnia: 2 s). */
 export function potRegen(state) {
@@ -142,16 +159,20 @@ export function poolReward(score) {
 /** Sąsiadka po kluczu (`NEIGHBORS`) albo null. */
 export const neighborOf = (id) => NEIGHBORS.find((entry) => entry.id === id) || null;
 
-/** Zakres poziomów zamówień przy `done` wykonanych zamówieniach: najwyższy rośnie do 5, zakres 3 poziomów (od 2). */
+/**
+ * Zakres poziomów zamówień przy `done` wykonanych zamówieniach: najwyższy rośnie do 5 (co `levelEvery`), od
+ * `diamondFrom` zamówień — 6, od `rainbowFrom` — 7 (P5.1); zakres 3 poziomów (od 2).
+ */
 export function orderLevels(done) {
-  const max = Math.min(5, ORDERS.startLevel + Math.floor(done / ORDERS.levelEvery));
+  const golden = Math.min(5, ORDERS.startLevel + Math.floor(done / ORDERS.levelEvery));
+  const max = done >= ORDERS.rainbowFrom ? 7 : done >= ORDERS.diamondFrom ? 6 : golden;
   return { min: Math.max(2, max - 2), max };
 }
 
 // Jedno losowanie zamówienia (bez sprawdzania powtórek).
 function drawOrder(neighbor, done, merges, random) {
-  const unlocked = potChains(merges).map((entry) => entry.chain);
-  // Hybrydy, których oba składniki są w doniczce (Złotolistka — z hybryd — nie trafia do zamówień).
+  const unlocked = activeChains(merges).map((entry) => entry.chain);
+  // Hybrydy, których oba składniki są w doniczce (Złotolistka i Tęczokwiat — z hybryd — nie trafiają do zamówień).
   const hybrids = Object.keys(HYBRIDS).filter((id) => HYBRIDS[id].parents.every((chain) => unlocked.includes(chain)));
   if (done >= ORDERS.hybridFrom && hybrids.length && random() < ORDERS.hybridChance) {
     return {
@@ -210,6 +231,8 @@ export function orderReward(order, done = 0) {
       };
   const finished = renovation(done).finished;
   if (finished.includes("pollen") && (hybrid || order.level >= 4)) reward.stars += PERKS.pollenStars;
+  // Obserwatorium (P5.3): diamentowe i tęczowe zamówienia — gwiazdka więcej.
+  if (finished.includes("stars") && !hybrid && order.level > CROSS_LEVEL) reward.stars += PERKS.starStars;
   if (finished.includes("command")) reward.leaves = Math.round(reward.leaves * PERKS.commandFactor);
   return reward;
 }
@@ -260,12 +283,27 @@ export function defaultState(now = Date.now(), random = Math.random) {
     starter: false,
     // Schowek przedmiotów, których ta wersja nie zna (P5.0): [{ index, item }].
     stash: [],
+    // Wybór nasion w doniczce (P5.3, Ogród na dachu): null — losowo, albo klucz łańcucha.
+    seedChoice: null,
+    // Ozdoby szklarni z Kramu ogrodnika (P5.4): { lampki: true, … }.
+    decor: {},
     leaves: 0,
     stars: 0,
     renovation: 0,
     pot: { charges: POT.max, progress: 0 },
     orders: fillOrders(null, { orders: 0, merges: 0 }, random),
-    stats: { merges: 0, spawns: 0, composted: 0, best: 2, moves: 0, hybrids: 0, orders: 0, goats: 0, pools: 0 },
+    stats: {
+      merges: 0,
+      spawns: 0,
+      composted: 0,
+      best: 2,
+      moves: 0,
+      hybrids: 0,
+      orders: 0,
+      goats: 0,
+      pools: 0,
+      kram: 0,
+    },
   };
 }
 
@@ -298,6 +336,14 @@ export function loadState(raw, now = Date.now(), random = Math.random) {
     tutorialDone: raw.tutorialDone === true,
     starter: raw.starter === true,
     poolBest: Math.max(0, Math.floor(number(raw.poolBest))),
+    seedChoice:
+      typeof raw.seedChoice === "string" && CHAINS[raw.seedChoice] && !CHAINS[raw.seedChoice].hybrid
+        ? raw.seedChoice
+        : null,
+    // Ozdoby: tylko `true` (nieznane klucze z nowszej wersji zostają).
+    decor: Object.fromEntries(
+      Object.entries(raw.decor && typeof raw.decor === "object" ? raw.decor : {}).filter(([, value]) => value === true),
+    ),
     orders: fillOrders(raw.orders, stats, random),
     stats,
     version: SAVE_VERSION,
@@ -309,12 +355,13 @@ export function loadState(raw, now = Date.now(), random = Math.random) {
 
 /**
  * createGame({ state, random }) → { state, board, update(dt), tapPot(), move(from, to), compost(index),
- * orderCells(slot, prefer), tapBlock(index), useGoat(index), deliver(slot, prefer), renovate(), finishPool(score),
+ * orderCells(slot, prefer), tapBlock(index), useGoat(index), deliver(slot, prefer), renovate(), buyKram(id), finishPool(score),
  * applyStarter(old), potMax(), takeEvents() }. Zdarzenia: spawn { index, item }, potEmpty,
  * boardFull, move { from, to }, swap { from, to }, merge { from, to, item, leaves, top },
  * hybrid { from, to, item, leaves }, unlock { chain, name }, compost { index, item, leaves },
  * order { slot, order, cells, leaves, stars }, newOrder { slot, order }, orderMissing { slot, order },
- * renovate { room, step, name, roomDone }, renovateMissing { room, need }; przeszkody: crate { index },
+ * renovate { room, step, name, roomDone }, renovateMissing { room, need }; Kram (P5.4): kram { id, cost, index, goat },
+ * kramMissing { id, need }, kramFull { id }; przeszkody: crate { index },
  * phone { index }, note { index, from }, noteTap { index, left }, noteGone { index }, blockHit { index, block, left },
  * phoneGone { index }, crateOpen { index, goat, leaves, stars }, blockInfo { index, block }, canister { index },
  * canisterGone { index }; kózki: goat { index, goat, from }, goatUsed { index, goat, count }, goatIdle { index, goat },
@@ -425,7 +472,14 @@ export function createGame({ state = defaultState(), random = Math.random } = {}
     state.leaves += leaves;
     state.stats.merges += 1;
     state.stats.best = Math.max(state.stats.best, item.level);
-    emit("merge", { from, to, item, leaves, top: item.level >= maxLevel(item.chain) });
+    emit("merge", {
+      from,
+      to,
+      item,
+      leaves,
+      top: item.level >= maxLevel(item.chain),
+      golden: item.level === CROSS_LEVEL,
+    });
     hitAround(to);
   }
 
@@ -596,7 +650,8 @@ export function createGame({ state = defaultState(), random = Math.random } = {}
         }
       }
     }
-    const chain = pickChain(state.stats.merges, random);
+    // Ogród na dachu (P5.3): nasiona wybrane przez gracza (`seedChoice`), inaczej losowanie z okna doniczki.
+    const chain = pickChain(state.stats.merges, random, hasPerk(state, "roof") ? state.seedChoice : null);
     // Zraszalnia: czasem od razu kiełek; Kozi Zakątek: nasionko obok takiego samego.
     const sprout = hasPerk(state, "water") && random() < PERKS.sproutChance;
     const item = { chain, level: sprout ? 2 : 1 };
@@ -647,10 +702,13 @@ export function createGame({ state = defaultState(), random = Math.random } = {}
     if (!item) return null;
     const base = HYBRIDS[item.chain]?.compost ?? (COMPOST_LEAVES[item.level] || 0);
     const leaves = hasPerk(state, "compost") ? base * PERKS.compostFactor : base;
+    // Pasieka (P5.3): kompost złotej rośliny i wyższej (nie hybrydy) daje też gwiazdkę.
+    const stars = hasPerk(state, "bees") && !HYBRIDS[item.chain] && item.level >= CROSS_LEVEL ? PERKS.beeStars : 0;
     state.leaves += leaves;
+    state.stars += stars;
     state.stats.composted += 1;
     sync();
-    emit("compost", { index, item, leaves });
+    emit("compost", { index, item, leaves, stars });
     return item;
   }
 
@@ -689,13 +747,16 @@ export function createGame({ state = defaultState(), random = Math.random } = {}
         emit("canister", { index });
       }
     }
-    // Co `POOL.every` zamówień humbak zaprasza do basenu (zaproszenie czeka, aż gracz z niego skorzysta).
-    if (state.stats.orders % POOL.every === 0 && !state.poolReady) {
+    // Co `POOL.every` zamówień (z Herbaciarnią — co `PERKS.teaEvery`) humbak zaprasza do basenu (zaproszenie czeka,
+    // aż gracz z niego skorzysta).
+    const poolEvery = hasPerk(state, "tea") ? PERKS.teaEvery : POOL.every;
+    if (state.stats.orders % poolEvery === 0 && !state.poolReady) {
       state.poolReady = true;
       emit("poolReady");
     }
-    // Sąsiadka w podzięce przysyła kózkę.
-    if (state.stats.orders % GOAT_RULES.orderEvery === GOAT_RULES.orderAt) {
+    // Sąsiadka w podzięce przysyła kózkę (z Motylarnią — co `PERKS.butterflyEvery` zamówienia).
+    const goatEvery = hasPerk(state, "butterflies") ? PERKS.butterflyEvery : GOAT_RULES.orderEvery;
+    if (state.stats.orders % goatEvery === GOAT_RULES.orderAt % goatEvery) {
       const free = emptyCells(board);
       if (free.length) {
         const index = pick(free);
@@ -706,6 +767,42 @@ export function createGame({ state = defaultState(), random = Math.random } = {}
     }
     sync();
     return reward;
+  }
+
+  // Kram ogrodnika (P5.4): zakup za liście → { id, index } albo null (zdarzenia: kram, kramMissing — brakuje liści,
+  // kramFull — doniczka już pełna, boardFull — brak wolnej półki na kózkę). Ozdobę kupuje się raz.
+  function buyKram(id) {
+    const offer = KRAM.find((entry) => entry.id === id);
+    if (!offer || (offer.kind === "decor" && state.decor[id])) return null;
+    if (offer.kind === "pot" && state.pot.charges >= potMax(state)) {
+      emit("kramFull", { id });
+      return null;
+    }
+    if (state.leaves < offer.cost) {
+      emit("kramMissing", { id, need: offer.cost - state.leaves });
+      return null;
+    }
+    let index = -1;
+    if (offer.kind === "goat") {
+      const free = emptyCells(board);
+      if (!free.length) {
+        emit("boardFull");
+        return null;
+      }
+      index = pick(free);
+      board.cells[index] = { goat: offer.goat };
+    }
+    state.leaves -= offer.cost;
+    if (offer.kind === "pot") {
+      state.pot.charges = potMax(state);
+      state.pot.progress = 0;
+    }
+    if (offer.kind === "star") state.stars += 1;
+    if (offer.kind === "decor") state.decor[id] = true;
+    state.stats.kram = (state.stats.kram || 0) + 1;
+    sync();
+    emit("kram", { id, cost: offer.cost, index, goat: offer.goat ?? null });
+    return { id, index };
   }
 
   // Odnowa: kolejny etap pomieszczenia w toku za gwiazdki (za mało — zdarzenie z brakującą liczbą).
@@ -781,6 +878,7 @@ export function createGame({ state = defaultState(), random = Math.random } = {}
     useGoat,
     deliver,
     renovate,
+    buyKram,
     finishPool,
     applyStarter,
     potMax: () => potMax(state),

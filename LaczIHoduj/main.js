@@ -19,6 +19,7 @@ import {
   GAME_SOUNDS,
   GOATS,
   GREENHOUSE_MUSIC,
+  KRAM,
   OBSTACLES,
   POOL,
   POOL_MUSIC,
@@ -27,7 +28,7 @@ import {
   ROOMS,
   SAVE_VERSION,
 } from "./config.js";
-import { createGame, defaultState, loadState, neighborOf, renovation } from "./game.js";
+import { createGame, defaultState, hasPerk, loadState, neighborOf, potChains, renovation } from "./game.js";
 import { createPool } from "./pool.js";
 import { createTutorial } from "./tutorial.js";
 import { createBoardRenderer, drawOrderCard, LIFT } from "./render.js";
@@ -216,12 +217,17 @@ function handleEvents() {
         const center = renderer.cellCenter(event.to);
         if (event.leaves) renderer.popup(`+${event.leaves}`, center.x, center.y - 10, COLORS.bialy, 18);
         hint(`${itemName(event.item)}!`);
-        // Połączenie: wyższy ton na wyższym poziomie; szczyt łańcucha — fanfara.
-        play("polaczenie", { pitch: 0.9 + event.item.level * 0.1 });
-        if (event.top) play("rekord", { volume: 0.8 });
-        if (event.top) {
+        // Połączenie: wyższy ton na wyższym poziomie; złota (krzyżowanie) i szczyt łańcucha (tęczowa) — fanfara.
+        play("polaczenie", { pitch: 0.9 + Math.min(event.item.level, 5) * 0.1 });
+        if (event.top || event.golden) play("rekord", { volume: 0.8 });
+        if (event.golden) {
           toasts.show(
-            `${itemName(event.item)}! Szczyt łańcucha — skrzyżuj ją z innym szczytem albo skompostuj za ${COMPOST_LEAVES[event.item.level]} liści`,
+            `${itemName(event.item)}! Skrzyżuj ją z inną złotą rośliną albo połącz z taką samą w diamentową`,
+            { kind: "reward", key: "zlota", priority: 2 },
+          );
+        } else if (event.top) {
+          toasts.show(
+            `${itemName(event.item)}! Szczyt łańcucha — oddaj ją sąsiadce albo skompostuj za ${COMPOST_LEAVES[event.item.level]} liści`,
             { kind: "reward", key: "szczyt", priority: 2 },
           );
         }
@@ -466,11 +472,33 @@ function handleEvents() {
       case "compost": {
         const center = renderer.cellCenter(event.index);
         renderer.popup(`+${event.leaves}`, center.x, center.y - 10, COLORS.monsteraJasna, 18);
-        hint(`Kompost: ${itemName(event.item)} → +${event.leaves} liści`);
+        // Pasieka (P5.3): kompost złotej rośliny i wyższej daje też gwiazdkę.
+        if (event.stars) renderer.popup(`+${event.stars} ⭐`, center.x, center.y - 32, COLORS.zloto, 18);
+        hint(`Kompost: ${itemName(event.item)} → +${event.leaves} liści${event.stars ? ` i +${event.stars} ⭐` : ""}`);
         play("slizg", { pitch: 0.8, volume: 0.7 });
         save({ immediate: true });
         break;
       }
+      // Kram ogrodnika (P5.4).
+      case "kram": {
+        const offer = KRAM.find((entry) => entry.id === event.id);
+        play("zakup", { volume: 0.8 });
+        if (event.index >= 0) renderer.pop(event.index);
+        toasts.show(`Kram ogrodnika: ${offer?.name || ""}${event.goat ? " czeka na wolnej półce" : ""}!`, {
+          kind: "reward",
+          key: `kram-${event.id}`,
+          priority: 2,
+        });
+        save({ immediate: true });
+        break;
+      }
+      case "kramMissing":
+        play("klik", { pitch: 0.6, volume: 0.5 });
+        hint(`Brakuje ${event.need.toLocaleString("pl-PL")} liści — zbieraj je z połączeń, zamówień i kompostu`);
+        break;
+      case "kramFull":
+        hint("Sowia doniczka jest już pełna");
+        break;
       case "potEmpty":
         play("klik", { pitch: 0.6, volume: 0.5 });
         toasts.show("Doniczka się ładuje — nasionko co 3 sekundy", { kind: "info", key: "doniczka" });
@@ -590,7 +618,7 @@ function startPool() {
   play("bonus-start", { volume: 0.8 });
   audio?.playMusic(POOL_MUSIC)?.catch?.(() => {});
   toasts.show(
-    `Basen Humbaka! ${POOL.seconds} sekund: łącz rośliny, szybkie połączenia mnożą punkty, a szczyt łańcucha robi plusk`,
+    `Basen Humbaka! ${POOL.seconds} sekund: łącz rośliny, szybkie połączenia mnożą punkty, a złota roślina robi plusk`,
     { kind: "info", key: "basen" },
   );
   updateHud();
@@ -658,6 +686,24 @@ function roomsContent() {
         : `Masz ${state.stars} ⭐. Cała szklarnia odnowiona — brawo!`,
     ),
   );
+  // Ogród na dachu (P5.3): wybór nasion w doniczce — losowo albo dowolna odblokowana roślina (także spoza okna).
+  if (hasPerk(state, "roof")) {
+    const field = element("label", "lacz-seed");
+    field.append(element("span", "lacz-seed-label", "Nasiona w Sowiej doniczce"));
+    const select = document.createElement("select");
+    select.className = "lacz-seed-select";
+    select.dataset.seed = "";
+    select.append(new Option("Losowo", ""));
+    for (const entry of potChains(state.stats.merges)) select.append(new Option(CHAINS[entry.chain].name, entry.chain));
+    select.value = state.seedChoice || "";
+    select.addEventListener("change", () => {
+      state.seedChoice = select.value || null;
+      hint(state.seedChoice ? `Doniczka daje teraz: ${CHAINS[state.seedChoice].name}` : "Doniczka losuje nasiona");
+      save({ immediate: true });
+    });
+    field.append(select);
+    list.append(field);
+  }
   ROOMS.forEach((room, index) => {
     const done = index < status.index;
     const current = index === status.index;
@@ -705,12 +751,100 @@ function refreshRooms() {
   roomsModal.body.querySelector("[data-renovate]:not([disabled])")?.focus({ preventScroll: true });
 }
 
+// ---------- Kram ogrodnika (P5.4) ----------
+
+let kramModal = null;
+
+/** Treść okna Kramu: liście i oferty (cena, opis, „Kup”; kupiona ozdoba — ✓). */
+function kramContent() {
+  const { state } = game;
+  const list = element("div", "lacz-rooms lacz-kram");
+  list.append(
+    element(
+      "p",
+      "lacz-rooms-stars",
+      `Masz ${state.leaves.toLocaleString("pl-PL")} 🍃 — liście z połączeń, zamówień i kompostu. Wydaj je tutaj.`,
+    ),
+  );
+  for (const offer of KRAM) {
+    const owned = offer.kind === "decor" && state.decor?.[offer.id];
+    const card = element("article", "lacz-room lacz-offer");
+    card.dataset.offer = offer.id;
+    card.classList.toggle("is-done", Boolean(owned));
+    card.append(
+      element("span", "lacz-room-icon", offer.icon),
+      element("strong", "lacz-room-name", offer.name),
+      element("span", "lacz-room-progress", owned ? "✓" : `🍃 ${offer.cost.toLocaleString("pl-PL")}`),
+      element("p", "lacz-room-perk", offer.text),
+    );
+    if (!owned) {
+      const full = offer.kind === "pot" && state.pot.charges >= game.potMax();
+      const button = element("button", "sowie-ui-button is-primary", `Kup — 🍃 ${offer.cost.toLocaleString("pl-PL")}`);
+      button.type = "button";
+      button.dataset.buy = offer.id;
+      button.disabled = full || state.leaves < offer.cost;
+      button.addEventListener("click", () => {
+        game.buyKram(offer.id);
+        handleEvents();
+        updateHud();
+        refreshKram();
+      });
+      card.append(button);
+      if (full) card.append(element("p", "lacz-room-note", "Doniczka jest pełna."));
+      else if (state.leaves < offer.cost) {
+        card.append(
+          element(
+            "p",
+            "lacz-room-note",
+            `Potrzeba ${offer.cost.toLocaleString("pl-PL")} 🍃 (masz ${state.leaves.toLocaleString("pl-PL")}).`,
+          ),
+        );
+      }
+    }
+    list.append(card);
+  }
+  return list;
+}
+
+function refreshKram() {
+  if (!kramModal) return;
+  kramModal.body.replaceChildren(kramContent());
+}
+
+function openKram() {
+  if (!ready || kramModal || pool) return;
+  kramModal = openModal({
+    title: "Kram ogrodnika",
+    content: kramContent(),
+    actions: [
+      {
+        label: "Pomieszczenia",
+        onClick: (close) => {
+          close();
+          openRooms();
+        },
+      },
+    ],
+    onClose: () => {
+      kramModal = null;
+    },
+  });
+}
+
 function openRooms() {
   if (!ready || roomsModal || pool) return;
   roomsModal = openModal({
     title: "Pomieszczenia szklarni",
     content: roomsContent(),
     actions: [
+      {
+        label: "🛒 Kram ogrodnika",
+        primary: true,
+        onClick: (close) => {
+          close();
+          openKram();
+        },
+      },
       {
         label: "Jak grać?",
         onClick: (close) => {
@@ -1040,6 +1174,7 @@ function frame(time) {
     drag: dragView(),
     time: time / 1000,
     dt,
+    decor: pool ? null : game.state.decor,
   });
   hudTimer += dt;
   if (hudTimer >= 0.2 || !dt) {
@@ -1170,6 +1305,20 @@ window.LaczIHoduj = Object.freeze({
   setRenovation: (done) => {
     game.state.renovation = done;
     updateHud();
+  },
+  // Testy (P5): liście, liczba połączeń (odblokowanie roślin w doniczce) i zakup w Kramie ogrodnika.
+  setLeaves: (leaves) => {
+    game.state.leaves = leaves;
+    updateHud();
+  },
+  setMerges: (merges) => {
+    game.state.stats.merges = merges;
+  },
+  kram: (id) => {
+    const result = game.buyKram(id);
+    handleEvents();
+    updateHud();
+    return result;
   },
   setOrder: (slot, chain, level, count = 1) => {
     game.state.orders[slot] = { neighbor: game.state.orders[slot].neighbor, chain, level, count };

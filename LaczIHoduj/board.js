@@ -3,7 +3,7 @@
 // leżą w osobnej warstwie `blocks` (ta sama długość): null albo { type, hits } — karteczka Pracu („note”) zasłania
 // pole razem z przedmiotem, telefon Pracu („phone”), skrzynia Amic („crate”) i kanister Amic („canister”) zajmują
 // puste pole. Kózka (krok 8.2) to przedmiot { goat } — nie łączy się, można ją przenosić i używać.
-import { CHAINS, GOATS, HYBRIDS } from "./config.js";
+import { CHAINS, CROSS_LEVEL, GOATS, HYBRIDS } from "./config.js";
 
 /** Rodzaje przeszkód: `covers` — leży na polu (przedmiot pod spodem zostaje), inaczej zajmuje puste pole. */
 export const BLOCKS = Object.freeze({
@@ -87,15 +87,19 @@ export function neighbors(board, index) {
 export const canMerge = (a, b) =>
   Boolean(a && b && a.chain && a.chain === b.chain && a.level === b.level && a.level < maxLevel(a.chain));
 
-/** Czy przedmiot ma najwyższy poziom swojego łańcucha (hybryda — zawsze). */
+/** Czy przedmiot ma najwyższy poziom swojego łańcucha (hybryda — zawsze; od P5.1 roślina — 7., tęczowy). */
 export const isTop = (item) => Boolean(item?.chain && item.level >= maxLevel(item.chain));
 
+/** Czy przedmiot nadaje się do krzyżowania (P5.1): hybryda albo roślina poziomu `CROSS_LEVEL` (złota). */
+export const canCross = (item) =>
+  Boolean(item?.chain && CHAINS[item.chain] && (CHAINS[item.chain].hybrid || item.level === CROSS_LEVEL));
+
 /**
- * Hybryda z dwóch różnych roślin najwyższego poziomu (kolejność dowolna) → identyfikator z `HYBRIDS` albo null.
- * Np. Złota Monstera + Złota Pilea → „monpilea”; Monpilea + Alopaproć → „zlotolistka”.
+ * Hybryda z dwóch różnych roślin do krzyżowania (`canCross`; kolejność dowolna) → identyfikator z `HYBRIDS` albo
+ * null. Np. Złota Monstera + Złota Pilea → „monpilea”; Monpilea + Alopaproć → „zlotolistka”.
  */
 export function hybridOf(a, b) {
-  if (!isTop(a) || !isTop(b) || a.chain === b.chain) return null;
+  if (!canCross(a) || !canCross(b) || a.chain === b.chain) return null;
   for (const [id, recipe] of Object.entries(HYBRIDS)) {
     const [x, y] = recipe.parents;
     if ((a.chain === x && b.chain === y) || (a.chain === y && b.chain === x)) return id;
@@ -182,10 +186,9 @@ export function mergeablePairs(board) {
   const tops = new Set();
   for (const [index, item] of board.cells.entries()) {
     if (!item || isGoat(item) || board.blocks?.[index]) continue;
-    if (isTop(item)) {
-      tops.add(item.chain);
-      continue;
-    }
+    // Złota roślina (od P5.1) liczy się i do krzyżowania, i do pary takich samych (diamentowa).
+    if (canCross(item)) tops.add(item.chain);
+    if (isTop(item)) continue;
     const key = `${item.chain}:${item.level}`;
     counts.set(key, (counts.get(key) || 0) + 1);
   }

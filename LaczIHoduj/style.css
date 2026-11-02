@@ -483,3 +483,21 @@ body {
   font-size: 14px;
   pointer-events: auto;
 }
+
+/* Wybór nasion w Sowiej doniczce (P5.3, Ogród na dachu) — w oknie pomieszczeń. */
+.lacz-seed {
+  display: grid;
+  gap: 4px;
+  margin: 0 0 10px;
+  font-size: 14px;
+}
+
+.lacz-seed-select {
+  min-height: 44px;
+  padding: 6px 10px;
+  border: 2px solid rgba(59, 47, 74, 0.2);
+  border-radius: 12px;
+  background: var(--bialy);
+  color: inherit;
+  font: inherit;
+}

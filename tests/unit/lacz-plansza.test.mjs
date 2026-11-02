@@ -19,6 +19,7 @@ import {
   moveItem,
   spawnItem,
   spawnNear,
+  canCross,
 } from "../../LaczIHoduj/board.js";
 import {
   BOARD,
@@ -36,9 +37,12 @@ import {
   POT,
   ROOMS,
   SAVE_VERSION,
+  CROSS_LEVEL,
+  KRAM,
 } from "../../LaczIHoduj/config.js";
 import {
   RENOVATION_STEPS,
+  activeChains,
   createGame,
   defaultState,
   hasPerk,
@@ -65,10 +69,21 @@ const queue =
   () =>
     values.length ? values.shift() : 0;
 
-test("dane: plansza 7 × 9, łańcuch Monstery w 5 poziomach, doniczka, nagrody rosną z poziomem", () => {
+test("dane: plansza 7 × 9, łańcuch Monstery w 7 poziomach (krzyżowanie na 5.), doniczka, nagrody rosną z poziomem", () => {
   assert.deepEqual(BOARD, { cols: 7, rows: 9 });
-  assert.deepEqual(CHAINS.monstera.levels, ["Nasionko", "Kiełek", "Sadzonka", "Monstera", "Złota Monstera"]);
-  assert.equal(maxLevel("monstera"), 5);
+  assert.deepEqual(CHAINS.monstera.levels, [
+    "Nasionko",
+    "Kiełek",
+    "Sadzonka",
+    "Monstera",
+    "Złota Monstera",
+    "Diamentowa Monstera",
+    "Tęczowa Monstera",
+  ]);
+  assert.equal(maxLevel("monstera"), 7);
+  assert.equal(CROSS_LEVEL, 5);
+  assert.equal(MERGE_LEAVES.length, 8);
+  assert.equal(COMPOST_LEAVES.length, 8);
   assert.equal(itemName(seed(3)), "Sadzonka");
   assert.equal(SAVE_VERSION, 2);
   assert.ok(POT.max >= 10 && POT.regen > 0);
@@ -77,7 +92,7 @@ test("dane: plansza 7 × 9, łańcuch Monstery w 5 poziomach, doniczka, nagrody 
   }
 });
 
-test("ruchy: przeniesienie na wolne pole, połączenie takich samych, zamiana różnych; najwyższy poziom się nie łączy", () => {
+test("ruchy: przeniesienie na wolne pole, połączenie takich samych (także złote), zamiana różnych; tęczowy się nie łączy", () => {
   const board = createBoard(BOARD);
   assert.equal(board.cells.length, 63);
   assert.equal(cellIndex(board, 2, 3), 23);
@@ -97,9 +112,15 @@ test("ruchy: przeniesienie na wolne pole, połączenie takich samych, zamiana r�
   assert.deepEqual(board.cells[5], seed(3));
   assert.equal(moveItem(board, 5, 5).type, "none");
   assert.equal(moveItem(board, 20, 21).type, "none", "z pustego pola");
+  // Od P5.1 dwie takie same złote rośliny łączą się w diamentową, dwie diamentowe — w tęczową (szczyt).
   board.cells[30] = seed(5);
   board.cells[31] = seed(5);
-  assert.equal(canMerge(seed(5), seed(5)), false);
+  assert.equal(canMerge(seed(5), seed(5)), true);
+  assert.deepEqual(moveItem(board, 30, 31), { type: "merge", item: seed(6) });
+  board.cells[30] = seed(6);
+  assert.deepEqual(moveItem(board, 30, 31), { type: "merge", item: seed(7) });
+  board.cells[30] = seed(7);
+  assert.equal(canMerge(seed(7), seed(7)), false);
   assert.equal(moveItem(board, 30, 31).type, "swap");
 });
 
@@ -126,7 +147,7 @@ test("Sowia doniczka: nasionko na losowym wolnym polu, ładunki wracają co 3 s,
   assert.equal(spawnItem(game.board, seed(1)), -1);
 });
 
-test("łączenie daje liście i statystyki; Złota Monstera to szczyt łańcucha; kompost zwalnia pole za liście", () => {
+test("łączenie daje liście i statystyki; złota — krzyżowanie, tęczowa — szczyt łańcucha; kompost zwalnia pole za liście", () => {
   const state = defaultState(0);
   const game = createGame({ state });
   game.board.cells.fill(null);
@@ -134,7 +155,15 @@ test("łączenie daje liście i statystyki; Złota Monstera to szczyt łańcucha
   game.board.cells[1] = seed(4);
   game.move(0, 1);
   const merge = game.takeEvents().find((event) => event.type === "merge");
-  assert.deepEqual(merge, { type: "merge", from: 0, to: 1, item: seed(5), leaves: MERGE_LEAVES[5], top: true });
+  assert.deepEqual(merge, {
+    type: "merge",
+    from: 0,
+    to: 1,
+    item: seed(5),
+    leaves: MERGE_LEAVES[5],
+    top: false,
+    golden: true,
+  });
   assert.equal(state.leaves, MERGE_LEAVES[5]);
   assert.equal(state.stats.merges, 1);
   assert.equal(state.stats.best, 5);
@@ -143,13 +172,25 @@ test("łączenie daje liście i statystyki; Złota Monstera to szczyt łańcucha
   assert.equal(game.board.cells[1], null);
   assert.equal(game.compost(1), null, "puste pole");
   assert.equal(state.stats.composted, 1);
+  // Diamentowa i tęczowa (szczyt łańcucha): wyższe nagrody, rekord poziomu.
+  game.board.cells[0] = seed(6);
+  game.board.cells[1] = seed(6);
+  game.takeEvents();
+  game.move(0, 1);
+  const rainbow = game.takeEvents().find((event) => event.type === "merge");
+  assert.equal(rainbow.top, true);
+  assert.equal(rainbow.golden, false);
+  assert.equal(rainbow.leaves, MERGE_LEAVES[7]);
+  assert.equal(state.stats.best, 7);
+  game.compost(1);
+  assert.equal(state.leaves, MERGE_LEAVES[5] + COMPOST_LEAVES[5] + MERGE_LEAVES[7] + COMPOST_LEAVES[7]);
 });
 
 test("plansza nigdy nie blokuje się bez wyjścia: pełna i bez par wciąż ma kompost, po nim doniczka znowu działa", () => {
   const game = createGame({ state: defaultState(0), random: queue(0.5) });
-  const levels = [1, 2, 3, 4, 5];
-  // Pełna plansza bez żadnej pary do połączenia: po jednym przedmiocie z poziomów 1–4 i reszta Złotych Monster.
-  game.board.cells = game.board.cells.map((_, index) => seed(index < 4 ? levels[index] : 5));
+  const levels = [1, 2, 3, 4, 5, 6];
+  // Pełna plansza bez żadnej pary do połączenia: po jednym przedmiocie z poziomów 1–6 i reszta Tęczowych Monster.
+  game.board.cells = game.board.cells.map((_, index) => seed(index < 6 ? levels[index] : 7));
   assert.deepEqual(exits(game.board), { merges: 0, empty: 0, compost: 63, notes: 0 });
   assert.equal(game.tapPot(), -1);
   // Wyjście: kompost zwalnia pole, a doniczka znowu kładzie nasionko — teraz jest para (dwa nasionka).
@@ -167,7 +208,7 @@ test("plansza nigdy nie blokuje się bez wyjścia: pełna i bez par wciąż ma k
   const random = () => (value = (value * 16807) % 2147483647) / 2147483647;
   for (let round = 0; round < 200; round += 1) {
     const board = createBoard(BOARD);
-    board.cells = board.cells.map(() => (random() < 0.85 ? seed(1 + Math.floor(random() * 5)) : null));
+    board.cells = board.cells.map(() => (random() < 0.85 ? seed(1 + Math.floor(random() * 7)) : null));
     board.blocks = board.cells.map((item) => {
       const roll = random();
       if (roll < 0.2) return { type: "note", hits: 0 };
@@ -207,7 +248,7 @@ test("bezpiecznik zapisu (P5.0): nieznane przedmioty czekają w schowku i wracaj
   const state = defaultState(1000);
   const raw = JSON.parse(JSON.stringify(state));
   raw.cells = raw.cells.map(() => null);
-  raw.cells[5] = { chain: "baobab", level: 3 };
+  raw.cells[5] = { chain: "dab", level: 3 };
   raw.cells[6] = { goat: "nowaKozka" };
   raw.cells[7] = { chain: "monstera", level: 2 };
   // Znane już przedmioty ze schowka: na swoje pole (wolne), na pierwsze wolne (swoje zajęte); nieznany — dalej czeka.
@@ -224,7 +265,7 @@ test("bezpiecznik zapisu (P5.0): nieznane przedmioty czekają w schowku i wracaj
   assert.deepEqual(loaded.cells[10], { chain: "pilea", level: 3 });
   assert.deepEqual(loaded.cells[0], { goat: "skoczek" }, "pole 7 zajęte — pierwsze wolne");
   assert.deepEqual(loaded.stash, [
-    { index: 5, item: { chain: "baobab", level: 3 } },
+    { index: 5, item: { chain: "dab", level: 3 } },
     { index: 6, item: { goat: "nowaKozka" } },
     { index: 20, item: { chain: "storczykX", level: 1, extra: { a: 1 } } },
   ]);
@@ -243,12 +284,30 @@ test("bezpiecznik zapisu (P5.0): nieznane przedmioty czekają w schowku i wracaj
   assert.deepEqual(loadState(JSON.parse(JSON.stringify(crowded)), 0).cells[30], { chain: "paproc", level: 4 });
 });
 
-test("cztery łańcuchy po 5 poziomów i trzy hybrydy z dawnej Szklarni; doniczka odblokowuje łańcuchy z połączeniami", () => {
-  for (const chain of ["monstera", "pilea", "paproc", "kaktus"]) {
-    assert.equal(maxLevel(chain), 5, chain);
+test("dziewięć łańcuchów po 7 poziomów (z Baobabem) i siedem hybryd; doniczka odblokowuje łańcuchy z połączeniami", () => {
+  const plants = ["monstera", "pilea", "paproc", "kaktus", "storczyk", "slonecznik", "truskawka", "lotos", "baobab"];
+  for (const chain of plants) {
+    assert.equal(maxLevel(chain), 7, chain);
     assert.equal(CHAINS[chain].hybrid, undefined);
+    assert.match(CHAINS[chain].levels[5], /^Diamentow/, chain);
+    assert.match(CHAINS[chain].levels[6], /^Tęczow/, chain);
   }
+  assert.deepEqual(
+    POT.chains.map((entry) => entry.chain),
+    plants,
+  );
   assert.equal(itemName({ chain: "kaktus", level: 5 }), "Kwitnący Kaktus");
+  assert.equal(itemName({ chain: "baobab", level: 4 }), "Baobab");
+  assert.equal(itemName({ chain: "baobab", level: 7 }), "Tęczowy Baobab");
+  assert.deepEqual(Object.keys(HYBRIDS), [
+    "monpilea",
+    "alopaproc",
+    "zlotolistka",
+    "storslonek",
+    "truslotos",
+    "baobonstera",
+    "teczokwiat",
+  ]);
   for (const id of Object.keys(HYBRIDS)) {
     assert.equal(CHAINS[id].hybrid, true);
     assert.equal(maxLevel(id), 1);
@@ -263,37 +322,76 @@ test("cztery łańcuchy po 5 poziomów i trzy hybrydy z dawnej Szklarni; doniczk
     ["monstera", "pilea", "paproc"],
   );
   assert.equal(potChains(60).length, 4);
-  // Losowanie z wagami (monstera 4, pilea 3, paproć 2, kaktus 2 — razem 11).
+  assert.equal(potChains(399).length, 8);
+  assert.equal(potChains(400).length, 9);
+  // Losowanie z wagami (monstera 4, pilea 3, paproć 2, kaktus 2 — razem 11; przed Storczykiem, od 100 połączeń).
   assert.equal(
     pickChain(0, () => 0.99),
     "monstera",
   );
   assert.equal(
-    pickChain(100, () => 0),
+    pickChain(99, () => 0),
     "monstera",
   );
   assert.equal(
-    pickChain(100, () => 5 / 11),
+    pickChain(99, () => 5 / 11),
     "pilea",
   );
   assert.equal(
-    pickChain(100, () => 8 / 11),
+    pickChain(99, () => 8 / 11),
     "paproc",
   );
   assert.equal(
-    pickChain(100, () => 0.999),
+    pickChain(99, () => 0.999),
     "kaktus",
+  );
+  // Okno doniczki (P5.2): Monstera i 5 ostatnio odblokowanych — przy 9 łańcuchach bez Pilei, Paproci i Kaktusa.
+  assert.deepEqual(
+    activeChains(400).map((entry) => entry.chain),
+    ["monstera", "storczyk", "slonecznik", "truskawka", "lotos", "baobab"],
+  );
+  assert.deepEqual(
+    activeChains(220).map((entry) => entry.chain),
+    ["monstera", "paproc", "kaktus", "storczyk", "slonecznik", "truskawka"],
+  );
+  assert.equal(
+    pickChain(400, () => 0.999),
+    "baobab",
+  );
+  for (let roll = 0; roll < 1; roll += 0.01)
+    assert.notEqual(
+      pickChain(400, () => roll),
+      "pilea",
+    );
+  // Wybór gracza (Ogród na dachu): odblokowany łańcuch bez losowania, nieodblokowany — zwykłe losowanie.
+  assert.equal(
+    pickChain(400, () => 0, "pilea"),
+    "pilea",
+  );
+  assert.equal(
+    pickChain(10, () => 0, "baobab"),
+    "monstera",
   );
 });
 
-test("hybrydy: dwie różne rośliny najwyższego poziomu z przepisu (kolejność dowolna); hybryda się nie łączy z taką samą", () => {
-  const top = (chain) => ({ chain, level: maxLevel(chain) });
+test("hybrydy: dwie różne złote rośliny z przepisu (kolejność dowolna); hybryda się nie łączy z taką samą", () => {
+  // Do krzyżowania: złota roślina (poziom 5) albo hybryda (od P5.1; wcześniej — najwyższy poziom).
+  const top = (chain) => ({ chain, level: CHAINS[chain].hybrid ? 1 : CROSS_LEVEL });
   assert.equal(hybridOf(top("monstera"), top("pilea")), "monpilea");
   assert.equal(hybridOf(top("pilea"), top("monstera")), "monpilea");
   assert.equal(hybridOf(top("kaktus"), top("paproc")), "alopaproc");
   assert.equal(hybridOf(top("monpilea"), top("alopaproc")), "zlotolistka");
   assert.equal(hybridOf(top("monstera"), top("kaktus")), null, "bez przepisu");
-  assert.equal(hybridOf({ chain: "monstera", level: 4 }, top("pilea")), null, "nie najwyższy poziom");
+  assert.equal(hybridOf({ chain: "monstera", level: 4 }, top("pilea")), null, "nie złota");
+  assert.equal(hybridOf({ chain: "monstera", level: 6 }, top("pilea")), null, "diamentowa się nie krzyżuje");
+  assert.equal(hybridOf({ chain: "monstera", level: 7 }, top("pilea")), null, "tęczowa się nie krzyżuje");
+  // Nowe hybrydy (P5.2).
+  assert.equal(hybridOf(top("slonecznik"), top("storczyk")), "storslonek");
+  assert.equal(hybridOf(top("truskawka"), top("lotos")), "truslotos");
+  assert.equal(hybridOf(top("monstera"), top("baobab")), "baobonstera");
+  assert.equal(hybridOf(top("truslotos"), top("storslonek")), "teczokwiat");
+  assert.ok(canCross(top("pilea")) && canCross(top("teczokwiat")));
+  assert.equal(canCross({ chain: "pilea", level: 6 }), false);
   assert.equal(hybridOf(top("monstera"), top("monstera")), null);
   assert.ok(isTop(top("zlotolistka")));
   const board = createBoard(BOARD);
@@ -302,6 +400,9 @@ test("hybrydy: dwie różne rośliny najwyższego poziomu z przepisu (kolejnoś�
   board.cells[2] = top("monpilea");
   board.cells[3] = top("monpilea");
   assert.equal(mergeablePairs(board), 1, "jedna para do hybrydy, dwie Monpilee się nie łączą");
+  board.cells[4] = top("monstera");
+  assert.equal(mergeablePairs(board), 2, "dwie złote Monstery — para do diamentowej");
+  board.cells[4] = null;
   assert.deepEqual(moveItem(board, 0, 1), { type: "hybrid", item: { chain: "monpilea", level: 1 } });
   assert.equal(board.cells[0], null);
   assert.equal(moveItem(board, 2, 3).type, "swap");
@@ -352,7 +453,11 @@ test("zamówienia: trzy sąsiadki, poziomy rosną z wykonanymi zamówieniami, pa
   assert.deepEqual(orderLevels(0), { min: 2, max: 2 });
   assert.deepEqual(orderLevels(3), { min: 2, max: 3 });
   assert.deepEqual(orderLevels(9), { min: 3, max: 5 });
-  assert.deepEqual(orderLevels(100), { min: 3, max: 5 });
+  assert.deepEqual(orderLevels(ORDERS.diamondFrom - 1), { min: 3, max: 5 });
+  // Od P5.1: diamentowe od 60 zamówień, tęczowe od 120.
+  assert.deepEqual(orderLevels(ORDERS.diamondFrom), { min: 4, max: 6 });
+  assert.deepEqual(orderLevels(ORDERS.rainbowFrom), { min: 5, max: 7 });
+  assert.deepEqual(orderLevels(1000), { min: 5, max: 7 });
   // Losowanie: łańcuch (wagi doniczki), poziom w zakresie, para tylko do poziomu 3.
   assert.deepEqual(makeOrder("puszczyk", { done: 0, merges: 0 }, queue(0, 0, 0)), {
     neighbor: "puszczyk",
@@ -360,14 +465,16 @@ test("zamówienia: trzy sąsiadki, poziomy rosną z wykonanymi zamówieniami, pa
     level: 2,
     count: 2,
   });
-  assert.deepEqual(makeOrder("pojdzka", { done: 9, merges: 100 }, queue(0.5, 5 / 11, 0.99)), {
+  assert.deepEqual(makeOrder("pojdzka", { done: 9, merges: 99 }, queue(0.5, 5 / 11, 0.99)), {
     neighbor: "pojdzka",
     chain: "pilea",
     level: 5,
     count: 1,
   });
   // Hybryda od 8 zamówień, gdy jej składniki są w doniczce (Monpilea po odblokowaniu Pilei).
-  assert.equal(makeOrder("puszczyk", { done: 7, merges: 100 }, queue(0, 0, 0, 0)).chain, "monstera");
+  assert.equal(makeOrder("puszczyk", { done: 7, merges: 99 }, queue(0, 0, 0, 0)).chain, "monstera");
+  // Hybryda z nowych roślin, gdy oba składniki są w oknie doniczki (Storsłonek po Słoneczniku).
+  assert.equal(makeOrder("puszczyk", { done: 8, merges: 400 }, queue(0, 0.3)).chain, "storslonek");
   assert.deepEqual(makeOrder("puszczyk", { done: 8, merges: 10 }, queue(0, 0)), {
     neighbor: "puszczyk",
     chain: "monpilea",
@@ -382,13 +489,15 @@ test("zamówienia: trzy sąsiadki, poziomy rosną z wykonanymi zamówieniami, pa
   assert.deepEqual(orderReward({ chain: "monstera", level: 2, count: 1 }), { leaves: ORDERS.leaves[2], stars: 1 });
   assert.deepEqual(orderReward({ chain: "pilea", level: 3, count: 2 }), { leaves: ORDERS.leaves[3] * 2, stars: 2 });
   assert.deepEqual(orderReward({ chain: "kaktus", level: 5, count: 1 }), { leaves: ORDERS.leaves[5], stars: 3 });
+  assert.deepEqual(orderReward({ chain: "baobab", level: 7, count: 1 }), { leaves: ORDERS.leaves[7], stars: 6 });
   assert.deepEqual(orderReward({ chain: "monpilea", level: 1, count: 1 }), {
     leaves: ORDERS.hybridLeaves,
     stars: ORDERS.hybridStars,
   });
   // Niepoprawne zamówienia.
   assert.equal(validOrder({ neighbor: "puszczyk", chain: "palma", level: 2, count: 1 }, "puszczyk"), false);
-  assert.equal(validOrder({ neighbor: "puszczyk", chain: "monstera", level: 6, count: 1 }, "puszczyk"), false);
+  assert.equal(validOrder({ neighbor: "puszczyk", chain: "monstera", level: 7, count: 1 }, "puszczyk"), true);
+  assert.equal(validOrder({ neighbor: "puszczyk", chain: "monstera", level: 8, count: 1 }, "puszczyk"), false);
   assert.equal(validOrder({ neighbor: "puszczyk", chain: "monstera", level: 2, count: 3 }, "puszczyk"), false);
   assert.equal(validOrder({ neighbor: "pojdzka", chain: "monstera", level: 2, count: 1 }, "puszczyk"), false);
 });
@@ -461,8 +570,8 @@ const stepsThrough = (id) => {
   return total;
 };
 
-test("pomieszczenia: 10 z dawnej Szklarni odnawianych po kolei etapami za gwiazdki", () => {
-  assert.equal(ROOMS.length, 10);
+test("pomieszczenia: 10 z dawnej Szklarni i 6 nowych (P5.3) odnawianych po kolei etapami za gwiazdki", () => {
+  assert.equal(ROOMS.length, 16);
   assert.deepEqual(
     ROOMS.map((entry) => entry.name),
     [
@@ -476,16 +585,35 @@ test("pomieszczenia: 10 z dawnej Szklarni odnawianych po kolei etapami za gwiazd
       "Laboratorium Pyłku",
       "Kącik Drzemki",
       "Sowie Centrum",
+      "Palmiarnia",
+      "Pasieka",
+      "Herbaciarnia",
+      "Obserwatorium",
+      "Motylarnia",
+      "Ogród na dachu",
     ],
   );
-  assert.equal(RENOVATION_STEPS, 45);
+  assert.equal(new Set(ROOMS.map((entry) => entry.id)).size, 16);
+  assert.equal(RENOVATION_STEPS, 45 + 28);
+  // Dawne 10 pomieszczeń — bez zmian (te same etapy, zapis odnowy graczy znaczy to samo).
+  assert.equal(
+    ROOMS.slice(0, 10).reduce((sum, entry) => sum + entry.steps.length, 0),
+    45,
+  );
   for (let index = 1; index < ROOMS.length; index += 1) {
     assert.ok(ROOMS[index].cost >= ROOMS[index - 1].cost, "koszt etapu nie maleje");
   }
   assert.deepEqual(renovation(0), { index: 0, room: ROOMS[0], step: 0, finished: [] });
   assert.deepEqual(renovation(4), { index: 1, room: ROOMS[1], step: 1, finished: ["potting"] });
   assert.equal(renovation(RENOVATION_STEPS).room, null);
-  assert.equal(renovation(RENOVATION_STEPS).finished.length, 10);
+  assert.equal(renovation(RENOVATION_STEPS).finished.length, 16);
+  // Gracz, który odnowił 10 dawnych pomieszczeń (45 etapów), ma teraz w toku Palmiarnię.
+  assert.deepEqual(renovation(45), {
+    index: 10,
+    room: ROOMS[10],
+    step: 0,
+    finished: ROOMS.slice(0, 10).map((r) => r.id),
+  });
 
   const game = createGame({ state: defaultState(0), random: queue(0) });
   assert.equal(game.state.renovation, 0);
@@ -580,6 +708,107 @@ test("ułatwienia pomieszczeń: doniczka, kiełki, kózki, kompost, hybrydy, zam
   const awake = { ...JSON.parse(JSON.stringify(at("pollen"))), savedAt: 0 };
   awake.pot = { charges: 0, progress: 0 };
   assert.equal(loadState(awake, 10_000).pot.charges, 0);
+});
+
+test("ułatwienia nowych pomieszczeń (P5.3): Palmiarnia, Pasieka, Herbaciarnia, Obserwatorium, Motylarnia, Ogród na dachu", () => {
+  const at = (id) => ({ ...defaultState(0), renovation: stepsThrough(id) });
+  // Palmiarnia: doniczka +2 (razem z Doniczarnią +4).
+  assert.equal(potMax(at("palm")), POT.max + PERKS.potBonus + PERKS.palmBonus);
+  // Obserwatorium: diamentowe i tęczowe zamówienia — gwiazdka więcej.
+  const diamond = { chain: "monstera", level: 6, count: 1 };
+  const plain = orderReward(diamond, stepsThrough("tea"));
+  assert.equal(orderReward(diamond, stepsThrough("stars")).stars, plain.stars + PERKS.starStars);
+  const golden = { chain: "monstera", level: 5, count: 1 };
+  assert.equal(orderReward(golden, stepsThrough("stars")).stars, orderReward(golden, stepsThrough("tea")).stars);
+  // Pasieka: kompost złotej i wyższej rośliny daje gwiazdkę (hybrydy i niższe — nie).
+  const bees = createGame({ state: at("bees"), random: queue(0) });
+  bees.board.cells.fill(null);
+  bees.board.cells[0] = seed(5);
+  bees.board.cells[1] = seed(4);
+  bees.board.cells[2] = { chain: "monpilea", level: 1 };
+  const stars = bees.state.stars;
+  bees.compost(0);
+  bees.compost(1);
+  bees.compost(2);
+  assert.equal(bees.state.stars, stars + PERKS.beeStars);
+  assert.deepEqual(
+    bees.takeEvents().map((event) => event.stars),
+    [1, 0, 0],
+  );
+  // Herbaciarnia: zaproszenie do basenu co 4 zamówienia; Motylarnia: kózka co 3. zamówienie.
+  const tea = createGame({ state: at("butterflies"), random: queue(0) });
+  tea.board.cells.fill(null);
+  const invites = [];
+  const goats = [];
+  for (let order = 1; order <= 12; order += 1) {
+    tea.state.orders[0] = { neighbor: "puszczyk", chain: "monstera", level: 1, count: 1 };
+    tea.board.cells[62] = seed(1);
+    tea.deliver(0);
+    const events = tea.takeEvents();
+    if (events.some((event) => event.type === "poolReady")) invites.push(order);
+    if (events.some((event) => event.type === "goat")) goats.push(order);
+    tea.state.poolReady = false;
+    tea.board.cells = tea.board.cells.map((item) => (item?.goat ? null : item));
+  }
+  assert.deepEqual(invites, [4, 8, 12]);
+  assert.deepEqual(goats, [2, 5, 8, 11]);
+  // Ogród na dachu: wybrane nasiona (także dawnych roślin spoza okna doniczki); zapis wyboru.
+  const roof = { ...at("roof"), stats: { ...defaultState(0).stats, merges: 400 }, seedChoice: "pilea" };
+  const game = createGame({ state: roof, random: queue(0.999) });
+  const index = game.tapPot();
+  assert.equal(game.board.cells[index].chain, "pilea");
+  const before = { ...at("cross"), stats: { ...defaultState(0).stats, merges: 400 }, seedChoice: "pilea" };
+  const plainGame = createGame({ state: before, random: queue(0.999, 0.999) });
+  assert.equal(plainGame.board.cells[plainGame.tapPot()].chain, "baobab", "bez Ogrodu na dachu — losowanie");
+  assert.equal(loadState(JSON.parse(JSON.stringify(roof)), 0).seedChoice, "pilea");
+  assert.equal(loadState({ ...JSON.parse(JSON.stringify(roof)), seedChoice: "monpilea" }, 0).seedChoice, null);
+  assert.equal(loadState({ ...JSON.parse(JSON.stringify(roof)), seedChoice: "dab" }, 0).seedChoice, null);
+});
+
+test("Kram ogrodnika (P5.4): pełna doniczka, gwiazdka, kózki i ozdoby za liście; brak liści, pełna doniczka, zapis", () => {
+  assert.deepEqual(
+    KRAM.map((offer) => offer.id),
+    ["doniczka", "gwiazdka", "taran", "dzoker", "lampki", "motyle"],
+  );
+  for (const offer of KRAM) assert.ok(offer.cost > 0 && offer.name && offer.text, offer.id);
+  const game = createGame({ state: defaultState(0), random: queue(0) });
+  game.board.cells.fill(null);
+  const price = (id) => KRAM.find((offer) => offer.id === id).cost;
+  // Za mało liści: zdarzenie z brakującą liczbą, nic się nie zmienia.
+  game.state.leaves = 10;
+  assert.equal(game.buyKram("gwiazdka"), null);
+  assert.deepEqual(game.takeEvents(), [{ type: "kramMissing", id: "gwiazdka", need: price("gwiazdka") - 10 }]);
+  // Pełna doniczka: przy pełnej — nic; po zużyciu ładunków — znowu pełna.
+  game.state.leaves = 5000;
+  assert.equal(game.buyKram("doniczka"), null);
+  assert.deepEqual(game.takeEvents(), [{ type: "kramFull", id: "doniczka" }]);
+  game.state.pot.charges = 2;
+  assert.deepEqual(game.buyKram("doniczka"), { id: "doniczka", index: -1 });
+  assert.equal(game.state.pot.charges, POT.max);
+  assert.equal(game.state.leaves, 5000 - price("doniczka"));
+  // Gwiazdka odnowy.
+  const stars = game.state.stars;
+  game.buyKram("gwiazdka");
+  assert.equal(game.state.stars, stars + 1);
+  // Kózka na wolnej półce (pełna plansza — nie).
+  const bought = game.buyKram("dzoker");
+  assert.deepEqual(game.board.cells[bought.index], { goat: "dzoker" });
+  assert.deepEqual(game.state.cells[bought.index], { goat: "dzoker" }, "stan zsynchronizowany");
+  game.board.cells = game.board.cells.map((item) => item || seed(7));
+  game.takeEvents();
+  const leaves = game.state.leaves;
+  assert.equal(game.buyKram("taran"), null);
+  assert.equal(game.takeEvents().at(-1).type, "boardFull");
+  assert.equal(game.state.leaves, leaves, "bez wolnej półki liście zostają");
+  // Ozdoba — raz; zapis i wczytanie (nieznane ozdoby z nowszej wersji też zostają).
+  assert.ok(game.buyKram("lampki"));
+  assert.equal(game.buyKram("lampki"), null, "drugi raz — nie");
+  assert.equal(game.state.leaves, leaves - price("lampki"));
+  assert.equal(game.state.stats.kram, 4, "doniczka, gwiazdka, Dżoker, lampki");
+  const saved = JSON.parse(JSON.stringify({ ...game.state, decor: { ...game.state.decor, fontanna: true, zle: 1 } }));
+  assert.deepEqual(loadState(saved, 0).decor, { lampki: true, fontanna: true });
+  assert.deepEqual(loadState({ ...saved, decor: "x" }, 0).decor, {});
+  assert.deepEqual(defaultState(0).decor, {});
 });
 
 test("przeszkody na planszy: karteczka zamraża roślinę, telefon i skrzynia zajmują pole, zapis warstwy", () => {
@@ -723,9 +952,13 @@ test("kózki: przedmioty na planszy (nie łączą się, zapis), Taran na przeszk
   game.board.cells[21] = { chain: "kaktus", level: 4 };
   game.move(21, 20);
   assert.deepEqual(game.board.cells[20], { chain: "kaktus", level: 5 });
-  // Dżoker ze szczytem łańcucha — tylko zamiana.
+  // Dżoker ze złotą rośliną — diamentowa (od P5.1); ze szczytem łańcucha (tęczowa) — tylko zamiana.
+  game.board.cells[22] = { goat: "dzoker" };
+  game.board.cells[23] = { chain: "kaktus", level: 5 };
+  game.move(22, 23);
+  assert.deepEqual(game.board.cells[23], { chain: "kaktus", level: 6 });
   game.board.cells[30] = { goat: "dzoker" };
-  game.board.cells[31] = { chain: "kaktus", level: 5 };
+  game.board.cells[31] = { chain: "kaktus", level: 7 };
   assert.equal(game.move(30, 31).type, "swap");
   // Zapis zachowuje kózki.
   assert.deepEqual(loadState(JSON.parse(JSON.stringify(game.state)), 0).cells[31], { goat: "dzoker" });
@@ -758,7 +991,7 @@ test("kózki stukane: Skoczek łączy pary, Zjadaczka zjada karteczki w rzędzie
   game.board.cells[24] = seed(1);
   game.board.cells[25] = { chain: "pilea", level: 3 };
   game.board.cells[31] = { chain: "monpilea", level: 1 };
-  game.board.cells[33] = seed(5);
+  game.board.cells[33] = seed(7);
   game.board.cells[39] = seed(2);
   game.board.blocks[39] = { type: "note", hits: 0 };
   assert.deepEqual(game.useGoat(32), { goat: "sprezynka", count: 2 });
