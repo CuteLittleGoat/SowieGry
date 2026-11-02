@@ -15,16 +15,17 @@ telefonie — i jeśli się da, zrób zrzut ekranu.
 
 ## Spis
 
-| Test  | Co sprawdza                                                                            | Od kiedy   |
-| ----- | -------------------------------------------------------------------------------------- | ---------- |
-| C1    | Sowa w Chmurach: nowe krainy ponad Kosmosem (od 1900 m) aż do Sowich Zaświatów         | 2026-11-02 |
-| O4    | Sowie Ogrody: 8 nowych rozdziałów (od Palmiarni), nowe rośliny, nawozy, gałąź „Słońce” | 2026-11-01 |
-| O2–O3 | Sowie Ogrody: lista roślin do samego końca, „Rozwiń listę”, wybór tła                  | 2026-11-01 |
-| O1    | Sowie Ogrody: duże liczby pokazują się dobrze (150 mln)                                | 2026-11-01 |
-| L1    | Łącz i Hoduj: podpowiedzi widać w całości                                              | 2026-11-01 |
-| U1    | Sowia Ucieczka: humbak mniej więcej raz na krainę                                      | 2026-11-01 |
-| G1    | Galeria: zamiast podobnych zdjęć — nowe                                                | 2026-11-01 |
-| B1–B4 | Sowi Butik: zakupy i kolory sowy nie cofają się, przeprosinowe piórka                  | 2026-11-01 |
+| Test  | Co sprawdza                                                                                             | Od kiedy   |
+| ----- | ------------------------------------------------------------------------------------------------------- | ---------- |
+| L2    | Łącz i Hoduj: diamentowe i tęczowe rośliny, Baobab i nowe rośliny, 6 nowych pomieszczeń, Kram ogrodnika | 2026-11-02 |
+| C1    | Sowa w Chmurach: nowe krainy ponad Kosmosem (od 1900 m) aż do Sowich Zaświatów                          | 2026-11-02 |
+| O4    | Sowie Ogrody: 8 nowych rozdziałów (od Palmiarni), nowe rośliny, nawozy, gałąź „Słońce”                  | 2026-11-01 |
+| O2–O3 | Sowie Ogrody: lista roślin do samego końca, „Rozwiń listę”, wybór tła                                   | 2026-11-01 |
+| O1    | Sowie Ogrody: duże liczby pokazują się dobrze (150 mln)                                                 | 2026-11-01 |
+| L1    | Łącz i Hoduj: podpowiedzi widać w całości                                                               | 2026-11-01 |
+| U1    | Sowia Ucieczka: humbak mniej więcej raz na krainę                                                       | 2026-11-01 |
+| G1    | Galeria: zamiast podobnych zdjęć — nowe                                                                 | 2026-11-01 |
+| B1–B4 | Sowi Butik: zakupy i kolory sowy nie cofają się, przeprosinowe piórka                                   | 2026-11-01 |
 
 ---
 
@@ -72,6 +73,28 @@ cofnąć zakupu. Kolory i stroje, które wcześniej zniknęły, a były zapisane
 2. **Powinno być:** wszystkie stroje kupione kiedyś w Butiku są odblokowane (bez kłódki) i da się je wybrać.
 
 ---
+
+## L2 — Łącz i Hoduj: nowe poziomy, rośliny, pomieszczenia i Kram
+
+Poprawka: rośliny mają teraz 7 poziomów (po złotym jest **diamentowy** i **tęczowy**), dochodzi 5 nowych roślin
+(Storczyk, Słonecznik, Truskawka, Lotos i **Baobab**) z nowymi hybrydami, 6 nowych pomieszczeń i **Kram ogrodnika**,
+w którym wydajesz liście.
+
+1. Otwórz **Łącz i Hoduj**. **Powinno być:** wszystko jak przedtem — rośliny na półkach, liście, gwiazdki
+   i odnowione pomieszczenia.
+2. Połącz dwie takie same **złote** rośliny (np. dwie Złote Monstery). **Powinno być:** powstaje **Diamentowa
+   Monstera** (błękitna, z iskrami, cyfra 6 w rogu). Dwie diamentowe dają **Tęczową Monsterę** (7, kolorowa).
+3. Połącz dwie **różne** złote rośliny (np. Złotą Monsterę i Złotą Pileę). **Powinno być:** hybryda jak dawniej
+   (Monpilea Przytulna).
+4. Gdy masz już dużo połączeń (od 100), w doniczce pojawiają się po kolei: Storczyk, Słonecznik, Truskawka, Lotos
+   i na końcu **Baobab** (po 400 połączeniach) — za każdym razem komunikat „Nowa roślina w Sowiej doniczce”.
+5. Stuknij liczniki liści i gwiazdek (prawy górny róg). **Powinno być:** okno pomieszczeń ma na dole przycisk
+   **🛒 Kram ogrodnika**, a lista pomieszczeń ma 16 pozycji (nowe: Palmiarnia, Pasieka, Herbaciarnia, Obserwatorium,
+   Motylarnia, Ogród na dachu). Kto odnowił wszystkie 10 dawnych, ma teraz w toku Palmiarnię.
+6. Stuknij **🛒 Kram ogrodnika**. **Powinno być:** 6 ofert z cenami w liściach. Kup coś, na co Cię stać (np. Gwiazdkę
+   odnowy za 200 🍃). **Powinno być:** liście maleją o cenę, gwiazdek przybywa.
+7. Jeśli kupisz **Girlandę lampek** — nad i pod półkami migają kolorowe lampki; **Motyle** — nad półkami fruwają trzy
+   motylki.
 
 ## C1 — Sowa w Chmurach: krainy ponad Kosmosem
 
