@@ -105,7 +105,7 @@ W repozytorium nie ma innych plików tymczasowych. Na GitHubie została stara ga
 | 2 | **Wymagania zdjęć Galerii** — zmienione w E9d zdjęcia nr 8, 10, 25, 27, 30 (opis w `UWAGI_WLASCICIELA.md`, tabela „Decyzje”, 2026-10-05) i nowe zdjęcia nr 31–40 (test G2 w `TESTY_NA_TELEFONIE.md`) | do przejrzenia — inne progi wystarczy napisać |
 | 3 | **Zadanie 9.5** — usunięcie kodu kasującego stare klucze `localStorage` i stron-przekierowań (`SowaRunner/`, `Sowa3/`, `SowaJumper/`, `SowiaSzklarnia/`, `SowieOgrody/nowa.html`) | **pytanie do Ciebie — punkt 3.1**; do Twojej odpowiedzi nic nie usuwam |
 | 4 | **Ceny w Sowim Butiku i progi osiągnięć** — ustawione tak, żeby za zadania (ok. 15 piórek dziennie + 15 tygodniowo + osiągnięcia) pierwszy gatunek był po 2–3 dniach gry, a Puchacz po kilku tygodniach | do oceny przy testach |
-| 5 | **Testy automatyczne WebKit w GitHubie** — punkt 4 niżej | ✅ zielone od b4fae30 do f22ac7a (przebieg 248); przebiegi 249–251 nie wystartowały przez zmianę po stronie GitHuba — poprawione w f7dbb86 (4.5); obserwuję testy, które przechodzą dopiero w powtórce (4.3 d) |
+| 5 | **Testy automatyczne WebKit w GitHubie** — punkt 4 niżej | ✅ zielone od b4fae30 do f22ac7a (przebieg 248); przebiegi 249–251 nie wystartowały przez zmianę po stronie GitHuba — poprawione w f7dbb86 (4.5); przebieg 252 (d58f7ed, wszystkie etapy P1–P8) ✅; obserwuję testy, które przechodzą dopiero w powtórce (4.3 d) |
 | 6 | **Do sprawdzenia przy testach (spostrzeżenie z przeglądu):** na ekranie tytułowym Sowich Torów w pionie górna część ekranu jest jasnym, pustym tłem (tak samo przed zmianami E9) | do oceny — jeśli przeszkadza, dodam niebo/sufit sklepu |
 | 7 | **Wydajność:** w kontenerze bez karty graficznej przy spowolnionym procesorze (×4) Sowie Tory mają ok. 23 kl./s, pozostałe gry 45–56 kl./s; na telefonie płótno jest przyspieszane sprzętowo, a Tory same obniżają rozdzielczość, gdy klatek jest za mało | bez zmian; jeśli na którymś telefonie Tory się „tną”, napisz który |
 | 8 | **Stara gałąź `claude/loving-fermat-76mtxr`** na GitHubie (włączona do `main`) | do decyzji — mogę usunąć, jeśli chcesz |
@@ -216,6 +216,12 @@ się po minucie, **zanim jakikolwiek test ruszył** — czerwony znaczek nie ozn
 testy przechodziły w całości). Poprawka: testy w GitHubie biegną na stałe na Ubuntu 24.04 (na nim przeszedł ostatni
 przebieg 248, f22ac7a). Na Ubuntu 26.04 wrócimy razem z nowszą wersją Playwrighta — to osobna, większa zmiana
 (inne wersje przeglądarek mogą zmienić zachowanie części testów WebKit).
+
+Pierwszy przebieg po poprawce — **252 (d58f7ed, wszystkie etapy P1–P8): ✅ 1182 testy w Chromium i WebKit**
+(45,1 min testów, cały przebieg 48 min). Jeden test przeszedł dopiero w powtórce: okno pomieszczeń w Łącz i Hoduj
+(iPhone 13 poziomo, WebKit) — ten sam test był niestabilny w e7ab64a (4.3 d); kliknięcie trafia w przycisk, ale okno
+w WebKit czasem nie pojawia się w ciągu 5 s. Jeśli nie przejdzie także w powtórce, poprawię test. Ponieważ testów
+przybyło (P3–P7) i przebieg zbliżył się do limitu 60 minut, limit czasu CI jest teraz 75 minut.
 
 ## 5. Co dalej
 

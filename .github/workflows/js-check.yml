@@ -15,8 +15,9 @@ jobs:
     # Ubuntu 24.04 na stałe: od 2026-11-02 „ubuntu-latest” to Ubuntu 26.04, którego Playwright 1.56.1 (przypięty
     # w package.json) nie obsługuje — „npx playwright install --with-deps” kończył się błędem przed testami.
     runs-on: ubuntu-24.04
-    # Ok. 1000 testów (Chromium i WebKit na profilach telefonów) trwa ponad 35 minut — zapas na powtórki.
-    timeout-minutes: 60
+    # Ok. 1200 testów (Chromium i WebKit na profilach telefonów) trwa ok. 45 minut (cały przebieg ok. 48 minut,
+    # 2026-11-02) — zapas na powtórki niestabilnych testów WebKit.
+    timeout-minutes: 75
     steps:
       - name: Checkout
         uses: actions/checkout@v4
