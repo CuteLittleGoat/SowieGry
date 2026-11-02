@@ -13,8 +13,9 @@ Zrobione i na stronie: **P1** Sowi Butik (zakupy i kolory się nie cofają, prze
 (liczby w Ogrodach, podpowiedzi w Łącz i Hoduj, humbak raz na krainę, nowe zdjęcia zamiast podobnych), **P3** lista
 roślin i wybór tła w Sowich Ogrodach, **P4** — 8 nowych rozdziałów, 16 roślin, nawozy, nowe ulepszenia i gałąź
 „Słońce” w Sowich Ogrodach, **P6** — krainy ponad Kosmosem w Sowie w Chmurach (Mgławica, mitologie świata, Sowie
-Zaświaty), **P5** — Łącz i Hoduj (bezpiecznik zapisu, poziomy 6–7, Baobab i nowe rośliny, 6 pomieszczeń, Kram ogrodnika).
-Następny: **P7** — 10 nowych zdjęć w Galerii. Testy dla osoby testującej na telefonie:
+Zaświaty), **P5** — Łącz i Hoduj (bezpiecznik zapisu, poziomy 6–7, Baobab i nowe rośliny, 6 pomieszczeń, Kram ogrodnika),
+**P7** — 10 nowych zdjęć w Galerii (nr 31–40, za nowe krainy, rozdziały, rośliny i pomieszczenia). Następny: **P8** —
+porządki po wdrożeniu (stan uwag, dokumentacja, testy na GitHubie). Testy dla osoby testującej na telefonie:
 [`TESTY_NA_TELEFONIE.md`](TESTY_NA_TELEFONIE.md).
 
 **W skrócie (stan z 2026-10-06):** wszystkie etapy planu (E0–E10) są na `main` i na stronie. Testy automatyczne w GitHubie są zielone od

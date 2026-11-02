@@ -17,6 +17,7 @@ telefonie — i jeśli się da, zrób zrzut ekranu.
 
 | Test  | Co sprawdza                                                                                             | Od kiedy   |
 | ----- | ------------------------------------------------------------------------------------------------------- | ---------- |
+| G2    | Galeria: 10 nowych zdjęć (nr 31–40) za nowe krainy, rozdziały, rośliny i pomieszczenia                  | 2026-11-02 |
 | L2    | Łącz i Hoduj: diamentowe i tęczowe rośliny, Baobab i nowe rośliny, 6 nowych pomieszczeń, Kram ogrodnika | 2026-11-02 |
 | C1    | Sowa w Chmurach: nowe krainy ponad Kosmosem (od 1900 m) aż do Sowich Zaświatów                          | 2026-11-02 |
 | O4    | Sowie Ogrody: 8 nowych rozdziałów (od Palmiarni), nowe rośliny, nawozy, gałąź „Słońce”                  | 2026-11-01 |
@@ -73,6 +74,34 @@ cofnąć zakupu. Kolory i stroje, które wcześniej zniknęły, a były zapisane
 2. **Powinno być:** wszystkie stroje kupione kiedyś w Butiku są odblokowane (bez kłódki) i da się je wybrać.
 
 ---
+
+## G2 — Galeria: 10 nowych zdjęć
+
+Poprawka: w Galerii jest 40 zdjęć (wcześniej 30). Nowe zdjęcia nr 31–40 zdobywa się w nowych krainach Sowy w Chmurach,
+w nowych rozdziałach Sowich Ogrodów i za nowe rośliny i pomieszczenia w Łącz i Hoduj.
+
+1. Menu → zakładka **Galeria**.
+2. **Powinno być:** licznik na górze pokazuje „… / 40”. Wszystkie zdjęcia, które były odblokowane, dalej są
+   odblokowane (liczba przed ukośnikiem jest taka sama jak przed poprawką albo większa).
+3. Przewiń na sam dół. **Powinno być:** 10 nowych zdjęć — zablokowane mają kłódkę, opis celu i pasek postępu:
+   - nr 31 — wznieś się na 1900 m w Sowie w Chmurach (Mgławica),
+   - nr 32 — doleć do Olimpu (3100 m),
+   - nr 33 — dotrzyj do Sowich Zaświatów (5100 m),
+   - nr 34 — ukończ 6 rozdziałów Sowich Ogrodów (aż do Palmiarni),
+   - nr 35 — ukończ 9 rozdziałów (Ogród japoński),
+   - nr 36 — ukończ wszystkie 14 rozdziałów,
+   - nr 37 — wyhoduj diamentową roślinę w Łącz i Hoduj,
+   - nr 38 — wyhoduj tęczową roślinę,
+   - nr 39 — odnów 12 pomieszczeń w Łącz i Hoduj,
+   - nr 40 — odnów wszystkie 16 pomieszczeń i osiągnij 10. poziom Sowiej Akademii.
+4. Stuknij filtr **Do zdobycia**. **Powinno być:** widać tylko zablokowane zdjęcia, w tym nowe.
+5. Zagraj w grę z jednego z celów (np. w Łącz i Hoduj połącz dwie złote rośliny w diamentową, albo w Sowie w Chmurach
+   wznieś się na 1900 m). **Powinno być:** komunikat „Nowa fotografia w Galerii Sów!” (w Łącz i Hoduj i w Sowich
+   Ogrodach — po kilku sekundach, w Sowie w Chmurach — na ekranie wyników), a w Galerii nowe zdjęcie ze znaczkiem
+   **Nowe!**.
+6. Stuknij nowe zdjęcie. **Powinno być:** otwiera się na cały ekran, pod spodem autor i link do Pexels; po zamknięciu
+   znaczek „Nowe!” znika.
+7. Zamknij aplikację i otwórz ją ponownie, wejdź do **Galerii**. **Powinno być:** nowe zdjęcie dalej odblokowane.
 
 ## L2 — Łącz i Hoduj: nowe poziomy, rośliny, pomieszczenia i Kram
 
