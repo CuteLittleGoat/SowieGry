@@ -577,6 +577,8 @@ const STARE_PREFIKSY = ["sowieGryBackup:", "sowieExpansion:", "sowieDailyBest:"]
 
 Kod sprzątający jest tymczasowy. Po 1–2 miesiącach (gdy wszystkie używane urządzenia uruchomią nową wersję) usuwamy go w osobnej zmianie.
 
+**Aktualizacja 2026-11-02 (zadanie 9.5):** kod sprzątający usunięty (1711584) — od tej wersji SowieGry niczego nie kasuje z `localStorage`; na urządzeniu nieotwieranym od września dawne klucze po prostu zostają (gra ich nie czyta).
+
 ---
 
 ## 13. Testy

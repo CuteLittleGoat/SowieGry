@@ -7,7 +7,8 @@ testy na telefonie krok po kroku: `TESTY_NA_TELEFONIE.md`.
 
 **W skrócie (2026-11-02):** wszystkie 15 uwag z testów z 1 listopada są zrobione (etapy P1–P7) i są na stronie
 (https://cutelittlegoat.github.io/SowieGry/). Teraz: Twoje testy na telefonie według
-[`TESTY_NA_TELEFONIE.md`](TESTY_NA_TELEFONIE.md) i jedno pytanie — czy usuwamy stare adresy gier (punkt 3.1).
+[`TESTY_NA_TELEFONIE.md`](TESTY_NA_TELEFONIE.md). Zadanie 9.5 zamknięte według Twojej decyzji (punkt 3.1): sprzątanie
+starej pamięci telefonu usunięte (b), stare adresy gier zostają (a).
 Testy automatyczne w GitHubie od rana 2 listopada nie mogły wystartować, bo GitHub zmienił system na swoich
 maszynach — poprawione (punkt 4.5); gry nie miały z tym nic wspólnego.
 
@@ -28,6 +29,7 @@ Kolejność według Twojej odpowiedzi: P1 → P2 → P3 → P4 → P6 → P5 →
 | P7 | Galeria: 10 nowych zdjęć (nr 31–40) za nowe krainy, rozdziały, rośliny i pomieszczenia | G4 | a549fdb, 651d539 |
 | — | testy w GitHubie na maszynie z Ubuntu 24.04 (punkt 4.5) | — | f7dbb86 |
 | P8 | zamknięcie: ten plik, stan uwag, pytanie o zadanie 9.5 (punkt 3.1) | — | commit „P8: …” z 2026-11-02 |
+| 9.5 | Twoja decyzja „b — usuń”: SowieGry niczego nie kasuje z pamięci przeglądarki (usunięte jednorazowe sprzątanie dawnych zapisów); stare adresy gier (a) zostają | — | 1711584 |
 
 **Zmiany niczego nie kasują z postępu.** Każda zmiana tylko dopisuje: nowe pola zapisu dostają wartości domyślne,
 identyfikatory roślin, rozdziałów, pomieszczeń i zdjęć są tylko dopisywane na końcu (żadnego nie usunąłem ani nie
@@ -42,7 +44,7 @@ Każdy etap przed wypchnięciem przeszedł u mnie pełny `npm test` (składnia, 
 ## 1. Co jest zrobione — plan E0–E10 (stan z 2026-10-06)
 
 Wszystkie etapy planu E0–E10 są na gałęzi `main`, więc są też na stronie
-(https://cutelittlegoat.github.io/SowieGry/). Wyjątek: zadanie 9.5 jest celowo odłożone (punkt 3.1). Od 6 do
+(https://cutelittlegoat.github.io/SowieGry/). Zadanie 9.5 było odłożone do listopada; zamknięte 2026-11-02 (punkt 3.1). Od 6 do
 31 października w kodzie gier nic się nie zmieniało (tylko porządki w dokumentacji, 18b09d7) — trwały Twoje
 testy; poprawki po nich są w rozdziale 0.
 
@@ -103,14 +105,20 @@ W repozytorium nie ma innych plików tymczasowych. Na GitHubie została stara ga
 | --- | --- | --- |
 | 1 | **Twoje testy na telefonie** po poprawkach P1–P7 — krok po kroku w `TESTY_NA_TELEFONIE.md` (B1–B4, G1–G2, O1–O4, L1–L2, U1, C1) | do zrobienia; uwagi w nowym oknie |
 | 2 | **Wymagania zdjęć Galerii** — zmienione w E9d zdjęcia nr 8, 10, 25, 27, 30 (opis w `UWAGI_WLASCICIELA.md`, tabela „Decyzje”, 2026-10-05) i nowe zdjęcia nr 31–40 (test G2 w `TESTY_NA_TELEFONIE.md`) | do przejrzenia — inne progi wystarczy napisać |
-| 3 | **Zadanie 9.5** — usunięcie kodu kasującego stare klucze `localStorage` i stron-przekierowań (`SowaRunner/`, `Sowa3/`, `SowaJumper/`, `SowiaSzklarnia/`, `SowieOgrody/nowa.html`) | **pytanie do Ciebie — punkt 3.1**; do Twojej odpowiedzi nic nie usuwam |
+| 3 | **Zadanie 9.5** — usunięcie kodu kasującego stare klucze `localStorage` i stron-przekierowań (`SowaRunner/`, `Sowa3/`, `SowaJumper/`, `SowiaSzklarnia/`, `SowieOgrody/nowa.html`) | ✅ 2026-11-02: b — usunięte (1711584), a — strony-przekierowania zostają na stałe (punkt 3.1) |
 | 4 | **Ceny w Sowim Butiku i progi osiągnięć** — ustawione tak, żeby za zadania (ok. 15 piórek dziennie + 15 tygodniowo + osiągnięcia) pierwszy gatunek był po 2–3 dniach gry, a Puchacz po kilku tygodniach | do oceny przy testach |
 | 5 | **Testy automatyczne WebKit w GitHubie** — punkt 4 niżej | ✅ zielone od b4fae30 do f22ac7a (przebieg 248); przebiegi 249–251 nie wystartowały przez zmianę po stronie GitHuba — poprawione w f7dbb86 (4.5); przebieg 252 (d58f7ed, wszystkie etapy P1–P8) ✅; obserwuję testy, które przechodzą dopiero w powtórce (4.3 d) |
 | 6 | **Do sprawdzenia przy testach (spostrzeżenie z przeglądu):** na ekranie tytułowym Sowich Torów w pionie górna część ekranu jest jasnym, pustym tłem (tak samo przed zmianami E9) | do oceny — jeśli przeszkadza, dodam niebo/sufit sklepu |
 | 7 | **Wydajność:** w kontenerze bez karty graficznej przy spowolnionym procesorze (×4) Sowie Tory mają ok. 23 kl./s, pozostałe gry 45–56 kl./s; na telefonie płótno jest przyspieszane sprzętowo, a Tory same obniżają rozdzielczość, gdy klatek jest za mało | bez zmian; jeśli na którymś telefonie Tory się „tną”, napisz który |
 | 8 | **Stara gałąź `claude/loving-fermat-76mtxr`** na GitHubie (włączona do `main`) | do decyzji — mogę usunąć, jeśli chcesz |
 
-### 3.1. Pytanie: czy usuwamy stare adresy gier? (zadanie 9.5)
+### 3.1. Zadanie 9.5 — stare adresy gier i sprzątanie starej pamięci (decyzja z 2026-11-02)
+
+**Twoja decyzja: „b-usuń (i zaktualizuj dokumentację w repo).”** Zrobione w 1711584: SowieGry **niczego nie kasuje**
+z pamięci przeglądarki (pilnują tego testy). **a) — bez zmian:** stare adresy gier dalej przenoszą do nowych gier;
+gdyby kiedyś trzeba je było usunąć, wystarczy napisać.
+
+Opis z pytania (dla porządku):
 
 Od pierwszego zapisu w chmurze (koniec września) minął ponad miesiąc, więc według planu można posprzątać dwie
 rzeczy z okresu przejściowego. **Żadna z nich nie dotyka postępu w chmurze** — ani rekordów, ani zakupów, ani roślin.
@@ -126,10 +134,8 @@ Jeśli usunę ten kod, na telefonie, którego nikt nie otwierał od września, s
 przeglądarki (nic nie ważą, gra ich nie czyta). Na telefonach, które już raz otworzyły SowieGry po wrześniu,
 niczego to nie zmienia — tam stare zapisy są już skasowane.
 
-**Moja rada:** a) **zostawić** — strony nic nie kosztują, a chronią stare zakładki i ikony (chyba że wiesz, że nikt
-ich nie ma); b) **usunąć** — to tylko porządek w kodzie, bez żadnego wpływu na grę.
-
-Odpowiedz krótko, np. „a — zostaw, b — usuń”, „usuń wszystko” albo „zostaw wszystko”.
+**Moja rada była:** a) **zostawić** — strony nic nie kosztują, a chronią stare zakładki i ikony; b) **usunąć** — to
+tylko porządek w kodzie, bez żadnego wpływu na grę.
 
 ## 4. Problemy z testami automatycznymi — na czym polegają
 
@@ -233,7 +239,6 @@ przybyło (P3–P7) i przebieg zbliżył się do limitu 60 minut, limit czasu CI
 
 1. Twoje testy na telefonie (`TESTY_NA_TELEFONIE.md`) i uwagi (w nowym oknie) → wpis w `UWAGI_WLASCICIELA.md` →
    poprawki małymi commitami, każdy z zielonym `npm test`, z aktualizacją dokumentacji gry i tego pliku.
-2. Twoja odpowiedź na pytanie z punktu 3.1 (zadanie 9.5) — wtedy je zrobię albo zamknę.
-3. Ewentualnie inne wymagania zdjęć Galerii (punkt 3, wiersz 2) i ceny w Butiku albo w Kramie ogrodnika.
-4. Jeśli któryś test WebKit w CI nie przejdzie także przy powtórce — poprawić go tak jak w 4.3 c i d.
-5. Kiedyś: nowsza wersja Playwrighta i powrót testów w GitHubie na najnowszy system (punkt 4.5).
+2. Ewentualnie inne wymagania zdjęć Galerii (punkt 3, wiersz 2) i ceny w Butiku albo w Kramie ogrodnika.
+3. Jeśli któryś test WebKit w CI nie przejdzie także przy powtórce — poprawić go tak jak w 4.3 c i d.
+4. Kiedyś: nowsza wersja Playwrighta i powrót testów w GitHubie na najnowszy system (punkt 4.5).
