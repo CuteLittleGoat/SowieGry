@@ -3,7 +3,11 @@
 ## Jak grać
 
 Otwórz grę przyciskiem **Graj** na karcie **Sowie Ogrody** w menu głównym (ze znaczkiem „Nowe!”). Sowa ogrodniczka
-zaczyna od parapetu, a kolejne rozdziały z celami prowadzą przez Balkon, Działkę, Basen i Szklarnię aż do Arboretum.
+zaczyna od parapetu, a 14 rozdziałów z celami prowadzi przez Balkon, Działkę, Basen, Szklarnię i Arboretum, a dalej
+przez **Palmiarnię**, **Dżunglę**, **Ogród japoński**, **Pustynną oazę**, **Ogród zimowy**, **Wodny ogród**
+i **Ogród na dachu** aż do **Księżycowego ogrodu**. Każdy z nowych rozdziałów ma własne tło i dwie nowe rośliny
+o własnych kształtach (np. palma, bambus, wiśnia sakura, agawa, grzybienie, lawenda, gwiezdny kwiat). Kto ukończył
+już Arboretum, przy następnym wejściu trafia od razu do Palmiarni — cały dotychczasowy ogród zostaje.
 
 - **Samouczek:** przy pierwszym wejściu dymek u góry ogrodu prowadzi przez 4 krótkie kroki (stuknięcia, pierwsza
   Monstera, cele rozdziału, wydarzenia). Kroki z akcją zaliczają się same, pozostałe — przyciskiem **„Dalej”**;
@@ -19,8 +23,11 @@ zaczyna od parapetu, a kolejne rozdziały z celami prowadzą przez Balkon, Dzia�
   i ile przybywa na sekundę. Duże liczby są skracane: „tys.” (tysiąc), „mln” (milion), „mld” (miliard), „bln”
   (bilion), „bld” (biliard), „tryl.” (trylion), „tryld” (tryliard), „kwadryl.” (kwadrylion) i dalej — np. „150 mln”
   to 150 milionów.
-- **Cel rozdziału:** pod licznikiem jest bieżący rozdział (np. „Rozdział 1/6: Parapet”) i jego cele z postępem.
-  Po wykonaniu wszystkich otwiera się kolejny rozdział z nowymi roślinami i ulepszeniami.
+- **Cel rozdziału:** pod licznikiem jest bieżący rozdział (np. „Rozdział 1/14: Parapet”) i jego cele z postępem.
+  Po wykonaniu wszystkich otwiera się kolejny rozdział z nowymi roślinami i ulepszeniami. W dalszych rozdziałach
+  potrzeba kilku Wielkich Przesadzań — nasiona z nich przyspieszają ogród.
+- **Ogród:** każdy kupiony gatunek stoi w doniczce; przy wielu gatunkach widać 12 najdalszych (z najnowszych
+  rozdziałów).
 - **Panel na dole** (na komputerze i telefonie poziomo — po prawej) ma cztery zakładki:
   - **Rośliny** — kup ×1, ×10 albo **max** (ile Cię stać) — cena jest na każdym przycisku. Przy 10, 25, 50
     i 100 sztukach roślina zmienia wygląd, a przy 25 i 100 produkuje dwa razy więcej. Lista nie skacze, gdy coś
@@ -28,9 +35,15 @@ zaczyna od parapetu, a kolejne rozdziały z celami prowadzą przez Balkon, Dzia�
   - **„Rozwiń listę”** (przycisk **⤢** obok zakładek, telefon trzymany pionowo) — ogród zwija się do paska, a lista
     dostaje prawie cały ekran. Drugie stuknięcie (**⤡**) wraca do zwykłego widoku;
   - **Ulepszenia** — od najtańszych; m.in. **Konewka sowy**, po której zakupie u góry pojawia się przycisk
-    **„Podlej”** (ładunki, np. 3/3): podlanie podwaja produkcję na chwilę, a ładunki same się odnawiają;
+    **„Podlej”** (ładunki, np. 3/3): podlanie podwaja produkcję na chwilę, a ładunki same się odnawiają. Każda
+    roślina (poza Monsterą, która ma „Nawóz monster”) ma swój **nawóz** — podwaja jej zbiory. Nowe rozdziały mają
+    po trzy własne ulepszenia (np. Szklana kopuła, Bambusowa konewka z dodatkowymi ładunkami, Cień palm — ogród
+    rośnie dłużej, gdy Cię nie ma, Fontanna, Pomocni sąsiedzi);
   - **Prestiż** — **Wielkie Przesadzanie** (po Szklarni): ogród zaczyna od nowa, ale dostajesz nasiona na stałe
-    ulepszenia w drzewku (Korzenie, Woda, Sen). Przed przesadzeniem gra zapyta, czy na pewno;
+    ulepszenia w drzewku (Korzenie, Woda, Sen i **Słońce**). W gałęzi Słońce: **Słoneczne korzenie** (każdy poziom
+    mnoży produkcję — można je rozwijać bardzo długo), **Poranny start** (nowy cykl zaczyna się z ulepszeniami
+    pierwszych rozdziałów) i **Wieczne lato** (rośliny od Palmiarni rosną szybciej). Przed przesadzeniem gra zapyta,
+    czy na pewno;
   - **Kolekcja** — na górze **kontrakty dnia** (25 stuknięć, 6 kupionych roślin, 2 podlania — liczone od pierwszego
     wejścia danego dnia); wykonany kontrakt odbierasz przyciskiem **„Odbierz”** i dostajesz XP oraz piórka Sowiej
     Akademii. Niżej rozdziały, **„Tło ogrodu”**, gatunki w ogrodzie i statystyki. W „Tle ogrodu” wybierasz tło

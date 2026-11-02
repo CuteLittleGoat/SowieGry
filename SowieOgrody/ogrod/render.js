@@ -5,6 +5,7 @@ import { drawOwl } from "../../shared/world/owl.js";
 import { COLORS, font } from "../../shared/world/tokens.js";
 import { CHAPTERS, GARDEN_EVENTS, PLANTS } from "./config.js";
 import { formatNumber, plantStage } from "./economy.js";
+import { createPlantShapes, drawSceneDecor, NEW_SCENES } from "./decor.js";
 import { sceneId } from "./garden.js";
 
 // Tło rozdziału: [niebo u góry, niebo u dołu, podłoże].
@@ -15,10 +16,24 @@ const SCENES = {
   basen: ["#bfe9ff", "#dff5fb", "#9fd9e8"],
   szklarnia: ["#dfffee", "#b9efd3", "#8fcf9a"],
   arboretum: ["#e8f7d4", "#c8ebb0", "#7fbf62"],
+  // Rozdziały 7–14 (uwaga O3) — decor.js.
+  ...NEW_SCENES,
 };
 
-// Półka: najwyżej 6 gatunków w rzędzie, dwa rzędy.
+// Półka: najwyżej 6 gatunków w rzędzie, dwa rzędy — razem 12 (od uwagi O2 gatunków jest 27: w ogrodzie stoi 12
+// najdalszych posiadanych, a gatunek zastawiony przez ciężarówkę Amic zawsze).
 const COLUMNS = 6;
+const SHELF = COLUMNS * 2;
+
+/** Gatunki na półce: posiadane w kolejności z PLANTS, najwyżej `SHELF` ostatnich (z zastawionym ciężarówką). */
+export function shelfPlants(state) {
+  const owned = PLANTS.filter((item) => (state.plants?.[item.id] || 0) > 0);
+  if (owned.length <= SHELF) return owned;
+  const shown = owned.slice(-SHELF);
+  const blocked = owned.find((item) => item.id === state.blocked);
+  if (blocked && !shown.includes(blocked)) shown.splice(0, 1, blocked);
+  return shown;
+}
 
 // Skala rysunku względem ogrodu telefonu (360 × 260 px CSS): rośliny i sowa rosną razem z płótnem (komputer),
 // ale nie maleją poniżej 0,85 ani nie rosną ponad 2.
@@ -33,6 +48,7 @@ export function createGardenRenderer({ canvas, atlas }) {
   let size = { width: 0, height: 0, ratio: 1 };
   // Miejsca roślin (piksele CSS) — do celowania napisów i testów.
   const spots = new Map();
+  const shapes = createPlantShapes(context);
 
   function resize() {
     const rect = canvas.getBoundingClientRect();
@@ -57,7 +73,9 @@ export function createGardenRenderer({ canvas, atlas }) {
     context.fillStyle = gradient;
     context.fillRect(0, 0, width, height);
     const floor = height * 0.6;
-    if (chapterId === "parapet") {
+    if (drawSceneDecor(context, chapterId, width, height, floor, time)) {
+      // Rozdziały 7–14: dekoracje z decor.js.
+    } else if (chapterId === "parapet") {
       // Okno: rama i szprosy, za szybą chmurka.
       context.fillStyle = "rgba(255, 255, 255, 0.7)";
       roundRect(width * 0.12, height * 0.06, width * 0.76, height * 0.5, 20);
@@ -130,6 +148,11 @@ export function createGardenRenderer({ canvas, atlas }) {
     roundRect(x - potWidth / 2, y - 20 * scale, potWidth, 20 * scale, 5);
     context.fillStyle = "rgba(59, 47, 74, 0.15)";
     context.fillRect(x - potWidth / 2, y - 20 * scale, potWidth, 4);
+    // Rośliny rozdziałów 7–14 mają własny kształt (decor.js).
+    if (item.shape && shapes[item.shape]) {
+      shapes[item.shape](item, x, y - 20 * scale, scale, stage, time);
+      return;
+    }
     const leaves = 2 + stage;
     context.fillStyle = item.color;
     for (let index = 0; index < leaves; index += 1) {
@@ -156,7 +179,7 @@ export function createGardenRenderer({ canvas, atlas }) {
   function shelf(state, time) {
     const { width, height } = size;
     const unit = gardenUnit(width, height);
-    const owned = PLANTS.filter((item) => (state.plants?.[item.id] || 0) > 0);
+    const owned = shelfPlants(state);
     spots.clear();
     const rows = Math.max(1, Math.ceil(owned.length / COLUMNS));
     const placed = owned.map((item, index) => {

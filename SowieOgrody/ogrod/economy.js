@@ -1,6 +1,7 @@
 // Sowie Ogrody — ekonomia (czysta logika, bez DOM): ceny roślin, kamienie milowe, produkcja liści z ulepszeniami,
 // prestiżem i premiami na czas, siła stuknięcia, nasiona Wielkiego Przesadzania, formatowanie liczb.
 import {
+  CHAPTERS,
   GARDEN_EVENTS,
   MILESTONE_BOOST,
   MILESTONES,
@@ -16,6 +17,11 @@ import {
 export const plantById = (id) => PLANTS.find((plant) => plant.id === id) || null;
 export const upgradeById = (id) => UPGRADES.find((upgrade) => upgrade.id === id) || null;
 export const prestigeById = (id) => PRESTIGE_TREE.find((node) => node.id === id) || null;
+
+// Rozdziały od Palmiarni (7.; uwaga O3) — Wieczne lato daje ich roślinom +50% za poziom.
+const LATE_CHAPTERS = new Set(
+  CHAPTERS.slice(CHAPTERS.findIndex((chapter) => chapter.id === "palmiarnia")).map((chapter) => chapter.id),
+);
 
 /** Cena `amount` kolejnych sztuk rośliny przy `owned` posiadanych (suma ciągu geometrycznego). */
 export function plantCost(plant, owned, amount = 1) {
@@ -61,8 +67,9 @@ export function waterStats(state) {
   let { charges, regen, multiplier, duration } = WATER;
   for (const upgrade of UPGRADES) {
     if (!hasUpgrade(state, upgrade.id) || !upgrade.effect.water) continue;
-    multiplier = upgrade.effect.water.multiplier ?? multiplier;
-    regen = upgrade.effect.water.regen ?? regen;
+    multiplier = Math.max(upgrade.effect.water.multiplier ?? 0, multiplier);
+    regen = Math.min(upgrade.effect.water.regen ?? Infinity, regen);
+    charges += upgrade.effect.water.charges ?? 0;
   }
   charges += prestigeLevel(state, "studnia");
   duration += prestigeLevel(state, "pamiecPlusku") * 15;
@@ -71,9 +78,13 @@ export function waterStats(state) {
 
 /** Postęp offline: skuteczność i limit (s) z prestiżem. */
 export function offlineStats(state) {
+  const extra = UPGRADES.reduce(
+    (sum, upgrade) => sum + (hasUpgrade(state, upgrade.id) ? upgrade.effect.offline || 0 : 0),
+    0,
+  );
   return {
     efficiency: OFFLINE.efficiency + prestigeLevel(state, "senni") * 0.1,
-    cap: OFFLINE.cap + prestigeLevel(state, "glebokiSen") * 2 * 3600,
+    cap: OFFLINE.cap + prestigeLevel(state, "glebokiSen") * 2 * 3600 + extra,
   };
 }
 
@@ -81,10 +92,12 @@ export function offlineStats(state) {
  * Produkcja w chwili `now` (ms): { lps, base (bez premii na czas), perPlant, global, tap, boost (mnożnik premii),
  * blocked (gatunek zastawiony ciężarówką) }. Premie na czas (`state.effects`): `watered` (do kiedy, mnożnik
  * konewki), `boost` (złota kózka: ×3), `pracu` (dzwoniący telefon: ×0,7), `frenzy` (kozi szał — w events.js); `state.blocked` — gatunek pod ciężarówką
- * Amic nie produkuje.
+ * Amic nie produkuje. Od uwagi O6: Słoneczne korzenie ×1,1 za poziom (mnożą się), Wieczne lato +50% za poziom dla
+ * roślin rozdziałów od Palmiarni.
  */
 export function production(state, now = 0) {
-  let global = 1 + prestigeLevel(state, "korzenie") * 0.25;
+  let global = (1 + prestigeLevel(state, "korzenie") * 0.25) * 1.1 ** prestigeLevel(state, "sloneczneKorzenie");
+  const summer = 1 + prestigeLevel(state, "wieczneLato") * 0.5;
   let tap = TAP.base;
   let tapLps = TAP.lpsShare;
   const chapterMult = {};
@@ -114,6 +127,7 @@ export function production(state, now = 0) {
           plant.prod *
           global *
           (chapterMult[plant.chapter] || 1) *
+          (LATE_CHAPTERS.has(plant.chapter) ? summer : 1) *
           (plantMult[plant.id] || 1) *
           milestoneMultiplier(owned);
     perPlant[plant.id] = value * boost;

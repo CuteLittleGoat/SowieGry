@@ -17,7 +17,7 @@ test("nowe Sowie Ogrody: stuknięcia zbierają liście, pierwsza Monstera, cel r
 }) => {
   const errors = watchErrors(page);
   await openGarden(page);
-  await expect(page.locator("[data-goal]")).toContainText("Rozdział 1/6: Parapet");
+  await expect(page.locator("[data-goal]")).toContainText("Rozdział 1/14: Parapet");
   await expect(page.locator("[data-goal]")).toContainText("Kup 5 Monster");
   const garden = page.locator("[data-canvas]");
   for (let index = 0; index < 16; index += 1) await garden.click({ position: { x: 60 + index * 4, y: 60 } });
@@ -62,7 +62,7 @@ test("nowe Sowie Ogrody: Parapet ukończony → Balkon, konewka z zakładki Ulep
   await expect(
     page.locator(".sowie-toast-chip", { hasText: "Rozdział „Parapet” ukończony! Teraz: Balkon" }),
   ).toBeVisible();
-  await expect(page.locator("[data-goal]")).toContainText("Rozdział 2/6: Balkon");
+  await expect(page.locator("[data-goal]")).toContainText("Rozdział 2/14: Balkon");
   await expect(page.locator('[data-plant="paproc"]')).toBeVisible();
   await page.getByRole("tab", { name: "Ulepszenia" }).click();
   await page.locator('[data-upgrade="konewka"]').click();
@@ -111,7 +111,7 @@ test("nowe Sowie Ogrody: dawny postęp (stan v2) przechodzi bez strat i zapisuje
   expect(migrated.upgrades).toEqual({ rekawiczki: 1, konewka: 1 });
   expect(migrated.seeds).toBe(3);
   expect(migrated.stats.taps).toBe(321);
-  await expect(page.locator("[data-goal]")).toContainText("Rozdział 2/6: Balkon");
+  await expect(page.locator("[data-goal]")).toContainText("Rozdział 2/14: Balkon");
   await page.evaluate(() => window.SowieOgrody.save());
   await page.evaluate(() => window.SowieCloud.flush());
   const doc = await readDoc(project, "sowiegry/profil/sowiegry_gry/ogrody");
@@ -579,5 +579,74 @@ test("tło ogrodu (uwaga O7): w Kolekcji wybór tła z ukończonych rozdziałów
   await page.locator('[data-scene="auto"]').click();
   await expect(page.locator('[data-scene="auto"]')).toHaveAttribute("aria-pressed", "true");
   expect(await page.evaluate(() => window.SowieOgrody.scene())).toBe("balkon");
+  expect(errors).toEqual([]);
+});
+
+test("Sowie Ogrody (uwagi O2, O3): ogród po sześciu rozdziałach dostaje Palmiarnię — nic nie ginie, nowe rośliny i tło (emulator)", async ({
+  page,
+}, testInfo) => {
+  const project = uniqueProject(testInfo);
+  // Ogród gracza sprzed P4: ukończone wszystkie dawne rozdziały, rośliny, ulepszenia, nasiona i drzewko.
+  const finished = {
+    version: 3,
+    leaves: 5e11,
+    runLeaves: 6e11,
+    lifetimeLeaves: 9e12,
+    seeds: 40,
+    plants: { monstera: 120, bonsai: 30, mutant: 12, zloteDrzewko: 8 },
+    upgrades: { konewka: 1, zakupy: 1, rosa: 1 },
+    prestige: { korzenie: 4, senni: 2 },
+    chapters: { parapet: true, balkon: true, dzialka: true, basen: true, szklarnia: true, arboretum: true },
+    stats: { prestiges: 3, taps: 900 },
+    tutorialDone: true,
+  };
+  await seedDoc(project, "sowiegry/profil/sowiegry_gry/ogrody", {
+    state: JSON.stringify(finished),
+    saveVersion: 3,
+  });
+  const errors = watchErrors(page);
+  await openGarden(page, cloudUrl("/SowieOgrody/", project));
+  // Nowy rozdział zamiast „ukończonego” Arboretum; postęp bez zmian.
+  await expect(page.locator("[data-goal]")).toContainText("Rozdział 7/14: Palmiarnia");
+  await expect(page.locator("[data-goal]")).toContainText("Kup");
+  const loaded = await state(page);
+  expect(loaded.plants).toMatchObject(finished.plants);
+  expect(loaded.upgrades).toMatchObject(finished.upgrades);
+  expect(loaded.prestige).toMatchObject(finished.prestige);
+  expect(loaded.seeds).toBe(40);
+  expect(loaded.chapters).toMatchObject(finished.chapters);
+  // Nowe rośliny Palmiarni na liście, Dżungli jeszcze nie.
+  await expect(page.locator('[data-plant="palma"]')).toContainText("Palma");
+  await expect(page.locator('[data-plant="strelicja"]')).toBeVisible();
+  await expect(page.locator('[data-plant="bambus"]')).toHaveCount(0);
+  // Ulepszenia Palmiarni i nawozy; w drzewku czwarta gałąź.
+  await page.getByRole("tab", { name: "Ulepszenia" }).click();
+  await expect(page.locator('[data-upgrade-card="kopula"]')).toContainText("Szklana kopuła");
+  await expect(page.locator('[data-upgrade-card="nawoz-palma"]')).toBeVisible();
+  await page.getByRole("tab", { name: "Prestiż" }).click();
+  await expect(page.locator('[data-node="sloneczneKorzenie"]')).toContainText("Słoneczne korzenie");
+  // Tło: automatycznie Palmiarnia, w Kolekcji wybór także Arboretum.
+  expect(await page.evaluate(() => window.SowieOgrody.scene())).toBe("palmiarnia");
+  await page.getByRole("tab", { name: "Kolekcja" }).click();
+  await expect(page.locator(".ogrod-scenes [data-scene]")).toHaveCount(7);
+  await page.locator('[data-scene="arboretum"]').click();
+  expect(await page.evaluate(() => window.SowieOgrody.scene())).toBe("arboretum");
+  // Rośliny Palmiarni w ogrodzie (własne kształty z decor.js) — rysują się bez błędów.
+  await page.evaluate(() => {
+    window.SowieOgrody.give(1e14);
+    window.SowieOgrody.buy("palma", 10);
+    window.SowieOgrody.buy("strelicja", 5);
+  });
+  await expect.poll(async () => (await state(page)).plants.strelicja).toBe(5);
+  await page.waitForTimeout(300);
+  // Zapis: rozdziały i rośliny w bazie bez strat, nazwa bieżącego rozdziału w podsumowaniu.
+  await page.evaluate(() => window.SowieCloud.flush());
+  await expect
+    .poll(async () => {
+      const doc = await readDoc(project, "sowiegry/profil/sowiegry_gry/ogrody");
+      const saved = JSON.parse(doc.state);
+      return [saved.chapters?.arboretum, saved.plants?.zloteDrzewko, saved.scene, doc.summary?.zone];
+    })
+    .toEqual([true, 8, "arboretum", "Palmiarnia"]);
   expect(errors).toEqual([]);
 });

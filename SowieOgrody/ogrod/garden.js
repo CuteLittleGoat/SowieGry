@@ -210,6 +210,11 @@ export function createGarden({
     Object.assign(state, fresh, keep);
     const start = prestigeLevel(state, "szybkiStart") * 25;
     if (start) state.plants.monstera = start;
+    // Poranny start: ulepszenia Parapetu i Balkonu (poziom 1), Działki (2), Basenu (3) od razu kupione.
+    const morning = prestigeLevel(state, "porannyStart");
+    const early = ["parapet", "balkon", "dzialka", "basen"].slice(0, morning ? morning + 1 : 0);
+    for (const upgrade of UPGRADES) if (early.includes(upgrade.chapter)) state.upgrades[upgrade.id] = 1;
+    if (state.upgrades.konewka) state.can.charges = waterStats(state).charges;
     emit("prestige", { seeds });
     checkChapters();
     return seeds;

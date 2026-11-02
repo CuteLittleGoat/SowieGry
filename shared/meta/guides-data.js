@@ -260,14 +260,14 @@ export const GUIDES = Object.freeze({
     id: "ogrody",
     title: "Sowie Ogrody",
     summary:
-      "Sowa ogrodniczka sadzi rośliny od parapetu po arboretum. Stukaj w ogród, kupuj rośliny i wykonuj cele rozdziałów — ogród rośnie także wtedy, gdy Cię nie ma.",
+      "Sowa ogrodniczka sadzi rośliny od parapetu aż po Księżycowy ogród. Stukaj w ogród, kupuj rośliny i wykonuj cele rozdziałów — ogród rośnie także wtedy, gdy Cię nie ma.",
     cards: [
       {
         id: "cel",
         title: "Cel gry",
-        text: "Przejdź sześć rozdziałów: Parapet, Balkon, Działkę, Basen, Szklarnię i Arboretum. Cele bieżącego rozdziału są pod licznikiem liści.",
+        text: "Przejdź 14 rozdziałów: od Parapetu i Balkonu przez Szklarnię i Arboretum, Palmiarnię, Dżunglę i Ogród japoński aż po Księżycowy ogród. Cele bieżącego rozdziału są pod licznikiem liści.",
         sprite: "sowa-stoi",
-        tip: "Każdy rozdział otwiera nowe rośliny i ulepszenia.",
+        tip: "Każdy rozdział otwiera nowe rośliny i ulepszenia. Tło ukończonego rozdziału wybierzesz w Kolekcji.",
       },
       {
         id: "liscie",

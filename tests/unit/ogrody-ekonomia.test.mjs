@@ -18,12 +18,17 @@ import {
   formatTime,
   maxAffordable,
   milestoneMultiplier,
+  offlineStats,
   plantById,
   plantCost,
   plantStage,
   prestigeSeeds,
   production,
+  upgradeById,
+  waterStats,
 } from "../../SowieOgrody/ogrod/economy.js";
+import { createPlantShapes, drawSceneDecor, NEW_SCENES } from "../../SowieOgrody/ogrod/decor.js";
+import { shelfPlants } from "../../SowieOgrody/ogrod/render.js";
 import { chapterIndex, chapterOpen, createGarden, sceneId } from "../../SowieOgrody/ogrod/garden.js";
 import { defaultState, loadState, migrateV2 } from "../../SowieOgrody/ogrod/state.js";
 
@@ -36,17 +41,68 @@ function garden(state = defaultState(0)) {
   return { clock, garden: createGarden({ state, now: () => clock.now }) };
 }
 
-test("dane: 6 rozdziałów z 3–5 celami, 11 roślin od tańszych do droższych, ulepszenia i drzewko prestiżu 3 × 3", () => {
+test("dane: 14 rozdziałów z 3–5 celami, 27 roślin od tańszych do droższych, ulepszenia, nawozy i drzewko prestiżu 4 × 3", () => {
+  // Rozdziały 7–14 (uwaga O3, 2026-11-01) dopisane na końcu — identyfikatory pierwszych sześciu bez zmian.
   assert.deepEqual(
     CHAPTERS.map((chapter) => chapter.id),
-    ["parapet", "balkon", "dzialka", "basen", "szklarnia", "arboretum"],
+    [
+      "parapet",
+      "balkon",
+      "dzialka",
+      "basen",
+      "szklarnia",
+      "arboretum",
+      "palmiarnia",
+      "dzungla",
+      "japonski",
+      "oaza",
+      "zimowy",
+      "wodny",
+      "dach",
+      "ksiezycowy",
+    ],
   );
   for (const chapter of CHAPTERS) assert.ok(chapter.goals.length >= 3 && chapter.goals.length <= 5, chapter.id);
+  assert.equal(PLANTS.length, 27);
+  assert.deepEqual(
+    PLANTS.slice(0, 11).map((plant) => plant.id),
+    [
+      "monstera",
+      "pilea",
+      "paproc",
+      "alokazja",
+      "kaktus",
+      "slonecznik",
+      "storczyk",
+      "lotos",
+      "bonsai",
+      "mutant",
+      "zloteDrzewko",
+    ],
+  );
   for (let index = 1; index < PLANTS.length; index += 1) {
     const [before, after] = [PLANTS[index - 1], PLANTS[index]];
-    assert.ok(after.cost > before.cost * 5 && after.prod > before.prod * 3, after.id);
+    if (index < 11) assert.ok(after.cost > before.cost * 5 && after.prod > before.prod * 3, after.id);
+    else assert.ok(after.cost > before.cost && after.prod > before.prod, after.id);
     // Czas zwrotu (cena / produkcja) rośnie z każdym gatunkiem.
     assert.ok(after.cost / after.prod > before.cost / before.prod, `${after.id}: zwrot`);
+  }
+  // Nowe rośliny (uwaga O2): po dwie w każdym nowym rozdziale, każda z własnym kształtem z decor.js i drugim kolorem.
+  const shapes = createPlantShapes({});
+  for (const plant of PLANTS.slice(11)) {
+    assert.equal(typeof shapes[plant.shape], "function", `${plant.id}: kształt ${plant.shape}`);
+    assert.match(plant.accent, /^#[0-9a-f]{6}$/, plant.id);
+  }
+  for (const chapter of CHAPTERS.slice(6)) {
+    assert.equal(PLANTS.filter((plant) => plant.chapter === chapter.id).length, 2, chapter.id);
+    assert.equal(
+      UPGRADES.filter((upgrade) => upgrade.chapter === chapter.id && !upgrade.id.startsWith("nawoz-")).length,
+      3,
+    );
+    assert.ok(NEW_SCENES[chapter.id], `${chapter.id}: tło`);
+  }
+  for (const list of [CHAPTERS, PLANTS, UPGRADES, PRESTIGE_TREE]) {
+    assert.equal(new Set(list.map((item) => item.id)).size, list.length, "identyfikatory bez powtórzeń");
   }
   for (const plant of PLANTS)
     assert.ok(
@@ -58,17 +114,27 @@ test("dane: 6 rozdziałów z 3–5 celami, 11 roślin od tańszych do droższych
       CHAPTERS.some((chapter) => chapter.id === upgrade.chapter),
       upgrade.id,
     );
+  // Nawozy (uwaga O6): każda roślina poza Monsterą (ma „Nawóz monster”) — ulepszenie w rozdziale rośliny.
+  for (const plant of PLANTS.slice(1)) {
+    const fertilizer = UPGRADES.find((upgrade) => upgrade.id === `nawoz-${plant.id}`);
+    assert.ok(fertilizer, plant.id);
+    assert.equal(fertilizer.chapter, plant.chapter);
+    assert.ok(fertilizer.effect.plant[plant.id] > 1);
+    assert.ok(fertilizer.cost > plant.cost * 10, `${fertilizer.id}: cena`);
+  }
   const branches = [...new Set(PRESTIGE_TREE.map((node) => node.branch))];
-  assert.deepEqual(branches, ["Korzenie", "Woda", "Sen"]);
+  assert.deepEqual(branches, ["Korzenie", "Woda", "Sen", "Słońce"]);
   for (const branch of branches) assert.equal(PRESTIGE_TREE.filter((node) => node.branch === branch).length, 3);
-  // Cele rozdziałów wskazują istniejące rośliny i ulepszenia.
-  for (const goal of CHAPTERS.flatMap((chapter) => chapter.goals)) {
-    if (goal.kind === "plant") assert.ok(plantById(goal.plant), goal.id);
-    if (goal.kind === "upgrade")
-      assert.ok(
-        UPGRADES.some((upgrade) => upgrade.id === goal.upgrade),
-        goal.id,
-      );
+  // Cele rozdziałów wskazują istniejące rośliny i ulepszenia (ulepszenie celu — z tego samego rozdziału).
+  for (const chapter of CHAPTERS) {
+    for (const goal of chapter.goals) {
+      if (goal.kind === "plant") assert.ok(plantById(goal.plant), goal.id);
+      if (goal.kind === "upgrade") {
+        const upgrade = UPGRADES.find((item) => item.id === goal.upgrade);
+        assert.ok(upgrade, goal.id);
+        assert.equal(upgrade.chapter, chapter.id, goal.id);
+      }
+    }
   }
 });
 
@@ -240,6 +306,123 @@ test("offline: 50% produkcji bazowej (bez premii), limit 4 h, poniżej minuty ni
   assert.equal(state.can.charges, 2);
   assert.ok(g.takeEvents().some((event) => event.type === "offline"));
   assert.ok(state.stats.offlineLeaves > 0);
+});
+
+test("nowe ulepszenia (uwaga O6): konewka (+2 ładunki, najlepszy mnożnik i odnowienie), dłuższy offline, nawozy", () => {
+  const state = defaultState(0);
+  state.upgrades = { konewka: 1, zraszacz: 1 };
+  assert.deepEqual({ ...waterStats(state), duration: 0 }, { charges: 3, regen: 40, multiplier: 3, duration: 0 });
+  state.upgrades.mgielka = 1;
+  assert.equal(waterStats(state).multiplier, 4);
+  assert.equal(waterStats(state).regen, 30);
+  state.upgrades.konewkaBambusowa = 1;
+  assert.equal(waterStats(state).charges, 5);
+  state.upgrades.fontanna = 1;
+  assert.equal(waterStats(state).multiplier, 5);
+  assert.equal(waterStats(state).regen, 30, "Fontanna nie wydłuża odnowienia");
+  // Postęp offline: Cień palm +4 h, Sen sowy +8 h.
+  const base = offlineStats(state).cap;
+  state.upgrades.cienPalm = 1;
+  state.upgrades.senSowy = 1;
+  assert.equal(offlineStats(state).cap, base + 12 * 3600);
+  // Nawóz gatunku mnoży tylko jego produkcję.
+  state.upgrades = {};
+  state.plants = { pilea: 10, paproc: 10 };
+  const before = production(state, 0).perPlant;
+  state.upgrades["nawoz-pilea"] = 1;
+  const after = production(state, 0).perPlant;
+  const factor = upgradeById("nawoz-pilea").effect.plant.pilea;
+  near(after.pilea / before.pilea, factor, 1e-9, "Nawóz: Pilea");
+  near(after.paproc, before.paproc, 1e-9, "Paproć bez zmian");
+});
+
+test("drzewko „Słońce” (uwaga O6): Słoneczne korzenie, Poranny start (ulepszenia po przesadzaniu), Wieczne lato", () => {
+  const { garden: g } = garden();
+  const state = g.state;
+  state.seeds = 1e6;
+  assert.equal(g.buyPrestige("porannyStart"), false, "wymaga Słonecznych korzeni");
+  state.plants = { monstera: 10, palma: 10 };
+  const plain = production(state, 0);
+  assert.ok(g.buyPrestige("sloneczneKorzenie"));
+  const sun = production(state, 0);
+  assert.ok(sun.global > plain.global, "Słoneczne korzenie podnoszą produkcję");
+  const step = sun.global / plain.global;
+  assert.ok(g.buyPrestige("sloneczneKorzenie"));
+  assert.ok(production(state, 0).global / sun.global > 1, "drugi poziom też");
+  near(production(state, 0).global / plain.global, step ** 2, 1e-9, "poziomy mnożą się");
+  // Poranny start: po przesadzaniu ulepszenia Parapetu i Balkonu (poziom 1), Działki (2), Basenu (3).
+  assert.ok(g.buyPrestige("porannyStart"));
+  state.chapters = Object.fromEntries(CHAPTERS.slice(0, 5).map((chapter) => [chapter.id, true]));
+  state.runLeaves = 2e10;
+  g.prestige();
+  const bought = (chapter) =>
+    UPGRADES.filter((upgrade) => upgrade.chapter === chapter).every((u) => state.upgrades[u.id]);
+  assert.ok(bought("parapet") && bought("balkon"), "Parapet i Balkon");
+  assert.equal(bought("dzialka"), false, "Działka od poziomu 2");
+  assert.equal(state.can.charges, waterStats(state).charges, "konewka pełna");
+  assert.ok(g.buyPrestige("porannyStart") && g.buyPrestige("porannyStart"));
+  state.runLeaves = 2e10;
+  g.prestige();
+  assert.ok(bought("dzialka") && bought("basen"), "poziom 3: także Działka i Basen");
+  assert.equal(bought("szklarnia"), false);
+  // Wieczne lato: tylko rośliny rozdziałów od Palmiarni.
+  state.plants = { monstera: 10, palma: 10 };
+  const spring = production(state, 0).perPlant;
+  assert.ok(g.buyPrestige("wieczneLato"));
+  const summer = production(state, 0).perPlant;
+  near(summer.monstera, spring.monstera, 1e-9, "Monstera bez zmian");
+  assert.ok(summer.palma > spring.palma * 1.2, "Palma szybciej");
+});
+
+test("ogród (uwaga O2): na półce najwyżej 12 gatunków — najdalsze posiadane i zawsze ten pod ciężarówką", () => {
+  const state = defaultState(0);
+  state.plants = Object.fromEntries(PLANTS.slice(0, 9).map((plant) => [plant.id, 3]));
+  assert.equal(shelfPlants(state).length, 9);
+  state.plants = Object.fromEntries(PLANTS.map((plant) => [plant.id, 3]));
+  const shown = shelfPlants(state);
+  assert.equal(shown.length, 12);
+  assert.deepEqual(
+    shown.map((plant) => plant.id),
+    PLANTS.slice(-12).map((plant) => plant.id),
+  );
+  state.blocked = "monstera";
+  const withTruck = shelfPlants(state).map((plant) => plant.id);
+  assert.equal(withTruck.length, 12);
+  assert.ok(withTruck.includes("monstera"), "zastawiony gatunek widać");
+  assert.ok(withTruck.includes("gwiezdny"), "najdalszy gatunek widać");
+});
+
+// Atrapa płótna 2D: zapisuje wywołania metod rysujących (wypełnienia, linie), resztę przyjmuje bez błędów.
+function fakeContext() {
+  const calls = { fill: 0, stroke: 0, fillRect: 0 };
+  const gradient = { addColorStop() {} };
+  const target = { calls };
+  return new Proxy(target, {
+    get(object, key) {
+      if (key in object) return object[key];
+      if (key === "createRadialGradient" || key === "createLinearGradient") return () => gradient;
+      return (...args) => {
+        if (key in calls) calls[key] += 1;
+        for (const value of args) if (typeof value === "number") assert.ok(Number.isFinite(value), String(key));
+      };
+    },
+  });
+}
+
+test("ozdoby (uwagi O3, O7): tła rozdziałów 7–14 i kształty nowych roślin rysują się na każdym etapie", () => {
+  for (const chapter of CHAPTERS) {
+    const context = fakeContext();
+    const drawn = drawSceneDecor(context, chapter.id, 360, 260, 156, 1.5);
+    assert.equal(drawn, CHAPTERS.indexOf(chapter) >= 6, chapter.id);
+    if (drawn) assert.ok(context.calls.fill + context.calls.stroke + context.calls.fillRect > 3, chapter.id);
+  }
+  for (const plant of PLANTS.slice(11)) {
+    for (let stage = 1; stage <= 5; stage += 1) {
+      const context = fakeContext();
+      createPlantShapes(context)[plant.shape](plant, 100, 200, 1, stage, 2.5);
+      assert.ok(context.calls.fill + context.calls.stroke >= 2, `${plant.id}: etap ${stage}`);
+    }
+  }
 });
 
 test("migracja stanu v2 → v3: rośliny pod nowymi nazwami, ulepszenia z odpowiednikiem, zwroty, rozdziały ze stref", () => {
@@ -457,4 +640,95 @@ test("symulator: aktywna gra ze zdarzeniami — rozdziały po kolei, pierwsze Wi
   // Spokojniejsza gra (stuknięcie co 2 s) — wolniej, ale też w kilka godzin.
   const calm = simulate({ taps: 0.5, bay: 0.4 });
   assert.ok(calm.prestiges[0] > first && calm.prestiges[0] < 240, `spokojnie: ${calm.prestiges[0]} min`);
+});
+
+// Długa gra (uwagi O2–O6, 2026-11-01): aktywny gracz bez zdarzeń, krok 5 s — 2 stuknięcia/s, podlewanie, ulepszenia
+// od najtańszych, rośliny z celów, potem najopłacalniejsze; Wielkie Przesadzanie, gdy nowe nasiona to co najmniej
+// połowa zdobytych (cykl ≥ 5 min), po 4 h cyklu albo gdy rozdział czeka już tylko na liczbę przesadzań — ale nie,
+// gdy brakujące rośliny celu kosztują najwyżej 30 min produkcji; nasiona w drzewko według priorytetów.
+const TREE_ORDER = [
+  "korzenie",
+  "sloneczneKorzenie",
+  "wieczneLato",
+  "porannyStart",
+  "szybkiStart",
+  "pamiecNasion",
+  "pamiecPlusku",
+  "studnia",
+  "senni",
+  "glebokiSen",
+];
+
+function simulateLong({ hours = 70, step = 5, buys = 100 } = {}) {
+  const clock = { now: 0 };
+  const g = createGarden({ state: defaultState(0), now: () => clock.now, events: false });
+  const reached = {};
+  let runStart = 0;
+  for (let second = 0; second < hours * 3600; second += step) {
+    const state = g.state;
+    // 2 stuknięcia/s naraz za cały krok (tyle liści, ile dałyby pojedyncze stuknięcia — szybciej niż `g.tap()`).
+    const taps = 2 * step;
+    const harvest = production(state, clock.now).tap * taps;
+    state.leaves += harvest;
+    state.runLeaves += harvest;
+    state.lifetimeLeaves += harvest;
+    state.stats.taps += taps;
+    g.water();
+    for (const upgrade of g.upgrades().sort((a, b) => a.cost - b.cost)) {
+      if (!state.upgrades[upgrade.id] && upgrade.cost <= state.leaves) g.buyUpgrade(upgrade.id);
+    }
+    for (const goal of g.goals().goals) if (!goal.done && goal.kind === "plant") g.buyPlant(goal.plant, 1);
+    for (let count = 0; count < buys; count += 1) {
+      const best = g.bestPlant();
+      if (!best || best.cost > state.leaves) break;
+      g.buyPlant(best.plant.id, 1);
+    }
+    clock.now += step * 1000;
+    g.update(step);
+    for (const event of g.takeEvents()) if (event.type === "chapter") reached[event.id] ??= (second + step) / 3600;
+    if (reached[CHAPTERS.at(-1).id]) break;
+    const gain = prestigeSeeds(state);
+    if (!gain) continue;
+    const goals = g.goals().goals;
+    const lps = production(state, clock.now).lps;
+    const missing = goals
+      .filter((goal) => !goal.done && goal.kind === "plant")
+      .reduce((sum, goal) => {
+        const owned = state.plants[goal.plant] || 0;
+        return sum + plantCost(plantById(goal.plant), owned, goal.target - owned);
+      }, 0);
+    const minutes = (second - runStart) / 60;
+    const onlyPrestige =
+      goals.some((goal) => !goal.done && goal.kind === "prestige") &&
+      goals.every((goal) => goal.done || goal.kind === "prestige");
+    const worth = gain >= Math.max(3, (state.stats.seedsEarned || 0) * 0.5) && minutes >= 5;
+    const close = missing > 0 && missing <= lps * 1800;
+    if (!((worth && !close) || minutes >= 240 || onlyPrestige)) continue;
+    g.prestige();
+    runStart = second;
+    for (let round = 0; round < 400; round += 1) {
+      const before = JSON.stringify(g.state.prestige);
+      for (const id of TREE_ORDER) g.buyPrestige(id);
+      if (JSON.stringify(g.state.prestige) === before) break;
+    }
+  }
+  return reached;
+}
+
+test("symulator długiej gry (uwagi O2–O6): wszystkie 14 rozdziałów do przejścia, każdy nowy to od pół godziny do 15 h", () => {
+  // Bez zdarzeń i krokiem 20 s (szybko i powtarzalnie); ze zdarzeniami i krokiem 1 s gra idzie ok. 20% szybciej.
+  const reached = simulateLong({ step: 20, buys: 30 });
+  const times = CHAPTERS.map((chapter) => reached[chapter.id]);
+  assert.ok(
+    times.every((time) => time > 0),
+    `rozdziały: ${JSON.stringify(reached)}`,
+  );
+  for (let index = 1; index < times.length; index += 1) assert.ok(times[index] > times[index - 1], `${times}`);
+  const arboretum = reached.arboretum;
+  const fresh = times.slice(6).map((time, index) => time - (index ? times[5 + index] : arboretum));
+  for (const [index, hours] of fresh.entries()) {
+    assert.ok(hours >= 0.5 && hours <= 15, `${CHAPTERS[6 + index].id}: ${hours.toFixed(2)} h`);
+  }
+  const total = times.at(-1) - arboretum;
+  assert.ok(total >= 25 && total <= 60, `rozdziały 7–14: ${total.toFixed(1)} h po Arboretum`);
 });
