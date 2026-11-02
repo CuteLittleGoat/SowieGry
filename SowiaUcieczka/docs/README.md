@@ -2,7 +2,7 @@
 
 Sowia Ucieczka to przebudowany SowaRunner. Sówka ucieka przed **Chmurą Pracu** i biegnie przez Sowi Świat: skacze, szybuje, ślizga się i zbiera liście monstery.
 
-Grasz z menu: karta **Łąka — Sowia Ucieczka** (ze znaczkiem „Nowe!”), przycisk **Graj**. Stary adres gry (`…/SowaRunner/`) sam przenosi tutaj, więc zakładki i skrót na ekranie telefonu działają dalej. Twoje rekordy, top 10 i wyniki wyzwań dnia z SowaRunner zostały.
+Grasz z menu: karta **Łąka — Sowia Ucieczka** (ze znaczkiem „Nowe!”), przycisk **Graj**. Dawny adres gry (`…/SowaRunner/`) od 2 listopada 2026 już nie działa — wchodź przez menu (stare zakładki i skróty trzeba zapisać na nowo). Twoje rekordy, top 10 i wyniki wyzwań dnia z SowaRunner zostały.
 
 ## Start
 

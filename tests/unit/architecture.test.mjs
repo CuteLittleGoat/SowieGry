@@ -220,7 +220,8 @@ test("projekt respektuje reduced motion", async () => {
   assert.match(css, /sowie-reduced-effects/);
 });
 
-// Podmienione gry: stary folder to tylko przekierowanie (z parametrami adresu) do nowej gry z rejestru.
+// Podmienione gry (E4f–E8e): do 2026-11-02 stary folder był stroną-przekierowaniem do nowej gry; od zadania 9.5
+// (decyzja właściciela) stare adresy są usunięte, a rejestr wskazuje tylko nowe foldery.
 const REPLACED_GAMES = [
   ["SowaRunner", "SowiaUcieczka", "Sowia Ucieczka"],
   ["Sowa3", "SowieTory", "Sowie Tory"],
@@ -229,27 +230,24 @@ const REPLACED_GAMES = [
 ];
 
 for (const [oldFolder, newFolder, name] of REPLACED_GAMES) {
-  test(`${oldFolder}/ to tylko przekierowanie do gry ${name} (stare pliki gry usunięte)`, async () => {
-    assert.deepEqual((await readdir(oldFolder)).sort(), ["docs", "index.html"]);
-    const html = await read(`${oldFolder}/index.html`);
-    assert.ok(html.includes(`<meta http-equiv="refresh" content="0; url=../${newFolder}/"`), oldFolder);
-    assert.ok(html.includes(`location.replace(\`../${newFolder}/\${location.search}\${location.hash}\`)`), oldFolder);
-    assert.doesNotMatch(html, /<script src=/, "strona przekierowania nie ładuje skryptów (ani SowieCloud)");
+  test(`stary adres ${oldFolder}/ usunięty (zadanie 9.5), rejestr wskazuje grę ${name}`, async () => {
+    await assert.rejects(readdir(oldFolder), oldFolder);
     const platform = await read("shared/sowie-platform.js");
     assert.ok(platform.includes(`name: "${name}",\n      path: "${newFolder}/"`), `rejestr: ${name}`);
     assert.ok(!platform.includes(`path: "${oldFolder}/"`), `rejestr nadal wskazuje ${oldFolder}/`);
     assert.ok(!platform.includes(`preview: Object.freeze({ path: "${newFolder}/"`), `${name} nadal jako podgląd`);
+    for (const file of ["index.html", "demo.html", "sw.js", "manifest.webmanifest", "package.json"]) {
+      assert.ok(!(await read(file)).includes(`${oldFolder}/`), `${file} wskazuje ${oldFolder}/`);
+    }
   });
 }
 
-test("SowieOgrody/nowa.html (dawny adres podglądu) przekierowuje do ./ z parametrami adresu", async () => {
-  const html = await read("SowieOgrody/nowa.html");
-  assert.ok(html.includes('<meta http-equiv="refresh" content="0; url=./"'));
-  assert.ok(html.includes("location.replace(`./${location.search}${location.hash}`)"));
-  assert.doesNotMatch(html, /<script src=/, "strona przekierowania nie ładuje skryptów (ani SowieCloud)");
+test("stary adres podglądu SowieOgrody/nowa.html usunięty (zadanie 9.5)", async () => {
+  await assert.rejects(read("SowieOgrody/nowa.html"));
   const platform = await read("shared/sowie-platform.js");
   assert.doesNotMatch(platform, /nowa\.html"/);
   assert.match(platform, /id: "ogrody",[\s\S]*?saveVersion: 3,\s*rebuilt: true/);
+  for (const file of ["sw.js", "package.json"]) assert.ok(!(await read(file)).includes("nowa.html"), file);
 });
 
 test("wersja demo (E10): demo.html bez konfiguracji Firestore, hasła i Galerii; SowieCloud w demo tylko w pamięci", async () => {

@@ -565,9 +565,7 @@ test("Łącz i Hoduj: pakiet startowy z dawnej Szklarni (stan v1), zapis w polu 
   expect(errorsAgain).toEqual([]);
 });
 
-test("Łącz i Hoduj: zapis z czasu podglądu (`preview`) staje się stanem gry, stary adres Sowiej Szklarni przekierowuje (emulator)", async ({
-  page,
-}, testInfo) => {
+test("Łącz i Hoduj: zapis z czasu podglądu (`preview`) staje się stanem gry (emulator)", async ({ page }, testInfo) => {
   const project = uniqueProject(testInfo);
   // Zapis podglądu (stan v2 z pakietem startowym już przyznanym, 37 liści) — wzięty z gry bez emulatora (pamięć).
   await openGame(page, "/LaczIHoduj/?seed=podglad");
@@ -581,8 +579,7 @@ test("Łącz i Hoduj: zapis z czasu podglądu (`preview`) staje się stanem gry,
   const other = await page.context().newPage();
   await page.close();
   const errors = watchErrors(other);
-  await openGame(other, cloudUrl("/SowiaSzklarnia/", project));
-  await expect(other).toHaveURL(/\/LaczIHoduj\/\?/);
+  await openGame(other, cloudUrl("/LaczIHoduj/", project));
   await expect(other.locator("[data-leaves]")).toHaveText("37");
   await expect(other.getByText(/Pakiet startowy/)).toHaveCount(0);
   await other.evaluate(() => window.SowieCloud.flush());

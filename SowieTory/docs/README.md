@@ -1,7 +1,7 @@
 # Sowie Tory — instrukcja
 
 **Sowie Tory** to nowa wersja gry **Sowa3**. Otwierasz ją z menu głównego przyciskiem **Graj** na karcie
-**Sowie Tory** (ze znaczkiem „Nowe!”). Stary adres `Sowa3/` sam przenosi do nowej gry, a Twoje rekordy i top 10
+**Sowie Tory** (ze znaczkiem „Nowe!”). Dawny adres `Sowa3/` od 2 listopada 2026 już nie działa (gra jest w menu), a Twoje rekordy i top 10
 z dawnej Sowa3 zostały — to teraz rekordy kampanii Sowich Torów.
 
 ## Cel gry

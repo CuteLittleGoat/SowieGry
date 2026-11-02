@@ -1,7 +1,7 @@
 # Sowa w Chmurach — instrukcja
 
 **Sowa w Chmurach** to nowa wersja gry **SowaJumper**. Otwierasz ją z menu głównego przyciskiem **Graj** na karcie
-**Sowa w Chmurach** (ze znaczkiem „Nowe!”). Stary adres `SowaJumper/` sam przenosi do nowej gry, a Twoje rekordy
+**Sowa w Chmurach** (ze znaczkiem „Nowe!”). Dawny adres `SowaJumper/` od 2 listopada 2026 już nie działa (gra jest w menu), a Twoje rekordy
 z SowaJumper zostały. Gra posuwa też misje garderoby sowy (np. 250 m — Plecak); ukończone misje, zadania Akademii
 i zdjęcia Galerii pokazują się na ekranie wyników.
 

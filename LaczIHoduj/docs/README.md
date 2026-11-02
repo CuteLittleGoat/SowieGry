@@ -1,8 +1,8 @@
 # Łącz i Hoduj — instrukcja
 
 **Łącz i Hoduj** to nowa wersja gry **Sowia Szklarnia** — spokojna gra logiczna na półkach szklarni. Otwierasz ją
-z menu głównego przyciskiem **Graj** na karcie **Łącz i Hoduj** (ze znaczkiem „Nowe!”). Stary adres `SowiaSzklarnia/`
-sam przenosi do nowej gry.
+z menu głównego przyciskiem **Graj** na karcie **Łącz i Hoduj** (ze znaczkiem „Nowe!”). Dawny adres
+`SowiaSzklarnia/` od 2 listopada 2026 już nie działa — gra jest w menu.
 
 ## Pierwsze wejście: pakiet startowy i samouczek
 
@@ -248,7 +248,3 @@ Na komputerze plansza stoi na środku, a rośliny przesuwa się myszą tak samo 
   z kózkami i przeszkodami),
 - **Delete** — kompostuje zaznaczoną roślinę (albo tę pod kursorem),
 - **D** — Sowia doniczka, **Escape** — odznaczenie.
-
-## Stary adres
-
-Dawny adres Sowiej Szklarni (`SowiaSzklarnia/`) sam przenosi do Łącz i Hoduj (z zachowaniem parametrów adresu).

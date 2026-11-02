@@ -20,45 +20,8 @@ for (const entry of pages) {
   });
 }
 
-// SowaRunner zastąpiła Sowia Ucieczka (E4f): stare adresy i zakładki prowadzą do nowej gry z parametrami adresu.
-test("stary adres SowaRunner przekierowuje do Sowiej Ucieczki z parametrami", async ({ page }) => {
-  const errors = watchErrors(page);
-  await page.goto("/SowaRunner/?daily=1", { waitUntil: "load" });
-  await expect(page).toHaveURL(/\/SowiaUcieczka\/\?daily=1$/);
-  await expect(page.getByRole("heading", { name: "Sowia Ucieczka" })).toBeVisible({ timeout: 15_000 });
-  await expect(page.locator("[data-daily-note]")).toBeVisible();
-  expect(errors).toEqual([]);
-});
-
-// Sowa3 zastąpiły Sowie Tory (E5f): stary adres prowadzi do nowej gry z parametrami (tu: plansza 2).
-test("stary adres Sowa3 przekierowuje do Sowich Torów z parametrami", async ({ page }) => {
-  const errors = watchErrors(page);
-  await page.goto("/Sowa3/?plansza=2&seed=przekierowanie", { waitUntil: "load" });
-  await expect(page).toHaveURL(/\/SowieTory\/\?plansza=2&seed=przekierowanie$/);
-  await expect(page.getByRole("heading", { name: "Sowie Tory" })).toBeVisible({ timeout: 15_000 });
-  await page.waitForFunction(() => window.SowieTory?.ready?.(), null, { timeout: 15_000 });
-  await page.locator("[data-start]").click();
-  await expect(page.locator(".tory-progress")).toContainText("2/4");
-  expect(errors).toEqual([]);
-});
-
-// SowaJumper zastąpiła Sowa w Chmurach (E6f): stary adres prowadzi do nowej gry z parametrami adresu.
-test("stary adres SowaJumper przekierowuje do Sowy w Chmurach z parametrami", async ({ page }) => {
-  const errors = watchErrors(page);
-  await page.goto("/SowaJumper/?seed=przekierowanie", { waitUntil: "load" });
-  await expect(page).toHaveURL(/\/SowaWChmurach\/\?seed=przekierowanie$/);
-  await expect(page.getByRole("heading", { name: "Sowa w Chmurach" })).toBeVisible({ timeout: 15_000 });
-  expect(errors).toEqual([]);
-});
-
-// Sowią Szklarnię zastąpiła gra Łącz i Hoduj (E8e): stary adres prowadzi do nowej gry z parametrami adresu.
-test("stary adres Sowiej Szklarni przekierowuje do Łącz i Hoduj z parametrami", async ({ page }) => {
-  const errors = watchErrors(page);
-  await page.goto("/SowiaSzklarnia/?seed=przekierowanie", { waitUntil: "load" });
-  await expect(page).toHaveURL(/\/LaczIHoduj\/\?seed=przekierowanie$/);
-  await expect(page.getByRole("heading", { name: "Łącz i Hoduj" })).toBeVisible({ timeout: 15_000 });
-  expect(errors).toEqual([]);
-});
+// Stare adresy gier (SowaRunner/, Sowa3/, SowaJumper/, SowiaSzklarnia/, SowieOgrody/nowa.html) przekierowywały do
+// nowych gier (E4f–E8e) — usunięte w zadaniu 9.5 (2026-11-02); test architektury pilnuje, że ich nie ma.
 
 test("menu główne mieści się w szerokości telefonu", async ({ page }) => {
   await page.goto("/?seed=telefon-szerokosc", { waitUntil: "load" });

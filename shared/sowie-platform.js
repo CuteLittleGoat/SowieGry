@@ -8,7 +8,7 @@
   // preview: nowa wersja gry w osobnym folderze przed podmianą (Analiza 3, „Podgląd przed podmianą”);
   // modes: tryby gry z osobnymi rekordami (pierwszy — domyślny, rekordy pod samym poziomem; SowieCloud.recordKey).
   const GAME_REGISTRY = Object.freeze([
-    // Sowia Ucieczka (E4) zastąpiła SowaRunner: ten sam identyfikator i te same rekordy; SowaRunner/ przekierowuje.
+    // Sowia Ucieczka (E4) zastąpiła SowaRunner: ten sam identyfikator i te same rekordy (stary adres usunięty w 9.5).
     {
       id: "runner",
       name: "Sowia Ucieczka",
@@ -18,7 +18,7 @@
       dailyMetric: "distance",
       rebuilt: true,
     },
-    // Sowa w Chmurach (E6) zastąpiła SowaJumper: ten sam identyfikator i te same rekordy; SowaJumper/ przekierowuje.
+    // Sowa w Chmurach (E6) zastąpiła SowaJumper: ten sam identyfikator i te same rekordy (stary adres usunięty w 9.5).
     {
       id: "jumper",
       name: "Sowa w Chmurach",
@@ -28,7 +28,7 @@
       dailyMetric: "height",
       rebuilt: true,
     },
-    // Sowie Tory (E5) zastąpiły Sowa3: ten sam identyfikator i te same rekordy; Sowa3/ przekierowuje.
+    // Sowie Tory (E5) zastąpiły Sowa3: ten sam identyfikator i te same rekordy (stary adres usunięty w 9.5).
     {
       id: "sowa3",
       name: "Sowie Tory",
@@ -43,7 +43,7 @@
         Object.freeze({ id: "nieskonczony", label: "Nieskończony" }),
       ]),
     },
-    // Nowa odsłona Sowich Ogrodów (E7) zastąpiła dawną grę w tym samym folderze; SowieOgrody/nowa.html przekierowuje.
+    // Nowa odsłona Sowich Ogrodów (E7) zastąpiła dawną grę w tym samym folderze (adres podglądu nowa.html usunięty w 9.5).
     {
       id: "ogrody",
       name: "Sowie Ogrody",
@@ -53,7 +53,7 @@
       saveVersion: 3,
       rebuilt: true,
     },
-    // Łącz i Hoduj (E8) zastąpiła Sowią Szklarnię: ten sam identyfikator i dokument gry; SowiaSzklarnia/ przekierowuje.
+    // Łącz i Hoduj (E8) zastąpiła Sowią Szklarnię: ten sam identyfikator i dokument gry (stary adres usunięty w 9.5).
     {
       id: "szklarnia",
       name: "Łącz i Hoduj",

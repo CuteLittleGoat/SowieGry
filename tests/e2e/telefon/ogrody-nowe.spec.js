@@ -136,7 +136,7 @@ test("nowe Sowie Ogrody: dawny postęp (stan v2) przechodzi bez strat i zapisuje
   expect(errorsAgain).toEqual([]);
 });
 
-test("Sowie Ogrody: zapis z czasu podglądu (pole `preview`) staje się stanem gry, a stary adres nowa.html przekierowuje (emulator)", async ({
+test("Sowie Ogrody: zapis z czasu podglądu (pole `preview`) staje się stanem gry (emulator)", async ({
   page,
 }, testInfo) => {
   const project = uniqueProject(testInfo);
@@ -154,8 +154,7 @@ test("Sowie Ogrody: zapis z czasu podglądu (pole `preview`) staje się stanem g
     preview: JSON.stringify(fromPreview),
   });
   const errors = watchErrors(page);
-  await openGarden(page, cloudUrl("/SowieOgrody/nowa.html", project));
-  await expect(page).toHaveURL(/\/SowieOgrody\/\?/);
+  await openGarden(page, cloudUrl("/SowieOgrody/", project));
   expect((await state(page)).plants.monstera).toBe(7);
   await expect(page.getByRole("dialog", { name: "Witaj w nowym ogrodzie!" })).toHaveCount(0);
   await page.evaluate(() => window.SowieCloud.flush());

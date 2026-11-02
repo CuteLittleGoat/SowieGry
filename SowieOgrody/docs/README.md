@@ -91,10 +91,6 @@ wejściu na nowym urządzeniu trzeba raz wpisać hasło `huhu`.
 W menu głównym (zakładka **Sowa** → **Rekordy** przy Sowich Ogrodach) widać liście zebrane w całej grze, liczbę
 Wielkich Przesadzań i bieżący rozdział. Na karcie gry jest liczba liści.
 
-## Stary adres
-
-Dawny adres wersji próbnej (`SowieOgrody/nowa.html`) sam przenosi do gry.
-
 ## Gra jako aplikacja na telefonie
 
 SowieGry można dodać do ekranu głównego (Android: menu ⋮ → „Zainstaluj aplikację”; iPhone: „Udostępnij” → „Do ekranu
