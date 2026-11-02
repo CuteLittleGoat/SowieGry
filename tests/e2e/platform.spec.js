@@ -1,10 +1,11 @@
 const { test, expect, waitForCloud, setVisibility, watchErrors, DEVICE_KEY } = require("./fixtures");
 const { cloudUrl, readDoc, uniqueProject } = require("./emulator");
 
-test.describe("pierwsze uruchomienie nowej wersji", () => {
+test.describe("pierwsze uruchomienie na urządzeniu", () => {
   test.use({ odblokowane: false });
 
-  test("kasuje wyłącznie stare klucze SowieGry, a dane innych stron zostają", async ({ page }) => {
+  // Do zadania 9.5 (2026-11-02) pierwsze uruchomienie kasowało dawne klucze SowieGry; dziś nic nie jest kasowane.
+  test("niczego nie kasuje z localStorage — dawne klucze SowieGry i dane innych stron zostają", async ({ page }) => {
     await page.addInitScript(() => {
       if (sessionStorage.getItem("przygotowane")) return;
       sessionStorage.setItem("przygotowane", "1");
@@ -31,10 +32,30 @@ test.describe("pierwsze uruchomienie nowej wersji", () => {
     await page.goto("/?seed=cleanup", { waitUntil: "load" });
     await expect(page.getByRole("dialog", { name: "Hasło sowy" })).toBeVisible();
     const keys = await page.evaluate(() => Object.keys(localStorage).sort());
-    expect(keys).toEqual(["character_builder:karta", "dataslate", "sowiegry:urzadzenie"]);
+    expect(keys).toEqual(
+      [
+        "sowieGryProfile",
+        "sowieGryMigrationsVersion",
+        "sowieGryAcademy",
+        "sowieOwlGallery",
+        "sowaRunnerBestScore",
+        "sowaJumperDifficulty",
+        "sowa3FinishSeen",
+        "sowieOgrodySave",
+        "sowiaSzklarniaSave",
+        "sowieSzklarniaTraitAlbum",
+        "sowieGryBackup:sowieGryProfile:v1",
+        "sowieExpansion:ogrody:2026-09-27",
+        "sowieDailyBest:2026-09-27:runner:distance",
+        "dataslate",
+        "character_builder:karta",
+        "sowiegry:urzadzenie",
+      ].sort(),
+    );
+    expect(await page.evaluate(() => localStorage.getItem("dataslate"))).toBe("dane drugiego projektu");
     const device = await page.evaluate((key) => JSON.parse(localStorage.getItem(key)), DEVICE_KEY);
     expect(device.unlocked).toBe(false);
-    expect(device.cleaned).toBe(true);
+    expect(device.cleaned).toBeUndefined();
     expect(device.deviceId).toMatch(/^d-[0-9a-z]{6}$/);
   });
 });

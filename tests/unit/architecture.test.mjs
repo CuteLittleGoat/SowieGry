@@ -162,10 +162,11 @@ test("każda strona ładuje config, platformę, SowieCloud i ekran hasła w tej 
   }
 });
 
-test("SowieCloud kasuje tylko klucze SowieGry z listy i nigdy nie czyści całej pamięci", async () => {
+test("SowieCloud niczego nie kasuje z localStorage i nigdy nie czyści całej pamięci", async () => {
   const cloud = await read("shared/sowie-cloud.js");
   assert.doesNotMatch(cloud, /(localStorage|sessionStorage|storage)\.clear\(/);
-  assert.match(cloud, /storage\.removeItem\(key\)/);
+  // Do zadania 9.5 (2026-11-02) jedynym kasowaniem było jednorazowe sprzątanie dawnych kluczy SowieGry — usunięte.
+  assert.doesNotMatch(cloud, /(localStorage|\bstorage)\.removeItem\(/);
   assert.match(cloud, /const HASLO_GRACZA = "huhu"/);
   assert.match(cloud, /const DEVICE_KEY = "sowiegry:urzadzenie"/);
   assert.match(cloud, /firebasejs\/\$\{SDK_VERSION\}/);

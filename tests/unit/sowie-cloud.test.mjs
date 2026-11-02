@@ -9,7 +9,6 @@ const {
   MemoryBackend,
   createCloud,
   checkPassword,
-  cleanupOldKeys,
   diff,
   applyPatch,
   insertTop,
@@ -113,34 +112,36 @@ test("hasło: bez wielkości liter i spacji na końcach, ale spacja w środku je
     assert.equal(checkPassword(bad), false, String(bad));
 });
 
-test("sprzątanie kasuje wyłącznie klucze i prefiksy SowieGry z listy", () => {
-  const storage = fakeStorage({
+test("niczego nie kasuje z localStorage — dawne klucze SowieGry i dane innych stron zostają (od zadania 9.5)", async () => {
+  // Dawne klucze sprzed zapisu w chmurze (do 2026-11-02 kasowane jednorazowo) i dane innych stron z tej samej domeny.
+  const before = {
     sowieGryProfile: "{}",
     sowieGryAcademy: "{}",
     sowieOwlGallery: "{}",
     sowaRunnerBestScore: "10",
     sowa3FinishSeen: "1",
     sowieOgrodySave: "{}",
-    sowieSzklarniaTraitAlbum: "{}",
     "sowieGryBackup:sowieGryProfile:v1": "{}",
     "sowieExpansion:ogrody:2026-09-27": "{}",
     "sowieDailyBest:2026-09-27:runner:distance": "5",
     dataslate: "inny projekt",
     "character_builder:postac": "inny projekt",
-    audioFavorites: "inny projekt",
-    sowieNiezwiazany: "nie ma go na liście",
-  });
-  const removed = cleanupOldKeys(storage);
-  assert.equal(removed.length, 10);
-  assert.deepEqual([...storage.map.keys()].sort(), [
-    "audioFavorites",
-    "character_builder:postac",
-    "dataslate",
-    "sowieNiezwiazany",
-  ]);
+  };
+  const storage = fakeStorage(before);
+  const { cloud } = makeCloud({ storage });
+  assert.equal(cloud.unlock("huhu"), true);
+  await cloud.ready;
+  await tick();
+  for (const [key, value] of Object.entries(before)) assert.equal(storage.getItem(key), value, key);
+  assert.deepEqual([...storage.map.keys()].sort(), [...Object.keys(before), DEVICE_KEY].sort());
+
+  // Wpis urządzenia sprzed zadania 9.5 (z polem `cleaned`) jest tylko uzupełniany — nic z niego nie znika.
+  const old = unlockedStorage();
+  makeCloud({ storage: old });
+  assert.deepEqual(JSON.parse(old.getItem(DEVICE_KEY)), { unlocked: true, deviceId: "d-test01", cleaned: true });
 });
 
-test("pierwsze uruchomienie: ekran hasła, potem meta i profil w bazie, w pamięci zostaje tylko klucz urządzenia", async () => {
+test("pierwsze uruchomienie: ekran hasła, potem meta i profil w bazie, w localStorage dochodzi tylko klucz urządzenia", async () => {
   const storage = fakeStorage({
     sowieGryProfile: "{}",
     sowa3Best: "12",
@@ -150,7 +151,11 @@ test("pierwsze uruchomienie: ekran hasła, potem meta i profil w bazie, w pamię
   const { cloud, backend } = makeCloud({ storage });
   assert.equal(cloud.status(), "haslo");
   assert.equal(cloud.isUnlocked(), false);
-  assert.deepEqual([...storage.map.keys()].sort(), [DEVICE_KEY, "dataslate"].sort());
+  // Od zadania 9.5 dawne klucze SowieGry też zostają (nic nie jest kasowane).
+  assert.deepEqual(
+    [...storage.map.keys()].sort(),
+    [DEVICE_KEY, "dataslate", "sowieGryProfile", "sowa3Best", "sowieDailyBest:x"].sort(),
+  );
 
   let readyNow = false;
   cloud.ready.then(() => {
@@ -166,7 +171,7 @@ test("pierwsze uruchomienie: ekran hasła, potem meta i profil w bazie, w pamię
 
   const deviceEntry = JSON.parse(storage.getItem(DEVICE_KEY));
   assert.equal(deviceEntry.unlocked, true);
-  assert.equal(deviceEntry.cleaned, true);
+  assert.equal("cleaned" in deviceEntry, false);
   assert.match(deviceEntry.deviceId, /^d-[0-9a-z]{6}$/);
 
   const meta = await backend.getDoc(PATHS.meta);

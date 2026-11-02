@@ -108,7 +108,9 @@ Cały postęp — profil, kosmetyki, misje, Sowia Akademia, Galeria Sów, rekord
 - **ten sam postęp jest na telefonie i na komputerze** (rekord zrobiony na telefonie widać na komputerze i odwrotnie),
 - wyczyszczenie danych przeglądarki nie kasuje postępu — wystarczy znów wpisać `huhu`,
 - bez internetu (metro, słaby zasięg) gra działa dalej, a zapis wyśle się, gdy wróci sieć,
-- przejście do innej aplikacji albo zablokowanie telefonu od razu zapisuje postęp.
+- przejście do innej aplikacji albo zablokowanie telefonu od razu zapisuje postęp,
+- SowieGry niczego nie usuwa z pamięci przeglądarki — ani danych innych stron, ani swoich dawnych zapisów sprzed
+  chmury (od 2 listopada 2026; telefon trzyma tylko jeden własny wpis: czy wpisano hasło).
 
 Gdy nie da się połączyć z chmurą przy pierwszym wejściu (np. brak internetu), u góry ekranu pojawia się pasek „Tryb offline — postęp z tej sesji nie zostanie zapisany.”.
 

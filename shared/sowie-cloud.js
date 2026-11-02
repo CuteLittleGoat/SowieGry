@@ -38,26 +38,6 @@
   const DAILY_DAYS = 30;
   const AWARD_DAYS = 30;
 
-  // Stare klucze SowieGry do jednorazowego skasowania (Analiza 1, rozdział 12). Nigdy clear().
-  const STARE_KLUCZE = Object.freeze([
-    "sowieGryProfile",
-    "sowieGryMigrationsVersion",
-    "sowieGryAcademy",
-    "sowieOwlGallery",
-    "sowaRunnerBestScore",
-    "sowaRunnerBestDistance",
-    "sowaJumperBestScore",
-    "sowaJumperBestHeight",
-    "sowaJumperDifficulty",
-    "sowa3Best",
-    "sowa3Difficulty",
-    "sowa3FinishSeen",
-    "sowieOgrodySave",
-    "sowiaSzklarniaSave",
-    "sowieSzklarniaTraitAlbum",
-  ]);
-  const STARE_PREFIKSY = Object.freeze(["sowieGryBackup:", "sowieExpansion:", "sowieDailyBest:"]);
-
   // Liczniki profilu: zapisywane wyłącznie przez increment(), więc sumują się poprawnie z kilku urządzeń.
   const PROFILE_COUNTERS = Object.freeze([
     "stats.leaves",
@@ -228,21 +208,6 @@
       result[key] = value;
     }
     return result;
-  }
-
-  function isOldKey(key) {
-    return STARE_KLUCZE.includes(key) || STARE_PREFIKSY.some((prefix) => String(key).startsWith(prefix));
-  }
-
-  // Kasuje wyłącznie klucze SowieGry z listy (Analiza 1, rozdział 12). Zwraca skasowane klucze.
-  function cleanupOldKeys(storage) {
-    const keys = [];
-    for (let index = 0; index < storage.length; index += 1) {
-      const key = storage.key(index);
-      if (key != null && isOldKey(key)) keys.push(key);
-    }
-    keys.forEach((key) => storage.removeItem(key));
-    return keys;
   }
 
   // Znaczniki czasu Firestore (Timestamp) → milisekundy, żeby profil w pamięci był zwykłym JSON-em.
@@ -532,12 +497,13 @@
       }
     }
 
+    // SowieGry nie kasuje niczego z localStorage (domena jest wspólna z innymi stronami). Od zadania 9.5 (2026-11-02)
+    // nie ma też jednorazowego sprzątania dawnych kluczy sprzed zapisu w chmurze; pole `cleaned` z tamtych czasów
+    // zostaje we wpisie urządzenia bez znaczenia (wpis jest tylko uzupełniany).
     let device = readDevice();
-    const removedKeys = device.cleaned ? [] : cleanupOldKeys(storage);
     writeDevice({
       unlocked: Boolean(device.unlocked),
       deviceId: typeof device.deviceId === "string" && device.deviceId ? device.deviceId : randomId(),
-      cleaned: true,
     });
 
     // --- status -----------------------------------------------------------------
@@ -1037,7 +1003,6 @@
       offlineReason: () => fallbackReason,
       backendKind: () => backend?.kind || null,
       deviceId: () => device.deviceId,
-      removedKeys: () => removedKeys.slice(),
       isUnlocked,
       unlock,
       lock,
@@ -1073,8 +1038,6 @@
     GAME_IDS,
     PATHS,
     DELAYS,
-    STARE_KLUCZE,
-    STARE_PREFIKSY,
     PROFILE_COUNTERS,
     EMULATOR,
     MemoryBackend,
@@ -1088,8 +1051,6 @@
     recordKey,
     trimDaily,
     trimAwards,
-    cleanupOldKeys,
-    isOldKey,
     normalizeProfile,
     defaultProfile,
     normalizeValue,
@@ -1137,9 +1098,9 @@
     }
   }
 
-  // Pamięć „urządzenia” w demo: odblokowane, bez sprzątania starych kluczy, nic nie trafia do localStorage.
+  // Pamięć „urządzenia” w demo: odblokowane, nic nie trafia do localStorage.
   function demoStorage() {
-    const items = new Map([[DEVICE_KEY, JSON.stringify({ unlocked: true, deviceId: "demo", cleaned: true })]]);
+    const items = new Map([[DEVICE_KEY, JSON.stringify({ unlocked: true, deviceId: "demo" })]]);
     return {
       get length() {
         return items.size;

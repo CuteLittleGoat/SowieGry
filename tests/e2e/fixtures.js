@@ -34,7 +34,7 @@ async function unlockDevice(context) {
   await context.addInitScript((key) => {
     if (localStorage.getItem(key)) return;
     const id = `d-${Math.random().toString(36).slice(2, 8).padEnd(6, "0")}`;
-    localStorage.setItem(key, JSON.stringify({ unlocked: true, deviceId: id, cleaned: true }));
+    localStorage.setItem(key, JSON.stringify({ unlocked: true, deviceId: id }));
   }, DEVICE_KEY);
 }
 
