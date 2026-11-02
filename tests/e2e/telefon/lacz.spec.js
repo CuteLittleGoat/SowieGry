@@ -163,7 +163,10 @@ test("Łącz i Hoduj (uwagi L2, L3, L5): złote → diamentowa → tęczowa, Bao
   await game(page, "place", 2, 6, "monstera");
   await drag(page, 2, 1);
   expect((await cells(page))[1]).toEqual({ chain: "monstera", level: 7 });
-  await expect(page.getByText("Tęczowa Monstera! Szczyt łańcucha")).toBeVisible();
+  await expect(page.locator("[data-hint]")).toHaveText("Tęczowa Monstera!");
+  // Komunikaty w grze pokazują się po jednym (kolejka), a przed tym mogą czekać „Złota Monstera!” i od P7 „Nowa
+  // fotografia w Galerii Sów!” (diamentowa roślina odblokowuje zdjęcie nr 37) — w WebKit w CI zajęło to raz ponad 5 s.
+  await expect(page.getByText("Tęczowa Monstera! Szczyt łańcucha")).toBeVisible({ timeout: 15_000 });
   // Baobab: dwa Młode baobaby → Baobab.
   await game(page, "place", 10, 3, "baobab");
   await game(page, "place", 11, 3, "baobab");

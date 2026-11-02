@@ -120,9 +120,10 @@ w którym wydajesz liście.
    (Monpilea Przytulna).
 4. Gdy masz już dużo połączeń (od 100), w doniczce pojawiają się po kolei: Storczyk, Słonecznik, Truskawka, Lotos
    i na końcu **Baobab** (po 400 połączeniach) — za każdym razem komunikat „Nowa roślina w Sowiej doniczce”.
-5. Stuknij liczniki liści i gwiazdek (prawy górny róg). **Powinno być:** okno pomieszczeń ma na dole przycisk
-   **🛒 Kram ogrodnika**, a lista pomieszczeń ma 16 pozycji (nowe: Palmiarnia, Pasieka, Herbaciarnia, Obserwatorium,
-   Motylarnia, Ogród na dachu). Kto odnowił wszystkie 10 dawnych, ma teraz w toku Palmiarnię.
+5. Stuknij liczniki liści i gwiazdek (prawy górny róg). **Powinno być:** okno otwiera się od pierwszego stuknięcia
+   (sprawdź 3 razy, zamykając je w międzyczasie — gdyby czasem trzeba było stuknąć drugi raz, napisz), ma na dole
+   przycisk **🛒 Kram ogrodnika**, a lista pomieszczeń ma 16 pozycji (nowe: Palmiarnia, Pasieka, Herbaciarnia,
+   Obserwatorium, Motylarnia, Ogród na dachu). Kto odnowił wszystkie 10 dawnych, ma teraz w toku Palmiarnię.
 6. Stuknij **🛒 Kram ogrodnika**. **Powinno być:** 6 ofert z cenami w liściach. Kup coś, na co Cię stać (np. Gwiazdkę
    odnowy za 200 🍃). **Powinno być:** liście maleją o cenę, gwiazdek przybywa.
 7. Jeśli kupisz **Girlandę lampek** — nad i pod półkami migają kolorowe lampki; **Motyle** — nad półkami fruwają trzy

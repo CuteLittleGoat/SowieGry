@@ -185,6 +185,12 @@ przewijając logikę gry o 0,5 s, zamiast czekać na klatki. W CI (e7ab64a i b4f
 powtórce przechodzi (CI ma jedną powtórkę). Za każdym razem są to inne testy. W ostatnich przebiegach:
 
 - e7ab64a: Łącz i Hoduj — okno pomieszczeń (iPhone SE, WebKit);
+- d58f7ed (przebieg 252, 2026-11-02): Łącz i Hoduj — okno pomieszczeń (iPhone 13 poziomo, WebKit);
+- 954a9c5–e5a1983 (przebieg 253): Łącz i Hoduj — okno pomieszczeń (iPhone SE, WebKit; trzeci raz ten sam test — okno
+  nie pojawia się po kliknięciu portfela; przyczyny bez nagrania z CI nie widać, a na prawdziwym iPhonie warto
+  sprawdzić, czy okno otwiera się za każdym stuknięciem — test L2, krok 5), nowy test L2 — komunikat „Szczyt łańcucha”
+  przyszedł po ponad 5 s, bo komunikaty idą po jednym z kolejki (od tej poprawki test czeka do 15 s i sprawdza od razu
+  podpowiedź), Sowia Ucieczka — wyzwanie dnia (Android, WebKit, „Target crashed”);
 - b4fae30: Łącz i Hoduj — przeciąganie roślin (iPhone SE, zawieszenie przeglądarki „Target crashed”), Łącz i Hoduj —
   samouczek (iPhone 13, przeglądarka zamknięta w trakcie), Sowia Ucieczka — komunikat „Rejs na humbaku!” nie pojawił
   się w ciągu 5 s (iPhone SE), Sowia Ucieczka — wyzwanie dnia (iPhone 13, „Target crashed”).
