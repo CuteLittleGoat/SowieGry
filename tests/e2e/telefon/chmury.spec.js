@@ -340,9 +340,10 @@ test("Sowa w Chmurach: samouczek pierwszego lotu — 5 kroków z podpowiedzią, 
     window.SowaWChmurach.advance(0.5);
   });
   await expect(prompt).toContainText("krok 2 z 5");
-  // 2) Wyżej: 12 m.
+  // 2) Wyżej: 12 m ponad najwyższy punkt z początku kroku. `warp` liczy od bieżącej wysokości sowy, która po odbiciu
+  // mogła już opadać (zależnie od liczby klatek przed `hold`), więc z zapasem: 20 m.
   await page.evaluate(() => {
-    window.SowaWChmurach.warp(14);
+    window.SowaWChmurach.warp(20);
     window.SowaWChmurach.advance(1 / 120);
   });
   await expect(prompt).toContainText("krok 3 z 5");
