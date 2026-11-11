@@ -14,7 +14,7 @@ maszynach — poprawione (punkt 4.5); gry nie miały z tym nic wspólnego.
 
 **2026-11-11:** uwaga O8 (Sowie Ogrody — „rośliny były duże i przesuwały się w linii…”) zrobiona według Twojej
 propozycji: wszystkie rośliny w jednej linii, duże i bez zmniejszania, strzałki po bokach ogrodu i przesuwanie palcem
-(punkt 0.1; na stronie po włączeniu gałęzi do `main`). Do sprawdzenia na telefonie: test O5
+(punkt 0.1) — jest już na stronie (po aktualizacji odśwież ją dwa razy). Do sprawdzenia na telefonie: test O5
 w [`TESTY_NA_TELEFONIE.md`](TESTY_NA_TELEFONIE.md).
 
 ## 0. Poprawki po testach z 2026-11-01 (etapy P1–P8)
@@ -48,12 +48,12 @@ Każdy etap przed wypchnięciem przeszedł u mnie pełny `npm test` (składnia, 
 
 ### 0.1. Uwaga z 2026-11-11 (O8)
 
-| Uwaga | Co | Commit |
+| Uwaga | Co | Commit na `main` |
 | --- | --- | --- |
 | O8 | Sowie Ogrody: wszystkie posiadane rośliny w jednej linii (wcześniej najwyżej 12 w dwóch rzędach), o 20% większe i nigdy nie maleją; strzałki ‹ › po bokach ogrodu, przesuwanie palcem z rozpędem (na komputerze także mysz, klawisze ← → i kółko); nowa roślina i roślina pod ciężarówką Amic same wjeżdżają w widok; przesunięcie palcem nie zbiera liści | 8db8ec1 |
 
 Zapis gry bez zmian — położenie półki nie jest zapisywane (po wejściu zawsze koniec linii), postęp zostaje.
-Zmiana jest na gałęzi `claude/upbeat-keller-2h422x` — na stronie pojawi się po włączeniu do `main`. Przed
+Zmiana jest na `main` (2026-11-11, na Twoją prośbę „Wrzuć zmiany na Main”), więc też na stronie. Przed
 wypchnięciem sprawdzone u mnie: składnia, ESLint, Prettier, HTML, testy jednostkowe, reguły Firestore i testy
 przeglądarkowe w Chromium (5 profili telefonów i komputer, emulator Firestore); WebKit (Safari) sprawdzą testy
 w GitHubie.
