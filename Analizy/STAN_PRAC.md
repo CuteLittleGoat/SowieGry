@@ -254,6 +254,21 @@ Pierwszy przebieg po poprawce — **252 (d58f7ed, wszystkie etapy P1–P8): ✅ 
 w WebKit czasem nie pojawia się w ciągu 5 s. Jeśli nie przejdzie także w powtórce, poprawię test. Ponieważ testów
 przybyło (P3–P7) i przebieg zbliżył się do limitu 60 minut, limit czasu CI jest teraz 75 minut.
 
+### 4.6. 2026-11-11: przebieg 256 po uwadze O8 (testy półki poprawione)
+
+- **Próba 1:** przerwana przy instalacji przeglądarek — serwer pakietów Ubuntu (`azure.archive.ubuntu.com`) przestał
+  odpowiadać po 27 minutach pobierania; żaden test nie ruszył (nic wspólnego z grami). Uruchomiłem ją ponownie.
+- **Próba 2:** 1163 testy przeszły, ale nowe testy półki Sowich Ogrodów zawodziły — 2 także w powtórce (WebKit),
+  6 dopiero w powtórce (WebKit i Chromium); do tego dwa znane niestabilne testy WebKit z 4.3 d (Sowia Ucieczka —
+  „Target crashed”, Sowa w Chmurach — klawiatura), które przeszły w powtórce. **Gra działała dobrze** — winne były
+  testy: podjazd półki do nowej rośliny albo do ciężarówki rusza dopiero w najbliższej klatce, a test sprawdzał
+  półkę wcześniej; w WebKit na maszynie GitHuba klatki są rzadkie, więc test widział półkę przed ruszeniem albo
+  w połowie drogi. Odtworzyłem to u siebie (klatki co 250 ms): stara wersja testu zawodziła tak samo, poprawiona
+  przechodzi.
+- **Poprawka:** testy nie czekają już na animację — hak testowy `settleShelf` od razu kończy ruch półki (tak jak
+  `hold` i `advance` w innych testach), a stan „w ruchu” obejmuje też podjazd zaplanowany na najbliższą klatkę.
+  Sama gra bez zmian w działaniu.
+
 ## 5. Co dalej
 
 1. Twoje testy na telefonie (`TESTY_NA_TELEFONIE.md`) i uwagi (w nowym oknie) → wpis w `UWAGI_WLASCICIELA.md` →

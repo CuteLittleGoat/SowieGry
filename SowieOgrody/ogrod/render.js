@@ -8,7 +8,7 @@ import { GARDEN_EVENTS } from "./config.js";
 import { formatNumber } from "./economy.js";
 import { createPlantShapes, drawSceneDecor, NEW_SCENES } from "./decor.js";
 import { sceneId } from "./garden.js";
-import { plantScale, SHELF, shelfLayout } from "./shelf.js";
+import { placeShelf, plantScale, shelfLayout } from "./shelf.js";
 
 // Tło rozdziału: [niebo u góry, niebo u dołu, podłoże].
 const SCENES = {
@@ -176,14 +176,12 @@ export function createGardenRenderer({ canvas, atlas, scroll = null }) {
     scroll?.sync(layout);
     scroll?.update(dt);
     const offset = scroll ? scroll.offset() : 0;
-    const label = Math.min(unit, 1.4);
-    const y = Math.min(height * SHELF.baseline, height - 18 * label);
+    const { y, label, places } = placeShelf(layout, offset, { width, height, unit });
     const margin = 80 * unit;
     spots.clear();
     const placed = [];
-    for (const entry of layout.items) {
-      const x = (entry.center - offset) * unit;
-      spots.set(entry.id, { x, y, scale: plantScale(entry.stage, unit), visible: x >= 0 && x <= width });
+    for (const { entry, x, scale, visible } of places) {
+      spots.set(entry.id, { x, y, scale, visible });
       if (x > -margin && x < width + margin) placed.push({ ...entry, x });
     }
     for (const { item, x, stage } of placed) plant(item, x, y, stage, time);

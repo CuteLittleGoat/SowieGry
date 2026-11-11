@@ -655,29 +655,39 @@ test("Sowie Ogrody (uwagi O2, O3): ogród po sześciu rozdziałach dostaje Palmi
 const shelfInfo = (page) => page.evaluate(() => window.SowieOgrody.shelf());
 const shelfArrow = (page, side) => page.locator(`[data-shelf="${side}"]`);
 
-async function waitForShelf(page) {
-  await expect.poll(async () => (await shelfInfo(page)).moving, { timeout: 10_000 }).toBe(false);
+// Półka bez czekania na animację (WebKit w CI rysuje klatki nierówno, a podjazd rusza dopiero w najbliższej
+// klatce): hak `settleShelf` wykonuje prośby i kończy dojazd od razu, potem jedna klatka — rysunek, miejsca zdarzeń
+// (`hit`) i strzałki z położenia docelowego.
+async function settle(page) {
+  await page.evaluate(() => window.SowieOgrody.settleShelf());
+  await page.evaluate(() => new Promise((resolve) => requestAnimationFrame(() => resolve())));
   return shelfInfo(page);
+}
+
+// Ogród z logiką wstrzymaną (bez zdarzeń losowych) i półką po starcie (koniec pustej linii) — przed zmianą roślin.
+async function quietGarden(page) {
+  await openGarden(page);
+  await ogrod(page, "hold", true);
+  await settle(page);
 }
 
 test("półka (uwaga z 2026-11-11): wszystkie 27 gatunków w jednej linii, bez zmniejszania; strzałki pokazują każdy", async ({
   page,
 }) => {
   const errors = watchErrors(page);
-  await openGarden(page);
-  await ogrod(page, "hold", true);
+  await quietGarden(page);
   // Jeden gatunek: roślina na środku ogrodu, bez strzałek.
   await ogrod(page, "setPlants", { monstera: 1 });
-  await expect.poll(async () => Object.keys((await shelfInfo(page)).spots)).toEqual(["monstera"]);
-  const alone = await shelfInfo(page);
+  const alone = await settle(page);
+  expect(Object.keys(alone.spots)).toEqual(["monstera"]);
   expect(alone.scrollable).toBe(false);
   await expect(shelfArrow(page, "prev")).toBeHidden();
   await expect(shelfArrow(page, "next")).toBeHidden();
   // Wszystkie gatunki: każdy na półce (dawniej najwyżej 12), Monstera tej samej wielkości co sama.
   const ids = await ogrod(page, "plants");
   await ogrod(page, "setPlants", Object.fromEntries(ids.map((id) => [id, 1])));
-  await expect.poll(async () => Object.keys((await shelfInfo(page)).spots).length).toBe(27);
-  const full = await shelfInfo(page);
+  const full = await settle(page);
+  expect(Object.keys(full.spots).length).toBe(27);
   expect(full.spots.monstera.scale).toBeCloseTo(alone.spots.monstera.scale, 9);
   // Jedna linia: ta sama wysokość, kolejność rozdziałów, odstęp co najmniej miejsce na roślinę (64 jednostki).
   const spots = ids.map((id) => full.spots[id]);
@@ -688,6 +698,7 @@ test("półka (uwaga z 2026-11-11): wszystkie 27 gatunków w jednej linii, bez z
   }
   // Półka stoi na początku linii: strzałka w lewo ukryta, w prawo widoczna (co najmniej 44 × 44 px).
   expect(full.scrollable).toBe(true);
+  expect(full.offset).toBe(0);
   await expect(shelfArrow(page, "prev")).toBeHidden();
   await expect(shelfArrow(page, "next")).toBeVisible();
   const arrowBox = await shelfArrow(page, "next").boundingBox();
@@ -696,9 +707,9 @@ test("półka (uwaga z 2026-11-11): wszystkie 27 gatunków w jednej linii, bez z
   // Strzałka w prawo do końca linii: każdy gatunek choć raz w ogrodzie.
   const seen = new Set(Object.keys(full.spots).filter((id) => full.spots[id].visible));
   let presses = 0;
-  while (await shelfArrow(page, "next").isVisible()) {
+  while ((await shelfInfo(page)).canNext) {
     await shelfArrow(page, "next").click();
-    const info = await waitForShelf(page);
+    const info = await settle(page);
     for (const [id, spot] of Object.entries(info.spots)) if (spot.visible) seen.add(id);
     presses += 1;
     expect(presses).toBeLessThan(20);
@@ -706,12 +717,13 @@ test("półka (uwaga z 2026-11-11): wszystkie 27 gatunków w jednej linii, bez z
   expect([...seen].sort()).toEqual([...ids].sort());
   const end = await shelfInfo(page);
   expect(end.offset).toBeCloseTo(end.max, 3);
+  await expect(shelfArrow(page, "next")).toBeHidden();
   await expect(shelfArrow(page, "prev")).toBeVisible();
   // Strzałka w lewo wraca do początku linii (mniej więcej tyle samo stron).
   let back = 0;
-  while (await shelfArrow(page, "prev").isVisible()) {
+  while ((await shelfInfo(page)).canPrev) {
     await shelfArrow(page, "prev").click();
-    await waitForShelf(page);
+    await settle(page);
     back += 1;
     expect(back).toBeLessThanOrEqual(presses + 1);
   }
@@ -720,9 +732,9 @@ test("półka (uwaga z 2026-11-11): wszystkie 27 gatunków w jednej linii, bez z
   // Klawiatura: fokus na ogrodzie, ← → przesuwają półkę.
   await page.locator("[data-canvas]").focus();
   await page.keyboard.press("ArrowRight");
-  expect((await waitForShelf(page)).offset).toBeGreaterThan(0);
+  expect((await settle(page)).offset).toBeGreaterThan(0);
   await page.keyboard.press("ArrowLeft");
-  expect((await waitForShelf(page)).offset).toBe(0);
+  expect((await settle(page)).offset).toBe(0);
   expect((await state(page)).stats.taps).toBe(0);
   expect(errors).toEqual([]);
 });
@@ -731,29 +743,33 @@ test("półka (uwaga z 2026-11-11): przesunięcie palcem przesuwa linię i nie z
   page,
 }) => {
   const errors = watchErrors(page);
-  await openGarden(page);
-  await ogrod(page, "hold", true);
+  await quietGarden(page);
   const ids = await ogrod(page, "plants");
   await ogrod(page, "setPlants", Object.fromEntries(ids.map((id) => [id, 25])));
-  await expect.poll(async () => (await shelfInfo(page)).scrollable).toBe(true);
+  const start = await settle(page);
+  expect(start.scrollable).toBe(true);
+  expect(start.offset).toBe(0);
   const box = await page.locator("[data-canvas]").boundingBox();
   const y = box.y + box.height * 0.8;
   const left = { x: box.x + box.width * 0.25, y };
   const right = { x: box.x + box.width * 0.75, y };
-  // Palec w lewo — linia w lewo (widać rośliny z prawej) o drogę palca.
+  // Palec w lewo — linia w lewo (widać rośliny z prawej) co najmniej o drogę palca (więcej tylko z rozpędu).
   await swipe(page, right, left);
-  const moved = await waitForShelf(page);
-  expect(moved.offset).toBeCloseTo((box.width * 0.5) / moved.unit, 1);
+  const moved = await settle(page);
+  expect(moved.offset).toBeGreaterThanOrEqual((box.width * 0.5) / moved.unit - 0.1);
   await expect(shelfArrow(page, "prev")).toBeVisible();
-  // Palec w prawo — z powrotem; przesunięcia nie są stuknięciami.
+  // Palec w prawo — z powrotem do początku linii; przesunięcia nie są stuknięciami.
   await swipe(page, left, right);
-  expect((await waitForShelf(page)).offset).toBeCloseTo(0, 3);
+  const returned = await settle(page);
+  expect(returned.offset).toBeLessThan(moved.offset);
+  if (moved.offset <= (box.width * 0.5) / moved.unit + 0.1) expect(returned.offset).toBeCloseTo(0, 3);
   const after = await state(page);
   expect(after.stats.taps).toBe(0);
   expect(after.leaves).toBe(0);
   // Ruch w pionie też nie jest stuknięciem, ale półki nie przesuwa.
+  const before = (await shelfInfo(page)).offset;
   await swipe(page, { x: left.x, y: box.y + box.height * 0.5 }, { x: left.x + 4, y: box.y + box.height * 0.9 });
-  expect((await waitForShelf(page)).offset).toBeCloseTo(0, 3);
+  expect((await settle(page)).offset).toBeCloseTo(before, 3);
   expect((await state(page)).stats.taps).toBe(0);
   // Stuknięcie bez ruchu (palcem i myszą) zbiera liście w miejscu dotknięcia.
   await page.touchscreen.tap(left.x, y);
@@ -767,27 +783,30 @@ test("półka (uwaga z 2026-11-11): nowy gatunek i ciężarówka Amic — półk
   page,
 }) => {
   const errors = watchErrors(page);
-  await openGarden(page);
-  await ogrod(page, "hold", true);
+  await quietGarden(page);
   const ids = await ogrod(page, "plants");
   // Wszystkie gatunki poza Monsterą; półka na końcu linii (Monstera byłaby poza ogrodem z lewej).
   await ogrod(page, "setPlants", Object.fromEntries(ids.slice(1).map((id) => [id, 10])));
-  await expect.poll(async () => (await shelfInfo(page)).scrollable).toBe(true);
-  while (await shelfArrow(page, "next").isVisible()) {
+  expect((await settle(page)).scrollable).toBe(true);
+  let presses = 0;
+  while ((await shelfInfo(page)).canNext) {
     await shelfArrow(page, "next").click();
-    await waitForShelf(page);
+    await settle(page);
+    presses += 1;
+    expect(presses).toBeLessThan(20);
   }
   // Pierwsza Monstera — półka wraca na początek linii i Monsterę widać.
   await ogrod(page, "give", 100);
   expect(await ogrod(page, "buy", "monstera", 1)).toBe(true);
-  await expect.poll(async () => (await shelfInfo(page)).spots.monstera?.visible ?? false).toBe(true);
-  expect((await waitForShelf(page)).offset).toBe(0);
+  const first = await settle(page);
+  expect(first.spots.monstera.visible).toBe(true);
+  expect(first.offset).toBe(0);
   // Ciężarówka Amic zastawia jedną z najbardziej wydajnych roślin (koniec linii, poza ogrodem) — półka podjeżdża
   // (zastawiona roślina na środek, a przy końcu linii jak najbliżej środka) i cysternę da się stuknąć na płótnie.
   expect(await ogrod(page, "trigger", "truck")).toBe(true);
   const blocked = (await ogrod(page, "events")).blocked;
   expect(ids.slice(-3)).toContain(blocked);
-  const shown = await waitForShelf(page);
+  const shown = await settle(page);
   expect(shown.offset).toBeGreaterThan(0);
   expect(shown.spots[blocked].visible).toBe(true);
   const garden = await page.locator("[data-canvas]").boundingBox();

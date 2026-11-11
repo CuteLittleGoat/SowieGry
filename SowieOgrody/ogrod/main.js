@@ -30,7 +30,7 @@ import { formatNumber, formatTime, hasUpgrade, plantById, prestigeSeeds, product
 import { chapterIndex, createGarden, sceneId } from "./garden.js";
 import { createPanel } from "./panel.js";
 import { createGardenRenderer, gardenUnit } from "./render.js";
-import { createShelfScroll, createVelocity, SHELF } from "./shelf.js";
+import { createShelfScroll, createVelocity, placeShelf, SHELF, shelfLayout } from "./shelf.js";
 import { defaultState, loadState } from "./state.js";
 import { createTutorial } from "./tutorial.js";
 import { claimContract, dailyContracts, ensureDaily } from "./daily.js";
@@ -861,12 +861,23 @@ window.SowieOgrody = Object.freeze({
   setPlants: (plants) => {
     Object.assign(garden.state.plants, plants);
   },
-  // Półka (uwaga z 2026-11-11): przesunięcie, granice, strzałki i miejsca roślin (piksele CSS) z ostatniej klatki.
-  shelf: () => ({
-    ...shelf.info(),
-    unit: unit(),
-    spots: Object.fromEntries(renderer.spots),
-  }),
+  // Półka (uwaga z 2026-11-11): przesunięcie, granice, strzałki i miejsca roślin (piksele CSS) — liczone teraz,
+  // z bieżącego stanu i przesunięcia (nie z ostatniej klatki).
+  shelf: () => {
+    const size = renderer.size();
+    const layout = shelfLayout(garden.state, size.width / unit());
+    const { y, places } = placeShelf(layout, shelf.offset(), { ...size, unit: unit() });
+    const spots = places.map(({ entry, x, scale, visible }) => [entry.id, { x, y, scale, visible }]);
+    return { ...shelf.info(), unit: unit(), spots: Object.fromEntries(spots) };
+  },
+  // Testy: półka od razu w położeniu docelowym — prośby (nowa roślina, ciężarówka, koniec linii), dojazd strzałką
+  // i rozpęd bez czekania na klatki (WebKit w CI rysuje je nierówno); strzałki odświeżone od razu.
+  settleShelf: () => {
+    const size = renderer.size();
+    shelf.sync(shelfLayout(garden.state, size.width / unit()));
+    for (let step = 0; step < 100 && shelf.info().moving; step += 1) shelf.update(0.25);
+    updateShelfButtons();
+  },
   buy: (id, amount = 1) => {
     const result = garden.buyPlant(id, amount);
     handleEvents();

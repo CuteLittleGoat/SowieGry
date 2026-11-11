@@ -64,6 +64,22 @@ export function shelfLayout(state, view) {
 }
 
 /**
+ * Miejsca roślin na płótnie (piksele CSS) dla układu `layout` przy przesunięciu `offset` (jednostki ogrodu):
+ * doniczki na wysokości `y = min(87% wysokości, wysokość − 18 × skala podpisu)`, środek doniczki
+ * `x = (center − offset) × unit`, `visible` — środek w ogrodzie. → { y, label, places: [{ entry, x, scale, visible }] }
+ * (`label` — skala podpisu „×N”: min(unit, 1,4)).
+ */
+export function placeShelf(layout, offset, { width, height, unit }) {
+  const label = Math.min(unit, 1.4);
+  const y = Math.min(height * SHELF.baseline, height - 18 * label);
+  const places = layout.items.map((entry) => {
+    const x = (entry.center - offset) * unit;
+    return { entry, x, scale: plantScale(entry.stage, unit), visible: x >= 0 && x <= width };
+  });
+  return { y, label, places };
+}
+
+/**
  * Prędkość palca (px/s) z ruchu w ostatnich `windowMs` ms; gdy palec stanął przed puszczeniem (ponad połowę okna)
  * albo ruch trwał krócej niż 16 ms (np. zdarzenia wysłane naraz) — 0; najwyżej ±6000 px/s.
  */
@@ -98,7 +114,8 @@ export function createVelocity(windowMs = 100) {
  * rośliny, a stojący na końcu linii zostaje na końcu), potem `update(dt)`. Sterowanie: `grab()` / `drag(dx)` /
  * `release(prędkość)` (palec), `page(±1)` (strzałka: roślina ucięta przy krawędzi staje się pierwszą z drugiej
  * strony), `nudge(dx)` (kółko myszy), `reveal(id, { center })` (pokazanie rośliny w najbliższej klatce), `toEnd()`
- * (koniec linii w najbliższej klatce). `info()` → { offset, max, view, scrollable, canPrev, canNext, moving }.
+ * (koniec linii w najbliższej klatce). `info()` → { offset, max, view, scrollable, canPrev, canNext, moving }
+ * (`moving` — półka jedzie albo prośba czeka na najbliższą klatkę).
  */
 export function createShelfScroll({ instant = () => false } = {}) {
   let offset = 0;
@@ -222,7 +239,8 @@ export function createShelfScroll({ instant = () => false } = {}) {
         scrollable: max > 0.5,
         canPrev: position > 0.5,
         canNext: position < max - 0.5,
-        moving: mode !== "idle",
+        // W ruchu także wtedy, gdy prośba (`reveal`, `toEnd`) czeka na najbliższą klatkę.
+        moving: mode !== "idle" || pending !== null,
       };
     },
   };

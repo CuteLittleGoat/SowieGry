@@ -7,6 +7,7 @@ import { PLANTS } from "../../SowieOgrody/ogrod/config.js";
 import {
   createShelfScroll,
   createVelocity,
+  placeShelf,
   plantScale,
   SHELF,
   shelfLayout,
@@ -166,11 +167,13 @@ test("pokazanie rośliny: nowy gatunek wjeżdża w widok, ciężarówka — na �
   const scroll = createShelfScroll({ instant: () => true });
   const state = stateWith(PLANTS.length, 100);
   const layout = shelfLayout(state, 400);
-  // Start gry: koniec linii (najnowsze rośliny) w najbliższej klatce.
+  // Start gry: koniec linii (najnowsze rośliny) w najbliższej klatce — do tej pory półka jest „w ruchu”.
   scroll.toEnd();
   assert.equal(scroll.offset(), 0);
+  assert.equal(scroll.info().moving, true, "prośba czeka na klatkę");
   scroll.sync(layout);
   assert.equal(scroll.offset(), layout.max);
+  assert.equal(scroll.info().moving, false);
   // Roślina w widoku — półka stoi; poza widokiem z lewej — wjeżdża przy lewej krawędzi.
   scroll.reveal(PLANTS.at(-1).id);
   scroll.sync(layout);
@@ -180,6 +183,7 @@ test("pokazanie rośliny: nowy gatunek wjeżdża w widok, ciężarówka — na �
   assert.equal(scroll.offset(), 2 * 120);
   // Z prawej — wjeżdża przy prawej krawędzi (Bonsai — 9. na półce).
   scroll.reveal("bonsai");
+  assert.equal(scroll.info().moving, true, "prośba czeka na klatkę");
   scroll.sync(layout);
   assert.equal(scroll.offset(), 9 * 120 - 400);
   // Na środek (ciężarówka Amic).
@@ -268,4 +272,27 @@ test("półka: rośliny z shelfPlants w layout i miejsca nie zmieniają się prz
     wide.items.map((entry) => [entry.start, entry.width]),
   );
   assert.ok(wide.max < narrow.max);
+});
+
+test("miejsca roślin na płótnie: doniczki w jednej linii, środek z przesunięciem, widoczne tylko w ogrodzie", () => {
+  const state = stateWith(PLANTS.length, 100);
+  const unit = gardenUnit(392, 285);
+  const layout = shelfLayout(state, 392 / unit);
+  const { y, label, places } = placeShelf(layout, 240, { width: 392, height: 285, unit });
+  near(label, Math.min(unit, 1.4), 1e-12, "skala podpisu");
+  near(y, 285 * SHELF.baseline, 1e-9, "doniczki na 87% wysokości");
+  assert.equal(places.length, PLANTS.length);
+  for (const { entry, x, scale, visible } of places) {
+    near(x, (entry.center - 240) * unit, 1e-9, entry.id);
+    near(scale, plantScale(5, unit), 1e-12, entry.id);
+    assert.equal(visible, x >= 0 && x <= 392, entry.id);
+  }
+  assert.deepEqual(
+    places.filter((place) => place.visible).map((place) => place.entry.id),
+    PLANTS.slice(2, 5).map((plant) => plant.id),
+    "widać 3., 4. i 5. roślinę (środki 300, 420, 540 jednostek przy przesunięciu 240)",
+  );
+  // Niski ogród (lista rozwinięta): podpis pod doniczką mieści się w ogrodzie.
+  const low = placeShelf(layout, 0, { width: 392, height: 80, unit: 0.85 });
+  near(low.y, 80 - 18 * 0.85, 1e-9, "doniczki wyżej, podpis w ogrodzie");
 });
