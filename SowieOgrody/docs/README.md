@@ -19,15 +19,24 @@ już Arboretum, przy następnym wejściu trafia od razu do Palmiarni — cały d
 - **Pierwsze wejście po zmianie gry:** ogród z dawnej wersji przenosi się sam. Okno **„Witaj w nowym ogrodzie!”**
   mówi, co zostało, i ile liści (oraz nasion) dostajesz za ulepszenia, których w nowej wersji nie ma. Postęp
   z wersji próbnej (przycisk „Wypróbuj nową wersję”) też zostaje — bez dodatkowego okna.
-- **Liście:** stukaj w ogród — każde stuknięcie daje liście (napis „+N” w miejscu palca). U góry widać liczbę liści
-  i ile przybywa na sekundę. Duże liczby są skracane: „tys.” (tysiąc), „mln” (milion), „mld” (miliard), „bln”
-  (bilion), „bld” (biliard), „tryl.” (trylion), „tryld” (tryliard), „kwadryl.” (kwadrylion) i dalej — np. „150 mln”
-  to 150 milionów.
+- **Liście:** stukaj w ogród — każde stuknięcie daje liście (napis „+N” w miejscu palca). Liście zbiera stuknięcie
+  (palec podniesiony tam, gdzie dotknął) — przesunięcie palcem po ogrodzie liści nie zbiera, tylko przesuwa rośliny.
+  U góry widać liczbę liści i ile przybywa na sekundę. Duże liczby są skracane: „tys.” (tysiąc), „mln” (milion),
+  „mld” (miliard), „bln” (bilion), „bld” (biliard), „tryl.” (trylion), „tryld” (tryliard), „kwadryl.” (kwadrylion)
+  i dalej — np. „150 mln” to 150 milionów.
 - **Cel rozdziału:** pod licznikiem jest bieżący rozdział (np. „Rozdział 1/14: Parapet”) i jego cele z postępem.
   Po wykonaniu wszystkich otwiera się kolejny rozdział z nowymi roślinami i ulepszeniami. W dalszych rozdziałach
   potrzeba kilku Wielkich Przesadzań — nasiona z nich przyspieszają ogród.
-- **Ogród:** każdy kupiony gatunek stoi w doniczce; przy wielu gatunkach widać 12 najdalszych (z najnowszych
-  rozdziałów).
+- **Ogród:** każdy kupiony gatunek stoi w doniczce. Wszystkie rośliny stoją w jednej linii i są duże — żadna nie
+  znika i nie robi się mniejsza, gdy przybywa gatunków (rosną tylko przy 10, 25, 50 i 100 sztukach). Gdy roślin jest
+  więcej, niż mieści się w ogrodzie:
+  - **przesuń palcem w bok** po ogrodzie — rośliny jadą za palcem, a po szybkim przesunięciu jeszcze chwilę same;
+  - albo stuknij **strzałkę** przy lewej albo prawej krawędzi ogrodu — roślina ucięta przy krawędzi staje się
+    pierwszą z drugiej strony. Strzałka jest tylko po tej stronie, gdzie są jeszcze rośliny;
+  - na komputerze działają też klawisze **←** **→** (po kliknięciu w ogród), przeciąganie myszą i kółko myszy.
+
+  Po wejściu do gry widać koniec linii — najnowsze rośliny; starsze są z lewej. Nowo kupiony gatunek i roślina
+  zastawiona przez ciężarówkę Amic same wjeżdżają w widok.
 - **Panel na dole** (na komputerze i telefonie poziomo — po prawej) ma cztery zakładki:
   - **Rośliny** — kup ×1, ×10 albo **max** (ile Cię stać) — cena jest na każdym przycisku. Przy 10, 25, 50
     i 100 sztukach roślina zmienia wygląd, a przy 25 i 100 produkuje dwa razy więcej. Lista nie skacze, gdy coś
@@ -52,8 +61,8 @@ już Arboretum, przy następnym wejściu trafia od razu do Palmiarni — cały d
 - **Wydarzenia w ogrodzie** (przycisk pojawia się przy dolnej krawędzi ogrodu; możesz też stuknąć w samą postać):
   - **telefon Pracu Pracu** (od Balkonu, co kilka minut) — dopóki dzwoni, ogród rośnie o 30% wolniej. Stuknij
     **„Odrzuć”** albo telefon w lewym górnym rogu. Ulepszenie **Tryb samolotowy** wycisza go samo po 10 s;
-  - **ciężarówka Amic** (od Działki) — zastawia jedną roślinę, która wtedy nic nie daje. Stuknij ją 3 razy
-    (albo przycisk **„Przegoń”**); z ulepszeniem **Kozi kurier** wystarczy raz;
+  - **ciężarówka Amic** (od Działki) — zastawia jedną roślinę, która wtedy nic nie daje (półka sama podjeżdża, żeby
+    było ją widać). Stuknij ją 3 razy (albo przycisk **„Przegoń”**); z ulepszeniem **Kozi kurier** wystarczy raz;
   - **złota kózka** (co 1–2 minuty) — przebiega przez ogród przez 7 sekund. Złap ją (**„Złap kózkę!”**), a dostaniesz
     premię: produkcja ×3 na 30 s, liście z minuty produkcji, kozi szał (kózka sama zbiera liście przez 15 s) albo
     porcję Plusk-o-metru;

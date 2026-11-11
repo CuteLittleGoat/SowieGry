@@ -28,7 +28,7 @@ import {
   waterStats,
 } from "../../SowieOgrody/ogrod/economy.js";
 import { createPlantShapes, drawSceneDecor, NEW_SCENES } from "../../SowieOgrody/ogrod/decor.js";
-import { shelfPlants } from "../../SowieOgrody/ogrod/render.js";
+import { shelfPlants } from "../../SowieOgrody/ogrod/shelf.js";
 import { chapterIndex, chapterOpen, createGarden, sceneId } from "../../SowieOgrody/ogrod/garden.js";
 import { defaultState, loadState, migrateV2 } from "../../SowieOgrody/ogrod/state.js";
 
@@ -374,22 +374,23 @@ test("drzewko „Słońce” (uwaga O6): Słoneczne korzenie, Poranny start (ule
   assert.ok(summer.palma > spring.palma * 1.2, "Palma szybciej");
 });
 
-test("ogród (uwaga O2): na półce najwyżej 12 gatunków — najdalsze posiadane i zawsze ten pod ciężarówką", () => {
+test("ogród (uwaga z 2026-11-11): na półce wszystkie posiadane gatunki w kolejności rozdziałów — żaden nie znika", () => {
   const state = defaultState(0);
   state.plants = Object.fromEntries(PLANTS.slice(0, 9).map((plant) => [plant.id, 3]));
   assert.equal(shelfPlants(state).length, 9);
+  // Dawniej przy więcej niż 12 gatunkach najstarsze znikały z półki.
   state.plants = Object.fromEntries(PLANTS.map((plant) => [plant.id, 3]));
-  const shown = shelfPlants(state);
-  assert.equal(shown.length, 12);
   assert.deepEqual(
-    shown.map((plant) => plant.id),
-    PLANTS.slice(-12).map((plant) => plant.id),
+    shelfPlants(state).map((plant) => plant.id),
+    PLANTS.map((plant) => plant.id),
   );
+  // Gatunek bez sztuk (np. po Wielkim Przesadzaniu) — nie stoi na półce.
+  state.plants.pilea = 0;
   state.blocked = "monstera";
-  const withTruck = shelfPlants(state).map((plant) => plant.id);
-  assert.equal(withTruck.length, 12);
-  assert.ok(withTruck.includes("monstera"), "zastawiony gatunek widać");
-  assert.ok(withTruck.includes("gwiezdny"), "najdalszy gatunek widać");
+  const shown = shelfPlants(state).map((plant) => plant.id);
+  assert.equal(shown.length, PLANTS.length - 1);
+  assert.ok(!shown.includes("pilea"));
+  assert.equal(shown[0], "monstera", "zastawiony ciężarówką gatunek stoi na swoim miejscu");
 });
 
 // Atrapa płótna 2D: zapisuje wywołania metod rysujących (wypełnienia, linie), resztę przyjmuje bez błędów.

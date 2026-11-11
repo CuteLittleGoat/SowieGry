@@ -10,7 +10,7 @@ import { createAtlas } from "../../shared/engine/sprites.js";
 import { guideFor } from "../../shared/meta/guides-data.js";
 import { EVENTS, progress } from "../../shared/meta/progress.js";
 import { linkSpecies } from "../../shared/meta/shop.js";
-import { createToasts, openModal, renderGuide } from "../../shared/ui/index.js";
+import { createToasts, ICONS, openModal, renderGuide } from "../../shared/ui/index.js";
 import { SPRITES, SVG_BASE } from "../../shared/world/catalog.js";
 import { createOwlAnimator } from "../../shared/world/owl.js";
 import { COLORS } from "../../shared/world/tokens.js";
@@ -30,6 +30,7 @@ import { formatNumber, formatTime, hasUpgrade, plantById, prestigeSeeds, product
 import { chapterIndex, createGarden, sceneId } from "./garden.js";
 import { createPanel } from "./panel.js";
 import { createGardenRenderer, gardenUnit } from "./render.js";
+import { createShelfScroll, createVelocity, SHELF } from "./shelf.js";
 import { defaultState, loadState } from "./state.js";
 import { createTutorial } from "./tutorial.js";
 import { claimContract, dailyContracts, ensureDaily } from "./daily.js";
@@ -59,12 +60,22 @@ const splashNode = root.querySelector("[data-splash]");
 const splashFill = root.querySelector("[data-splash-fill]");
 const bayHud = root.querySelector("[data-bay-hud]");
 const tutorialNode = root.querySelector("[data-tutorial]");
+const shelfButtons = {
+  prev: root.querySelector('[data-shelf="prev"]'),
+  next: root.querySelector('[data-shelf="next"]'),
+};
+
+// Półka (uwaga z 2026-11-11): bez animacji przy ograniczonym ruchu w systemie albo wyłączonych „Efektach” w menu.
+const motionQuery = window.matchMedia?.("(prefers-reduced-motion: reduce)");
+const reducedMotion = () =>
+  Boolean(motionQuery?.matches) || document.documentElement.classList.contains("sowie-reduced-effects");
+const shelf = createShelfScroll({ instant: reducedMotion });
 
 const atlas = createAtlas({ catalog: SPRITES, baseUrl: SVG_BASE });
 // Gatunek sowy z Sowiego Butiku (przekolorowanie części sowy w atlasie).
 linkSpecies(atlas);
 const animator = createOwlAnimator();
-const renderer = createGardenRenderer({ canvas, atlas });
+const renderer = createGardenRenderer({ canvas, atlas, scroll: shelf });
 // Jeden komunikat naraz, u góry (jak w trakcie gry) — nie zasłania panelu.
 const toasts = createToasts({ root, isInGame: () => true });
 
@@ -293,6 +304,10 @@ function handleEvents() {
         save({ immediate: true });
         break;
       }
+      case "plant":
+        // Nowy gatunek (pierwsza sztuka, także od Sowy zakupowej) — półka podjeżdża, żeby było go widać.
+        if (event.owned === event.amount) shelf.reveal(event.id);
+        break;
       case "milestone": {
         play("hu-hu", { volume: 0.8 });
         const plant = plantById(event.id);
@@ -339,6 +354,8 @@ function handleEvents() {
         }
         break;
       case "truck":
+        // Zastawiona roślina na środek ogrodu — ciężarówkę widać i można ją stuknąć.
+        shelf.reveal(event.plant, { center: true });
         play("trafienie-amic", { volume: 0.7 });
         toasts.show(`Ciężarówka Amic zastawiła: ${plantById(event.plant).name}! Stuknij ją, żeby odjechała`, {
           kind: "warn",
@@ -564,10 +581,110 @@ function pointAt(x, y) {
   updateEvents();
 }
 
-canvas.addEventListener("pointerdown", (event) => {
+// ---------- Półka: przesuwanie palcem, strzałki, klawisze, kółko myszy ----------
+
+const unit = () => {
+  const size = renderer.size();
+  return gardenUnit(size.width, size.height);
+};
+
+function canvasPoint(event) {
   const rect = canvas.getBoundingClientRect();
-  pointAt(event.clientX - rect.left, event.clientY - rect.top);
+  return { x: event.clientX - rect.left, y: event.clientY - rect.top };
+}
+
+// Dotknięcie płótna: w Zatoce Humbaka i na zdarzeniu (kózka, telefon, ciężarówka) działa od razu (ruchome cele).
+// W pozostałych miejscach czeka na puszczenie palca: bez ruchu — zbiór liści w miejscu dotknięcia; przesunięcie
+// o co najmniej `SHELF.dragThreshold` px to nie stuknięcie, a przesunięcie bardziej w bok niż w pionie prowadzi
+// półkę (jeden palec naraz; po puszczeniu jedzie dalej z rozpędem). Kilka palców naraz — każdy to osobne stuknięcie.
+const touches = new Map();
+const velocity = createVelocity();
+let dragId = null;
+
+canvas.addEventListener("pointerdown", (event) => {
+  if (!ready || (event.pointerType === "mouse" && event.button !== 0)) return;
+  const { x, y } = canvasPoint(event);
+  if (garden.state.bay || renderer.hit(x, y)) {
+    pointAt(x, y);
+    return;
+  }
+  try {
+    canvas.setPointerCapture(event.pointerId);
+  } catch {
+    // Zdarzenie bez prawdziwego wskaźnika (testy) — gest działa i bez przechwycenia.
+  }
+  touches.set(event.pointerId, { x, y, lastX: x, time: event.timeStamp, moved: false });
 });
+
+canvas.addEventListener("pointermove", (event) => {
+  const touch = touches.get(event.pointerId);
+  if (!touch) return;
+  const { x, y } = canvasPoint(event);
+  if (!touch.moved) {
+    if (Math.hypot(x - touch.x, y - touch.y) < SHELF.dragThreshold) return;
+    touch.moved = true;
+    if (dragId === null && Math.abs(x - touch.x) >= Math.abs(y - touch.y)) {
+      dragId = event.pointerId;
+      velocity.reset();
+      velocity.add(touch.x, touch.time);
+      shelf.grab();
+    }
+  }
+  if (dragId === event.pointerId) {
+    // Palec w prawo — linia w prawo (widać rośliny z lewej), więc przesunięcie maleje.
+    shelf.drag(-(x - touch.lastX) / unit());
+    velocity.add(x, event.timeStamp);
+  }
+  touch.lastX = x;
+});
+
+function endTouch(event, cancelled) {
+  const touch = touches.get(event.pointerId);
+  if (!touch) return;
+  touches.delete(event.pointerId);
+  if (dragId === event.pointerId) {
+    dragId = null;
+    shelf.release(-velocity.value(event.timeStamp) / unit());
+  } else if (!touch.moved && !cancelled) pointAt(touch.x, touch.y);
+}
+
+canvas.addEventListener("pointerup", (event) => endTouch(event, false));
+canvas.addEventListener("pointercancel", (event) => endTouch(event, true));
+canvas.addEventListener("lostpointercapture", (event) => endTouch(event, true));
+
+// Kółko myszy i przesunięcie dwoma palcami na gładziku: w bok albo w pionie — półka jedzie w bok.
+canvas.addEventListener(
+  "wheel",
+  (event) => {
+    if (event.ctrlKey || garden.state.bay || !shelf.info().scrollable) return;
+    const delta = Math.abs(event.deltaX) > Math.abs(event.deltaY) ? event.deltaX : event.deltaY;
+    if (!delta) return;
+    event.preventDefault();
+    const step = event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? renderer.size().width : 1;
+    shelf.nudge((delta * step) / unit());
+  },
+  { passive: false },
+);
+
+// Strzałki po bokach ogrodu: roślina ucięta przy krawędzi staje się pierwszą z drugiej strony.
+for (const [side, button] of Object.entries(shelfButtons)) {
+  button.innerHTML = ICONS.next;
+  button.addEventListener("click", () => shelf.page(side === "next" ? 1 : -1));
+}
+
+// Strzałka widoczna, gdy z jej strony są jeszcze rośliny (w Zatoce Humbaka — ukryte); co klatkę, DOM tylko przy zmianie.
+function updateShelfButtons() {
+  const info = shelf.info();
+  const bay = Boolean(garden.state.bay);
+  for (const [side, button] of Object.entries(shelfButtons)) {
+    const hidden = bay || !(side === "next" ? info.canNext : info.canPrev);
+    if (button.hidden === hidden) continue;
+    // Fokus z chowanej strzałki przechodzi na ogród (klawiatura: dalej działają ← →).
+    if (hidden && document.activeElement === button) canvas.focus({ preventScroll: true });
+    button.hidden = hidden;
+  }
+}
+
 alertsNode.addEventListener("click", (event) => {
   const button = event.target.closest("[data-alert]");
   if (!button || !ready) return;
@@ -580,6 +697,11 @@ alertsNode.addEventListener("click", (event) => {
   updateEvents();
 });
 canvas.addEventListener("keydown", (event) => {
+  if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
+    event.preventDefault();
+    shelf.page(event.key === "ArrowRight" ? 1 : -1);
+    return;
+  }
   if (event.key !== " " && event.key !== "Enter") return;
   event.preventDefault();
   const size = renderer.size();
@@ -623,6 +745,7 @@ function frame(time) {
   animator.set(happyTime > 0 ? "radosc" : "stoi");
   animator.update(dt);
   renderer.draw({ state: garden.state, now: now(), time: time / 1000, dt, animator, cosmetic: cosmetic() });
+  updateShelfButtons();
   hudTimer += dt;
   if (hudTimer >= 0.2 || !dt) {
     hudTimer = 0;
@@ -678,6 +801,8 @@ async function start() {
   if (!raw) raw = (await cloud?.loadGameState?.(GAME_ID)) ?? null;
   const { state, report } = loadState(raw, now());
   garden = createGarden({ state, now });
+  // Półka zaczyna od końca linii — najnowsze rośliny (dalsze rozdziały); starsze są po przesunięciu w lewo.
+  shelf.toEnd();
   // Czas nieobecności: od ostatniego zapisu dokumentu (znacznik serwera `updatedAt`), inaczej z zapisu stanu.
   const last = Number(doc.updatedAt) || Number(state.savedAt) || now();
   const offline = garden.applyOffline((now() - last) / 1000);
@@ -732,6 +857,16 @@ window.SowieOgrody = Object.freeze({
     garden.state.runLeaves += leaves;
     garden.state.lifetimeLeaves += leaves;
   },
+  // Testy: liczba sztuk gatunków od razu, bez cen i rozdziałów (np. wszystkie 27 gatunków na półce).
+  setPlants: (plants) => {
+    Object.assign(garden.state.plants, plants);
+  },
+  // Półka (uwaga z 2026-11-11): przesunięcie, granice, strzałki i miejsca roślin (piksele CSS) z ostatniej klatki.
+  shelf: () => ({
+    ...shelf.info(),
+    unit: unit(),
+    spots: Object.fromEntries(renderer.spots),
+  }),
   buy: (id, amount = 1) => {
     const result = garden.buyPlant(id, amount);
     handleEvents();

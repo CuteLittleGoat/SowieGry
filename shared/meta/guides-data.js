@@ -281,6 +281,7 @@ export const GUIDES = Object.freeze({
         title: "Rośliny i kamienie milowe",
         text: "Przy 10, 25, 50 i 100 sztukach roślina zmienia wygląd, a przy 25 i 100 zbiera dwa razy więcej. Przycisk „max” kupuje tyle, ile Cię stać.",
         sprite: "lisc-zloty",
+        tip: "Wszystkie rośliny stoją w jednej linii — przesuń ją palcem w bok albo strzałkami po bokach ogrodu.",
       },
       {
         id: "konewka",

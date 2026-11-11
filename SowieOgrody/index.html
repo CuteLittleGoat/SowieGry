@@ -43,7 +43,25 @@
       </header>
       <section class="ogrod-goal" data-goal aria-live="polite"></section>
       <div class="ogrod-garden">
-        <canvas data-canvas tabindex="0" aria-label="Ogród — stuknij, żeby zebrać liście"></canvas>
+        <canvas
+          data-canvas
+          tabindex="0"
+          aria-label="Ogród — stuknij, żeby zebrać liście; przesunięcie w bok albo strzałki ← → pokazują inne rośliny"
+        ></canvas>
+        <button
+          type="button"
+          class="ogrod-shelf-arrow is-prev"
+          data-shelf="prev"
+          aria-label="Pokaż rośliny z lewej"
+          hidden
+        ></button>
+        <button
+          type="button"
+          class="ogrod-shelf-arrow is-next"
+          data-shelf="next"
+          aria-label="Pokaż rośliny z prawej"
+          hidden
+        ></button>
         <div class="ogrod-tutorial" data-tutorial hidden role="status" aria-live="polite">
           <span class="sowie-gesture-demo" aria-hidden="true"><span class="sowie-gesture-finger"></span></span>
           <span class="ogrod-tutorial-text">

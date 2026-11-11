@@ -1,12 +1,14 @@
-// Sowie Ogrody — rysowanie ogrodu na płótnie (piksele CSS): tło bieżącego rozdziału, półki z roślinami (każdy
-// gatunek w doniczce; wielkość i liczba liści rosną z kamieniami milowymi), sowa ogrodniczka z atlasu Sowiego Świata,
-// krople po podlaniu, napisy „+N” po stuknięciu i cząsteczki liści.
+// Sowie Ogrody — rysowanie ogrodu na płótnie (piksele CSS): tło bieżącego rozdziału, półka z roślinami (każdy
+// gatunek w doniczce, wszystkie w jednej przesuwanej linii — shelf.js; wielkość i liczba liści rosną z kamieniami
+// milowymi), sowa ogrodniczka z atlasu Sowiego Świata, krople po podlaniu, napisy „+N” po stuknięciu i cząsteczki
+// liści.
 import { drawOwl } from "../../shared/world/owl.js";
 import { COLORS, font } from "../../shared/world/tokens.js";
-import { CHAPTERS, GARDEN_EVENTS, PLANTS } from "./config.js";
-import { formatNumber, plantStage } from "./economy.js";
+import { GARDEN_EVENTS } from "./config.js";
+import { formatNumber } from "./economy.js";
 import { createPlantShapes, drawSceneDecor, NEW_SCENES } from "./decor.js";
 import { sceneId } from "./garden.js";
+import { plantScale, SHELF, shelfLayout } from "./shelf.js";
 
 // Tło rozdziału: [niebo u góry, niebo u dołu, podłoże].
 const SCENES = {
@@ -20,33 +22,24 @@ const SCENES = {
   ...NEW_SCENES,
 };
 
-// Półka: najwyżej 6 gatunków w rzędzie, dwa rzędy — razem 12 (od uwagi O2 gatunków jest 27: w ogrodzie stoi 12
-// najdalszych posiadanych, a gatunek zastawiony przez ciężarówkę Amic zawsze).
-const COLUMNS = 6;
-const SHELF = COLUMNS * 2;
-
-/** Gatunki na półce: posiadane w kolejności z PLANTS, najwyżej `SHELF` ostatnich (z zastawionym ciężarówką). */
-export function shelfPlants(state) {
-  const owned = PLANTS.filter((item) => (state.plants?.[item.id] || 0) > 0);
-  if (owned.length <= SHELF) return owned;
-  const shown = owned.slice(-SHELF);
-  const blocked = owned.find((item) => item.id === state.blocked);
-  if (blocked && !shown.includes(blocked)) shown.splice(0, 1, blocked);
-  return shown;
-}
-
 // Skala rysunku względem ogrodu telefonu (360 × 260 px CSS): rośliny i sowa rosną razem z płótnem (komputer),
 // ale nie maleją poniżej 0,85 ani nie rosną ponad 2.
 export function gardenUnit(width, height) {
   return Math.min(2, Math.max(0.85, Math.min(width / 360, height / 260)));
 }
 
-export function createGardenRenderer({ canvas, atlas }) {
+/**
+ * createGardenRenderer({ canvas, atlas, scroll }) — `scroll`: przesuwanie półki z shelf.js (`createShelfScroll`);
+ * renderer co klatkę podaje mu układ półki (`sync`) i przesuwa go o czas klatki (`update`). Bez niego półka stoi
+ * na początku linii.
+ */
+export function createGardenRenderer({ canvas, atlas, scroll = null }) {
   const context = canvas.getContext("2d");
   const popups = [];
   const particles = [];
   let size = { width: 0, height: 0, ratio: 1 };
-  // Miejsca roślin (piksele CSS) — do celowania napisów i testów.
+  // Miejsca roślin (piksele CSS: środek doniczki u dołu, skala rysunku, czy środek jest w ogrodzie) — do ciężarówki,
+  // napisów i testów; także rośliny przesunięte poza ogród.
   const spots = new Map();
   const shapes = createPlantShapes(context);
 
@@ -138,11 +131,10 @@ export function createGardenRenderer({ canvas, atlas }) {
     context.fillRect(0, floor, width, 4);
   }
 
-  // Roślina w doniczce: `stage` 1–5 (kamienie milowe) — wielkość, liczba liści, kwiat przy 5. `fit` (≤ 1) zmniejsza
-  // rośliny w ciasnym rzędzie, żeby liście sąsiadów nie zachodziły na siebie.
-  function plant(item, x, y, stage, time, fit = 1) {
-    const unit = gardenUnit(size.width, size.height);
-    const scale = (0.7 + stage * 0.12) * unit * fit;
+  // Roślina w doniczce: `stage` 1–5 (kamienie milowe) — wielkość, liczba liści, kwiat przy 5. Wielkość zależy tylko
+  // od etapu i ogrodu (`plantScale`), nie od liczby gatunków na półce.
+  function plant(item, x, y, stage, time) {
+    const scale = plantScale(stage, gardenUnit(size.width, size.height));
     const potWidth = 26 * scale;
     context.fillStyle = COLORS.doniczka;
     roundRect(x - potWidth / 2, y - 20 * scale, potWidth, 20 * scale, 5);
@@ -174,32 +166,30 @@ export function createGardenRenderer({ canvas, atlas }) {
     }
   }
 
-  // Półka: jeden rząd na środku podłogi; przy 7+ gatunkach dwa rzędy — pierwszy z tyłu (wyżej, mniejszy), drugi
-  // z przodu. Podpisy „×N” rysowane na końcu, na jasnych plakietkach, żeby nie chowały się pod liśćmi.
-  function shelf(state, time) {
+  // Półka (uwaga z 2026-11-11): wszystkie posiadane gatunki w jednej linii na podłodze, w pełnej wielkości; linia
+  // przesuwa się w bok (`scroll`). Rysowane tylko rośliny w ogrodzie albo tuż przy jego krawędzi (liście wystają poza
+  // miejsce). Podpisy „×N” na końcu, na jasnych plakietkach, żeby nie chowały się pod liśćmi.
+  function shelf(state, time, dt) {
     const { width, height } = size;
     const unit = gardenUnit(width, height);
-    const owned = shelfPlants(state);
-    spots.clear();
-    const rows = Math.max(1, Math.ceil(owned.length / COLUMNS));
-    const placed = owned.map((item, index) => {
-      const row = Math.floor(index / COLUMNS);
-      const inRow = Math.min(COLUMNS, owned.length - row * COLUMNS);
-      const column = index % COLUMNS;
-      const x = (width * (column + 0.5)) / inRow;
-      const y = height * (rows > 1 ? (row ? 0.9 : 0.7) : 0.78);
-      // Szerokość kolumny względem ~80 px (dorosła roślina) i perspektywa rzędów.
-      const fit = Math.min(1, width / inRow / (80 * unit)) * (rows > 1 ? (row ? 0.9 : 0.75) : 1);
-      spots.set(item.id, { x, y });
-      return { item, x, y, fit };
-    });
-    for (const { item, x, y, fit } of placed) {
-      plant(item, x, y, plantStage(state.plants[item.id]), time, fit);
-    }
+    const layout = shelfLayout(state, width / unit);
+    scroll?.sync(layout);
+    scroll?.update(dt);
+    const offset = scroll ? scroll.offset() : 0;
     const label = Math.min(unit, 1.4);
+    const y = Math.min(height * SHELF.baseline, height - 18 * label);
+    const margin = 80 * unit;
+    spots.clear();
+    const placed = [];
+    for (const entry of layout.items) {
+      const x = (entry.center - offset) * unit;
+      spots.set(entry.id, { x, y, scale: plantScale(entry.stage, unit), visible: x >= 0 && x <= width });
+      if (x > -margin && x < width + margin) placed.push({ ...entry, x });
+    }
+    for (const { item, x, stage } of placed) plant(item, x, y, stage, time);
     context.font = font(Math.round(11 * label));
     context.textAlign = "center";
-    for (const { item, x, y } of placed) {
+    for (const { item, x } of placed) {
       const text = `×${formatNumber(state.plants[item.id])}`;
       const textWidth = context.measureText(text).width;
       context.fillStyle = "rgba(255, 255, 255, 0.75)";
@@ -418,7 +408,7 @@ export function createGardenRenderer({ canvas, atlas }) {
       context.setTransform(size.ratio, 0, 0, size.ratio, 0, 0);
       background(sceneId(state), time);
       owl(animator, cosmetic);
-      shelf(state, time);
+      shelf(state, time, dt);
       truck(state);
       goat(state, GARDEN_EVENTS.goat.visible);
       phone(state, time);
