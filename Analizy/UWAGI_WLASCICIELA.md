@@ -7,6 +7,9 @@ testy. Wtedy poprawki małymi commitami (każdy z zielonym `npm test`), a przy k
 **Druga runda uwag (2026-11-01)** — po wdrożeniu E0–E10: tabela [„Uwagi z testów — 2026-11-01”](#uwagi-z-testów--2026-11-01)
 na końcu pliku; diagnoza, plan prac i pytania: [`ANALIZA_4_Uwagi_z_testow_poprawki_i_rozbudowa.md`](ANALIZA_4_Uwagi_z_testow_poprawki_i_rozbudowa.md).
 
+**Uwaga z 2026-11-11** — od użytkownika, przekazana przez właściciela razem z propozycją rozwiązania (właściciel
+poprosił od razu o zmianę): tabela [„Uwagi — 2026-11-11”](#uwagi--2026-11-11) na końcu pliku.
+
 Wersje do sprawdzenia (menu → „Wypróbuj nową wersję: …”):
 
 - Sowie Tory — https://cutelittlegoat.github.io/SowieGry/SowieTory/
@@ -84,3 +87,9 @@ Kod zmieniamy po odpowiedziach na pytania z rozdziału 6 analizy.
 | G3 | Ogólne | „Działa tylko jeden kolor sowy. Kupiłam kilka i cofało zakupy oraz automatycznie zmienia mi na białą sufke jak mam kupione inne kolory” | błąd zapisu Butiku (zapis po 30 s, wyjście do gry bez czekania, odświeżenie z serwera, tablice zapisywane w całości) (Analiza 4, 3.1) | ✅ c38cbef, 1e9771c — spóźniona odpowiedź serwera nie cofa profilu, zakup i wybór zapisywane od razu, suma z dziennikiem zakupów, 50 piórek przeprosin; testy jednostkowe i e2e |
 | G4 | Ogólne | „Nowe zdjęcia sówek w galerii.” | 10 nowych zdjęć z wymaganiami z nowych treści (Analiza 4, 3.6) | ✅ a549fdb — zdjęcia nr 31–40: krainy ponad Kosmosem (1900, 3100, 5100 m), rozdziały Sowich Ogrodów (6, 9, 14), diamentowa i tęczowa roślina, 12 i 16 pomieszczeń w Łącz i Hoduj; odblokowane zdjęcia zostają |
 | G5 | Ogólne | „W galerii sufek są dwie takie same - z zoomem i bez zooma” | zdjęcia nr 1 i 2 to ta sama fotografia; nowa fotografia pod `owl-02` (Analiza 4, 3.6) | ✅ aad4394 — nowe fotografie pod nr 2, 12, 22, 25, 26 (te same identyfikatory i wymagania) |
+
+## Uwagi — 2026-11-11
+
+| # | Gra | Uwaga (dosłownie) | Do zrobienia | Stan |
+|---|---|---|---|---|
+| O8 | Sowie Ogrody | „W sowich ogrodach chciałabym aby rośliny były duże i przesuwały się w linii tak, aby można było widzieć wszystkie i aby nie znikały z półki i nie robiły się małe” — propozycja właściciela: „Może zrób strzałki z lewej i prawej strony ekranu do przesuwania oraz opcję przesuwania poprzez przesunięcie palcem.” | Półka w ogrodzie miała najwyżej 12 gatunków w dwóch rzędach (od 13. gatunku najstarsze znikały), a rośliny malały w ciasnym rzędzie (nawet do ok. połowy pełnej wielkości). Wszystkie gatunki w jednej linii, duże i zawsze tej samej wielkości (zależnej tylko od liczby sztuk); przesuwanie strzałkami po bokach ogrodu i palcem. | ✅ 8db8ec1 — wszystkie posiadane gatunki w jednej linii, rośliny o 20% większe niż dawniej w pełnej wielkości i nigdy nie maleją; strzałki ‹ › po bokach ogrodu (tylko po tej stronie, gdzie są jeszcze rośliny), przesuwanie palcem z rozpędem, na komputerze także myszą, klawiszami ← → i kółkiem; nowy gatunek i roślina zastawiona przez ciężarówkę Amic same wjeżdżają w widok; przesunięcie palcem nie zbiera liści (stuknięcie liczy się przy puszczeniu palca); wskazówka w „Jak grać?”; testy jednostkowe i e2e; test na telefonie O5 |

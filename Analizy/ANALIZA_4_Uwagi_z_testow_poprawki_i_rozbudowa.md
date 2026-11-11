@@ -280,7 +280,8 @@ rozdziale nie ma nic nowego, a po Wielkim Przesadzaniu kupuje się te same 16 ul
   premie kózek, stały przyrost produkcji) i wyższe limity obecnych węzłów — przy nowych rozdziałach nasion będzie
   dużo więcej (nasiona = `√(liście cyklu / 10⁹)`).
 - **Ogród na płótnie:** nowy układ półek — 19 gatunków nie zmieści się w 2 rzędach po 6; np. najwyżej 12 widocznych
-  (najwięcej produkujące), reszta w Kolekcji; układ do akceptacji na zrzutach.
+  (najwięcej produkujące), reszta w Kolekcji; układ do akceptacji na zrzutach. *(Od uwagi O8, 2026-11-11: wszystkie
+  gatunki w jednej przesuwanej linii, bez zmniejszania — [`STAN_PRAC.md`, punkt 0.1](STAN_PRAC.md).)*
 - **Symulator** (`tests/unit/ogrody-ekonomia.test.mjs`): czas dojścia do każdego nowego rozdziału (z przesadzaniami)
   w ustalonych granicach, np. 1–3 h gry na rozdział.
 
@@ -542,7 +543,7 @@ zaakceptował wygląd.
 | 4.1 | Projekt i zrzuty do akceptacji: 4 tła (Palmiarnia, Dżungla, Ogród japoński, Księżycowy ogród), 8 roślin z własnymi kształtami, nowy układ półek ogrodu. |
 | 4.2 | Dane: rozdziały 7–10 z celami (także „w tym cyklu” — nowe liczniki cyklu w stanie gry), rośliny, ulepszenia (nawozy gatunków, ulepszenia rozdziałów), 4. gałąź drzewka i wyższe limity węzłów. |
 | 4.3 | Symulator ekonomii: czasy dojścia do rozdziałów 7–10 z przesadzaniami (np. 1–3 h gry na rozdział); test „dane” z nowymi liczbami (10 rozdziałów, 19 roślin, 4 gałęzie). |
-| 4.4 | Rysowanie: tła, rośliny, półki (najwyżej 12 widocznych gatunków); Kolekcja: gatunki i tła. |
+| 4.4 | Rysowanie: tła, rośliny, półki (najwyżej 12 widocznych gatunków — od uwagi O8, 2026-11-11, wszystkie w jednej przesuwanej linii); Kolekcja: gatunki i tła. |
 | 4.5 | Testy e2e (rozdział 6 → 7 po Arboretum, zakup nowej rośliny), dokumentacja gry, instrukcja „Jak grać”, opcjonalnie osiągnięcia Akademii za nowe rozdziały. |
 
 **Gotowe, gdy:** symulator w granicach; gracz po Arboretum widzi rozdział 7; zapis ze starym stanem (test na emulatorze

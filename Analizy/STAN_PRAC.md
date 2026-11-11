@@ -1,4 +1,4 @@
-# Stan prac — 2026-11-02
+# Stan prac — 2026-11-11
 
 Podsumowanie dla właściciela: co jest zrobione, co zostało, jakie są decyzje do podjęcia i na czym polegają problemy
 z testami automatycznymi. Szczegóły techniczne: `docs/Documentation.md`; plany: `ANALIZA_3_Plan_prac.md` (etapy
@@ -11,6 +11,11 @@ testy na telefonie krok po kroku: `TESTY_NA_TELEFONIE.md`.
 starej pamięci telefonu (b) i stare adresy gier (a) usunięte — gry otwiera się z menu.
 Testy automatyczne w GitHubie od rana 2 listopada nie mogły wystartować, bo GitHub zmienił system na swoich
 maszynach — poprawione (punkt 4.5); gry nie miały z tym nic wspólnego.
+
+**2026-11-11:** uwaga O8 (Sowie Ogrody — „rośliny były duże i przesuwały się w linii…”) zrobiona według Twojej
+propozycji: wszystkie rośliny w jednej linii, duże i bez zmniejszania, strzałki po bokach ogrodu i przesuwanie palcem
+(punkt 0.1; na stronie po włączeniu gałęzi do `main`). Do sprawdzenia na telefonie: test O5
+w [`TESTY_NA_TELEFONIE.md`](TESTY_NA_TELEFONIE.md).
 
 ## 0. Poprawki po testach z 2026-11-01 (etapy P1–P8)
 
@@ -40,6 +45,18 @@ w pamięci.
 
 Każdy etap przed wypchnięciem przeszedł u mnie pełny `npm test` (składnia, ESLint, Prettier, HTML, testy jednostkowe
 — dziś 320, reguły Firestore i testy przeglądarkowe w Chromium na emulatorze — dziś ok. 600).
+
+### 0.1. Uwaga z 2026-11-11 (O8)
+
+| Uwaga | Co | Commit |
+| --- | --- | --- |
+| O8 | Sowie Ogrody: wszystkie posiadane rośliny w jednej linii (wcześniej najwyżej 12 w dwóch rzędach), o 20% większe i nigdy nie maleją; strzałki ‹ › po bokach ogrodu, przesuwanie palcem z rozpędem (na komputerze także mysz, klawisze ← → i kółko); nowa roślina i roślina pod ciężarówką Amic same wjeżdżają w widok; przesunięcie palcem nie zbiera liści | 8db8ec1 |
+
+Zapis gry bez zmian — położenie półki nie jest zapisywane (po wejściu zawsze koniec linii), postęp zostaje.
+Zmiana jest na gałęzi `claude/upbeat-keller-2h422x` — na stronie pojawi się po włączeniu do `main`. Przed
+wypchnięciem sprawdzone u mnie: składnia, ESLint, Prettier, HTML, testy jednostkowe, reguły Firestore i testy
+przeglądarkowe w Chromium (5 profili telefonów i komputer, emulator Firestore); WebKit (Safari) sprawdzą testy
+w GitHubie.
 
 ## 1. Co jest zrobione — plan E0–E10 (stan z 2026-10-06)
 
@@ -103,7 +120,7 @@ W repozytorium nie ma innych plików tymczasowych. Na GitHubie została stara ga
 
 | # | Sprawa | Stan |
 | --- | --- | --- |
-| 1 | **Twoje testy na telefonie** po poprawkach P1–P7 — krok po kroku w `TESTY_NA_TELEFONIE.md` (B1–B4, G1–G2, O1–O4, L1–L2, U1, C1) | do zrobienia; uwagi w nowym oknie |
+| 1 | **Twoje testy na telefonie** po poprawkach P1–P7 i uwadze O8 — krok po kroku w `TESTY_NA_TELEFONIE.md` (B1–B4, G1–G2, O1–O5, L1–L2, U1, C1) | do zrobienia; uwagi w nowym oknie |
 | 2 | **Wymagania zdjęć Galerii** — zmienione w E9d zdjęcia nr 8, 10, 25, 27, 30 (opis w `UWAGI_WLASCICIELA.md`, tabela „Decyzje”, 2026-10-05) i nowe zdjęcia nr 31–40 (test G2 w `TESTY_NA_TELEFONIE.md`) | do przejrzenia — inne progi wystarczy napisać |
 | 3 | **Zadanie 9.5** — usunięcie kodu kasującego stare klucze `localStorage` i stron-przekierowań (`SowaRunner/`, `Sowa3/`, `SowaJumper/`, `SowiaSzklarnia/`, `SowieOgrody/nowa.html`) | ✅ 2026-11-02: b — usunięte (1711584), a — stare adresy usunięte (4bb58ca) (punkt 3.1) |
 | 4 | **Ceny w Sowim Butiku i progi osiągnięć** — ustawione tak, żeby za zadania (ok. 15 piórek dziennie + 15 tygodniowo + osiągnięcia) pierwszy gatunek był po 2–3 dniach gry, a Puchacz po kilku tygodniach | do oceny przy testach |

@@ -17,6 +17,7 @@ telefonie — i jeśli się da, zrób zrzut ekranu.
 
 | Test  | Co sprawdza                                                                                             | Od kiedy   |
 | ----- | ------------------------------------------------------------------------------------------------------- | ---------- |
+| O5    | Sowie Ogrody: wszystkie rośliny w jednej linii, duże; strzałki po bokach i przesuwanie palcem           | 2026-11-11 |
 | Z1    | Porządki (zadanie 9.5): odblokowanie telefonu, postęp i ustawienia jak przedtem; stare adresy usunięte  | 2026-11-02 |
 | G2    | Galeria: 10 nowych zdjęć (nr 31–40) za nowe krainy, rozdziały, rośliny i pomieszczenia                  | 2026-11-02 |
 | L2    | Łącz i Hoduj: diamentowe i tęczowe rośliny, Baobab i nowe rośliny, 6 nowych pomieszczeń, Kram ogrodnika | 2026-11-02 |
@@ -75,6 +76,35 @@ cofnąć zakupu. Kolory i stroje, które wcześniej zniknęły, a były zapisane
 2. **Powinno być:** wszystkie stroje kupione kiedyś w Butiku są odblokowane (bez kłódki) i da się je wybrać.
 
 ---
+
+## O5 — Sowie Ogrody: rośliny w jednej linii, strzałki i przesuwanie palcem
+
+Poprawka (uwaga z 11 listopada: „rośliny były duże i przesuwały się w linii…”): wszystkie kupione rośliny stoją
+w ogrodzie w jednej linii i są duże — żadna nie znika z półki i nie robi się mniejsza, gdy przybywa gatunków
+(wcześniej było ich najwyżej 12, w dwóch rzędach i coraz mniejsze). Linię przesuwa się palcem albo strzałkami po
+bokach ogrodu.
+
+1. Otwórz **Sowie Ogrody**, trzymaj telefon **pionowo**. Najlepiej w ogrodzie z wieloma gatunkami roślin.
+2. **Powinno być:** rośliny stoją w jednym rzędzie na dole ogrodu i są większe niż przedtem. Jeśli roślin jest
+   więcej, niż mieści się w ogrodzie: widać koniec linii (najnowsze rośliny), a przy lewej krawędzi ogrodu jest
+   okrągła **strzałka ‹**. Przy prawej krawędzi strzałki nie ma.
+3. Stuknij **strzałkę ‹**. **Powinno być:** rośliny płynnie przesuwają się w prawo i widać wcześniejsze rośliny;
+   roślina, która była ucięta przy lewej krawędzi, stoi teraz cała przy prawej. Przy prawej krawędzi pojawia się
+   **strzałka ›**.
+4. Stukaj **‹**, aż strzałka zniknie. **Powinno być:** na początku linii jest pierwsza roślina (zwykle Monstera),
+   a po drodze widać było każdą kupioną roślinę — żadnej nie brakuje. Rośliny nie zmniejszają się (duże zostają
+   duże).
+5. Połóż palec na ogrodzie i przesuń go w lewo, jak przy przewijaniu zdjęć. **Powinno być:** rośliny jadą za palcem,
+   a po szybkim ruchu jadą jeszcze chwilę same i zwalniają. Liczba liści u góry **nie** rośnie od przesuwania (nie
+   pojawia się napis „+…”).
+6. Stuknij w ogród bez przesuwania palca. **Powinno być:** jak dawniej — napis „+…” w miejscu palca i więcej liści.
+7. Stuknij w ogród kilka razy szybko. **Powinno być:** każde stuknięcie się liczy, a ekran się nie powiększa.
+8. Kup pierwszą sztukę rośliny, której jeszcze nie ma w ogrodzie (jeśli jakaś jest do kupienia). **Powinno być:**
+   półka sama podjeżdża tak, żeby nową roślinę było widać.
+9. Jeśli pojawi się **ciężarówka Amic** — **powinno być:** półka sama podjeżdża do zastawionej rośliny, cysternę
+   widać i można ją stuknąć (albo przycisk „Przegoń”).
+10. Obróć telefon poziomo. **Powinno być:** rośliny dalej w jednej linii, strzałki i przesuwanie palcem działają.
+11. Zamknij grę i otwórz ją ponownie. **Powinno być:** znowu widać koniec linii (najnowsze rośliny).
 
 ## Z1 — porządki po zadaniu 9.5
 
