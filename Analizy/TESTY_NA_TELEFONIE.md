@@ -17,6 +17,7 @@ telefonie — i jeśli się da, zrób zrzut ekranu.
 
 | Test  | Co sprawdza                                                                                             | Od kiedy   |
 | ----- | ------------------------------------------------------------------------------------------------------- | ---------- |
+| O6    | Sowie Ogrody: krainy fantazji (rozdziały 15–22), każda roślina inna, nowe ulepszenia i drzewko          | 2026-11-15 |
 | O5    | Sowie Ogrody: wszystkie rośliny w jednej linii, duże; strzałki po bokach i przesuwanie palcem           | 2026-11-11 |
 | Z1    | Porządki (zadanie 9.5): odblokowanie telefonu, postęp i ustawienia jak przedtem; stare adresy usunięte  | 2026-11-02 |
 | G2    | Galeria: 10 nowych zdjęć (nr 31–40) za nowe krainy, rozdziały, rośliny i pomieszczenia                  | 2026-11-02 |
@@ -76,6 +77,42 @@ cofnąć zakupu. Kolory i stroje, które wcześniej zniknęły, a były zapisane
 2. **Powinno być:** wszystkie stroje kupione kiedyś w Butiku są odblokowane (bez kłódki) i da się je wybrać.
 
 ---
+
+## O6 — Sowie Ogrody: krainy fantazji, każda roślina inna, nowe ulepszenia
+
+Zmiany (uwagi z 15 listopada): po Księżycowym ogrodzie jest 8 nowych rozdziałów — krainy fantazji (Ogród czarownicy,
+Nawiedzony ogród, Zaczarowany las, Smocza dolina, Kryształowa grota, Łąka wróżek, Podniebny ogród, Drzewo świata),
+każdy z własnym tłem, dwiema nowymi roślinami (np. Belladonna, Mandragora, Kwiat paproci) i trzema ulepszeniami.
+Każda roślina w ogrodzie wygląda teraz inaczej — także Monstera, Pilea, Paproć, Alokazja, Kaktus, Słonecznik,
+Storczyk, Lotos, Bonsai, Mutant monstery i Drzewko złotych liści (wcześniej to była ta sama roślinka w innych
+kolorach). W zakładce Prestiż są dwie nowe gałęzie ulepszeń za nasiona: **Magia** i **Przyjaciele**.
+
+1. Otwórz **Sowie Ogrody** (po aktualizacji odśwież stronę dwa razy).
+2. **Powinno być:** pod licznikiem liści napis „Rozdział … /22” (wcześniej „/14”). Jeśli Księżycowy ogród był już
+   ukończony — „Rozdział 15/22: Ogród czarownicy”. Wszystko, co było (rośliny, ulepszenia, nasiona, drzewko), zostało.
+3. Przesuń rośliny w ogrodzie palcem albo strzałkami (jak w teście O5) i obejrzyj wszystkie. **Powinno być:** każda
+   roślina ma inny kształt: Monstera — liście-serca z wcięciami, Pilea — okrągłe listki-monetki, Paproć — opadające
+   liście z drobnymi listkami, Alokazja — duże strzałkowate liście z jasnymi żyłkami, Kaktus — kolumna z ramionami,
+   Słonecznik — żółte kwiaty, Storczyk — różowe kwiaty na łukowatym pędzie, Lotos — kwiat nad wodą, Bonsai —
+   poskręcany pień, Mutant monstery — liście pół zielone, pół kremowe (od 4. etapu z okiem, które mruga), Drzewko
+   złotych liści — złota korona, z której spadają listki. Także Palma i Daktylowiec, Bambus i Lawenda, Sakura, Klon
+   i Ostrokrzew, Grzybienie i Wiktoria nie są już do siebie podobne.
+4. Jeśli jesteś w Ogrodzie czarownicy: zakładka **Rośliny**. **Powinno być:** na dole listy **Belladonna**
+   i **Mandragora** z cenami (Tojadu jeszcze nie ma).
+5. Kup **Belladonnę** i **Mandragorę**. **Powinno być:** tło to fioletowy wieczór z chatką czarownicy, kociołkiem
+   i księżycem; Belladonna to krzaczek z ciemnymi liśćmi (od 10 sztuk fioletowe dzwonki, od 25 — czarne jagody),
+   a z doniczki Mandragory wygląda korzeń z buzią, który mruga.
+6. Zakładka **Ulepszenia**. **Powinno być:** trzy ulepszenia rozdziału (**Kocioł czarownicy**, **Latająca miotła**,
+   **Eliksir obfitości** — więcej nasion z Wielkiego Przesadzania) i nawozy nowych roślin.
+7. Zakładka **Prestiż**. **Powinno być:** sześć gałęzi — także **Magia** (Zaklęcie wzrostu, Kocioł nasion, Czar
+   dojrzewania) i **Przyjaciele** (Złota obroża, Latarnia humbaka, Bystra sowa zakupowa). Drugie i trzecie
+   ulepszenie gałęzi ma kłódkę 🔒, dopóki nie kupisz poprzedniego.
+8. Kup **Złotą obrożę** (jeśli masz nasiona) i złap złotą kózkę. **Powinno być:** komunikat premii z dłuższym czasem,
+   np. „Złota kózka: produkcja ×3 przez 38 s!” (bez obroży było 30 s).
+9. Zakładka **Kolekcja** → **Tło ogrodu**. **Powinno być:** do wyboru tła ukończonych rozdziałów; po ukończeniu
+   nowego rozdziału — także jego tło.
+10. Jeśli ogród jest jeszcze przed krainami fantazji — **powinno być:** gra działa jak dotąd, a krainy fantazji
+    otworzą się po Księżycowym ogrodzie.
 
 ## O5 — Sowie Ogrody: rośliny w jednej linii, strzałki i przesuwanie palcem
 

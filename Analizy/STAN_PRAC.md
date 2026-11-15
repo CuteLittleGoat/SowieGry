@@ -1,4 +1,4 @@
-# Stan prac — 2026-11-11
+# Stan prac — 2026-11-15
 
 Podsumowanie dla właściciela: co jest zrobione, co zostało, jakie są decyzje do podjęcia i na czym polegają problemy
 z testami automatycznymi. Szczegóły techniczne: `docs/Documentation.md`; plany: `ANALIZA_3_Plan_prac.md` (etapy
@@ -16,6 +16,12 @@ maszynach — poprawione (punkt 4.5); gry nie miały z tym nic wspólnego.
 propozycji: wszystkie rośliny w jednej linii, duże i bez zmniejszania, strzałki po bokach ogrodu i przesuwanie palcem
 (punkt 0.1) — jest już na stronie (po aktualizacji odśwież ją dwa razy). Do sprawdzenia na telefonie: test O5
 w [`TESTY_NA_TELEFONIE.md`](TESTY_NA_TELEFONIE.md).
+
+**2026-11-15:** uwagi O9–O12 (Sowie Ogrody) zrobione (punkt 0.2): 8 nowych rozdziałów — krainy fantazji od Ogrodu
+czarownicy po Drzewo świata — z 16 roślinami (m.in. belladonna i mandragora), każda z 43 roślin wygląda inaczej
+(także Monstera … Drzewko złotych liści), każdy nowy rozdział ma trzy ulepszenia i nawozy, a w drzewku prestiżu są
+dwie nowe gałęzie ulepszeń za nasiona: „Magia” i „Przyjaciele”. Jest na `main` i na stronie (po aktualizacji odśwież
+ją dwa razy). Do sprawdzenia na telefonie: test O6 w [`TESTY_NA_TELEFONIE.md`](TESTY_NA_TELEFONIE.md).
 
 ## 0. Poprawki po testach z 2026-11-01 (etapy P1–P8)
 
@@ -57,6 +63,34 @@ Zmiana jest na `main` (2026-11-11, na Twoją prośbę „Wrzuć zmiany na Main�
 wypchnięciem sprawdzone u mnie: składnia, ESLint, Prettier, HTML, testy jednostkowe, reguły Firestore i testy
 przeglądarkowe w Chromium (5 profili telefonów i komputer, emulator Firestore); WebKit (Safari) sprawdzą testy
 w GitHubie.
+
+### 0.2. Uwagi z 2026-11-15 (O9–O12)
+
+Uwagi od użytkownika (dosłownie w [`UWAGI_WLASCICIELA.md`](UWAGI_WLASCICIELA.md), tabela „Uwagi — 2026-11-15”),
+zrobione od razu na Twoją prośbę („Zmiany wrzuć na gałąź Main. Kontynuuj pracę.”).
+
+| Uwaga | Co | Commit na `main` |
+| --- | --- | --- |
+| O9 | 8 nowych rozdziałów 15–22 — krainy fantazji: Ogród czarownicy, Nawiedzony ogród, Zaczarowany las, Smocza dolina, Kryształowa grota, Łąka wróżek, Podniebny ogród, Drzewo świata — każdy z własnym, ruchomym tłem (np. chatka czarownicy z kociołkiem, duszki i nagrobki, wulkan i smok, latające wyspy); 16 roślin: rośliny czarownic i z legend (Belladonna, Mandragora, Tojad, Kwiat paproci, Naparstnica, Muchomor) i zmyślone (Upiorna dynia, Smocze drzewo, Ognisty kwiat, Kryształowa róża, Świecący dzwonek, Tęczowy tulipan, Chmurnik, Sowi storczyk, Feniksowy kwiat, Drzewo życia); dłuższe skróty liczb (do „decyld”) | cafc20d |
+| O10 | każda z 43 roślin ma własny rysunek (nowy plik `SowieOgrody/ogrod/plants.js`), żaden się nie powtarza — 11 pierwszych roślin (wcześniej ta sama roślinka w innych kolorach) i rośliny, które dzieliły kształt (Palma / Daktylowiec, Bambus / Lawenda, Sakura / Klon / Ostrokrzew, Grzybienie / Wiktoria); rośliny rosną i bujnieją przy 10, 25, 50 i 100 sztukach; część się rusza (kołysanie, migotanie, mruganie, spadające liście) | cafc20d |
+| O11 | po trzy ulepszenia w każdym nowym rozdziale (rośliny rozdziału ×2, wszystkie rośliny, efekt specjalny) i nawozy nowych roślin; nowe rodzaje efektów: więcej nasion (Eliksir obfitości), rzadsza ciężarówka Amic (Upiorny strach na wróble), częstsze złote kózki (Czterolistna koniczyna), dłuższa Zatoka Humbaka (Echo groty) | cafc20d |
+| O12 | nowe ulepszenia za nasiona — dwie gałęzie drzewka prestiżu: „Magia” (Zaklęcie wzrostu — rośliny krain fantazji szybciej, Kocioł nasion — więcej nasion, Czar dojrzewania — produkcja ×2 także przy 50 i 10 sztukach) i „Przyjaciele” (Złota obroża — mocniejsze premie złotej kózki, Latarnia humbaka — dłuższa Zatoka, Bystra sowa zakupowa — Sowa zakupowa kupuje szybciej) | cafc20d |
+
+**Tempo gry:** ceny nowych roślin dobrałem symulatorem długiej gry (bot gra aktywnie, bez przerw): każdy z rozdziałów
+15–22 to ok. 5–7 h, razem ok. 42–51 h po Księżycowym ogrodzie (rozdziały 7–14 z gałęzią „Magia” — ok. 30–35 h,
+wcześniej ok. 43 h). Przy prawdziwej grze z przerwami potrwa to dłużej, ale ogród rośnie też, gdy gra jest
+zamknięta. Jeśli tempo będzie za wolne albo za szybkie — wystarczy napisać.
+
+**Nic nie ginie:** zapis bez zmian (`saveVersion` 3) — rozdziały, rośliny, ulepszenia i węzły drzewka tylko dopisane
+na końcu list. Kto ukończył Księżycowy ogród, przy następnym wejściu ma rozdział 15 (Ogród czarownicy). Zdjęcie
+Galerii nr 36 dalej za 14 rozdziałów (opis zmieniony na „Ukończ 14 rozdziałów Sowich Ogrodów — do Księżycowego
+ogrodu włącznie”) — kto je ma, zachowuje je.
+
+**Sprawdzone u mnie przed wypchnięciem:** składnia, ESLint, Prettier, HTML, testy jednostkowe (333, w tym nowe:
+dane i rysunki 43 roślin, nowe ulepszenia, drzewko „Magia” i „Przyjaciele”, symulator 22 rozdziałów), reguły
+Firestore i testy przeglądarkowe w Chromium na 5 profilach telefonów i komputerze (emulator Firestore), w tym nowy
+test: ogród po 14 rozdziałach przechodzi do Ogrodu czarownicy bez strat. WebKit (Safari) sprawdzą testy w GitHubie.
+Rysunki roślin i tła obejrzałem na zrzutach ekranu i zmierzyłem: najdroższa roślina rysuje się w ok. 0,1 ms.
 
 ## 1. Co jest zrobione — plan E0–E10 (stan z 2026-10-06)
 
@@ -120,7 +154,7 @@ W repozytorium nie ma innych plików tymczasowych. Na GitHubie została stara ga
 
 | # | Sprawa | Stan |
 | --- | --- | --- |
-| 1 | **Twoje testy na telefonie** po poprawkach P1–P7 i uwadze O8 — krok po kroku w `TESTY_NA_TELEFONIE.md` (B1–B4, G1–G2, O1–O5, L1–L2, U1, C1) | do zrobienia; uwagi w nowym oknie |
+| 1 | **Twoje testy na telefonie** po poprawkach P1–P7 i uwagach O8–O12 — krok po kroku w `TESTY_NA_TELEFONIE.md` (B1–B4, G1–G2, O1–O6, L1–L2, U1, C1) | do zrobienia; uwagi w nowym oknie |
 | 2 | **Wymagania zdjęć Galerii** — zmienione w E9d zdjęcia nr 8, 10, 25, 27, 30 (opis w `UWAGI_WLASCICIELA.md`, tabela „Decyzje”, 2026-10-05) i nowe zdjęcia nr 31–40 (test G2 w `TESTY_NA_TELEFONIE.md`) | do przejrzenia — inne progi wystarczy napisać |
 | 3 | **Zadanie 9.5** — usunięcie kodu kasującego stare klucze `localStorage` i stron-przekierowań (`SowaRunner/`, `Sowa3/`, `SowaJumper/`, `SowiaSzklarnia/`, `SowieOgrody/nowa.html`) | ✅ 2026-11-02: b — usunięte (1711584), a — stare adresy usunięte (4bb58ca) (punkt 3.1) |
 | 4 | **Ceny w Sowim Butiku i progi osiągnięć** — ustawione tak, żeby za zadania (ok. 15 piórek dziennie + 15 tygodniowo + osiągnięcia) pierwszy gatunek był po 2–3 dniach gry, a Puchacz po kilku tygodniach | do oceny przy testach |

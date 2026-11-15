@@ -10,6 +10,9 @@ na końcu pliku; diagnoza, plan prac i pytania: [`ANALIZA_4_Uwagi_z_testow_popra
 **Uwaga z 2026-11-11** — od użytkownika, przekazana przez właściciela razem z propozycją rozwiązania (właściciel
 poprosił od razu o zmianę): tabela [„Uwagi — 2026-11-11”](#uwagi--2026-11-11) na końcu pliku.
 
+**Uwagi z 2026-11-15** — kolejne od użytkownika, przekazane przez właściciela z prośbą o zmiany od razu („Zmiany wrzuć
+na gałąź Main. Kontynuuj pracę.”): tabela [„Uwagi — 2026-11-15”](#uwagi--2026-11-15) na końcu pliku.
+
 Wersje do sprawdzenia (menu → „Wypróbuj nową wersję: …”):
 
 - Sowie Tory — https://cutelittlegoat.github.io/SowieGry/SowieTory/
@@ -93,3 +96,12 @@ Kod zmieniamy po odpowiedziach na pytania z rozdziału 6 analizy.
 | # | Gra | Uwaga (dosłownie) | Do zrobienia | Stan |
 |---|---|---|---|---|
 | O8 | Sowie Ogrody | „W sowich ogrodach chciałabym aby rośliny były duże i przesuwały się w linii tak, aby można było widzieć wszystkie i aby nie znikały z półki i nie robiły się małe” — propozycja właściciela: „Może zrób strzałki z lewej i prawej strony ekranu do przesuwania oraz opcję przesuwania poprzez przesunięcie palcem.” | Półka w ogrodzie miała najwyżej 12 gatunków w dwóch rzędach (od 13. gatunku najstarsze znikały), a rośliny malały w ciasnym rzędzie (nawet do ok. połowy pełnej wielkości). Wszystkie gatunki w jednej linii, duże i zawsze tej samej wielkości (zależnej tylko od liczby sztuk); przesuwanie strzałkami po bokach ogrodu i palcem. | ✅ 8db8ec1 — wszystkie posiadane gatunki w jednej linii, rośliny o 20% większe niż dawniej w pełnej wielkości i nigdy nie maleją; strzałki ‹ › po bokach ogrodu (tylko po tej stronie, gdzie są jeszcze rośliny), przesuwanie palcem z rozpędem, na komputerze także myszą, klawiszami ← → i kółkiem; nowy gatunek i roślina zastawiona przez ciężarówkę Amic same wjeżdżają w widok; przesunięcie palcem nie zbiera liści (stuknięcie liczy się przy puszczeniu palca); wskazówka w „Jak grać?”; testy jednostkowe i e2e; test na telefonie O5 |
+
+## Uwagi — 2026-11-15
+
+| # | Gra | Uwaga (dosłownie) | Do zrobienia | Stan |
+|---|---|---|---|---|
+| O9 | Sowie Ogrody | „Poproszę do sowich ogrodów nowe plansze (więcej roślin i żeby były jakieś fantasyczne typu belladonna).” | Nowe rozdziały po Księżycowym ogrodzie z własnymi tłami i dwiema roślinami w każdym, w tym rośliny czarownic, z legend i zmyślone; ceny z symulatora długiej gry. | ✅ cafc20d — 8 rozdziałów 15–22 (krainy fantazji: Ogród czarownicy, Nawiedzony ogród, Zaczarowany las, Smocza dolina, Kryształowa grota, Łąka wróżek, Podniebny ogród, Drzewo świata) z tłami i 16 roślin (Belladonna, Mandragora, Tojad, Upiorna dynia, Kwiat paproci, Muchomor, Smocze drzewo, Ognisty kwiat, Kryształowa róża, Świecący dzwonek, Naparstnica, Tęczowy tulipan, Chmurnik, Sowi storczyk, Feniksowy kwiat, Drzewo życia); w symulatorze rozdziały 15–22 po ok. 5–7 h aktywnej gry; testy; test na telefonie O6 |
+| O10 | Sowie Ogrody | „Poproszę żeby rośliny od monstery do drzewka złotych liści miały swoje własne tekstury tak jak pozostałe i aby się nie powtarzały (na razie to ta sama roślinka tylko w innych kolorach).” | 11 pierwszych roślin rysował `render.js` tak samo (liście-elipsy w kolorze gatunku); kilka roślin rozdziałów 7–14 dzieliło kształt. Każdy gatunek z własnym rysunkiem. | ✅ cafc20d — nowy moduł `plants.js`: 43 różne rysunki (Monstera z wcięciami w liściach, Pilea z listkami-monetkami, Paproć, Alokazja, Kaktus z ramionami, Słonecznik, Storczyk, Lotos, Bonsai, Mutant monstery z dwukolorowymi liśćmi i okiem, Drzewko złotych liści ze spadającymi listkami); rozdzielone także wspólne kształty (Palma / Daktylowiec, Bambus / Lawenda, Sakura / Klon / Ostrokrzew, Grzybienie / Wiktoria); test pilnuje, że żaden kształt się nie powtarza; rysowanie sprawdzone pod kątem wydajności |
+| O11 | Sowie Ogrody | „Poproszę żeby każda nowa plansza miała też swoje ulepszenia jak dotychczas.” | Po trzy ulepszenia w każdym nowym rozdziale i nawozy nowych roślin, jak w rozdziałach 7–14. | ✅ cafc20d — 24 ulepszenia rozdziałów 15–22 (rośliny rozdziału ×2, wszystkie rośliny, efekt specjalny — także nowe: więcej nasion, rzadsza ciężarówka Amic, częstsze złote kózki, dłuższa Zatoka Humbaka) i 16 nawozów |
+| O12 | Sowie Ogrody | „Poproszę żeby były nowe ulepszenia za nasiona.” | Nowe węzły drzewka prestiżu (ulepszenia za nasiona). | ✅ cafc20d — dwie nowe gałęzie drzewka: „Magia” (Zaklęcie wzrostu, Kocioł nasion, Czar dojrzewania) i „Przyjaciele” (Złota obroża, Latarnia humbaka, Bystra sowa zakupowa) |
