@@ -92,6 +92,12 @@ Firestore i testy przeglądarkowe w Chromium na 5 profilach telefonów i kompute
 test: ogród po 14 rozdziałach przechodzi do Ogrodu czarownicy bez strat. WebKit (Safari) sprawdzą testy w GitHubie.
 Rysunki roślin i tła obejrzałem na zrzutach ekranu i zmierzyłem: najdroższa roślina rysuje się w ok. 0,1 ms.
 
+**Testy w GitHubie — przebieg 258 (6844d4f): ✅** 1179 testów w Chromium i WebKit (44,8 min). Wszystkie testy Sowich
+Ogrodów — także nowe (Ogród czarownicy po 14 rozdziałach, półka z 43 gatunkami) — przeszły od razu, również w WebKit
+(silnik Safari z iPhone'a). Cztery testy przeszły dopiero w powtórce — to znane niestabilne testy WebKit z innych gier
+(punkt 4.3 d), niezwiązane z tą zmianą: Sowia Ucieczka — start i skok (iPhone 13 pionowo i poziomo) oraz wyzwanie
+dnia (iPhone 13), Łącz i Hoduj — Kram ogrodnika (iPhone 13 poziomo; przycisk Kramu nie pojawił się w 30 s).
+
 ## 1. Co jest zrobione — plan E0–E10 (stan z 2026-10-06)
 
 Wszystkie etapy planu E0–E10 są na gałęzi `main`, więc są też na stronie
@@ -158,7 +164,7 @@ W repozytorium nie ma innych plików tymczasowych. Na GitHubie została stara ga
 | 2 | **Wymagania zdjęć Galerii** — zmienione w E9d zdjęcia nr 8, 10, 25, 27, 30 (opis w `UWAGI_WLASCICIELA.md`, tabela „Decyzje”, 2026-10-05) i nowe zdjęcia nr 31–40 (test G2 w `TESTY_NA_TELEFONIE.md`) | do przejrzenia — inne progi wystarczy napisać |
 | 3 | **Zadanie 9.5** — usunięcie kodu kasującego stare klucze `localStorage` i stron-przekierowań (`SowaRunner/`, `Sowa3/`, `SowaJumper/`, `SowiaSzklarnia/`, `SowieOgrody/nowa.html`) | ✅ 2026-11-02: b — usunięte (1711584), a — stare adresy usunięte (4bb58ca) (punkt 3.1) |
 | 4 | **Ceny w Sowim Butiku i progi osiągnięć** — ustawione tak, żeby za zadania (ok. 15 piórek dziennie + 15 tygodniowo + osiągnięcia) pierwszy gatunek był po 2–3 dniach gry, a Puchacz po kilku tygodniach | do oceny przy testach |
-| 5 | **Testy automatyczne WebKit w GitHubie** — punkt 4 niżej | ✅ zielone od b4fae30 do f22ac7a (przebieg 248); przebiegi 249–251 nie wystartowały przez zmianę po stronie GitHuba — poprawione w f7dbb86 (4.5); przebieg 252 (d58f7ed, wszystkie etapy P1–P8) ✅; obserwuję testy, które przechodzą dopiero w powtórce (4.3 d) |
+| 5 | **Testy automatyczne WebKit w GitHubie** — punkt 4 niżej | ✅ zielone od b4fae30 do f22ac7a (przebieg 248); przebiegi 249–251 nie wystartowały przez zmianę po stronie GitHuba — poprawione w f7dbb86 (4.5); przebieg 252 (d58f7ed, wszystkie etapy P1–P8) ✅; przebieg 258 (6844d4f, uwagi O9–O12) ✅ — 1179 testów, 4 znane niestabilne testy WebKit przeszły w powtórce; obserwuję testy, które przechodzą dopiero w powtórce (4.3 d) |
 | 6 | **Do sprawdzenia przy testach (spostrzeżenie z przeglądu):** na ekranie tytułowym Sowich Torów w pionie górna część ekranu jest jasnym, pustym tłem (tak samo przed zmianami E9) | do oceny — jeśli przeszkadza, dodam niebo/sufit sklepu |
 | 7 | **Wydajność:** w kontenerze bez karty graficznej przy spowolnionym procesorze (×4) Sowie Tory mają ok. 23 kl./s, pozostałe gry 45–56 kl./s; na telefonie płótno jest przyspieszane sprzętowo, a Tory same obniżają rozdzielczość, gdy klatek jest za mało | bez zmian; jeśli na którymś telefonie Tory się „tną”, napisz który |
 | 8 | **Stara gałąź `claude/loving-fermat-76mtxr`** na GitHubie (włączona do `main`) | do decyzji — mogę usunąć, jeśli chcesz |
