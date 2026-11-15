@@ -17,7 +17,7 @@ test("nowe Sowie Ogrody: stuknięcia zbierają liście, pierwsza Monstera, cel r
 }) => {
   const errors = watchErrors(page);
   await openGarden(page);
-  await expect(page.locator("[data-goal]")).toContainText("Rozdział 1/14: Parapet");
+  await expect(page.locator("[data-goal]")).toContainText("Rozdział 1/22: Parapet");
   await expect(page.locator("[data-goal]")).toContainText("Kup 5 Monster");
   const garden = page.locator("[data-canvas]");
   for (let index = 0; index < 16; index += 1) await garden.click({ position: { x: 60 + index * 4, y: 60 } });
@@ -62,7 +62,7 @@ test("nowe Sowie Ogrody: Parapet ukończony → Balkon, konewka z zakładki Ulep
   await expect(
     page.locator(".sowie-toast-chip", { hasText: "Rozdział „Parapet” ukończony! Teraz: Balkon" }),
   ).toBeVisible();
-  await expect(page.locator("[data-goal]")).toContainText("Rozdział 2/14: Balkon");
+  await expect(page.locator("[data-goal]")).toContainText("Rozdział 2/22: Balkon");
   await expect(page.locator('[data-plant="paproc"]')).toBeVisible();
   await page.getByRole("tab", { name: "Ulepszenia" }).click();
   await page.locator('[data-upgrade="konewka"]').click();
@@ -111,7 +111,7 @@ test("nowe Sowie Ogrody: dawny postęp (stan v2) przechodzi bez strat i zapisuje
   expect(migrated.upgrades).toEqual({ rekawiczki: 1, konewka: 1 });
   expect(migrated.seeds).toBe(3);
   expect(migrated.stats.taps).toBe(321);
-  await expect(page.locator("[data-goal]")).toContainText("Rozdział 2/14: Balkon");
+  await expect(page.locator("[data-goal]")).toContainText("Rozdział 2/22: Balkon");
   await page.evaluate(() => window.SowieOgrody.save());
   await page.evaluate(() => window.SowieCloud.flush());
   const doc = await readDoc(project, "sowiegry/profil/sowiegry_gry/ogrody");
@@ -606,7 +606,7 @@ test("Sowie Ogrody (uwagi O2, O3): ogród po sześciu rozdziałach dostaje Palmi
   const errors = watchErrors(page);
   await openGarden(page, cloudUrl("/SowieOgrody/", project));
   // Nowy rozdział zamiast „ukończonego” Arboretum; postęp bez zmian.
-  await expect(page.locator("[data-goal]")).toContainText("Rozdział 7/14: Palmiarnia");
+  await expect(page.locator("[data-goal]")).toContainText("Rozdział 7/22: Palmiarnia");
   await expect(page.locator("[data-goal]")).toContainText("Kup");
   const loaded = await state(page);
   expect(loaded.plants).toMatchObject(finished.plants);
@@ -650,6 +650,98 @@ test("Sowie Ogrody (uwagi O2, O3): ogród po sześciu rozdziałach dostaje Palmi
   expect(errors).toEqual([]);
 });
 
+test("Sowie Ogrody (uwagi O9–O12): po Księżycowym ogrodzie Ogród czarownicy — nowe rośliny, ulepszenia, gałęzie drzewka i tło (emulator)", async ({
+  page,
+}, testInfo) => {
+  const project = uniqueProject(testInfo);
+  // Ogród gracza sprzed uwagi O9: ukończone wszystkie 14 dawnych rozdziałów, rośliny, ulepszenia, nasiona i drzewko.
+  const chapters = [
+    "parapet",
+    "balkon",
+    "dzialka",
+    "basen",
+    "szklarnia",
+    "arboretum",
+    "palmiarnia",
+    "dzungla",
+    "japonski",
+    "oaza",
+    "zimowy",
+    "wodny",
+    "dach",
+    "ksiezycowy",
+  ];
+  const finished = {
+    version: 3,
+    leaves: 1e27,
+    runLeaves: 2e27,
+    lifetimeLeaves: 5e28,
+    seeds: 5e9,
+    plants: { monstera: 150, ksiezycowa: 12, gwiezdny: 6 },
+    // Bez Sowy zakupowej — sama dokupiłaby tanie gatunki i zmieniła liczbę gatunków w Kolekcji.
+    upgrades: { konewka: 1, swietliki: 1 },
+    prestige: { korzenie: 20, sloneczneKorzenie: 40, wieczneLato: 5 },
+    chapters: Object.fromEntries(chapters.map((id) => [id, true])),
+    stats: { prestiges: 42, taps: 9000 },
+    tutorialDone: true,
+  };
+  await seedDoc(project, "sowiegry/profil/sowiegry_gry/ogrody", {
+    state: JSON.stringify(finished),
+    saveVersion: 3,
+  });
+  const errors = watchErrors(page);
+  await openGarden(page, cloudUrl("/SowieOgrody/", project));
+  // Nowy rozdział zamiast „ukończonego” Księżycowego ogrodu; postęp bez zmian.
+  await expect(page.locator("[data-goal]")).toContainText("Rozdział 15/22: Ogród czarownicy");
+  await expect(page.locator("[data-goal]")).toContainText("Kup 10 Belladonn");
+  const loaded = await state(page);
+  expect(loaded.plants).toMatchObject(finished.plants);
+  expect(loaded.prestige).toMatchObject(finished.prestige);
+  expect(loaded.seeds).toBe(5e9);
+  expect(loaded.chapters).toMatchObject(finished.chapters);
+  // Rośliny Ogrodu czarownicy na liście, Nawiedzonego ogrodu jeszcze nie.
+  await expect(page.locator('[data-plant="belladonna"]')).toContainText("Belladonna");
+  await expect(page.locator('[data-plant="mandragora"]')).toBeVisible();
+  await expect(page.locator('[data-plant="tojad"]')).toHaveCount(0);
+  // Ulepszenia rozdziału i nawozy; w drzewku gałęzie „Magia” i „Przyjaciele”.
+  await page.getByRole("tab", { name: "Ulepszenia" }).click();
+  await expect(page.locator('[data-upgrade-card="kociol"]')).toContainText("Kocioł czarownicy");
+  await expect(page.locator('[data-upgrade-card="eliksir"]')).toContainText("więcej nasion");
+  await expect(page.locator('[data-upgrade-card="nawoz-belladonna"]')).toBeVisible();
+  await page.getByRole("tab", { name: "Prestiż" }).click();
+  await expect(page.locator(".ogrod-subtitle", { hasText: "Magia" })).toBeVisible();
+  await expect(page.locator('[data-node="zaklecieWzrostu"]')).toContainText("Zaklęcie wzrostu");
+  await expect(page.locator('[data-node="czarDojrzewania"]')).toContainText("Najpierw: Kocioł nasion.");
+  await expect(page.locator('[data-node="zlotaObroza"]')).toContainText("Złota obroża");
+  // Nasion wystarczy — Zaklęcie wzrostu kupione przyciskiem.
+  await page.locator('[data-node-buy="zaklecieWzrostu"]').click();
+  await expect.poll(async () => (await state(page)).prestige.zaklecieWzrostu).toBe(1);
+  // Tło: automatycznie Ogród czarownicy, w Kolekcji wybór „Automatyczne” i 14 ukończonych rozdziałów.
+  expect(await page.evaluate(() => window.SowieOgrody.scene())).toBe("czarownica");
+  await page.getByRole("tab", { name: "Kolekcja" }).click();
+  await expect(page.locator(".ogrod-scenes [data-scene]")).toHaveCount(15);
+  await expect(page.locator("[data-panel]")).toContainText("Gatunki w ogrodzie (3/43)");
+  // Rośliny Ogrodu czarownicy w ogrodzie (własne rysunki z plants.js) — rysują się bez błędów; cel rozdziału wykonany.
+  await page.evaluate(() => {
+    window.SowieOgrody.give(1e30);
+    window.SowieOgrody.buy("belladonna", 10);
+    window.SowieOgrody.buy("mandragora", 5);
+    window.SowieOgrody.upgrade("kociol");
+  });
+  await expect(page.locator("[data-goal]")).toContainText("Rozdział 16/22: Nawiedzony ogród");
+  await page.waitForTimeout(300);
+  // Zapis: rozdziały i rośliny w bazie bez strat, nazwa bieżącego rozdziału w podsumowaniu.
+  await page.evaluate(() => window.SowieCloud.flush());
+  await expect
+    .poll(async () => {
+      const doc = await readDoc(project, "sowiegry/profil/sowiegry_gry/ogrody");
+      const saved = JSON.parse(doc.state);
+      return [saved.chapters?.czarownica, saved.plants?.belladonna, saved.prestige?.zaklecieWzrostu, doc.summary?.zone];
+    })
+    .toEqual([true, 10, 1, "Nawiedzony ogród"]);
+  expect(errors).toEqual([]);
+});
+
 // Półka (uwaga z 2026-11-11): „rośliny były duże i przesuwały się w linii tak, aby można było widzieć wszystkie i aby
 // nie znikały z półki i nie robiły się małe” — strzałki po bokach ogrodu i przesunięcie palcem.
 const shelfInfo = (page) => page.evaluate(() => window.SowieOgrody.shelf());
@@ -671,7 +763,7 @@ async function quietGarden(page) {
   await settle(page);
 }
 
-test("półka (uwaga z 2026-11-11): wszystkie 27 gatunków w jednej linii, bez zmniejszania; strzałki pokazują każdy", async ({
+test("półka (uwaga z 2026-11-11): wszystkie gatunki (43) w jednej linii, bez zmniejszania; strzałki pokazują każdy", async ({
   page,
 }) => {
   const errors = watchErrors(page);
@@ -687,7 +779,8 @@ test("półka (uwaga z 2026-11-11): wszystkie 27 gatunków w jednej linii, bez z
   const ids = await ogrod(page, "plants");
   await ogrod(page, "setPlants", Object.fromEntries(ids.map((id) => [id, 1])));
   const full = await settle(page);
-  expect(Object.keys(full.spots).length).toBe(27);
+  expect(ids.length).toBe(43);
+  expect(Object.keys(full.spots).length).toBe(ids.length);
   expect(full.spots.monstera.scale).toBeCloseTo(alone.spots.monstera.scale, 9);
   // Jedna linia: ta sama wysokość, kolejność rozdziałów, odstęp co najmniej miejsce na roślinę (64 jednostki).
   const spots = ids.map((id) => full.spots[id]);
@@ -712,7 +805,7 @@ test("półka (uwaga z 2026-11-11): wszystkie 27 gatunków w jednej linii, bez z
     const info = await settle(page);
     for (const [id, spot] of Object.entries(info.spots)) if (spot.visible) seen.add(id);
     presses += 1;
-    expect(presses).toBeLessThan(20);
+    expect(presses).toBeLessThan(30);
   }
   expect([...seen].sort()).toEqual([...ids].sort());
   const end = await shelfInfo(page);
@@ -793,7 +886,7 @@ test("półka (uwaga z 2026-11-11): nowy gatunek i ciężarówka Amic — półk
     await shelfArrow(page, "next").click();
     await settle(page);
     presses += 1;
-    expect(presses).toBeLessThan(20);
+    expect(presses).toBeLessThan(30);
   }
   // Pierwsza Monstera — półka wraca na początek linii i Monsterę widać.
   await ogrod(page, "give", 100);

@@ -3,8 +3,8 @@
 // kózka (losowa premia), Plusk-o-metr i Zatoka Humbaka (20 s łapania liści z combo). Odliczanie biegnie tylko
 // w czasie gry, a nieobecność nigdy nie jest karana: `clear()` (przy postępie offline) usuwa telefon i ciężarówkę.
 // Czysta logika — rysowanie w render.js, przyciski w main.js.
-import { GARDEN_EVENTS as CONFIG, GOAT_REWARDS, PLANTS } from "./config.js";
-import { hasUpgrade, prestigeLevel, production } from "./economy.js";
+import { GARDEN_EVENTS as CONFIG, GOAT_REWARDS, PLANTS, UPGRADES } from "./config.js";
+import { formatTime, hasUpgrade, prestigeLevel, production, upgradeSum } from "./economy.js";
 
 // Bezpiecznik: telefon nie dzwoni dłużej niż 30 min (np. zapomniana karta).
 const RING_LIMIT_MS = 30 * 60 * 1000;
@@ -12,10 +12,49 @@ const RING_LIMIT_MS = 30 * 60 * 1000;
 /** Losowy czas z przedziału [od, do] (s). */
 const between = (random, [min, max]) => min + random() * (max - min);
 
-/** Przedział pojawiania się złotej kózki z Kozim szczęściem (−15% za poziom). */
+/**
+ * Przedział pojawiania się złotej kózki: z Kozim szczęściem −15% za poziom, a od uwagi O11 ulepszenia z polem `goat`
+ * (Czterolistna koniczyna 0,25 — kózki o 25% częściej) dzielą odstęp przez (1 + suma).
+ */
 export function goatInterval(state) {
-  const luck = 1 - CONFIG.goat.luck * prestigeLevel(state, "kozieSzczescie");
+  const luck = (1 - CONFIG.goat.luck * prestigeLevel(state, "kozieSzczescie")) / (1 + upgradeSum(state, "goat"));
   return CONFIG.goat.every.map((value) => value * luck);
+}
+
+/** Przedział przyjazdu ciężarówki Amic (uwaga O11): × pole `truck` kupionych ulepszeń (Upiorny strach na wróble ×2). */
+export function truckInterval(state) {
+  const factor = UPGRADES.reduce(
+    (value, upgrade) => (hasUpgrade(state, upgrade.id) && upgrade.effect.truck ? value * upgrade.effect.truck : value),
+    1,
+  );
+  return CONFIG.truck.every.map((value) => value * factor);
+}
+
+/** Siła premii złotej kózki (uwaga O12): 1 + 0,25 × Złota obroża — mnoży czasy premii, liście i Plusk-o-metr. */
+export function goatBonus(state) {
+  return 1 + 0.25 * prestigeLevel(state, "zlotaObroza");
+}
+
+/** Czas Zatoki Humbaka (s): 20 + pole `bay` kupionych ulepszeń (Echo groty 10) + 4 × Latarnia humbaka (uwagi O11, O12). */
+export function bayDuration(state) {
+  return CONFIG.bay.duration + upgradeSum(state, "bay") + 4 * prestigeLevel(state, "latarniaHumbaka");
+}
+
+/**
+ * Komunikat po złapaniu złotej kózki (premia `id`) z czasami i liczbami po Złotej obroży; bez obroży — teksty
+ * z GOAT_REWARDS (np. „Złota kózka: produkcja ×3 przez 30 s!”).
+ */
+export function goatRewardText(state, id) {
+  const bonus = goatBonus(state);
+  const reward = GOAT_REWARDS.find((item) => item.id === id);
+  if (bonus === 1 || !reward) return reward?.text || "";
+  if (id === "boost") {
+    return `Złota kózka: produkcja ×${CONFIG.boost.multiplier} przez ${Math.round(CONFIG.boost.duration * bonus)} s!`;
+  }
+  if (id === "instant") return `Złota kózka: liście z ${formatTime(CONFIG.instant * bonus)} produkcji!`;
+  if (id === "frenzy") return `Kozi szał! Kózka zbiera liście przez ${Math.round(CONFIG.frenzy.duration * bonus)} s`;
+  const share = Math.round((CONFIG.splash.goat + CONFIG.splash.reward * bonus) * 100);
+  return `Złota kózka: Plusk-o-metr +${share}%!`;
 }
 
 /** Mnożnik nagrody Zatoki Humbaka za złapany liść przy danym combo (z Echem humbaka). */
@@ -95,15 +134,17 @@ export function createEvents({ state, now, random = Math.random, emit, isOpen, a
     state.goat = null;
     state.stats.goats += 1;
     let leaves = 0;
+    // Złota obroża (uwaga O12): dłuższe premie, więcej liści i Plusk-o-metru.
+    const bonus = goatBonus(state);
     if (reward === "boost") {
-      state.effects.boost = Math.max(now(), state.effects.boost || 0) + CONFIG.boost.duration * 1000;
+      state.effects.boost = Math.max(now(), state.effects.boost || 0) + CONFIG.boost.duration * bonus * 1000;
     } else if (reward === "instant") {
-      leaves = production(state, now()).base * CONFIG.instant;
+      leaves = production(state, now()).base * CONFIG.instant * bonus;
       addLeaves(leaves);
     } else if (reward === "frenzy") {
-      state.effects.frenzy = Math.max(now(), state.effects.frenzy || 0) + CONFIG.frenzy.duration * 1000;
+      state.effects.frenzy = Math.max(now(), state.effects.frenzy || 0) + CONFIG.frenzy.duration * bonus * 1000;
     }
-    addSplash(CONFIG.splash.goat + (reward === "splash" ? CONFIG.splash.reward : 0));
+    addSplash(CONFIG.splash.goat + (reward === "splash" ? CONFIG.splash.reward * bonus : 0));
     emit("goatCaught", { reward, leaves });
     return reward;
   }
@@ -112,7 +153,7 @@ export function createEvents({ state, now, random = Math.random, emit, isOpen, a
     if (state.splash < 1 || state.bay) return false;
     state.splash = 0;
     state.bay = {
-      time: CONFIG.bay.duration,
+      time: bayDuration(state),
       spawn: 0,
       combo: 0,
       bestCombo: 0,
@@ -212,7 +253,7 @@ export function createEvents({ state, now, random = Math.random, emit, isOpen, a
       timers.truck -= dt;
       if (timers.truck <= 0) {
         arriveTruck();
-        timers.truck = between(random, CONFIG.truck.every);
+        timers.truck = between(random, truckInterval(state));
       }
     }
     if (state.goat) {

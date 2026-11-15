@@ -4,6 +4,7 @@ import { CHAPTERS, GARDEN_EVENTS, PLANTS, PRESTIGE_TREE, UPGRADES } from "./conf
 import {
   hasUpgrade,
   maxAffordable,
+  milestoneBoosts,
   milestoneMultiplier,
   offlineStats,
   plantById,
@@ -18,6 +19,9 @@ import {
 } from "./economy.js";
 import { defaultState } from "./state.js";
 import { createEvents } from "./events.js";
+
+// Sowa zakupowa: zakup co tyle s (z Bystrą sową zakupową — krócej).
+const AUTOBUY_EVERY = 0.5;
 
 /** Indeks bieżącego rozdziału: pierwszy nieukończony (po ostatnim — ostatni). */
 export function chapterIndex(state) {
@@ -120,17 +124,19 @@ export function createGarden({
     }
   }
 
-  // Najopłacalniejsza roślina (przyrost produkcji / cena) wśród dostępnych.
+  // Najopłacalniejsza roślina (przyrost produkcji / cena) wśród dostępnych; kamienie milowe z Czarem dojrzewania.
   function bestPlant() {
     let best = null;
     const prod = production(state, now());
+    const boosts = milestoneBoosts(state);
+    const milestone = (owned) => milestoneMultiplier(owned, boosts);
     for (const plant of PLANTS) {
       if (!chapterOpen(state, plant.chapter)) continue;
       const owned = state.plants[plant.id] || 0;
       const cost = plantCost(plant, owned, 1);
-      const per = owned ? prod.perPlant[plant.id] / prod.boost / owned / milestoneMultiplier(owned) : null;
+      const per = owned ? prod.perPlant[plant.id] / prod.boost / owned / milestone(owned) : null;
       const unit = per ?? plant.prod * prod.global;
-      const gain = unit * milestoneMultiplier(owned + 1) * (owned + 1) - unit * milestoneMultiplier(owned) * owned;
+      const gain = unit * milestone(owned + 1) * (owned + 1) - unit * milestone(owned) * owned;
       const value = gain / cost;
       if (!best || value > best.value) best = { plant, cost, value };
     }
@@ -270,13 +276,18 @@ export function createGarden({
         }
       } else state.can.progress = 0;
     }
+    // Sowa zakupowa: co 0,5 s najopłacalniejsza roślina; Bystra sowa zakupowa (uwaga O12) — 2 razy szybciej za poziom
+    // (w jednym kroku najwyżej 2^poziom zakupów, reszta czasu przepada — jak dawniej przy jednym zakupie na krok).
     if (hasUpgrade(state, "zakupy")) {
+      const speed = 2 ** prestigeLevel(state, "bystraSowa");
+      const every = AUTOBUY_EVERY / speed;
       autobuyTimer += dt;
-      if (autobuyTimer >= 0.5) {
-        autobuyTimer = 0;
+      for (let purchase = 0; purchase < speed && autobuyTimer >= every; purchase += 1) {
+        autobuyTimer -= every;
         const best = bestPlant();
         if (best && best.cost <= state.leaves) buyPlant(best.plant.id, 1);
       }
+      if (autobuyTimer >= every) autobuyTimer = 0;
     }
     checkChapters();
   }

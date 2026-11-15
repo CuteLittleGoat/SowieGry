@@ -372,7 +372,7 @@
       alt: "Sowa wyglądająca jednym okiem z otworu w gliniastej skale.",
       photographer: "Twórca w serwisie Pexels",
       sourceUrl: "https://www.pexels.com/photo/31338878/",
-      requirement: "Ukończ wszystkie 14 rozdziałów Sowich Ogrodów.",
+      requirement: "Ukończ 14 rozdziałów Sowich Ogrodów — do Księżycowego ogrodu włącznie.",
       goals: [["ogrodyChapters", 14]],
     },
     {

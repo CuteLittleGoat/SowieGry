@@ -3,11 +3,16 @@
 ## Jak grać
 
 Otwórz grę przyciskiem **Graj** na karcie **Sowie Ogrody** w menu głównym (ze znaczkiem „Nowe!”). Sowa ogrodniczka
-zaczyna od parapetu, a 14 rozdziałów z celami prowadzi przez Balkon, Działkę, Basen, Szklarnię i Arboretum, a dalej
-przez **Palmiarnię**, **Dżunglę**, **Ogród japoński**, **Pustynną oazę**, **Ogród zimowy**, **Wodny ogród**
-i **Ogród na dachu** aż do **Księżycowego ogrodu**. Każdy z nowych rozdziałów ma własne tło i dwie nowe rośliny
-o własnych kształtach (np. palma, bambus, wiśnia sakura, agawa, grzybienie, lawenda, gwiezdny kwiat). Kto ukończył
-już Arboretum, przy następnym wejściu trafia od razu do Palmiarni — cały dotychczasowy ogród zostaje.
+zaczyna od parapetu, a 22 rozdziały z celami prowadzą przez Balkon, Działkę, Basen, Szklarnię i Arboretum, dalej
+przez **Palmiarnię**, **Dżunglę**, **Ogród japoński**, **Pustynną oazę**, **Ogród zimowy**, **Wodny ogród**,
+**Ogród na dachu** i **Księżycowy ogród**, a potem przez krainy fantazji: **Ogród czarownicy**, **Nawiedzony ogród**,
+**Zaczarowany las**, **Smoczą dolinę**, **Kryształową grotę**, **Łąkę wróżek** i **Podniebny ogród** aż do **Drzewa
+świata**. Każdy rozdział od Palmiarni ma własne tło (np. chatkę czarownicy z bulgoczącym kociołkiem, duszki
+i nagrobki, wulkan ze smokiem, latające wyspy) i dwie nowe rośliny — w krainach fantazji także rośliny czarownic
+i z legend (**belladonna**, **mandragora** z buzią wyglądającą z doniczki, **tojad**, **kwiat paproci**,
+**naparstnica**) i zupełnie zmyślone (upiorna dynia, smocze drzewo, kryształowa róża, chmurnik, **sowi storczyk**
+z kwiatami jak sówki, feniksowy kwiat, drzewo życia). Kto ukończył już Księżycowy ogród, przy następnym wejściu
+trafia od razu do Ogrodu czarownicy — cały dotychczasowy ogród zostaje.
 
 - **Samouczek:** przy pierwszym wejściu dymek u góry ogrodu prowadzi przez 4 krótkie kroki (stuknięcia, pierwsza
   Monstera, cele rozdziału, wydarzenia). Kroki z akcją zaliczają się same, pozostałe — przyciskiem **„Dalej”**;
@@ -23,13 +28,15 @@ już Arboretum, przy następnym wejściu trafia od razu do Palmiarni — cały d
   (palec podniesiony tam, gdzie dotknął) — przesunięcie palcem po ogrodzie liści nie zbiera, tylko przesuwa rośliny.
   U góry widać liczbę liści i ile przybywa na sekundę. Duże liczby są skracane: „tys.” (tysiąc), „mln” (milion),
   „mld” (miliard), „bln” (bilion), „bld” (biliard), „tryl.” (trylion), „tryld” (tryliard), „kwadryl.” (kwadrylion)
-  i dalej — np. „150 mln” to 150 milionów.
-- **Cel rozdziału:** pod licznikiem jest bieżący rozdział (np. „Rozdział 1/14: Parapet”) i jego cele z postępem.
+  i dalej, aż do „decyld” (decyliard — jedynka i 63 zera) — np. „150 mln” to 150 milionów.
+- **Cel rozdziału:** pod licznikiem jest bieżący rozdział (np. „Rozdział 1/22: Parapet”) i jego cele z postępem.
   Po wykonaniu wszystkich otwiera się kolejny rozdział z nowymi roślinami i ulepszeniami. W dalszych rozdziałach
   potrzeba kilku Wielkich Przesadzań — nasiona z nich przyspieszają ogród.
-- **Ogród:** każdy kupiony gatunek stoi w doniczce. Wszystkie rośliny stoją w jednej linii i są duże — żadna nie
-  znika i nie robi się mniejsza, gdy przybywa gatunków (rosną tylko przy 10, 25, 50 i 100 sztukach). Gdy roślin jest
-  więcej, niż mieści się w ogrodzie:
+- **Ogród:** każdy kupiony gatunek stoi w doniczce i każdy wygląda inaczej — monstera ma liście z wcięciami, pilea
+  okrągłe listki-monetki, kaktus ramiona i kwiaty, bonsai poskręcany pień, drzewko złotych liści gubi złote listki,
+  a rośliny fantastyczne świecą, mrugają albo migoczą. Przy 10, 25, 50 i 100 sztukach roślina rośnie i bujnieje
+  (więcej liści, kwiatów i owoców). Wszystkie rośliny stoją w jednej linii i są duże — żadna nie znika i nie robi się
+  mniejsza, gdy przybywa gatunków. Gdy roślin jest więcej, niż mieści się w ogrodzie:
   - **przesuń palcem w bok** po ogrodzie — rośliny jadą za palcem, a po szybkim przesunięciu jeszcze chwilę same;
   - albo stuknij **strzałkę** przy lewej albo prawej krawędzi ogrodu — roślina ucięta przy krawędzi staje się
     pierwszą z drugiej strony. Strzałka jest tylko po tej stronie, gdzie są jeszcze rośliny;
@@ -45,14 +52,23 @@ już Arboretum, przy następnym wejściu trafia od razu do Palmiarni — cały d
     dostaje prawie cały ekran. Drugie stuknięcie (**⤡**) wraca do zwykłego widoku;
   - **Ulepszenia** — od najtańszych; m.in. **Konewka sowy**, po której zakupie u góry pojawia się przycisk
     **„Podlej”** (ładunki, np. 3/3): podlanie podwaja produkcję na chwilę, a ładunki same się odnawiają. Każda
-    roślina (poza Monsterą, która ma „Nawóz monster”) ma swój **nawóz** — podwaja jej zbiory. Nowe rozdziały mają
-    po trzy własne ulepszenia (np. Szklana kopuła, Bambusowa konewka z dodatkowymi ładunkami, Cień palm — ogród
-    rośnie dłużej, gdy Cię nie ma, Fontanna, Pomocni sąsiedzi);
+    roślina (poza Monsterą, która ma „Nawóz monster”) ma swój **nawóz** — podwaja jej zbiory. Każdy rozdział od
+    Palmiarni ma po trzy własne ulepszenia: jedno podwaja zbiory roślin tego rozdziału, drugie przyspiesza wszystkie
+    rośliny, a trzecie robi coś specjalnego (np. Bambusowa konewka z dodatkowymi ładunkami, Cień palm — ogród rośnie
+    dłużej, gdy Cię nie ma). W krainach fantazji m.in. **Eliksir obfitości** (więcej nasion z Wielkiego Przesadzania),
+    **Upiorny strach na wróble** (ciężarówka Amic przyjeżdża dwa razy rzadziej), **Zaczarowana konewka**, **Echo
+    groty** (dłuższa Zatoka Humbaka), **Czterolistna koniczyna** (złote kózki częściej), **Deszczowa chmurka**
+    i **Kołysanka drzewa** (ogród rośnie bez Ciebie o 12 h dłużej);
   - **Prestiż** — **Wielkie Przesadzanie** (po Szklarni): ogród zaczyna od nowa, ale dostajesz nasiona na stałe
-    ulepszenia w drzewku (Korzenie, Woda, Sen i **Słońce**). W gałęzi Słońce: **Słoneczne korzenie** (każdy poziom
-    mnoży produkcję — można je rozwijać bardzo długo), **Poranny start** (nowy cykl zaczyna się z ulepszeniami
-    pierwszych rozdziałów) i **Wieczne lato** (rośliny od Palmiarni rosną szybciej). Przed przesadzeniem gra zapyta,
-    czy na pewno;
+    ulepszenia w drzewku z sześcioma gałęziami (Korzenie, Woda, Sen, **Słońce**, **Magia** i **Przyjaciele**).
+    W gałęzi Słońce: **Słoneczne korzenie** (każdy poziom mnoży produkcję — można je rozwijać bardzo długo),
+    **Poranny start** (nowy cykl zaczyna się z ulepszeniami pierwszych rozdziałów) i **Wieczne lato** (rośliny od
+    Palmiarni rosną szybciej). W gałęzi Magia: **Zaklęcie wzrostu** (rośliny od Ogrodu czarownicy rosną szybciej),
+    **Kocioł nasion** (więcej nasion z każdego przesadzania) i **Czar dojrzewania** (przy 50 sztukach — a na
+    drugim poziomie także przy 10 — roślina zbiera dwa razy więcej). W gałęzi Przyjaciele: **Złota obroża** (premie
+    złotej kózki trwają dłużej i dają więcej), **Latarnia humbaka** (dłuższa Zatoka Humbaka) i **Bystra sowa
+    zakupowa** (Sowa zakupowa kupuje szybciej). Ulepszenie z kłódką 🔒 otworzy się po kupieniu poprzedniego
+    z tej samej gałęzi. Przed przesadzeniem gra zapyta, czy na pewno;
   - **Kolekcja** — na górze **kontrakty dnia** (25 stuknięć, 6 kupionych roślin, 2 podlania — liczone od pierwszego
     wejścia danego dnia); wykonany kontrakt odbierasz przyciskiem **„Odbierz”** i dostajesz XP oraz piórka Sowiej
     Akademii. Niżej rozdziały, **„Tło ogrodu”**, gatunki w ogrodzie i statystyki. W „Tle ogrodu” wybierasz tło
@@ -83,8 +99,9 @@ Sowa ogrodniczka ma gatunek wybrany w **Sowim Butiku** (menu → zakładka **Sow
 Zbierane liście, stuknięcia, zakupy, podlania, przesadzania i ukończone rozdziały liczą się do zadań Sowiej Akademii
 i zdjęć Galerii Sów (menu → zakładka **Galeria**). Za ukończenie **6** rozdziałów (do Arboretum włącznie — jeśli
 grasz już w Palmiarni, zdjęcie dostajesz od razu po wejściu do gry), **9** (do Ogrodu japońskiego włącznie)
-i wszystkich **14** dostajesz nowe zdjęcia nr 34, 35 i 36 — po kilku sekundach pojawia się komunikat „Nowa fotografia
-w Galerii Sów!”.
+i **14** (do Księżycowego ogrodu włącznie) dostajesz nowe zdjęcia nr 34, 35 i 36 — po kilku sekundach pojawia się
+komunikat „Nowa fotografia w Galerii Sów!”. Kto ma już zdjęcie nr 36, zachowuje je — nowe rozdziały nic tu nie
+zmieniają.
 
 ## Zapis
 

@@ -50,7 +50,7 @@ test("półka: wszystkie gatunki w jednej linii, miejsce według etapu wyglądu,
   }
   assert.equal(layout.content, PLANTS.length * 120);
   near(layout.max, PLANTS.length * 120 - VIEW, 1e-9, "przesunięcie do końca linii");
-  // Wielkość rośliny zależy tylko od etapu i ogrodu — tak samo przy 1 i przy 27 gatunkach, większa niż dawniej
+  // Wielkość rośliny zależy tylko od etapu i ogrodu — tak samo przy 1 i przy wszystkich gatunkach, większa niż dawniej
   // (dawniej najwyżej (0,7 + 0,12 × etap) × gardenUnit, w ciasnym rzędzie nawet ×0,56).
   for (let stage = 1; stage <= 5; stage += 1) {
     near(plantScale(stage, 1), (0.7 + stage * 0.12) * 1.2, 1e-12, `etap ${stage}`);

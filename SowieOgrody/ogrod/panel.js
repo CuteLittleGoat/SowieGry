@@ -9,6 +9,7 @@ import {
   formatNumber,
   hasUpgrade,
   maxAffordable,
+  milestoneBoosts,
   milestoneMultiplier,
   plantCost,
   plantStage,
@@ -45,7 +46,7 @@ function plantInfo(state, plant, prod) {
   const owned = state.plants[plant.id] || 0;
   const next = MILESTONE_STEPS.find((step) => owned < step);
   const each = owned ? prod.perPlant[plant.id] / owned : plant.prod * prod.global;
-  const boost = milestoneMultiplier(owned);
+  const boost = milestoneMultiplier(owned, milestoneBoosts(state));
   return `${formatNumber(each)} liści/s za sztukę${boost > 1 ? ` · kamień ×${boost}` : ""}${next ? ` · do ${next}: ${next - owned}` : ""}`;
 }
 

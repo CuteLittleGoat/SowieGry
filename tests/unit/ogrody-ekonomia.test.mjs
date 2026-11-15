@@ -17,6 +17,7 @@ import {
   formatNumber,
   formatTime,
   maxAffordable,
+  milestoneBoosts,
   milestoneMultiplier,
   offlineStats,
   plantById,
@@ -27,7 +28,8 @@ import {
   upgradeById,
   waterStats,
 } from "../../SowieOgrody/ogrod/economy.js";
-import { createPlantShapes, drawSceneDecor, NEW_SCENES } from "../../SowieOgrody/ogrod/decor.js";
+import { drawSceneDecor, NEW_SCENES } from "../../SowieOgrody/ogrod/decor.js";
+import { createPlantShapes } from "../../SowieOgrody/ogrod/plants.js";
 import { shelfPlants } from "../../SowieOgrody/ogrod/shelf.js";
 import { chapterIndex, chapterOpen, createGarden, sceneId } from "../../SowieOgrody/ogrod/garden.js";
 import { defaultState, loadState, migrateV2 } from "../../SowieOgrody/ogrod/state.js";
@@ -41,8 +43,9 @@ function garden(state = defaultState(0)) {
   return { clock, garden: createGarden({ state, now: () => clock.now }) };
 }
 
-test("dane: 14 rozdziałów z 3–5 celami, 27 roślin od tańszych do droższych, ulepszenia, nawozy i drzewko prestiżu 4 × 3", () => {
-  // Rozdziały 7–14 (uwaga O3, 2026-11-01) dopisane na końcu — identyfikatory pierwszych sześciu bez zmian.
+test("dane: 22 rozdziały z 3–5 celami, 43 rośliny od tańszych do droższych, ulepszenia, nawozy i drzewko prestiżu 6 × 3", () => {
+  // Rozdziały 7–14 (uwaga O3, 2026-11-01) i 15–22 (uwaga O9, 2026-11-15) dopisane na końcu — identyfikatory
+  // wcześniejszych bez zmian.
   assert.deepEqual(
     CHAPTERS.map((chapter) => chapter.id),
     [
@@ -60,10 +63,18 @@ test("dane: 14 rozdziałów z 3–5 celami, 27 roślin od tańszych do droższyc
       "wodny",
       "dach",
       "ksiezycowy",
+      "czarownica",
+      "nawiedzony",
+      "zaczarowany",
+      "smoczy",
+      "grota",
+      "wrozki",
+      "podniebny",
+      "drzewoSwiata",
     ],
   );
   for (const chapter of CHAPTERS) assert.ok(chapter.goals.length >= 3 && chapter.goals.length <= 5, chapter.id);
-  assert.equal(PLANTS.length, 27);
+  assert.equal(PLANTS.length, 43);
   assert.deepEqual(
     PLANTS.slice(0, 11).map((plant) => plant.id),
     [
@@ -87,12 +98,38 @@ test("dane: 14 rozdziałów z 3–5 celami, 27 roślin od tańszych do droższyc
     // Czas zwrotu (cena / produkcja) rośnie z każdym gatunkiem.
     assert.ok(after.cost / after.prod > before.cost / before.prod, `${after.id}: zwrot`);
   }
-  // Nowe rośliny (uwaga O2): po dwie w każdym nowym rozdziale, każda z własnym kształtem z decor.js i drugim kolorem.
+  // Każda roślina ma własny kształt z plants.js i drugi kolor; żaden kształt się nie powtarza (uwaga O10 — dawniej
+  // 11 pierwszych roślin było tą samą rośliną w innych kolorach, a kilka kolejnych dzieliło kształt).
   const shapes = createPlantShapes({});
-  for (const plant of PLANTS.slice(11)) {
+  for (const plant of PLANTS) {
     assert.equal(typeof shapes[plant.shape], "function", `${plant.id}: kształt ${plant.shape}`);
     assert.match(plant.accent, /^#[0-9a-f]{6}$/, plant.id);
+    assert.match(plant.color, /^#[0-9a-f]{6}$/, plant.id);
   }
+  assert.equal(new Set(PLANTS.map((plant) => plant.shape)).size, PLANTS.length, "kształty bez powtórzeń");
+  assert.equal(Object.keys(shapes).length, PLANTS.length, "każdy kształt ma swoją roślinę");
+  // Rośliny rozdziałów 15–22 (uwaga O9): czarownic, z legend i zmyślone.
+  assert.deepEqual(
+    PLANTS.slice(27).map((plant) => plant.id),
+    [
+      "belladonna",
+      "mandragora",
+      "tojad",
+      "dynia",
+      "kwiatPaproci",
+      "muchomor",
+      "smoczeDrzewo",
+      "ognisty",
+      "krysztalowaRoza",
+      "dzwonek",
+      "naparstnica",
+      "tulipan",
+      "chmurnik",
+      "sowiStorczyk",
+      "feniks",
+      "drzewoZycia",
+    ],
+  );
   for (const chapter of CHAPTERS.slice(6)) {
     assert.equal(PLANTS.filter((plant) => plant.chapter === chapter.id).length, 2, chapter.id);
     assert.equal(
@@ -123,7 +160,14 @@ test("dane: 14 rozdziałów z 3–5 celami, 27 roślin od tańszych do droższyc
     assert.ok(fertilizer.cost > plant.cost * 10, `${fertilizer.id}: cena`);
   }
   const branches = [...new Set(PRESTIGE_TREE.map((node) => node.branch))];
-  assert.deepEqual(branches, ["Korzenie", "Woda", "Sen", "Słońce"]);
+  assert.deepEqual(branches, ["Korzenie", "Woda", "Sen", "Słońce", "Magia", "Przyjaciele"]);
+  // Wymagany węzeł zawsze z tej samej gałęzi i wcześniej na liście.
+  for (const [index, node] of PRESTIGE_TREE.entries()) {
+    if (!node.req) continue;
+    const required = PRESTIGE_TREE.findIndex((item) => item.id === node.req);
+    assert.ok(required >= 0 && required < index, node.id);
+    assert.equal(PRESTIGE_TREE[required].branch, node.branch, node.id);
+  }
   for (const branch of branches) assert.equal(PRESTIGE_TREE.filter((node) => node.branch === branch).length, 3);
   // Cele rozdziałów wskazują istniejące rośliny i ulepszenia (ulepszenie celu — z tego samego rozdziału).
   for (const chapter of CHAPTERS) {
@@ -374,6 +418,107 @@ test("drzewko „Słońce” (uwaga O6): Słoneczne korzenie, Poranny start (ule
   assert.ok(summer.palma > spring.palma * 1.2, "Palma szybciej");
 });
 
+test("ulepszenia rozdziałów 15–22 (uwaga O11): po trzy w rozdziale — rośliny rozdziału ×2, wszystkie rośliny, efekt specjalny", () => {
+  const fantasy = CHAPTERS.slice(14);
+  for (const chapter of fantasy) {
+    const own = UPGRADES.filter((upgrade) => upgrade.chapter === chapter.id && !upgrade.id.startsWith("nawoz-"));
+    assert.equal(own.length, 3, chapter.id);
+    assert.equal(own.filter((upgrade) => upgrade.effect.chapter?.[chapter.id] === 2).length, 1, chapter.id);
+    assert.ok(
+      own.some((upgrade) => upgrade.effect.global > 1),
+      `${chapter.id}: wszystkie rośliny`,
+    );
+    // Ceny: ½, 4 i 9 cen pierwszej rośliny rozdziału (jak w rozdziałach 7–14).
+    const first = PLANTS.find((plant) => plant.chapter === chapter.id).cost;
+    assert.deepEqual(
+      own.map((upgrade) => Math.round((upgrade.cost / first) * 10) / 10),
+      [0.5, 4, 9],
+      chapter.id,
+    );
+  }
+  // Nasiona: Eliksir obfitości +25% (liczone przy przesadzaniu, a ulepszenie znika razem z cyklem).
+  const state = defaultState(0);
+  state.chapters = { szklarnia: true };
+  state.runLeaves = 1e30;
+  const plain = prestigeSeeds(state);
+  state.upgrades.eliksir = 1;
+  near(prestigeSeeds(state) / plain, 1.25, 1e-6, "Eliksir obfitości");
+  const { garden: g } = garden(state);
+  const seeds = g.prestige();
+  assert.equal(
+    seeds,
+    prestigeSeeds({ ...state, upgrades: { eliksir: 1 }, runLeaves: 1e30, chapters: { szklarnia: true } }),
+  );
+  assert.deepEqual(state.upgrades, {}, "po przesadzaniu ulepszenia od nowa");
+  // Konewka: Zaczarowana konewka ×6 i +1 ładunek, Deszczowa chmurka ×8 i co 20 s.
+  const water = defaultState(0);
+  water.upgrades = { konewka: 1, zaczarowanaKonewka: 1 };
+  assert.deepEqual({ ...waterStats(water), duration: 0 }, { charges: 4, regen: 60, multiplier: 6, duration: 0 });
+  water.upgrades.deszczowaChmurka = 1;
+  assert.deepEqual({ ...waterStats(water), duration: 0 }, { charges: 4, regen: 20, multiplier: 8, duration: 0 });
+  // Offline: Kołysanka drzewa +12 h; stuknięcie: Smocze łuski +25% produkcji; Złote jabłka ×2.
+  const rest = defaultState(0);
+  const cap = offlineStats(rest).cap;
+  rest.upgrades.kolysanka = 1;
+  assert.equal(offlineStats(rest).cap, cap + 12 * 3600);
+  rest.plants = { belladonna: 10 };
+  const before = production(rest, 0);
+  rest.upgrades.smoczeLuski = 1;
+  rest.upgrades.zloteJablka = 1;
+  const after = production(rest, 0);
+  near(after.lps / before.lps, 2, 1e-9, "Złote jabłka ×2");
+  near(after.tap, 1 + after.lps * 0.25, 1e-6, "Smocze łuski: stuknięcie + 25% produkcji/s");
+});
+
+test("drzewko „Magia” i „Przyjaciele” (uwaga O12): Zaklęcie wzrostu, Kocioł nasion, Czar dojrzewania, Bystra sowa zakupowa", () => {
+  const { garden: g } = garden();
+  const state = g.state;
+  state.seeds = 1e9;
+  assert.equal(g.buyPrestige("kociolNasion"), false, "wymaga Zaklęcia wzrostu");
+  assert.equal(g.buyPrestige("czarDojrzewania"), false);
+  assert.equal(g.buyPrestige("latarniaHumbaka"), false, "wymaga Złotej obroży");
+  assert.equal(g.buyPrestige("bystraSowa"), false);
+  // Zaklęcie wzrostu: tylko rośliny od Ogrodu czarownicy, +50% za poziom.
+  state.plants = { monstera: 10, palma: 10, belladonna: 10, drzewoZycia: 10 };
+  const spring = production(state, 0).perPlant;
+  assert.ok(g.buyPrestige("zaklecieWzrostu") && g.buyPrestige("zaklecieWzrostu"));
+  const magic = production(state, 0).perPlant;
+  near(magic.monstera, spring.monstera, 1e-9, "Monstera bez zmian");
+  near(magic.palma, spring.palma, 1e-9, "Palma bez zmian");
+  near(magic.belladonna / spring.belladonna, 2, 1e-9, "Belladonna ×2 (2 poziomy)");
+  near(magic.drzewoZycia / spring.drzewoZycia, 2, 1e-9, "Drzewo życia ×2");
+  // Kocioł nasion: +15% nasion za poziom (razem z Pamięcią nasion).
+  state.chapters = { szklarnia: true };
+  state.runLeaves = 1e30;
+  const seeds = prestigeSeeds(state);
+  assert.ok(g.buyPrestige("kociolNasion") && g.buyPrestige("kociolNasion"));
+  near(prestigeSeeds(state) / seeds, 1.3, 1e-6, "Kocioł nasion 2 × 15%");
+  // Czar dojrzewania: poziom 1 — ×2 także od 50 sztuk, poziom 2 — także od 10.
+  assert.deepEqual(milestoneBoosts(state), { 25: 2, 100: 2 });
+  state.plants = { pilea: 60 };
+  const plain = production(state, 0).perPlant.pilea;
+  assert.ok(g.buyPrestige("czarDojrzewania"));
+  assert.deepEqual(milestoneBoosts(state), { 25: 2, 50: 2, 100: 2 });
+  near(production(state, 0).perPlant.pilea / plain, 2, 1e-9, "60 Pilei: od 50 sztuk ×2");
+  assert.ok(g.buyPrestige("czarDojrzewania"));
+  assert.equal(g.buyPrestige("czarDojrzewania"), false, "najwyżej 2 poziomy");
+  assert.deepEqual(milestoneBoosts(state), { 10: 2, 25: 2, 50: 2, 100: 2 });
+  assert.deepEqual(
+    [9, 10, 25, 50, 100].map((owned) => milestoneMultiplier(owned, milestoneBoosts(state))),
+    [1, 2, 4, 8, 16],
+  );
+  // Bystra sowa zakupowa: Sowa zakupowa (Szklarnia) kupuje 1, 2, 4, 8 roślin na 0,5 s.
+  const bought = (level) => {
+    const run = garden();
+    run.garden.state.upgrades.zakupy = 1;
+    run.garden.state.prestige = { zlotaObroza: 1, latarniaHumbaka: 1, bystraSowa: level };
+    run.garden.state.leaves = 1e6;
+    for (let step = 0; step < 10; step += 1) run.garden.update(0.1);
+    return run.garden.state.stats.buys;
+  };
+  assert.deepEqual([0, 1, 2, 3].map(bought), [2, 4, 8, 16]);
+});
+
 test("ogród (uwaga z 2026-11-11): na półce wszystkie posiadane gatunki w kolejności rozdziałów — żaden nie znika", () => {
   const state = defaultState(0);
   state.plants = Object.fromEntries(PLANTS.slice(0, 9).map((plant) => [plant.id, 3]));
@@ -410,18 +555,35 @@ function fakeContext() {
   });
 }
 
-test("ozdoby (uwagi O3, O7): tła rozdziałów 7–14 i kształty nowych roślin rysują się na każdym etapie", () => {
+test("ozdoby (uwagi O3, O7, O9, O10): tła rozdziałów od 7. i kształty wszystkich roślin rysują się na każdym etapie", () => {
   for (const chapter of CHAPTERS) {
-    const context = fakeContext();
-    const drawn = drawSceneDecor(context, chapter.id, 360, 260, 156, 1.5);
-    assert.equal(drawn, CHAPTERS.indexOf(chapter) >= 6, chapter.id);
-    if (drawn) assert.ok(context.calls.fill + context.calls.stroke + context.calls.fillRect > 3, chapter.id);
+    for (const time of [0, 1.5, 97.3]) {
+      const context = fakeContext();
+      const drawn = drawSceneDecor(context, chapter.id, 360, 260, 156, time);
+      assert.equal(drawn, CHAPTERS.indexOf(chapter) >= 6, chapter.id);
+      if (drawn) assert.ok(context.calls.fill + context.calls.stroke + context.calls.fillRect > 3, chapter.id);
+    }
+    // Tła od 7. rozdziału mają kolory nieba i podłoża.
+    if (CHAPTERS.indexOf(chapter) >= 6) {
+      assert.equal(NEW_SCENES[chapter.id].length, 3, chapter.id);
+      for (const color of NEW_SCENES[chapter.id]) assert.match(color, /^#[0-9a-f]{6}$/, chapter.id);
+    }
   }
-  for (const plant of PLANTS.slice(11)) {
+  // Każdy kształt na każdym etapie (także w innej chwili animacji — kołysanie, migotanie, mruganie, spadające liście)
+  // rysuje się bez błędów i wartości nieskończonych; wyższy etap — co najmniej tyle samo rysowania (bujniejsza).
+  for (const plant of PLANTS) {
+    let previous = 0;
     for (let stage = 1; stage <= 5; stage += 1) {
+      for (const time of [0, 2.5, 61.07]) {
+        const context = fakeContext();
+        createPlantShapes(context)[plant.shape](plant, 100, 200, 1, stage, time);
+        assert.ok(context.calls.fill + context.calls.stroke >= 2, `${plant.id}: etap ${stage}`);
+      }
       const context = fakeContext();
       createPlantShapes(context)[plant.shape](plant, 100, 200, 1, stage, 2.5);
-      assert.ok(context.calls.fill + context.calls.stroke >= 2, `${plant.id}: etap ${stage}`);
+      const drawn = context.calls.fill + context.calls.stroke + context.calls.fillRect;
+      assert.ok(drawn >= previous * 0.8, `${plant.id}: etap ${stage} (${drawn} < ${previous})`);
+      previous = drawn;
     }
   }
 });
@@ -506,6 +668,25 @@ test("liczby i czas po polsku", () => {
       "−150 mln",
     ],
   );
+  // Uwaga O9 (rozdziały 15–22): przyrostki aż do decyliarda (10^63).
+  assert.deepEqual([1e36, 3.34e39, 1e42, 2.5e45, 1e48, 4.2e51, 1e54, 7e57, 3e60, 1.5e63].map(formatNumber), [
+    "1 sekstyl.",
+    "3,34 sekstyld",
+    "1 septyl.",
+    "2,5 septyld",
+    "1 oktyl.",
+    "4,2 oktyld",
+    "1 nonyl.",
+    "7 nonyld",
+    "3 decyl.",
+    "1,5 decyld",
+  ]);
+  // Cele nowych rozdziałów piszą liczby tak, jak pokazuje je gra.
+  for (const chapter of CHAPTERS) {
+    for (const goal of chapter.goals.filter((item) => item.kind === "lps")) {
+      assert.ok(goal.text.includes(formatNumber(goal.target)), `${goal.id}: ${goal.text}`);
+    }
+  }
 });
 
 test("tło ogrodu (uwaga O7): „auto” — bieżący rozdział, wybór — tylko ukończony rozdział, zostaje po przesadzaniu", () => {
@@ -651,16 +832,22 @@ const TREE_ORDER = [
   "korzenie",
   "sloneczneKorzenie",
   "wieczneLato",
+  "zaklecieWzrostu",
   "porannyStart",
+  "kociolNasion",
+  "czarDojrzewania",
   "szybkiStart",
   "pamiecNasion",
   "pamiecPlusku",
   "studnia",
   "senni",
   "glebokiSen",
+  "zlotaObroza",
+  "latarniaHumbaka",
+  "bystraSowa",
 ];
 
-function simulateLong({ hours = 70, step = 5, buys = 100 } = {}) {
+function simulateLong({ hours = 160, step = 5, buys = 100 } = {}) {
   const clock = { now: 0 };
   const g = createGarden({ state: defaultState(0), now: () => clock.now, events: false });
   const reached = {};
@@ -716,9 +903,10 @@ function simulateLong({ hours = 70, step = 5, buys = 100 } = {}) {
   return reached;
 }
 
-test("symulator długiej gry (uwagi O2–O6): wszystkie 14 rozdziałów do przejścia, każdy nowy to od pół godziny do 15 h", () => {
-  // Bez zdarzeń i krokiem 20 s (szybko i powtarzalnie); ze zdarzeniami i krokiem 1 s gra idzie ok. 20% szybciej.
-  const reached = simulateLong({ step: 20, buys: 30 });
+test("symulator długiej gry (uwagi O2–O6, O9): wszystkie 22 rozdziały do przejścia, każdy nowy to od pół godziny do 15 h", () => {
+  // Bez zdarzeń i krokiem 40 s (szybko i powtarzalnie; z krokiem 20 s rozdziały 15–22 idą ok. 15% szybciej, a ze
+  // zdarzeniami i krokiem 1 s — jeszcze o ok. 20% szybciej).
+  const reached = simulateLong({ step: 40, buys: 30 });
   const times = CHAPTERS.map((chapter) => reached[chapter.id]);
   assert.ok(
     times.every((time) => time > 0),
@@ -730,6 +918,8 @@ test("symulator długiej gry (uwagi O2–O6): wszystkie 14 rozdziałów do przej
   for (const [index, hours] of fresh.entries()) {
     assert.ok(hours >= 0.5 && hours <= 15, `${CHAPTERS[6 + index].id}: ${hours.toFixed(2)} h`);
   }
-  const total = times.at(-1) - arboretum;
-  assert.ok(total >= 25 && total <= 60, `rozdziały 7–14: ${total.toFixed(1)} h po Arboretum`);
+  const middle = reached.ksiezycowy - arboretum;
+  assert.ok(middle >= 25 && middle <= 60, `rozdziały 7–14: ${middle.toFixed(1)} h po Arboretum`);
+  const fantasy = times.at(-1) - reached.ksiezycowy;
+  assert.ok(fantasy >= 30 && fantasy <= 70, `rozdziały 15–22: ${fantasy.toFixed(1)} h po Księżycowym ogrodzie`);
 });

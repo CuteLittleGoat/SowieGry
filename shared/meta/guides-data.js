@@ -260,14 +260,14 @@ export const GUIDES = Object.freeze({
     id: "ogrody",
     title: "Sowie Ogrody",
     summary:
-      "Sowa ogrodniczka sadzi rośliny od parapetu aż po Księżycowy ogród. Stukaj w ogród, kupuj rośliny i wykonuj cele rozdziałów — ogród rośnie także wtedy, gdy Cię nie ma.",
+      "Sowa ogrodniczka sadzi rośliny od parapetu aż po Drzewo świata. Stukaj w ogród, kupuj rośliny i wykonuj cele rozdziałów — ogród rośnie także wtedy, gdy Cię nie ma.",
     cards: [
       {
         id: "cel",
         title: "Cel gry",
-        text: "Przejdź 14 rozdziałów: od Parapetu i Balkonu przez Szklarnię i Arboretum, Palmiarnię, Dżunglę i Ogród japoński aż po Księżycowy ogród. Cele bieżącego rozdziału są pod licznikiem liści.",
+        text: "Przejdź 22 rozdziały: od Parapetu przez Szklarnię, Palmiarnię i Księżycowy ogród aż po krainy fantazji — Ogród czarownicy, Smoczą dolinę i Drzewo świata. Cele bieżącego rozdziału są pod licznikiem liści.",
         sprite: "sowa-stoi",
-        tip: "Każdy rozdział otwiera nowe rośliny i ulepszenia. Tło ukończonego rozdziału wybierzesz w Kolekcji.",
+        tip: "Każdy rozdział otwiera nowe rośliny (każda wygląda inaczej) i ulepszenia. Tło ukończonego rozdziału wybierzesz w Kolekcji.",
       },
       {
         id: "liscie",
@@ -305,7 +305,7 @@ export const GUIDES = Object.freeze({
       {
         id: "przesadzanie",
         title: "Wielkie Przesadzanie",
-        text: "Po Szklarni możesz zacząć ogród od nowa za nasiona na stałe ulepszenia. Gdy Cię nie ma, ogród rośnie dalej (do 4 godzin).",
+        text: "Po Szklarni możesz zacząć ogród od nowa za nasiona na stałe ulepszenia w sześciu gałęziach drzewka (także Magia i Przyjaciele). Gdy Cię nie ma, ogród rośnie dalej (do 4 godzin).",
         sprite: "sowa-mruga",
       },
     ],

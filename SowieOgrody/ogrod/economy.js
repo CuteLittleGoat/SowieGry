@@ -18,10 +18,12 @@ export const plantById = (id) => PLANTS.find((plant) => plant.id === id) || null
 export const upgradeById = (id) => UPGRADES.find((upgrade) => upgrade.id === id) || null;
 export const prestigeById = (id) => PRESTIGE_TREE.find((node) => node.id === id) || null;
 
-// Rozdziały od Palmiarni (7.; uwaga O3) — Wieczne lato daje ich roślinom +50% za poziom.
-const LATE_CHAPTERS = new Set(
-  CHAPTERS.slice(CHAPTERS.findIndex((chapter) => chapter.id === "palmiarnia")).map((chapter) => chapter.id),
-);
+// Rozdziały od Palmiarni (7.; uwaga O3) — Wieczne lato daje ich roślinom +50% za poziom; od Ogrodu czarownicy (15.;
+// uwaga O9) — Zaklęcie wzrostu (gałąź „Magia”, uwaga O12) też +50% za poziom.
+const chaptersFrom = (id) =>
+  new Set(CHAPTERS.slice(CHAPTERS.findIndex((chapter) => chapter.id === id)).map((chapter) => chapter.id));
+const LATE_CHAPTERS = chaptersFrom("palmiarnia");
+const FANTASY_CHAPTERS = chaptersFrom("czarownica");
 
 /** Cena `amount` kolejnych sztuk rośliny przy `owned` posiadanych (suma ciągu geometrycznego). */
 export function plantCost(plant, owned, amount = 1) {
@@ -40,12 +42,19 @@ export function maxAffordable(plant, owned, leaves, limit = 1000) {
   return { amount, cost: plantCost(plant, owned, amount) };
 }
 
-/** Mnożnik kamieni milowych gatunku (MILESTONE_BOOST: ×2 od 25 sztuk, kolejne ×2 od 100). */
-export function milestoneMultiplier(owned) {
-  return Object.entries(MILESTONE_BOOST).reduce(
-    (value, [step, boost]) => (owned >= Number(step) ? value * boost : value),
-    1,
-  );
+/**
+ * Kamienie milowe, które mnożą produkcję gatunku: MILESTONE_BOOST (×2 od 25 i od 100 sztuk), a z Czarem dojrzewania
+ * (gałąź „Magia”, uwaga O12) także ×2 od 50 sztuk (poziom 1) i od 10 sztuk (poziom 2) → { próg: mnożnik }.
+ */
+export function milestoneBoosts(state) {
+  const level = Number(state?.prestige?.czarDojrzewania || 0);
+  return { ...MILESTONE_BOOST, ...(level >= 1 ? { 50: 2 } : {}), ...(level >= 2 ? { 10: 2 } : {}) };
+}
+
+/** Mnożnik kamieni milowych gatunku przy `owned` sztukach (`boosts` — z `milestoneBoosts`, domyślnie MILESTONE_BOOST). */
+export function milestoneMultiplier(owned, boosts) {
+  const table = boosts && typeof boosts === "object" ? boosts : MILESTONE_BOOST;
+  return Object.entries(table).reduce((value, [step, boost]) => (owned >= Number(step) ? value * boost : value), 1);
 }
 
 /** Etap wyglądu gatunku w ogrodzie: 0 (brak), 1 (pierwsza sztuka), +1 za każdy kamień milowy. */
@@ -56,6 +65,11 @@ export function plantStage(owned) {
 
 export const prestigeLevel = (state, id) => Number(state.prestige?.[id] || 0);
 export const hasUpgrade = (state, id) => Boolean(state.upgrades?.[id]);
+
+/** Suma pola `effect[key]` kupionych ulepszeń (np. `seeds`, `bay`, `goat`; brak — 0). */
+export function upgradeSum(state, key) {
+  return UPGRADES.reduce((sum, upgrade) => sum + (hasUpgrade(state, upgrade.id) ? upgrade.effect[key] || 0 : 0), 0);
+}
 
 /** Koszt następnego poziomu węzła prestiżu. */
 export function prestigeCost(state, node) {
@@ -78,10 +92,7 @@ export function waterStats(state) {
 
 /** Postęp offline: skuteczność i limit (s) z prestiżem. */
 export function offlineStats(state) {
-  const extra = UPGRADES.reduce(
-    (sum, upgrade) => sum + (hasUpgrade(state, upgrade.id) ? upgrade.effect.offline || 0 : 0),
-    0,
-  );
+  const extra = upgradeSum(state, "offline");
   return {
     efficiency: OFFLINE.efficiency + prestigeLevel(state, "senni") * 0.1,
     cap: OFFLINE.cap + prestigeLevel(state, "glebokiSen") * 2 * 3600 + extra,
@@ -93,11 +104,14 @@ export function offlineStats(state) {
  * blocked (gatunek zastawiony ciężarówką) }. Premie na czas (`state.effects`): `watered` (do kiedy, mnożnik
  * konewki), `boost` (złota kózka: ×3), `pracu` (dzwoniący telefon: ×0,7), `frenzy` (kozi szał — w events.js); `state.blocked` — gatunek pod ciężarówką
  * Amic nie produkuje. Od uwagi O6: Słoneczne korzenie ×1,1 za poziom (mnożą się), Wieczne lato +50% za poziom dla
- * roślin rozdziałów od Palmiarni.
+ * roślin rozdziałów od Palmiarni; od uwagi O12: Zaklęcie wzrostu +50% za poziom dla roślin rozdziałów od Ogrodu
+ * czarownicy, Czar dojrzewania — dodatkowe kamienie milowe (`milestoneBoosts`).
  */
 export function production(state, now = 0) {
   let global = (1 + prestigeLevel(state, "korzenie") * 0.25) * 1.1 ** prestigeLevel(state, "sloneczneKorzenie");
   const summer = 1 + prestigeLevel(state, "wieczneLato") * 0.5;
+  const magic = 1 + prestigeLevel(state, "zaklecieWzrostu") * 0.5;
+  const boosts = milestoneBoosts(state);
   let tap = TAP.base;
   let tapLps = TAP.lpsShare;
   const chapterMult = {};
@@ -128,8 +142,9 @@ export function production(state, now = 0) {
           global *
           (chapterMult[plant.chapter] || 1) *
           (LATE_CHAPTERS.has(plant.chapter) ? summer : 1) *
+          (FANTASY_CHAPTERS.has(plant.chapter) ? magic : 1) *
           (plantMult[plant.id] || 1) *
-          milestoneMultiplier(owned);
+          milestoneMultiplier(owned, boosts);
     perPlant[plant.id] = value * boost;
     base += value;
   }
@@ -137,14 +152,22 @@ export function production(state, now = 0) {
   return { lps, base, perPlant, global, boost, tap: tap + lps * tapLps };
 }
 
-/** Nasiona za Wielkie Przesadzanie teraz (0, gdy jeszcze niedostępne). */
+/**
+ * Nasiona za Wielkie Przesadzanie teraz (0, gdy jeszcze niedostępne): √(liście cyklu / 1 mld) × (1 + 0,1 × Pamięć
+ * nasion + 0,15 × Kocioł nasion + udział `seeds` kupionych ulepszeń — Eliksir obfitości 0,25; od uwagi O12).
+ */
 export function prestigeSeeds(state) {
   if (!state.chapters?.[PRESTIGE.after] || (state.runLeaves || 0) < PRESTIGE.minRunLeaves) return 0;
   const base = Math.sqrt(Math.max(0, state.runLeaves || 0) / PRESTIGE.divisor);
-  return Math.max(PRESTIGE.min, Math.floor(base * (1 + prestigeLevel(state, "pamiecNasion") * 0.1)));
+  const bonus =
+    prestigeLevel(state, "pamiecNasion") * 0.1 +
+    prestigeLevel(state, "kociolNasion") * 0.15 +
+    upgradeSum(state, "seeds");
+  return Math.max(PRESTIGE.min, Math.floor(base * (1 + bonus)));
 }
 
 // Przyrostki co 1000 (polska długa skala): tysiąc, milion, miliard, bilion, biliard, trylion, tryliard, kwadrylion…
+// aż do decyliarda (10^63).
 export const SUFFIXES = Object.freeze([
   "",
   " tys.",
@@ -160,6 +183,15 @@ export const SUFFIXES = Object.freeze([
   " kwintyld",
   " sekstyl.",
   " sekstyld",
+  // Od uwagi O9 (rozdziały 15–22): septylion 10^42 … decyliard 10^63.
+  " septyl.",
+  " septyld",
+  " oktyl.",
+  " oktyld",
+  " nonyl.",
+  " nonyld",
+  " decyl.",
+  " decyld",
 ]);
 
 // Zaokrąglenie do `digits` miejsc po przecinku jako tekst z przecinkiem; zera po przecinku znikają („2,50” → „2,5”),

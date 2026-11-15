@@ -1,10 +1,18 @@
 // Sowie Ogrody — zdarzenia aktywnej gry (Analiza 3, E7c1): telefon Pracu Pracu, ciężarówka Amic, złota kózka,
-// Plusk-o-metr i Zatoka Humbaka; nieobecność bez kar.
+// Plusk-o-metr i Zatoka Humbaka; nieobecność bez kar; od uwag O11 i O12 (2026-11-15) ulepszenia rozdziałów 15–22
+// i gałąź „Przyjaciele” drzewka prestiżu, które zmieniają zdarzenia.
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { GARDEN_EVENTS, GOAT_REWARDS } from "../../SowieOgrody/ogrod/config.js";
 import { production } from "../../SowieOgrody/ogrod/economy.js";
-import { bayMultiplier, goatInterval } from "../../SowieOgrody/ogrod/events.js";
+import {
+  bayDuration,
+  bayMultiplier,
+  goatBonus,
+  goatInterval,
+  goatRewardText,
+  truckInterval,
+} from "../../SowieOgrody/ogrod/events.js";
 import { createGarden } from "../../SowieOgrody/ogrod/garden.js";
 import { defaultState, loadState } from "../../SowieOgrody/ogrod/state.js";
 
@@ -271,4 +279,84 @@ test("trigger (testy e2e): telefon, ciężarówka i kózka z wybraną premią od
     g.takeEvents().map((event) => event.type),
     ["pracu", "truck", "goat"],
   );
+});
+
+test("nowe ulepszenia (uwaga O11): strach na wróble — ciężarówka 2× rzadziej, koniczyna — kózki o 25% częściej, Echo groty — Zatoka +10 s", () => {
+  const state = defaultState(0);
+  assert.deepEqual(truckInterval(state), GARDEN_EVENTS.truck.every);
+  assert.equal(bayDuration(state), GARDEN_EVENTS.bay.duration);
+  state.upgrades.strachNaWroble = 1;
+  assert.deepEqual(
+    truckInterval(state),
+    GARDEN_EVENTS.truck.every.map((value) => value * 2),
+  );
+  state.upgrades.koniczyna = 1;
+  assert.deepEqual(
+    goatInterval(state),
+    GARDEN_EVENTS.goat.every.map((value) => value / 1.25),
+  );
+  state.prestige.kozieSzczescie = 2;
+  assert.deepEqual(
+    goatInterval(state).map((value) => Math.round(value * 100)),
+    GARDEN_EVENTS.goat.every.map((value) => Math.round(((value * 0.7) / 1.25) * 100)),
+  );
+  state.upgrades.echoGroty = 1;
+  assert.equal(bayDuration(state), GARDEN_EVENTS.bay.duration + 10);
+
+  // W silniku: po przyjeździe następna ciężarówka za 360–600 s (losowanie 0,5 → środek przedziału, 480 s), Zatoka
+  // trwa 30 s.
+  const { g, state: live, step } = garden({ random: queue() });
+  open(live, "parapet", "balkon");
+  live.plants.monstera = 10;
+  live.upgrades.strachNaWroble = 1;
+  live.upgrades.echoGroty = 1;
+  step(GARDEN_EVENTS.truck.first);
+  assert.ok(live.truck, "pierwsza ciężarówka po 120 s");
+  assert.equal(live.timers.truck, GARDEN_EVENTS.truck.every[0] + GARDEN_EVENTS.truck.every[1]);
+  live.splash = 1;
+  assert.ok(g.startBay());
+  assert.equal(live.bay.time, GARDEN_EVENTS.bay.duration + 10);
+});
+
+test("gałąź „Przyjaciele” (uwaga O12): Złota obroża — premie kózki +25% za poziom (z komunikatem), Latarnia humbaka — Zatoka +4 s", () => {
+  const plain = defaultState(0);
+  assert.equal(goatBonus(plain), 1);
+  for (const reward of GOAT_REWARDS) assert.equal(goatRewardText(plain, reward.id), reward.text);
+  const collared = defaultState(0);
+  collared.prestige.zlotaObroza = 2;
+  assert.equal(goatBonus(collared), 1.5);
+  assert.equal(goatRewardText(collared, "boost"), "Złota kózka: produkcja ×3 przez 45 s!");
+  assert.equal(goatRewardText(collared, "instant"), "Złota kózka: liście z 1 min 30 s produkcji!");
+  assert.equal(goatRewardText(collared, "frenzy"), "Kozi szał! Kózka zbiera liście przez 23 s");
+  assert.equal(goatRewardText(collared, "splash"), "Złota kózka: Plusk-o-metr +70%!");
+  // Premie w silniku: dłuższe ×3 i kozi szał, więcej liści i Plusk-o-metru.
+  const results = {};
+  for (const [index, reward] of GOAT_REWARDS.entries()) {
+    const state = defaultState(0);
+    state.prestige.zlotaObroza = 2;
+    const run = garden({ state, random: queue(index / 4 + 0.01) });
+    run.state.plants.monstera = 100;
+    run.step(GARDEN_EVENTS.goat.first);
+    const leaves = run.state.leaves;
+    assert.equal(run.g.catchGoat(), reward.id);
+    results[reward.id] = { ...run, leaves };
+  }
+  assert.equal(results.boost.state.effects.boost, results.boost.clock.now + GARDEN_EVENTS.boost.duration * 1.5 * 1000);
+  assert.equal(
+    results.frenzy.state.effects.frenzy,
+    results.frenzy.clock.now + GARDEN_EVENTS.frenzy.duration * 1.5 * 1000,
+  );
+  const { state, clock, leaves } = results.instant;
+  const gained = state.leaves - leaves;
+  const expected = production(state, clock.now).base * GARDEN_EVENTS.instant * 1.5;
+  assert.ok(Math.abs(gained - expected) < 1e-6, `${gained} ≠ ${expected}`);
+  assert.ok(
+    Math.abs(results.splash.state.splash - (GARDEN_EVENTS.splash.goat + GARDEN_EVENTS.splash.reward * 1.5)) < 1e-9,
+  );
+  // Latarnia humbaka: +4 s za poziom (razem z Echem groty).
+  const lantern = defaultState(0);
+  lantern.prestige.latarniaHumbaka = 3;
+  assert.equal(bayDuration(lantern), GARDEN_EVENTS.bay.duration + 12);
+  lantern.upgrades.echoGroty = 1;
+  assert.equal(bayDuration(lantern), GARDEN_EVENTS.bay.duration + 22);
 });

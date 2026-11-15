@@ -21,12 +21,21 @@ import {
   GAME_SOUNDS,
   GARDEN_EVENTS,
   GARDEN_MUSIC,
-  GOAT_REWARDS,
   PLANTS,
   SAVE_VERSION,
   UPGRADES,
 } from "./config.js";
-import { formatNumber, formatTime, hasUpgrade, plantById, prestigeSeeds, production, waterStats } from "./economy.js";
+import {
+  formatNumber,
+  formatTime,
+  hasUpgrade,
+  milestoneBoosts,
+  plantById,
+  prestigeSeeds,
+  production,
+  waterStats,
+} from "./economy.js";
+import { goatRewardText } from "./events.js";
 import { chapterIndex, createGarden, sceneId } from "./garden.js";
 import { createPanel } from "./panel.js";
 import { createGardenRenderer, gardenUnit } from "./render.js";
@@ -311,10 +320,12 @@ function handleEvents() {
       case "milestone": {
         play("hu-hu", { volume: 0.8 });
         const plant = plantById(event.id);
-        toasts.show(
-          `${plant.name}: ${event.owned} sztuk!${event.owned === 25 || event.owned === 100 ? " Produkcja ×2" : " Nowy wygląd"}`,
-          { kind: "success", key: `kamien-${event.id}-${event.owned}` },
-        );
+        // Produkcja ×2 przy 25 i 100 sztukach, z Czarem dojrzewania (uwaga O12) także przy 50 i 10.
+        const boost = milestoneBoosts(garden.state)[event.owned];
+        toasts.show(`${plant.name}: ${event.owned} sztuk!${boost ? ` Produkcja ×${boost}` : " Nowy wygląd"}`, {
+          kind: "success",
+          key: `kamien-${event.id}-${event.owned}`,
+        });
         break;
       }
       case "upgrade":
@@ -379,8 +390,12 @@ function handleEvents() {
         break;
       case "goatCaught": {
         play("powerup-start");
-        const reward = GOAT_REWARDS.find((item) => item.id === event.reward);
-        toasts.show(reward.text, { kind: "reward", key: `kozka-${event.reward}`, priority: 2 });
+        // Tekst premii z czasami po Złotej obroży (uwaga O12); bez niej — jak w GOAT_REWARDS.
+        toasts.show(goatRewardText(garden.state, event.reward), {
+          kind: "reward",
+          key: `kozka-${event.reward}`,
+          priority: 2,
+        });
         const size = renderer.size();
         if (event.leaves)
           renderer.popup(`+${formatNumber(event.leaves)}`, size.width / 2, size.height * 0.4, COLORS.zloto, 24);
@@ -857,7 +872,7 @@ window.SowieOgrody = Object.freeze({
     garden.state.runLeaves += leaves;
     garden.state.lifetimeLeaves += leaves;
   },
-  // Testy: liczba sztuk gatunków od razu, bez cen i rozdziałów (np. wszystkie 27 gatunków na półce).
+  // Testy: liczba sztuk gatunków od razu, bez cen i rozdziałów (np. wszystkie 43 gatunki na półce).
   setPlants: (plants) => {
     Object.assign(garden.state.plants, plants);
   },

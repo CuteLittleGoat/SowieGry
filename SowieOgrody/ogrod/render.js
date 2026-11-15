@@ -1,12 +1,13 @@
 // Sowie Ogrody — rysowanie ogrodu na płótnie (piksele CSS): tło bieżącego rozdziału, półka z roślinami (każdy
-// gatunek w doniczce, wszystkie w jednej przesuwanej linii — shelf.js; wielkość i liczba liści rosną z kamieniami
-// milowymi), sowa ogrodniczka z atlasu Sowiego Świata, krople po podlaniu, napisy „+N” po stuknięciu i cząsteczki
-// liści.
+// gatunek w doniczce i z własnym rysunkiem z plants.js, wszystkie w jednej przesuwanej linii — shelf.js; roślina
+// rośnie i bujnieje z kamieniami milowymi), sowa ogrodniczka z atlasu Sowiego Świata, krople po podlaniu, napisy „+N”
+// po stuknięciu i cząsteczki liści.
 import { drawOwl } from "../../shared/world/owl.js";
 import { COLORS, font } from "../../shared/world/tokens.js";
 import { GARDEN_EVENTS } from "./config.js";
 import { formatNumber } from "./economy.js";
-import { createPlantShapes, drawSceneDecor, NEW_SCENES } from "./decor.js";
+import { drawSceneDecor, NEW_SCENES } from "./decor.js";
+import { createPlantShapes } from "./plants.js";
 import { sceneId } from "./garden.js";
 import { placeShelf, plantScale, shelfLayout } from "./shelf.js";
 
@@ -18,7 +19,7 @@ const SCENES = {
   basen: ["#bfe9ff", "#dff5fb", "#9fd9e8"],
   szklarnia: ["#dfffee", "#b9efd3", "#8fcf9a"],
   arboretum: ["#e8f7d4", "#c8ebb0", "#7fbf62"],
-  // Rozdziały 7–14 (uwaga O3) — decor.js.
+  // Rozdziały od 7. (uwagi O3 i O9) — decor.js.
   ...NEW_SCENES,
 };
 
@@ -67,7 +68,7 @@ export function createGardenRenderer({ canvas, atlas, scroll = null }) {
     context.fillRect(0, 0, width, height);
     const floor = height * 0.6;
     if (drawSceneDecor(context, chapterId, width, height, floor, time)) {
-      // Rozdziały 7–14: dekoracje z decor.js.
+      // Rozdziały od 7.: dekoracje z decor.js.
     } else if (chapterId === "parapet") {
       // Okno: rama i szprosy, za szybą chmurka.
       context.fillStyle = "rgba(255, 255, 255, 0.7)";
@@ -131,8 +132,10 @@ export function createGardenRenderer({ canvas, atlas, scroll = null }) {
     context.fillRect(0, floor, width, 4);
   }
 
-  // Roślina w doniczce: `stage` 1–5 (kamienie milowe) — wielkość, liczba liści, kwiat przy 5. Wielkość zależy tylko
-  // od etapu i ogrodu (`plantScale`), nie od liczby gatunków na półce.
+  // Roślina w doniczce: `stage` 1–5 (kamienie milowe) — wielkość i wygląd. Wielkość zależy tylko od etapu i ogrodu
+  // (`plantScale`), nie od liczby gatunków na półce. Od uwagi O10 każdy gatunek ma własny rysunek (plants.js);
+  // liście-elipsy w kolorze gatunku (jak dawniej wszystkie rośliny rozdziałów 1–6) zostają tylko jako zapas dla
+  // nieznanego kształtu.
   function plant(item, x, y, stage, time) {
     const scale = plantScale(stage, gardenUnit(size.width, size.height));
     const potWidth = 26 * scale;
@@ -140,9 +143,10 @@ export function createGardenRenderer({ canvas, atlas, scroll = null }) {
     roundRect(x - potWidth / 2, y - 20 * scale, potWidth, 20 * scale, 5);
     context.fillStyle = "rgba(59, 47, 74, 0.15)";
     context.fillRect(x - potWidth / 2, y - 20 * scale, potWidth, 4);
-    // Rośliny rozdziałów 7–14 mają własny kształt (decor.js).
     if (item.shape && shapes[item.shape]) {
+      context.save();
       shapes[item.shape](item, x, y - 20 * scale, scale, stage, time);
+      context.restore();
       return;
     }
     const leaves = 2 + stage;
