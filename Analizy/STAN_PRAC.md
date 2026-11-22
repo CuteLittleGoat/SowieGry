@@ -114,7 +114,7 @@ Prośba i zgłoszenie dosłownie: [`UWAGI_WLASCICIELA.md`](UWAGI_WLASCICIELA.md)
 | --- | --- | --- | --- |
 | G6 | „jak się za dużo dzieje na ekranie to gra laguje” (zwłaszcza Sowie Ogrody; „zawiesza się przesuwanie roślin”) | przyczyną jest rysowanie całego obrazu od nowa co klatkę w podwójnej ostrości (logika i panel są lekkie — bez rysowania gra ma 60 kl./s nawet na „wolnym telefonie”); Ogrody na symulowanym średnim telefonie: 43 kl./s w spokoju, 24–28 w Zatoce Humbaka; Łącz i Hoduj z pełną planszą 18–24; Sowie Tory 17 (na słabszym telefonie gra zwalnia o ok. 12%); próbne poprawki dają w Ogrodach 55–60 kl./s, w Łącz i Hoduj 49–55 | ✅ odpowiedzi 2026-11-22 (rozdz. 10 Analizy 6) — ⏳ wdrożenie W0–W8 (krok 3) |
 | N1 | nowa gra „match 3” z sową z boku ekranu, reagującą na postępy (radośniej przy combo); kafelki z istniejących grafik, każdy rodzaj z własnym tłem (kolor + kształt) | projekt „Sowie Trójki”: 6 rodzajów kafelków (liście, humbak, kózka, truskawka, storczyk) na tłach różnych kształtów i kolorów, 4 moce i ich połączenia, przeszkody Pracu i Amic, jajka i pisklęta, skala radości Sówki 0–5, Sowia pomoc, 45 poziomów na start, bez żyć i płatności; plan M0–M7 (ok. 3–4 tygodnie) | ✅ decyzje 2026-11-22 (rozdz. 19 Analizy 5) — ⏳ budowa podglądu (krok 4); reguły Firestore do skopiowania: Załącznik B |
-| D1 | Sowia Dziupla zamiast menu głównego (tablica korkowa z grami, szafa, Dekorator Dziupli, przedmioty odblokowywane w grach) | — | ⏳ analiza (krok 2): `ANALIZA_7_Sowia_Dziupla.md` |
+| D1 | Sowia Dziupla zamiast menu głównego (tablica korkowa z grami, szafa, Dekorator Dziupli, przedmioty odblokowywane w grach; roślinki z gier na półce w co najmniej 3 miejscach; wygląd dziupli do wyboru) | projekt: Dziupla jako ekran startowy (podgląd, potem przełączenie), ozdoby z postępu w grach i za piórka, zapis w profilu bez zmiany reguł, plan D0–D7 (ok. 10–14 dni) | ✅ analiza 2026-11-22 (`ANALIZA_7_Sowia_Dziupla.md`) — czeka na odpowiedzi (rozdz. 16); budowa jako osobne zadanie po Sowich Trójkach |
 | G7 | Galeria: nowe zdjęcia sów, kóz, wielorybów i roślin ozdobnych z Pexels | — | ⏳ razem z nową grą (krok 4) |
 
 **Kolejność prac (Twoja decyzja) i miejsce wznowienia** — aktualizuję po każdym kroku:
@@ -122,7 +122,7 @@ Prośba i zgłoszenie dosłownie: [`UWAGI_WLASCICIELA.md`](UWAGI_WLASCICIELA.md)
 | Krok | Co | Stan |
 | --- | --- | --- |
 | 1 | dokumentacja: telefon użytkownika i odpowiedzi w Analizie 6 (rozdz. 10, limit 60 kl./s dla ekranu 120 Hz), decyzje w Analizie 5 (rozdz. 19, rozdz. 14.4 zgodny z Analizą 6, pełne reguły w Załączniku B, bramka zapisu 13.1a), styl „mrugająca sówka jako kwiat” (`docs/Documentation.md`, dokumentacja Sowich Ogrodów, Analiza 5 rozdz. 12), `UWAGI_WLASCICIELA.md`, ten plik | ✅ 2026-11-22 |
-| 2 | analiza Sowiej Dziupli (`ANALIZA_7_Sowia_Dziupla.md`) z makietą | ⏳ |
+| 2 | analiza Sowiej Dziupli (`ANALIZA_7_Sowia_Dziupla.md`) z makietą (`ANALIZA_7_dziupla_makieta.png`): tablica korkowa z grami, Szafa, Dekorator, półka z co najmniej 3 roślinkami z gier, wygląd dziupli do wyboru; 8 pytań w rozdz. 16 | ✅ 2026-11-22 |
 | 3 | poprawki wydajności W0–W8 (Analiza 6) | ⏳ |
 | 4 | nowa gra Sowie Trójki jako podgląd (Analiza 5, M1–M6), nowe zdjęcia Galerii | ⏳ |
 | — | jeden PR na `main` z całością (pełny `npm test` u mnie, testy w GitHubie zielone) | ⏳ |
@@ -203,7 +203,7 @@ W repozytorium nie ma innych plików tymczasowych. Na GitHubie została stara ga
 | 8 | **Stara gałąź `claude/loving-fermat-76mtxr`** na GitHubie (włączona do `main`) | do decyzji — mogę usunąć, jeśli chcesz |
 | 9 | **Wydajność (G6, 2026-11-22)** — Analiza 6: plan W0–W8, pytania w rozdz. 9 (m.in. model telefonu, w której grze zawiesza się przesuwanie roślin, zgoda na automatyczne obniżanie ostrości) | ✅ odpowiedzi 2026-11-22 (Redmi Note 10 Pro, MIUI Global 14.0.7, Chrome; automat + przełącznik „Płynność”; pomiar `?perf=1` — zgoda); wdrożenie w kroku 3 (punkt 0.3); punkt 7 wyżej zastąpiony przez tę analizę |
 | 10 | **Nowa gra „match 3” (N1, 2026-11-22)** — Analiza 5 „Sowie Trójki”: pytania w rozdz. 18 (nazwa, miejsce Sówki, kafelki, liczba poziomów, reguły Firestore) | ✅ decyzje 2026-11-22 (wszystko według rekomendacji); budowa podglądu w kroku 4; **reguły Firestore do skopiowania: Analiza 5, Załącznik B** |
-| 11 | **Sowia Dziupla zamiast menu głównego (D1, 2026-11-22)** — osobna analiza | krok 2 (punkt 0.3) |
+| 11 | **Sowia Dziupla zamiast menu głównego (D1, 2026-11-22)** — `ANALIZA_7_Sowia_Dziupla.md`, 8 pytań w rozdz. 16 | ✅ analiza; budowa — osobne zadanie po Sowich Trójkach |
 | 12 | **Galeria: zdjęcia sów, kóz, wielorybów i roślin ozdobnych (G7, 2026-11-22)** | razem z nową grą (krok 4) |
 
 ### 3.1. Zadanie 9.5 — stare adresy gier i sprzątanie starej pamięci (decyzja z 2026-11-02)
