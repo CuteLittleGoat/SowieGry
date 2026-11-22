@@ -119,7 +119,7 @@ W biegu gra własna, skoczna muzyka, a w czasie rejsu — pieśń humbaka. W pau
 
 ## Płynność
 
-Na słabszym telefonie gra sama trochę obniża ostrość obrazu, żeby bieg był płynny.
+Na słabszym telefonie gra sama trochę obniża ostrość obrazu, żeby bieg był płynny, a gdy znów jest płynnie — wraca do pełnej ostrości. Jeśli to nie wystarczy, zapyta: „Gra trochę zwalnia. Włączyć tryb „Oszczędzanie baterii”?”. Wybór **Płynność** (Automatyczna / Zawsze ostro / Oszczędzanie baterii) jest w menu pauzy (**Ustawienia**) i w menu głównym (zakładka **Sowa**); zostaje na tym telefonie. Dopisek `?perf=1` do adresu pokazuje w lewym dolnym rogu licznik płynności (klatki na sekundę, ostrość obrazu, poziom automatu).
 
 ## Dla ciekawskich
 

@@ -134,18 +134,25 @@ W menu głównym ustawienia są w zakładce **Sowa** (przycisk z kołem zębatym
 
 - suwaki **Głośność ogólna**, **Muzyka** i **Efekty dźwiękowe** (muzyka albo efekty na 0 wyłączają je też w grach),
 - **Efekty (wstrząsy, cząsteczki)**, **Wibracje** (tylko Android), **Tryb Przytulny** (wolniej, bez końca gry — na poziomie Chill w Sowiej Ucieczce, Sowich Torach i Sowie w Chmurach; bieg albo lot kończysz przyciskiem „Zakończ bieg” / „Zakończ lot” w menu pauzy), **Komentarze sowy**,
+- **Płynność** — jak gry mają dbać o płynny obraz na tym telefonie:
+  - **Automatyczna** (zalecana): gdy telefon nie nadąża, gra sama trochę zmniejsza ostrość obrazu, a gdy znów jest płynnie — wraca do pełnej ostrości; gdy i to nie wystarczy, zapyta, czy włączyć oszczędzanie baterii,
+  - **Zawsze ostro**: zawsze najostrzejszy obraz — na słabszym telefonie gra może się ciąć,
+  - **Oszczędzanie baterii**: 30 klatek na sekundę i mniej efektów — telefon mniej się grzeje i dłużej działa na baterii,
 - stan zapisu (np. „Postęp jest zapisany w chmurze.”),
 - **Powtórz samouczki we wszystkich grach** — po potwierdzeniu przy następnym wejściu do Sowiej Ucieczki, Sowich Torów, Sowy w Chmurach, nowych Sowich Ogrodów i Łącz i Hoduj samouczek pokaże się jeszcze raz (postęp i rekordy zostają). Samouczek jednej gry powtórzysz też przyciskiem **Samouczek** na jej ekranie startowym (w nowych Ogrodach — w zakładce Kolekcja, w Łącz i Hoduj — w oknie pomieszczeń).
 - **Wyloguj to urządzenie** — po potwierdzeniu urządzenie zapomina hasło i pokazuje ekran „Hasło sowy”. Postęp zostaje w chmurze.
 
-Ustawienia zapisują się w profilu, więc obowiązują na każdym urządzeniu.
+Ustawienia zapisują się w profilu, więc obowiązują na każdym urządzeniu — oprócz **Płynności**, która zostaje na tym telefonie (słabszy telefon może mieć oszczędzanie baterii, a komputer — zawsze ostry obraz).
 
 W Sowiej Ucieczce, Sowich Torach i Sowie w Chmurach ustawienia są też w **menu pauzy** (przycisk pauzy w lewym górnym rogu → **Ustawienia**):
 
 - suwaki **Głośność ogólna**, **Muzyka** i **Efekty dźwiękowe**,
-- **Efekty (wstrząsy, cząsteczki)**, **Wibracje** i **Tryb Przytulny** (wolniej, bez końca gry).
+- **Efekty (wstrząsy, cząsteczki)**, **Wibracje** i **Tryb Przytulny** (wolniej, bez końca gry),
+- **Płynność** (jak wyżej) — zmiana działa od razu.
 
-W menu pauzy jest też **Garderoba** (wybór dodatku sowy). Sowie Ogrody i Łącz i Hoduj nie mają menu pauzy — ich ustawienia zmienia się w menu głównym (przycisk **Menu** w grze wraca do menu).
+W menu pauzy jest też **Garderoba** (wybór dodatku sowy). Sowie Ogrody i Łącz i Hoduj nie mają menu pauzy — ich ustawienia zmienia się w menu głównym (przycisk **Menu** w grze wraca do menu); gdy te gry zaczną zwalniać, same zapytają o oszczędzanie baterii.
+
+**Licznik płynności:** dopisz do adresu gry `?perf=1` (np. `…/SowieOgrody/?perf=1`) — w lewym dolnym rogu pojawią się trzy wiersze: ile klatek na sekundę rysuje gra i najdłuższa przerwa, ile razy na sekundę odświeża się ekran (60, 90 albo 120) i ostrość obrazu, oraz poziom automatu płynności (0 — najostrzej, 2 — najniżej, 3 — oszczędzanie baterii). Przydaje się przy zgłaszaniu „lagów”: zrób zrzut ekranu z licznikiem.
 
 ## Testy
 
@@ -162,7 +169,9 @@ Dźwięki (efekty i muzyka) powstają z kodu `scripts/make-audio.mjs` (własna t
 
 Grafiki postaci to pliki SVG w `assets/svg/` — można je poprawiać w dowolnym edytorze grafiki wektorowej (np. Inkscape), używając kolorów z palety (`shared/world/tokens.css`). Po zmianie grafiki podnieś numer `VERSION` w `sw.js`, żeby zainstalowana aplikacja pobrała nową wersję. Czcionka to Fredoka (licencja OFL, `assets/fonts/OFL.txt`) z dołożonymi polskimi literami.
 
-Jeśli na komputerze nie da się uruchomić WebKit, można jednorazowo pominąć go poleceniem `SOWIE_E2E_BEZ_WEBKIT=1 npm test` (w automatycznych testach na GitHubie WebKit działa zawsze).
+Jeśli na komputerze nie da się uruchomić WebKit, można jednorazowo pominąć go poleceniem `SOWIE_E2E_BEZ_WEBKIT=1 npm test` (w automatycznych testach na GitHubie WebKit działa zawsze). Gdy przeglądarka Chromium jest w innym miejscu niż ta pobrana przez Playwrighta, wskaż ją zmienną `SOWIE_CHROMIUM=/ścieżka/do/chrome` (tylko na komputerze).
+
+**Pomiar płynności** (ręcznie, nie w automatycznych testach): uruchom `npm run serve`, a w drugim oknie `node scripts/perf-bench.cjs` — skrypt otwiera gry w Chromium jak na telefonie Redmi Note 10 Pro (393 × 873, procesor spowolniony 4 razy) i wypisuje tabelę: klatki na sekundę, najdłuższe przerwy, zajętość procesora, ostrość i poziom automatu. Opcje: `--cpu 1,4,6`, `--gry ogrody,lacz,tory,ucieczka,chmury,menu`, `--tryb auto|sharp|saver`, `--sekundy 6`. Skrypt używa trybu pamięci — nigdy nie łączy się z prawdziwą bazą.
 
 **Uruchomienie lokalne (`npm run serve`, adres `localhost` / `127.0.0.1`) domyślnie działa w trybie pamięci** — nic nie trafia do prawdziwej bazy, a postęp znika po odświeżeniu. Tryby można wybrać parametrem adresu:
 

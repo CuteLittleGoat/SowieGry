@@ -123,13 +123,37 @@ Prośba i zgłoszenie dosłownie: [`UWAGI_WLASCICIELA.md`](UWAGI_WLASCICIELA.md)
 | --- | --- | --- |
 | 1 | dokumentacja: telefon użytkownika i odpowiedzi w Analizie 6 (rozdz. 10, limit 60 kl./s dla ekranu 120 Hz), decyzje w Analizie 5 (rozdz. 19, rozdz. 14.4 zgodny z Analizą 6, pełne reguły w Załączniku B, bramka zapisu 13.1a), styl „mrugająca sówka jako kwiat” (`docs/Documentation.md`, dokumentacja Sowich Ogrodów, Analiza 5 rozdz. 12), `UWAGI_WLASCICIELA.md`, ten plik | ✅ 2026-11-22 |
 | 2 | analiza Sowiej Dziupli (`ANALIZA_7_Sowia_Dziupla.md`) z makietą (`ANALIZA_7_dziupla_makieta.png`): tablica korkowa z grami, Szafa, Dekorator, półka z co najmniej 3 roślinkami z gier, wygląd dziupli do wyboru; 8 pytań w rozdz. 16 | ✅ 2026-11-22 |
-| 3 | poprawki wydajności W0–W8 (Analiza 6) | ⏳ |
+| 3 | poprawki wydajności W0–W8 (Analiza 6): automat płynności i limit 60 kl./s we wszystkich grach, Ogrody i Łącz i Hoduj warstwami z obrazkami roślin, Zatoka bez ogrodu pod wodą, rekwizyty Torów z obrazków, HUD 10×/s, ustawienie „Płynność” (menu i pauza, zapamiętane na urządzeniu), propozycja oszczędzania baterii, licznik `?perf=1`, skrypt `scripts/perf-bench.cjs`, testy `plynnosc` (jednostkowe i e2e), dokumentacja; pomiar niżej (0.4) | ✅ 2026-11-22 (8dbc30f, 79eb786, dokumentacja) |
 | 4 | nowa gra Sowie Trójki jako podgląd (Analiza 5, M1–M6), nowe zdjęcia Galerii | ⏳ |
 | — | jeden PR na `main` z całością (pełny `npm test` u mnie, testy w GitHubie zielone) | ⏳ |
 
 **Bezpieczeństwo produkcji** (Twoja prośba z 2026-11-22): testy tylko na emulatorze i w pamięci; zapis postępu
 i jego format bez zmian w krokach 1–3; nowa gra niczego nie zapisuje do bazy, dopóki nie potwierdzisz publikacji
 reguł (bramka zapisu — Analiza 5, rozdz. 13.1a).
+
+### 0.4. Krok 3 — poprawki wydajności (W0–W8) — wynik
+
+Co zrobione: [`ANALIZA_6_Wydajnosc_lagi.md`](ANALIZA_6_Wydajnosc_lagi.md), rozdział 11; opis techniczny:
+`docs/Documentation.md` („Płynność — Analiza 6”) i dokumentacje gier. **Zapis postępu bez zmian** — nowe ustawienie
+„Płynność” leży tylko w pamięci telefonu (wpis urządzenia), nie w bazie.
+
+Pomiar w Chromium bez karty graficznej (profil Twojego telefonu: 393 × 873 px, gęstość 2,75; procesor spowolniony
+4 razy — „średni telefon”), `node scripts/perf-bench.cjs`, klatki na sekundę (60 = płynnie):
+
+| Gra — scenariusz | Przed | Po |
+| --- | --- | --- |
+| Sowie Ogrody — stukanie / zdarzenia / wszystko naraz | 33–38 | 56–57 |
+| Sowie Ogrody — przesuwanie półki | 42–43 | 59 |
+| Sowie Ogrody — Zatoka Humbaka | 24–28 | 59 |
+| Łącz i Hoduj — pełna plansza / przeciąganie | 24 / 22 | 43 / 42 |
+| Sowie Tory — bieg | 17–21 | 38–41 (przy ×6: 12 → 17, gra nie gubi już czasu) |
+| Sowia Ucieczka, Sowa w Chmurach | 37–48 | 44–49 (bez zmian w granicach rozrzutu) |
+
+Wygląd bez zmian (porównanie zrzutów przed / po). Testy u mnie: składnia, ESLint, Prettier, HTML, 341 testów
+jednostkowych, reguły Firestore, 598 testów przeglądarkowych w Chromium (5 profili telefonów i komputer, emulator)
+przed rekwizytami Torów i 195 po nich (gry, menu, laboratorium) + 14 nowych testów `plynnosc` — wszystkie zielone;
+WebKit (Safari) sprawdzą testy w GitHubie. **Dla Ciebie:** testy P1–P3 w [`TESTY_NA_TELEFONIE.md`](TESTY_NA_TELEFONIE.md)
+(pomiar licznikiem `?perf=1` na Twoim Redmi — przyślij zrzut ekranu z licznikiem).
 
 ## 1. Co jest zrobione — plan E0–E10 (stan z 2026-10-06)
 
@@ -348,8 +372,8 @@ przybyło (P3–P7) i przebieg zbliżył się do limitu 60 minut, limit czasu CI
 
 ## 5. Co dalej
 
-0. Zadanie z 2026-11-22 (punkt 0.3): dokumentacja ✅ → analiza Sowiej Dziupli → poprawki wydajności W0–W8 →
-   nowa gra „Sowie Trójki” jako podgląd → jeden PR na `main`. Twoja czynność: opublikować nowe reguły Firestore
+0. Zadanie z 2026-11-22 (punkt 0.3): dokumentacja ✅ → analiza Sowiej Dziupli ✅ → poprawki wydajności W0–W8 ✅ →
+   nowa gra „Sowie Trójki” jako podgląd ⏳ → jeden PR na `main`. Twoja czynność: opublikować nowe reguły Firestore
    (Analiza 5, Załącznik B) i napisać „reguły opublikowane”.
 1. Twoje testy na telefonie (`TESTY_NA_TELEFONIE.md`) i uwagi (w nowym oknie) → wpis w `UWAGI_WLASCICIELA.md` →
    poprawki małymi commitami, każdy z zielonym `npm test`, z aktualizacją dokumentacji gry i tego pliku.

@@ -183,7 +183,11 @@ Sowie Tory posuwają też **misje garderoby** sowy (zakładka Sowa w menu): liś
 - Gra działa w pionie i w poziomie; w poziomie droga jest na środku, a scenografia po bokach.
 - Obrót telefonu, przejście do innej aplikacji albo zablokowanie ekranu **wstrzymuje** bieg (bez utraty postępu);
   po powrocie gra wznawia się odliczaniem 3-2-1.
-- Na słabszym telefonie gra sama obniża rozdzielczość, żeby biegła płynnie.
+- Na słabszym telefonie gra sama trochę obniża ostrość obrazu, żeby biegła płynnie; gdy to nie wystarczy, zapyta,
+  czy włączyć **Oszczędzanie baterii**. Wybór **Płynność** (Automatyczna / Zawsze ostro / Oszczędzanie baterii) jest
+  w menu pauzy (**Ustawienia**) i w menu głównym (zakładka **Sowa**); zostaje na tym telefonie.
+- Licznik płynności: dopisz do adresu `?perf=1` — w lewym dolnym rogu pojawią się klatki na sekundę, ostrość
+  obrazu i poziom automatu płynności.
 
 ## Tryb diagnostyczny
 

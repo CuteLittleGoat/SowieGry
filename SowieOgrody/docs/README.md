@@ -44,6 +44,7 @@ trafia od razu do Ogrodu czarownicy — cały dotychczasowy ogród zostaje.
 
   Po wejściu do gry widać koniec linii — najnowsze rośliny; starsze są z lewej. Nowo kupiony gatunek i roślina
   zastawiona przez ciężarówkę Amic same wjeżdżają w widok.
+
 - **Panel na dole** (na komputerze i telefonie poziomo — po prawej) ma cztery zakładki:
   - **Rośliny** — kup ×1, ×10 albo **max** (ile Cię stać) — cena jest na każdym przycisku. Przy 10, 25, 50
     i 100 sztukach roślina zmienia wygląd, a przy 25 i 100 produkuje dwa razy więcej. Lista nie skacze, gdy coś
@@ -116,6 +117,20 @@ wejściu na nowym urządzeniu trzeba raz wpisać hasło `huhu`.
 
 W menu głównym (zakładka **Sowa** → **Rekordy** przy Sowich Ogrodach) widać liście zebrane w całej grze, liczbę
 Wielkich Przesadzań i bieżący rozdział. Na karcie gry jest liczba liści.
+
+## Płynność
+
+Ogród rysuje się płynnie także na słabszym telefonie:
+
+- gdy nic się nie dzieje, ogród odświeża się spokojnie (30 razy na sekundę — rośliny dalej się kołyszą), a gdy
+  stukasz, przesuwasz półkę albo coś się dzieje (kózka, ciężarówka, Zatoka Humbaka) — pełne 60 razy na sekundę;
+- gdy telefon nie nadąża, gra sama trochę zmniejsza ostrość obrazu (rysunki mogą być minimalnie mniej ostre), a gdy
+  znów jest płynnie — wraca do pełnej ostrości;
+- jeśli to nie wystarczy, u dołu pojawi się pytanie **„Gra trochę zwalnia. Włączyć tryb „Oszczędzanie baterii”?”** —
+  **Włącz** ustawia 30 klatek na sekundę i mniej efektów (telefon mniej się grzeje), **Nie teraz** chowa pytanie.
+
+Wybór **Płynność** (Automatyczna / Zawsze ostro / Oszczędzanie baterii) zmienisz w menu głównym: zakładka **Sowa** →
+Ustawienia. Zostaje na tym telefonie (na komputerze możesz mieć inny).
 
 ## Gra jako aplikacja na telefonie
 

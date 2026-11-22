@@ -4,7 +4,8 @@
 > w [rozdziale 1](#1-zgłoszenie-dosłownie-i-numer)) i kod na `main` (commit `1e45273`) · Status: **analiza
 > z odpowiedziami właściciela (2026-11-22, [rozdział 10](#10-odpowiedzi-właściciela-i-zmiany-planu-2026-11-22))** —
 > telefon użytkownika: **Redmi Note 10 Pro, MIUI Global 14.0.7, przeglądarka Chrome**; wdrożenie W0–W8 to krok 3
-> kolejności prac (po dokumentacji i analizie Sowiej Dziupli), w jednym zadaniu i jednym PR na `main`.
+> kolejności prac (po dokumentacji i analizie Sowiej Dziupli), w jednym zadaniu i jednym PR na `main` —
+> **wdrożone 2026-11-22** ([rozdział 11](#11-wykonanie-2026-11-22)).
 > Druga analiza z tego dnia: [`ANALIZA_5_Nowa_gra_Sowie_Trojki_match3.md`](ANALIZA_5_Nowa_gra_Sowie_Trojki_match3.md)
 > (nowa gra „match 3”) — korzysta z poprawek opisanych tutaj. Zasady pracy bez zmian:
 > [`ANALIZA_3_Plan_prac.md`, rozdz. 8.1](ANALIZA_3_Plan_prac.md).
@@ -503,10 +504,52 @@ Wnioski:
 
 ---
 
+## 11. Wykonanie (2026-11-22)
+
+Wszystkie kroki W0–W8 zrobione w kroku 3 kolejności prac (gałąź zadania, jeden PR na `main` razem z krokami 1, 2
+i 4). Zapis postępu, jego format i reguły Firestore — bez zmian; jedyna nowa pamięć to wybór „Płynność” i poziom
+automatu we **wpisie urządzenia** w pamięci przeglądarki (`SowieCloud.devicePrefs`, nigdy w bazie).
+
+| Krok | Co zrobione | Gdzie w kodzie |
+| --- | --- | --- |
+| W0 | licznik `?perf=1`: klatki narysowane przez grę, najdłuższa przerwa (5 s), odświeżanie ekranu, ostrość płótna, poziom automatu, pamięć | `shared/engine/perf-meter.js`; wszystkie gry |
+| W1 | automat płynności (poziomy 0–3: ostrość 2 / 1,5 / 1 / 1 + 30 kl./s, cząsteczki ×1 / ×1 / ×0,5 / ×0,5; w dół po 3 s < 50 kl./s, w górę po 20 s ≥ 58 i najwyżej raz na minutę; cel liczony względem zamierzonej liczby klatek — celowe 30 w spokoju to nie „wolno”); limit 60 kl./s na ekranach 90/120 Hz; pętla nadrabia 30 kroków zamiast 12 | `shared/engine/quality.js`, `loop.js`, `shell.js`; gry zręcznościowe bez `dprCap` |
+| W2 | Sowie Ogrody: tło w warstwie (≤ 15×/s), rośliny z obrazków (tabela granic 43 gatunków, ≤ 2 odświeżenia na klatkę, każdy ≤ 15×/s), Zatoka — jedno „zdjęcie” ogrodu pod wodą, rysowanie 60 kl./s tylko w ruchu (30 w spokoju), limity efektów z automatu, szerokości podpisów w pamięci | `SowieOgrody/ogrod/render.js`, `main.js` |
+| W3 | półka: panel nie odświeża się w trakcie przesuwania, rozpęd z wszystkich położeń palca (`getCoalescedEvents`), bez przebudowy atlasu przy obniżeniu ostrości (dawniej ok. 650 ms „szarpnięcia”) | `SowieOgrody/ogrod/main.js` |
+| W4 | Łącz i Hoduj: tło w warstwie (≤ 5×/s), rośliny z obrazków (jeden na rodzaj, ≤ 3 odświeżenia na klatkę, ≤ 10×/s; iskierki i kózki na żywo), automat płynności, 30 kl./s w spokoju | `LaczIHoduj/render.js`, `main.js`, `plants.js` |
+| W5 | gry zręcznościowe na automacie płynności; Sowie Tory — rekwizyty (regały, lodówki, szyldy, bloki…) jako obrazki w pamięci: tabela granic `PROP_BOUNDS` i lista ruchomych `PROP_ANIMATED`, obrazek o 15% większy „na zapas” (rekwizyty rosną, zbliżając się), ≤ 4 nowe na klatkę, ruchome ≤ 15×/s, tuż przy sowie (> 0,5 mln pikseli) wprost; HUD — tekst wyniku ≤ 10×/s, jeden formater liczb, podskok przez Web Animations bez przeliczania układu | `SowieTory/props.js`, `render.js`; `shared/ui/hud.js` |
+| W6 | ustawienie „Płynność” (Automatyczna / Zawsze ostro / Oszczędzanie baterii) w menu (Sowa → Ustawienia) i w menu pauzy; propozycja „Oszczędzania baterii” także w Ogrodach i Łącz i Hoduj — dopiero gdy automat zszedł najniżej (albo „Zawsze ostro”) i gra przez 5 s ma < 45 kl./s | `quality.js` (`onStruggle`), `shell.js` (`createSlowBanner`), `owl-tab.js`, `pause-menu.js`, `ui.css` |
+| W7 | `scripts/perf-bench.cjs` (profil Redmi Note 10 Pro, `--cpu`, `--gry`, `--tryb`); testy jednostkowe `tests/unit/plynnosc.test.mjs` (8) i e2e `tests/e2e/telefon/plynnosc.spec.js` (7 na profil — liczniki pracy, granice rekwizytów, ustawienie na urządzeniu, propozycja oszczędzania) | jw. |
+| W8 | dokumentacja: `docs/Documentation.md` (silnik, interfejs, testy, „Płynność — Analiza 6”), `docs/README.md`, dokumentacje i instrukcje pięciu gier, testy P1–P3 w `TESTY_NA_TELEFONIE.md`, `STAN_PRAC.md` 0.4 | — |
+
+Odstępstwa od planu (rozdz. 5): rekwizyty Sowich Torów nie są gotowymi obrazkami „w kilku wielkościach”, tylko
+obrazkami robionymi w biegu dla każdego widocznego rekwizytu (wielkość dopasowana do odległości) — bez zapasu
+obrazków na dysku i bez zmiany wyglądu; propozycja oszczędzania korzysta z pomiaru automatu (`onStruggle`) zamiast
+osobnego monitora; w oszczędzaniu baterii gry zręcznościowe mają połowę cząsteczek (dawniej 0,4).
+
+Pomiar po zmianach (Chromium bez karty graficznej, profil Redmi Note 10 Pro 393 × 873, gęstość 2,75, CPU ×4,
+`node scripts/perf-bench.cjs`):
+
+| Gra — scenariusz | Przed (rozdz. 3) | Po |
+| --- | --- | --- |
+| Sowie Ogrody — spokój | 43 | 58 (gra rysuje 30, wątek zajęty w 65%) |
+| Sowie Ogrody — stukanie / zdarzenia / wszystko naraz | 38 / 35 / 33–36 | 56 / 56 / 56 |
+| Sowie Ogrody — przesuwanie półki | 42–43 | 59 |
+| Sowie Ogrody — Zatoka Humbaka | 24–28 | 59 |
+| Łącz i Hoduj — pełna plansza / przeciąganie | 24 / 22 | 43 / 42 (ostrość 1,5) |
+| Sowie Tory — bieg | 17 (21,5 na profilu Redmi) | 38–41 (ostrość 1,5); 32,6 przy „Zawsze ostro”; ×6: 12 → 16,7, dystans w 6 s 78 → 83 m |
+| Sowia Ucieczka / Sowa w Chmurach | 37 / 39 (44–48 / 46 na profilu Redmi) | 44–49 / 47 |
+
+Ogrody nie musiały nawet obniżać ostrości (automat został na poziomie 0). Wygląd bez zmian — zrzuty przed / po
+(ogród „późnej gry”, Zatoka, 4 plansze Sowich Torów w tej samej chwili biegu) różnią się tylko wygładzaniem krawędzi.
+**Ostateczna ocena: pomiar na Twoim telefonie** — testy P1–P3 w `TESTY_NA_TELEFONIE.md` (licznik `?perf=1`).
+
+---
+
 ## Załącznik A. Skrypty pomiarowe
 
 Skrypty były uruchamiane tylko w moim kontenerze (katalog roboczy poza repozytorium); w kroku W7 trafią do
-repozytorium jako `scripts/perf-bench.cjs`. Wszystkie: Playwright (Chromium), serwer plików statycznych na
+repozytorium jako `scripts/perf-bench.cjs` (trafiły — rozdz. 11). Wszystkie: Playwright (Chromium), serwer plików statycznych na
 `127.0.0.1`, `?cloud=memory`, odblokowane urządzenie w skrypcie startowym kontekstu (nigdy w kodzie gry).
 
 | Skrypt | Co robi |

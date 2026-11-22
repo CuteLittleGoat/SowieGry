@@ -17,6 +17,9 @@ telefonie — i jeśli się da, zrób zrzut ekranu.
 
 | Test  | Co sprawdza                                                                                             | Od kiedy   |
 | ----- | ------------------------------------------------------------------------------------------------------- | ---------- |
+| P1    | Płynność: pomiar licznikiem `?perf=1` na Twoim telefonie (Sowie Ogrody, Łącz i Hoduj, Sowie Tory)       | 2026-11-22 |
+| P2    | Płynność: ustawienie „Płynność” w menu i w menu pauzy, zapamiętane na tym telefonie                     | 2026-11-22 |
+| P3    | Płynność: wygląd bez zmian — rośliny, rekwizyty i efekty dalej się ruszają                              | 2026-11-22 |
 | O6    | Sowie Ogrody: krainy fantazji (rozdziały 15–22), każda roślina inna, nowe ulepszenia i drzewko          | 2026-11-15 |
 | O5    | Sowie Ogrody: wszystkie rośliny w jednej linii, duże; strzałki po bokach i przesuwanie palcem           | 2026-11-11 |
 | Z1    | Porządki (zadanie 9.5): odblokowanie telefonu, postęp i ustawienia jak przedtem; stare adresy usunięte  | 2026-11-02 |
@@ -32,6 +35,58 @@ telefonie — i jeśli się da, zrób zrzut ekranu.
 | B1–B4 | Sowi Butik: zakupy i kolory sowy nie cofają się, przeprosinowe piórka                                   | 2026-11-01 |
 
 ---
+
+## P — Płynność (Analiza 6: „jak się za dużo dzieje na ekranie to gra laguje”)
+
+Poprawka: gry rysują mniej (tło i rośliny z gotowych obrazków, w Zatoce Humbaka bez ogrodu pod wodą, w Sowich Torach
+regały i szyldy z gotowych obrazków), najwyżej 60 klatek na sekundę także na ekranie 120 Hz, a gdy telefon nie
+nadąża — same trochę zmniejszają ostrość obrazu. Nowe ustawienie **Płynność**. Postęp niczego nie traci — zmiany
+dotyczą tylko rysowania.
+
+### P1 — pomiar licznikiem `?perf=1`
+
+1. Otwórz w Chrome adres Sowich Ogrodów z dopiskiem `?perf=1`:
+   https://cutelittlegoat.github.io/SowieGry/SowieOgrody/?perf=1 (jeśli adres jest już otwarty — odśwież dwa razy).
+2. **Powinno być:** w lewym dolnym rogu ciemna ramka z trzema wierszami, np. „58 kl./s · najdł. 25 ms”,
+   „ekran 120/s · ostrość 2.00”, „automat 0 (auto) · 45 MB”.
+3. Przez ok. 10 s nic nie dotykaj. Zapisz pierwszą liczbę („kl./s”). **Powinno być:** ok. 30 (w spokoju ogród celowo
+   rysuje 30 razy na sekundę — rośliny dalej się kołyszą).
+4. Stukaj szybko w ogród (kilka razy na sekundę) przez 10 s. Zapisz „kl./s” i „najdł.”. **Powinno być:** blisko 60
+   kl./s, „najdł.” zwykle poniżej 50 ms.
+5. Przesuwaj półkę palcem tam i z powrotem przez 10 s. **Powinno być:** rośliny jadą płynnie za palcem, bez zacięć.
+6. Jeśli masz pełny Plusk-o-metr — wejdź do **Zatoki Humbaka** i łap liście. **Powinno być:** płynnie, bez spowolnień.
+7. To samo w **Łącz i Hoduj** (`…/LaczIHoduj/?perf=1`, przeciąganie roślin po pełnej planszy) i w **Sowich Torach**
+   (`…/SowieTory/?perf=1`, bieg po Biedronce).
+8. Przyślij zrzut ekranu z licznikiem w trakcie stukania / biegu (albo zapisane liczby). Wiersz „automat” mówi, czy
+   gra musiała zmniejszyć ostrość: 0 — pełna ostrość, 1 — trochę mniejsza, 2 — najmniejsza, 3 — oszczędzanie baterii.
+
+Wskazówka (MIUI): w trybie oszczędzania baterii telefonu (Ustawienia → Bateria) Chrome może być spowolniony — jeśli
+liczby są dużo gorsze, sprawdź, czy ten tryb jest wyłączony, i zmierz jeszcze raz.
+
+### P2 — ustawienie „Płynność”
+
+1. W menu głównym stuknij koło zębate u góry (zakładka **Sowa** → Ustawienia).
+2. **Powinno być:** pod przełącznikiem „Efekty” grupa **Płynność** z trzema przyciskami: **Automatyczna** (wybrana),
+   **Zawsze ostro**, **Oszczędzanie baterii** i krótkim opisem pod spodem.
+3. Stuknij **Oszczędzanie baterii**. **Powinno być:** przycisk wybrany, opis „30 klatek na sekundę i mniej efektów…”.
+4. Otwórz Sowie Ogrody z `?perf=1` i stukaj w ogród. **Powinno być:** licznik pokazuje ok. 30 kl./s i
+   „automat 3 (saver)”.
+5. Otwórz Sowie Tory, zacznij bieg, stuknij pauzę (lewy górny róg) → **Ustawienia**. **Powinno być:** ta sama grupa
+   **Płynność** z wybranym „Oszczędzanie baterii”. Stuknij **Automatyczna**, potem **Wznów**. **Powinno być:** bieg
+   płynny jak wcześniej.
+6. Na innym urządzeniu (np. komputerze) otwórz ustawienia. **Powinno być:** tam wybór jest osobny (np. dalej
+   „Automatyczna”) — Płynność zostaje na tym telefonie. Pozostałe ustawienia (muzyka, Tryb Przytulny) są wspólne
+   jak dawniej.
+
+### P3 — wygląd bez zmian
+
+1. W Sowich Ogrodach popatrz chwilę na rośliny. **Powinno być:** kołyszą się, a Sowi storczyk mruga jak dawniej;
+   podpisy „×N” pod doniczkami są na miejscu.
+2. W Łącz i Hoduj: złote, diamentowe i tęczowe rośliny dalej mają migające iskierki, kózki się kołyszą.
+3. W Sowich Torach: na Biedronce regały, lodówki i szyldy („PROMOCJA”, „NABIAŁ”…) wyglądają jak dawniej, na festiwalu
+   rośliny w stojakach się kołyszą, zraszacze pryskają, na blokowisku gołębie na dachach się ruszają.
+4. **Jeśli na którymkolwiek telefonie obraz wydaje się wyraźnie rozmyty** — zapisz model telefonu i wiersz
+   „ostrość” z licznika `?perf=1`; w ustawieniu Płynność można wybrać „Zawsze ostro”.
 
 ## B — Sowi Butik (kolory sowy)
 

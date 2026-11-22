@@ -231,6 +231,14 @@ pomieszczenia, oddane zamówienia, hybrydy i rekord Basenu Humbaka.
 Jeśli grasz na dwóch urządzeniach, a na jednym działa jeszcze starsza wersja gry, rośliny i pomieszczenia, których
 ta wersja nie zna, nie znikają — czekają w zapisie i wracają po odświeżeniu strony.
 
+## Płynność
+
+Plansza rysuje się płynnie także na słabszym telefonie: gdy telefon nie nadąża, gra sama trochę zmniejsza ostrość
+obrazu (rośliny mogą być minimalnie mniej ostre), a gdy znów jest płynnie — wraca do pełnej ostrości. Jeśli to nie
+wystarczy, u dołu pojawi się pytanie **„Gra trochę zwalnia. Włączyć tryb „Oszczędzanie baterii”?”** — **Włącz**
+ustawia 30 klatek na sekundę i mniej efektów, **Nie teraz** chowa pytanie. Wybór **Płynność** (Automatyczna / Zawsze
+ostro / Oszczędzanie baterii) zmienisz w menu głównym: zakładka **Sowa** → Ustawienia. Zostaje na tym telefonie.
+
 ## Telefon pionowo, poziomo i komputer
 
 Na telefonie trzymanym pionowo plansza zajmuje całą szerokość ekranu — nawet na najmniejszym (320 × 568) każde pole

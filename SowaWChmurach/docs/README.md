@@ -183,7 +183,11 @@ i nie kończy się — ostatnie serduszko zostaje. Lot kończysz w menu pauzy (�
   widać oprawę strefy (ogródek, ściany bloku, chmury, zorzę, kosmos).
 - Obrót telefonu, przejście do innej aplikacji albo zablokowanie ekranu **wstrzymuje** lot (bez utraty postępu);
   po powrocie gra wznawia się odliczaniem 3-2-1.
-- Na słabszym telefonie gra sama obniża rozdzielczość, żeby działała płynnie.
+- Na słabszym telefonie gra sama trochę obniża ostrość obrazu, żeby działała płynnie; gdy to nie wystarczy, zapyta,
+  czy włączyć **Oszczędzanie baterii**. Wybór **Płynność** (Automatyczna / Zawsze ostro / Oszczędzanie baterii) jest
+  w menu pauzy (**Ustawienia**) i w menu głównym (zakładka **Sowa**); zostaje na tym telefonie.
+- Licznik płynności: dopisz do adresu `?perf=1` — w lewym dolnym rogu pojawią się klatki na sekundę, ostrość
+  obrazu i poziom automatu płynności.
 
 ## Tryb diagnostyczny
 
