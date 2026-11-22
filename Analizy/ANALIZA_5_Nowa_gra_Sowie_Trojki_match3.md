@@ -655,7 +655,7 @@ o tym wspominała.
 
 | Element | Co się zmienia |
 | --- | --- |
-| **Rejestr gier** (`shared/sowie-platform.js`) | 6. gra: `{ id: "trojki", name: "Sowie Trójki", path: "SowieTrojki/", kind: "idle", saveVersion: 1, rebuilt: true }` (na czas podglądu — osobny wpis bez karty; rozdz. 17) |
+| **Rejestr gier** (`shared/sowie-platform.js`) | 6. gra: `{ id: "trojki", name: "Sowie Trójki", path: "SowieTrojki/", kind: "idle", saveVersion: 1, rebuilt: true }`. Na czas podglądu (M2–M4) gra nie ma jeszcze wpisu i działa w pamięci strony (bez zapisu) pod adresem `…/SowieTrojki/`; jeśli zechcesz testować z zapisem przed dodaniem karty, wpis dostanie nową, małą opcję `hidden: true` (gra bez karty w menu) — po publikacji reguł (Załącznik B) |
 | **Zapis w chmurze** (`shared/sowie-cloud.js`) | `"trojki"` w `GAME_IDS` (licznik rozegranych `records.trojki.runs`); dokument `sowiegry/profil/sowiegry_gry/trojki` |
 | **Reguły Firestore** | `"trojki"` na liście dozwolonych gier — **publikujesz Ty** (Załącznik B); kopia w `firestore.rules` i test reguł |
 | **Menu — karta** (`shared/menu/games.js`) | przystanek „6. Las”, opis „Układaj trójki liści, humbaków i kózek — Sówka kibicuje Ci z gałęzi!”, kolory biomu (zielenie lasu), ruchoma ilustracja (Sówka podskakuje, kafelki spadają i znikają w trójce), rekord: „Poziom 12 · ⭐ 31” |

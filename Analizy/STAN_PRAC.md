@@ -1,4 +1,4 @@
-# Stan prac — 2026-11-15
+# Stan prac — 2026-11-22
 
 Podsumowanie dla właściciela: co jest zrobione, co zostało, jakie są decyzje do podjęcia i na czym polegają problemy
 z testami automatycznymi. Szczegóły techniczne: `docs/Documentation.md`; plany: `ANALIZA_3_Plan_prac.md` (etapy
@@ -22,6 +22,12 @@ czarownicy po Drzewo świata — z 16 roślinami (m.in. belladonna i mandragora)
 (także Monstera … Drzewko złotych liści), każdy nowy rozdział ma trzy ulepszenia i nawozy, a w drzewku prestiżu są
 dwie nowe gałęzie ulepszeń za nasiona: „Magia” i „Przyjaciele”. Jest na `main` i na stronie (po aktualizacji odśwież
 ją dwa razy). Do sprawdzenia na telefonie: test O6 w [`TESTY_NA_TELEFONIE.md`](TESTY_NA_TELEFONIE.md).
+
+**2026-11-22:** dwie nowe analizy (punkt 0.3), **bez zmian w grach** — czekają na Twoje odpowiedzi:
+[`ANALIZA_5_Nowa_gra_Sowie_Trojki_match3.md`](ANALIZA_5_Nowa_gra_Sowie_Trojki_match3.md) — projekt nowej gry
+„match 3” z Sówką kibicującą z boku planszy (12 pytań w rozdziale 18, makieta i kafelki na obrazkach) oraz
+[`ANALIZA_6_Wydajnosc_lagi.md`](ANALIZA_6_Wydajnosc_lagi.md) — dlaczego gry „lagują”, gdy dużo się dzieje
+(zwłaszcza Sowie Ogrody), z pomiarami i planem poprawek W0–W8 (8 pytań w rozdziale 9).
 
 ## 0. Poprawki po testach z 2026-11-01 (etapy P1–P8)
 
@@ -98,6 +104,20 @@ Ogrodów — także nowe (Ogród czarownicy po 14 rozdziałach, półka z 43 gat
 (punkt 4.3 d), niezwiązane z tą zmianą: Sowia Ucieczka — start i skok (iPhone 13 pionowo i poziomo) oraz wyzwanie
 dnia (iPhone 13), Łącz i Hoduj — Kram ogrodnika (iPhone 13 poziomo; przycisk Kramu nie pojawił się w 30 s).
 
+### 0.3. Analizy z 2026-11-22 (N1 i G6) — czekają na decyzje
+
+Prośba i zgłoszenie dosłownie: [`UWAGI_WLASCICIELA.md`](UWAGI_WLASCICIELA.md), tabela „Prośby i uwagi — 2026-11-22”.
+
+| # | Co | Wynik analizy | Stan |
+| --- | --- | --- | --- |
+| G6 | „jak się za dużo dzieje na ekranie to gra laguje” (zwłaszcza Sowie Ogrody; „zawiesza się przesuwanie roślin”) | przyczyną jest rysowanie całego obrazu od nowa co klatkę w podwójnej ostrości (logika i panel są lekkie — bez rysowania gra ma 60 kl./s nawet na „wolnym telefonie”); Ogrody na symulowanym średnim telefonie: 43 kl./s w spokoju, 24–28 w Zatoce Humbaka; Łącz i Hoduj z pełną planszą 18–24; Sowie Tory 17 (na słabszym telefonie gra zwalnia o ok. 12%); próbne poprawki dają w Ogrodach 55–60 kl./s, w Łącz i Hoduj 49–55 | 📝 analiza — plan W0–W8, czeka na odpowiedzi (rozdz. 9 Analizy 6) |
+| N1 | nowa gra „match 3” z sową z boku ekranu, reagującą na postępy (radośniej przy combo); kafelki z istniejących grafik, każdy rodzaj z własnym tłem (kolor + kształt) | projekt „Sowie Trójki”: 6 rodzajów kafelków (liście, humbak, kózka, truskawka, storczyk) na tłach różnych kształtów i kolorów, 4 moce i ich połączenia, przeszkody Pracu i Amic, jajka i pisklęta, skala radości Sówki 0–5, Sowia pomoc, 45 poziomów na start, bez żyć i płatności; plan M0–M7 (ok. 3–4 tygodnie) | 📝 analiza — czeka na odpowiedzi (rozdz. 18 Analizy 5); do zapisu postępu potrzebna jedna zmiana reguł Firestore przez Ciebie (Załącznik B) |
+
+**Proponowana kolejność:** najpierw W0–W2 z Analizy 6 (pomiar na telefonie, wspólny automat płynności, Sowie
+Ogrody), potem nowa gra (M1–M6), a W4–W5 (Łącz i Hoduj, gry zręcznościowe) równolegle. Pomiary robiłem
+w Chromium w kontenerze, w trybie pamięci — nic nie trafiło do bazy; skrypty pomiarowe opisuje Załącznik A
+Analizy 6.
+
 ## 1. Co jest zrobione — plan E0–E10 (stan z 2026-10-06)
 
 Wszystkie etapy planu E0–E10 są na gałęzi `main`, więc są też na stronie
@@ -168,6 +188,8 @@ W repozytorium nie ma innych plików tymczasowych. Na GitHubie została stara ga
 | 6 | **Do sprawdzenia przy testach (spostrzeżenie z przeglądu):** na ekranie tytułowym Sowich Torów w pionie górna część ekranu jest jasnym, pustym tłem (tak samo przed zmianami E9) | do oceny — jeśli przeszkadza, dodam niebo/sufit sklepu |
 | 7 | **Wydajność:** w kontenerze bez karty graficznej przy spowolnionym procesorze (×4) Sowie Tory mają ok. 23 kl./s, pozostałe gry 45–56 kl./s; na telefonie płótno jest przyspieszane sprzętowo, a Tory same obniżają rozdzielczość, gdy klatek jest za mało | bez zmian; jeśli na którymś telefonie Tory się „tną”, napisz który |
 | 8 | **Stara gałąź `claude/loving-fermat-76mtxr`** na GitHubie (włączona do `main`) | do decyzji — mogę usunąć, jeśli chcesz |
+| 9 | **Wydajność (G6, 2026-11-22)** — Analiza 6: plan W0–W8, pytania w rozdz. 9 (m.in. model telefonu, w której grze zawiesza się przesuwanie roślin, zgoda na automatyczne obniżanie ostrości) | czeka na odpowiedzi; punkt 7 wyżej zastąpiony przez tę analizę |
+| 10 | **Nowa gra „match 3” (N1, 2026-11-22)** — Analiza 5 „Sowie Trójki”: pytania w rozdz. 18 (nazwa, miejsce Sówki, kafelki, liczba poziomów, reguły Firestore) | czeka na odpowiedzi |
 
 ### 3.1. Zadanie 9.5 — stare adresy gier i sprzątanie starej pamięci (decyzja z 2026-11-02)
 
@@ -311,6 +333,8 @@ przybyło (P3–P7) i przebieg zbliżył się do limitu 60 minut, limit czasu CI
 
 ## 5. Co dalej
 
+0. Twoje odpowiedzi na pytania z Analizy 6 (rozdz. 9) i Analizy 5 (rozdz. 18) → poprawki płynności W0–W2 →
+   nowa gra „Sowie Trójki” etapami M1–M6 (najpierw podgląd do Twoich testów).
 1. Twoje testy na telefonie (`TESTY_NA_TELEFONIE.md`) i uwagi (w nowym oknie) → wpis w `UWAGI_WLASCICIELA.md` →
    poprawki małymi commitami, każdy z zielonym `npm test`, z aktualizacją dokumentacji gry i tego pliku.
 2. Ewentualnie inne wymagania zdjęć Galerii (punkt 3, wiersz 2) i ceny w Butiku albo w Kramie ogrodnika.
