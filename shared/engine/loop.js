@@ -1,5 +1,9 @@
 // Pętla gry ze stałym krokiem symulacji (domyślnie 1/120 s) i interpolacją rysowania.
 // update(step) liczy fizykę zawsze tym samym krokiem, render(alpha) dostaje ułamek kroku do interpolacji.
+// Rysowanie najwyżej 60 razy na sekundę (Analiza 6, W1: ekrany 90/120 Hz wołają klatki częściej), w trybie
+// „Oszczędzanie baterii” 30. Symulacja nadrabia do 0,25 s na klatkę (30 kroków) — dawniej 12 kroków (0,1 s), przez co
+// na bardzo wolnym telefonie gra zwalniała (Analiza 6, przyczyna P7).
+import { createFrameLimiter } from "./quality.js";
 
 export const STEP = 1 / 120;
 
@@ -8,7 +12,7 @@ export function createLoop({
   render,
   step = STEP,
   maxFrame = 0.25,
-  maxSteps = 12,
+  maxSteps = 30,
   raf = (callback) => requestAnimationFrame(callback),
   caf = (id) => cancelAnimationFrame(id),
 }) {
@@ -18,8 +22,7 @@ export function createLoop({
   let accumulator = 0;
   let frameId = null;
   let fps = 60;
-  let renderInterval = 0;
-  let sinceRender = Infinity;
+  const limiter = createFrameLimiter(60);
   const frameListeners = new Set();
 
   // Jedna klatka; `time` w milisekundach (jak w requestAnimationFrame).
@@ -40,12 +43,9 @@ export function createLoop({
       if (steps === maxSteps) accumulator = 0;
     }
 
-    sinceRender += delta;
-    if (sinceRender + 1e-6 >= renderInterval) {
-      sinceRender = 0;
-      render(paused ? 0 : accumulator / step);
-    }
-    for (const listener of frameListeners) listener({ delta, fps, steps });
+    const rendered = limiter.tick(delta);
+    if (rendered) render(paused ? 0 : accumulator / step);
+    for (const listener of frameListeners) listener({ delta, fps, steps, rendered });
     return steps;
   }
 
@@ -76,14 +76,16 @@ export function createLoop({
       paused = false;
       last = null;
       accumulator = 0;
+      limiter.reset();
     },
     isPaused: () => paused,
     isRunning: () => running,
     fps: () => fps,
-    // 60 (co klatkę) albo np. 30 w trybie „Oszczędzanie baterii”.
+    // Najwyżej 60 klatek/s (ekran 60 Hz — każda klatka, 120 Hz — co druga) albo np. 30 w „Oszczędzaniu baterii”.
     setRenderRate(perSecond) {
-      renderInterval = perSecond >= 60 ? 0 : 1 / perSecond;
+      limiter.setRate(Math.min(60, Number(perSecond) || 60));
     },
+    renderRate: () => limiter.rate(),
     onFrame(listener) {
       frameListeners.add(listener);
       return () => frameListeners.delete(listener);

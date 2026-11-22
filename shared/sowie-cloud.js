@@ -1003,6 +1003,13 @@
       offlineReason: () => fallbackReason,
       backendKind: () => backend?.kind || null,
       deviceId: () => device.deviceId,
+      // Ustawienia tylko tego urządzenia (np. „Płynność” — Analiza 6, W1): we wpisie urządzenia obok odblokowania
+      // hasłem, nigdy w bazie (profil jest wspólny dla wszystkich urządzeń, a każde ma inną moc).
+      devicePrefs: () => clone(isPlainObject(device.prefs) ? device.prefs : {}),
+      setDevicePrefs(patch = {}) {
+        if (!isPlainObject(patch)) return;
+        writeDevice({ prefs: { ...(isPlainObject(device.prefs) ? device.prefs : {}), ...clone(patch) } });
+      },
       isUnlocked,
       unlock,
       lock,

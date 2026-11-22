@@ -29,11 +29,16 @@ if (skipWebkit) {
   console.warn("[playwright] SOWIE_E2E_BEZ_WEBKIT=1 — projekty WebKit pominięte w tym uruchomieniu (tylko lokalnie).");
 }
 
+// Chromium z innego miejsca niż pobrane przez Playwrighta — tylko lokalnie i tylko jawnie (kontener, w którym są
+// przeglądarki dla innej wersji Playwrighta niż przypięta w package.json). W CI zmienna nie jest ustawiana.
+const chromiumPath = process.env.CI ? "" : process.env.SOWIE_CHROMIUM || "";
+const chromiumLaunch = chromiumPath ? { launchOptions: { executablePath: chromiumPath } } : {};
+
 const phoneProjects = PHONE_PROFILES.flatMap((profile) =>
   ENGINES.filter((engine) => !(skipWebkit && engine === "webkit")).map((engine) => ({
     name: `telefon-${profile.id}-${engine}`,
     testDir: "./tests/e2e/telefon",
-    use: { ...profile.device, browserName: engine },
+    use: { ...profile.device, browserName: engine, ...(engine === "chromium" ? chromiumLaunch : {}) },
   })),
 );
 
@@ -57,7 +62,7 @@ module.exports = defineConfig({
       // Testy obecnych (starych) gier zostają na desktopowym Chromium.
       name: "desktop-chromium",
       testIgnore: "**/telefon/**",
-      use: { ...devices["Desktop Chrome"] },
+      use: { ...devices["Desktop Chrome"], ...chromiumLaunch },
     },
     // Nowe testy biegną od początku na profilach telefonów.
     ...phoneProjects,

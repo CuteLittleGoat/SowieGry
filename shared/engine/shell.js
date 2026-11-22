@@ -101,7 +101,16 @@ export function createPauseController({
 }
 
 // Powłoka w przeglądarce. `stage` — element planszy (.sowie-stage), `loop` — pętla gry.
-export function createShell({ stage, loop, onBatterySaver = () => {}, overlay = true, strings = {} } = {}) {
+// `quality` (opcjonalnie) — automat płynności (quality.js): „Oszczędzanie baterii” to jego tryb „saver”, a propozycja
+// oszczędzania pojawia się dopiero, gdy automat zszedł już najniżej i gra dalej nie nadąża (Analiza 6, W1 i W6).
+export function createShell({
+  stage,
+  loop,
+  quality = null,
+  onBatterySaver = () => {},
+  overlay = true,
+  strings = {},
+} = {}) {
   const text = {
     paused: "Pauza",
     resume: "Graj dalej",
@@ -119,7 +128,9 @@ export function createShell({ stage, loop, onBatterySaver = () => {}, overlay = 
   const listeners = new Set();
   let pauseNode = null;
   let slowNode = null;
-  let batterySaver = Boolean(globalThis.SowieCloud?.profile?.().settings?.batterySaver);
+  let batterySaver = quality
+    ? quality.mode() === "saver"
+    : Boolean(globalThis.SowieCloud?.profile?.().settings?.batterySaver);
 
   const controller = createPauseController({
     loop,
@@ -173,7 +184,13 @@ export function createShell({ stage, loop, onBatterySaver = () => {}, overlay = 
 
   const monitor = createPerfMonitor({
     onSlow: () => {
-      if (!batterySaver) showSlowBanner();
+      if (batterySaver) return;
+      // Automat płynności może jeszcze zejść niżej — najpierw on, propozycja później.
+      if (quality?.canLower?.()) {
+        monitor.reset();
+        return;
+      }
+      showSlowBanner();
     },
   });
   const offFrame = loop?.onFrame?.(({ fps, delta }) => {
@@ -201,20 +218,38 @@ export function createShell({ stage, loop, onBatterySaver = () => {}, overlay = 
     slowNode = null;
   }
 
-  function setBatterySaver(on) {
+  function setBatterySaver(on, { save = true } = {}) {
     batterySaver = Boolean(on);
-    loop?.setRenderRate?.(batterySaver ? 30 : 60);
+    if (quality) {
+      if (batterySaver) quality.setMode("saver");
+      else if (quality.mode() === "saver") quality.setMode("auto");
+    }
+    loop?.setRenderRate?.(quality ? quality.fps() : batterySaver ? 30 : 60);
     onBatterySaver(batterySaver);
-    globalThis.SowieCloud?.updateProfile?.((profile) => (profile.settings.batterySaver = batterySaver), {
-      delayMs: 1000,
-    });
+    // Dawne ustawienie w profilu zostaje (zgodność; urządzenie bez własnego wyboru „Płynności” bierze je stąd).
+    if (save) {
+      globalThis.SowieCloud?.updateProfile?.((profile) => (profile.settings.batterySaver = batterySaver), {
+        delayMs: 1000,
+      });
+    }
     for (const listener of listeners) listener({ state: controller.state(), batterySaver });
   }
 
-  setBatterySaver(batterySaver);
+  setBatterySaver(batterySaver, { save: false });
+  // Zmiana trybu w automacie (np. „Płynność” w ustawieniach) — ta sama liczba klatek i stan oszczędzania.
+  const offQuality = quality?.onChange?.((change) => {
+    loop?.setRenderRate?.(change.fps);
+    const saver = change.mode === "saver";
+    if (saver !== batterySaver) {
+      batterySaver = saver;
+      onBatterySaver(batterySaver);
+      for (const listener of listeners) listener({ state: controller.state(), batterySaver });
+    }
+  });
   globalThis.SowieCloud?.ready?.then(() => {
+    if (quality) return;
     const saved = Boolean(globalThis.SowieCloud.profile().settings?.batterySaver);
-    if (saved !== batterySaver) setBatterySaver(saved);
+    if (saved !== batterySaver) setBatterySaver(saved, { save: false });
   });
 
   return {
@@ -222,8 +257,9 @@ export function createShell({ stage, loop, onBatterySaver = () => {}, overlay = 
     resume: () => controller.resume(),
     setActive: (value) => controller.setActive(value),
     state: () => controller.state(),
-    setBatterySaver,
+    setBatterySaver: (on) => setBatterySaver(on),
     batterySaver: () => batterySaver,
+    quality: () => quality,
     showSlowBanner,
     monitor,
     onChange(listener) {
@@ -238,6 +274,7 @@ export function createShell({ stage, loop, onBatterySaver = () => {}, overlay = 
       stage.removeEventListener("gesturestart", blockGesture);
       stage.removeEventListener("dblclick", blockGesture);
       offFrame?.();
+      offQuality?.();
       pauseNode?.remove();
       hideSlowBanner();
     },

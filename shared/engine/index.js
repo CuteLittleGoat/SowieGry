@@ -14,3 +14,5 @@ export * from "./shell.js";
 export * from "./assets.js";
 export * from "./sprites.js";
 export * from "./audio.js";
+export * from "./quality.js";
+export * from "./perf-meter.js";
