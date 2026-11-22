@@ -1,6 +1,7 @@
 // Zakładka „Sowa”: profil (poziom, XP, piórka), zadania dnia i tygodnia, osiągnięcia (Sowia Akademia), garderoba,
 // Sowi Butik (gatunki sów, stroje, dłuższe kózki), rekordy wszystkich gier (okno z Top 10 na poziom trudności)
 // i ustawienia: dźwięk, efekty, wibracje, Tryb Przytulny, komentarze sowy, stan zapisu i „Wyloguj to urządzenie”.
+import { createQuality, deviceQualityStore, markQualityChoice, qualityChoiceHtml } from "../engine/quality.js";
 import { MISSION_LABELS } from "../meta/missions.js";
 import { taskProgress } from "../meta/progress.js";
 import { buy, GOAT_LEVELS, OUTFIT_PRICES, selectSpecies, shopOffer } from "../meta/shop.js";
@@ -84,6 +85,8 @@ export function createOwlTab({
 }) {
   const profile = () => cloud?.profile?.() || {};
   const settings = () => profile().settings || {};
+  // Automat płynności tego urządzenia — tylko do odczytu i zmiany trybu „Płynność” (menu go nie używa do rysowania).
+  const deviceQuality = () => createQuality({ store: deviceQualityStore(cloud) });
   const save = (changes) =>
     cloud?.updateProfile?.((current) => Object.assign((current.settings ||= {}), changes), { delayMs: 1000 });
   let openRecords = null;
@@ -296,6 +299,7 @@ export function createOwlTab({
         ${slider("music", "Muzyka")}
         ${slider("sfx", "Efekty dźwiękowe")}
         ${toggle("Efekty (wstrząsy, cząsteczki)", "effects", !current.reducedEffects)}
+        ${qualityChoiceHtml(deviceQuality().mode(), "menu-chip")}
         ${toggle("Wibracje", "vibration", current.vibration !== false, engine && !engine.canVibrate() ? "Ten telefon nie obsługuje wibracji." : "")}
         ${toggle("Tryb Przytulny (wolniej, bez końca gry)", "cozy", Boolean(current.cozy), "Na poziomie Chill w Sowiej Ucieczce, Sowich Torach i Sowie w Chmurach.")}
         ${toggle("Komentarze sowy", "quips", current.quips !== false)}
@@ -551,6 +555,13 @@ export function createOwlTab({
         chip.setAttribute("aria-pressed", String(chip === cosmetic));
       drawProfileOwl();
       onCosmetic(key);
+      return;
+    }
+    // „Płynność” (Analiza 6, W6): wybór tylko dla tego urządzenia (wpis urządzenia w SowieCloud, nie profil).
+    const choice = event.target.closest("[data-quality]");
+    if (choice) {
+      deviceQuality().setMode(choice.dataset.quality);
+      markQualityChoice(choice.closest(".sowie-quality"), choice.dataset.quality);
       return;
     }
     const setting = event.target.closest("[data-setting]");

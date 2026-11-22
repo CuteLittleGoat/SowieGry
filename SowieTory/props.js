@@ -919,6 +919,100 @@ export const DECOR_WIDTH = Object.freeze({
   powietrze: 0.6,
 });
 
+// ---------- Obrazki rekwizytów (Analiza 6, W5) ----------
+
+// Granice rysunków w metrach od punktu na ziemi: [lewo, prawo, góra, dół] — zmierzone dla ziaren 0–23 i chwil
+// 0–4 s, z zapasem ok. 0,08 m (napisy innym krojem pisma, wygładzanie krawędzi). render.js trzyma według nich
+// gotowe obrazki rekwizytów; test e2e (tests/e2e/telefon/plynnosc.spec.js) sprawdza, że każdy rysunek się mieści.
+// Nad drogą (`overhead`): [zapas w bok poza połową szerokości, góra, dół, najmniejsza połowa szerokości] — rysunek
+// ma szerokość `width` (girlanda i napis osiedla mają też część stałej szerokości).
+export const PROP_BOUNDS = Object.freeze({
+  decor: Object.freeze({
+    regal: [0.95, 0.95, 2.75, 0.15],
+    piekarnia: [0.95, 0.95, 2.35, 0.15],
+    pracownik: [0.9, 0.75, 2.15, 0.1],
+    stojakRoslin: [0.85, 0.85, 2.45, 0.1],
+    wozekKwiatow: [0.85, 0.85, 1.3, 0.1],
+    zwiedzajacy: [0.35, 0.45, 1.7, 0.1],
+    zraszacz: [0.8, 0.8, 1.1, 0.1],
+    blok: [1.65, 1.65, 7.35, 0.15],
+    trzepak: [1.05, 1.05, 1.6, 0.1],
+    lawka: [0.85, 0.85, 1, 0.1],
+    slupek: [0.25, 0.25, 0.85, 0.15],
+    sklepAmic: [1.65, 1.65, 3.45, 0.15],
+    pylon: [0.65, 0.65, 3.45, 0.1],
+    auto: [0.85, 0.85, 1.55, 0.1],
+    donica: [0.5, 0.5, 1.25, 0.15],
+    warzywniak: [0.95, 0.95, 2.5, 0.1],
+    lodowka: [0.95, 0.95, 2.4, 0.15],
+    kwiaty: [0.75, 0.75, 1.75, 0.15],
+    promocja: [0.85, 1.1, 2.45, 0.15],
+    kasa: [0.95, 1.05, 2.7, 0.15],
+    koszyki: [0.4, 0.4, 0.9, 0.15],
+    namiot: [1.05, 1.05, 2.75, 0.1],
+    balony: [0.6, 0.6, 2.5, 0.1],
+    kiosk: [1, 1, 2.5, 0.15],
+    maluch: [0.75, 0.75, 1.35, 0.1],
+    piaskownica: [0.9, 0.9, 0.9, 0.15],
+    myjnia: [1.05, 1.05, 2.75, 0.1],
+    butle: [0.75, 0.75, 1.65, 0.15],
+    powietrze: [0.4, 0.6, 1.55, 0.15],
+  }),
+  obstacle: Object.freeze({
+    cysterna: [0.85, 0.85, 2.15, 0.1],
+    paleta: [0.75, 0.75, 0.8, 0.15],
+    stojak: [0.8, 0.8, 2.2, 0.1],
+    "wozek-sklepowy": [1.1, 0.75, 1.65, 0.1],
+    katalogi: [0.7, 0.7, 0.95, 0.15],
+    stoisko: [0.85, 0.85, 2.2, 0.15],
+    samochod: [0.95, 0.85, 1.55, 0.1],
+    zadaszenie: [0.85, 0.85, 2.25, 0.1],
+  }),
+  overhead: Object.freeze({
+    baner: [0.15, 0.85, 0.15, 0],
+    girlanda: [0.25, 1.45, 0.2, 1.4],
+    zadaszenie: [0.15, 0.95, 0.15, 0],
+    napisPrl: [0.15, 0.75, 0.15, 1.6],
+  }),
+});
+
+// Rekwizyty ruchome — rysunek zależy od czasu `t` (kołysanie, podskoki, szczotki, krople, dymek): ich obrazki
+// render.js odświeża kilkanaście razy na sekundę; pozostałe rysuje raz dla danej wielkości na ekranie.
+export const PROP_ANIMATED = Object.freeze({
+  decor: Object.freeze([
+    "pracownik",
+    "stojakRoslin",
+    "wozekKwiatow",
+    "zwiedzajacy",
+    "zraszacz",
+    "blok",
+    "donica",
+    "kwiaty",
+    "namiot",
+    "balony",
+    "myjnia",
+  ]),
+  obstacle: Object.freeze(["wozek-sklepowy", "samochod"]),
+  overhead: Object.freeze(["girlanda"]),
+});
+
+/** Granice rysunku rekwizytu (m): [lewo, prawo, góra, dół] albo null (nieznany — rysowany wprost). */
+export function propBounds(group, kind, width = 0) {
+  const bounds = PROP_BOUNDS[group]?.[kind];
+  if (!bounds) return null;
+  if (group !== "overhead") return bounds;
+  const [extra, up, down, minHalf] = bounds;
+  const half = Math.max(width / 2, minHalf) + extra;
+  return [half, half, up, down];
+}
+
+/** Rysuje rekwizyt grupy `decor` / `obstacle` / `overhead` w metrach od punktu na ziemi (jak w render.js). */
+export function drawProp(context, group, kind, t, seed, width = 0) {
+  if (group === "overhead") drawOverhead(context, kind, width, t);
+  else if (group === "obstacle") OBSTACLE_PROPS[kind]?.(context, t, seed);
+  else DECOR_PROPS[kind]?.(context, t, seed);
+}
+
 // Transparenty nad alejką / girlandy / zadaszenie nad drogą (wysoko, bez kolizji): rysunek szerokości `width` m.
 export function drawOverhead(context, kind, width, t) {
   if (kind === "baner") {

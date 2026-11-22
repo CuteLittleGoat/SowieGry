@@ -15,6 +15,38 @@ export const QUALITY_LEVELS = Object.freeze([
   Object.freeze({ level: 3, dpr: 1, particles: 0.5, fps: 30 }),
 ]);
 
+// Ustawienie „Płynność” (menu: Sowa → Ustawienia, menu pauzy w grach) — nazwy i krótkie opisy trybów.
+export const QUALITY_LABELS = Object.freeze({
+  auto: "Automatyczna",
+  sharp: "Zawsze ostro",
+  saver: "Oszczędzanie baterii",
+});
+export const QUALITY_NOTES = Object.freeze({
+  auto: "Gdy telefon nie nadąża, gra sama trochę zmniejsza ostrość, żeby była płynna.",
+  sharp: "Zawsze najostrzejszy obraz — na słabszym telefonie gra może się ciąć.",
+  saver: "30 klatek na sekundę i mniej efektów — telefon mniej się grzeje i dłużej działa na baterii.",
+});
+
+/** Przyciski wyboru „Płynność” (HTML): `chipClass` — klasa przycisku w danym miejscu (menu albo menu pauzy). */
+export function qualityChoiceHtml(mode, chipClass) {
+  const buttons = QUALITY_MODES.map(
+    (key) =>
+      `<button type="button" class="${chipClass}" role="radio" aria-checked="${key === mode}" aria-pressed="${key === mode}" data-quality="${key}">${QUALITY_LABELS[key]}</button>`,
+  ).join("");
+  return `<div class="sowie-quality" role="radiogroup" aria-label="Płynność"><span class="sowie-quality-title">Płynność</span><div class="sowie-quality-options">${buttons}</div><small data-quality-note>${QUALITY_NOTES[mode] || ""}</small></div>`;
+}
+
+/** Zaznacza wybrany tryb w grupie przycisków `root` (po kliknięciu) i podmienia opis. */
+export function markQualityChoice(root, mode) {
+  for (const button of root.querySelectorAll("[data-quality]")) {
+    const on = button.dataset.quality === mode;
+    button.setAttribute("aria-checked", String(on));
+    button.setAttribute("aria-pressed", String(on));
+  }
+  const note = root.querySelector("[data-quality-note]");
+  if (note) note.textContent = QUALITY_NOTES[mode] || "";
+}
+
 // Najniższy poziom, do którego automat schodzi sam (poziom 3 — tylko z wyboru „Oszczędzanie baterii”).
 export const AUTO_MAX_LEVEL = 2;
 
@@ -81,8 +113,10 @@ export function deviceQualityStore(cloud = globalThis.SowieCloud) {
 
 /**
  * createQuality({ store, mode, level, ... }) → automat płynności.
- * sample(dt) — czas od poprzedniej narysowanej klatki (s), wołany przy każdym rysowaniu; level(), mode(), settings()
- * → { level, dpr, particles, fps }, dpr(urządzenie) → ostrość płótna, setMode(tryb), onChange(słuchacz).
+ * sample(dt, cel) — czas od poprzedniej narysowanej klatki (s) i docelowa liczba klatek/s (60, w spokoju albo
+ * oszczędzaniu 30 — liczy się stosunek do celu), wołany przy każdym rysowaniu; level(), mode(), settings()
+ * → { level, dpr, particles, fps }, dpr(urządzenie) → ostrość płótna, setMode(tryb), onChange(słuchacz),
+ * onStruggle(słuchacz) — gra nie nadąża (< 45 kl./s przez 5 s) mimo najniższego poziomu automatu.
  */
 export function createQuality({
   store = deviceQualityStore(),
@@ -93,6 +127,8 @@ export function createQuality({
   upFps = 58,
   upAfter = 20,
   upCooldown = 60,
+  struggleFps = 45,
+  struggleAfter = 5,
 } = {}) {
   const saved = store?.get?.() || {};
   let mode = QUALITY_MODES.includes(initialMode)
@@ -104,12 +140,18 @@ export function createQuality({
         : "auto";
   let autoLevel = Math.min(AUTO_MAX_LEVEL, clampLevel(initialLevel ?? saved.level ?? 0));
   const listeners = new Set();
+  const struggleListeners = new Set();
   // Okno pomiaru (1 s), kolejne wolne / szybkie sekundy i czas od ostatniej zmiany poziomu.
   let windowTime = 0;
   let windowFrames = 0;
+  let windowExpected = 0;
   let slowSeconds = 0;
   let fastSeconds = 0;
   let sinceChange = upCooldown;
+  // Propozycja „Oszczędzania baterii” (W6): kolejne sekundy < `struggleFps` na najniższym poziomie automatu (albo
+  // w trybie „Zawsze ostro”) i czy propozycja już padła (raz, do zmiany trybu).
+  let struggleSeconds = 0;
+  let struggled = false;
 
   const level = () => (mode === "sharp" ? 0 : mode === "saver" ? 3 : autoLevel);
   const settings = () => QUALITY_LEVELS[level()];
@@ -126,6 +168,7 @@ export function createQuality({
     autoLevel = value;
     slowSeconds = 0;
     fastSeconds = 0;
+    struggleSeconds = 0;
     sinceChange = 0;
     if (mode === "auto") notify(reason);
     else store?.set?.({ mode, level: autoLevel });
@@ -151,21 +194,36 @@ export function createQuality({
       mode = next;
       slowSeconds = 0;
       fastSeconds = 0;
+      struggleSeconds = 0;
+      struggled = false;
       notify("mode");
       return true;
     },
-    sample(deltaSeconds) {
+    sample(deltaSeconds, target = 60) {
       const delta = Number(deltaSeconds) || 0;
       // Przerwa (karta w tle, pauza, wczytywanie) — nie liczymy.
       if (delta <= 0 || delta > 0.5) return false;
       sinceChange += delta;
-      if (mode !== "auto") return false;
+      if (mode === "saver") return false;
       windowTime += delta;
       windowFrames += 1;
+      // Ile klatek powinno być przy celu (np. w spokoju gra celowo rysuje 30 — to nie jest „wolno”).
+      windowExpected += delta * Math.max(1, Math.min(60, Number(target) || 60));
       if (windowTime < 1) return false;
-      const fps = windowFrames / windowTime;
+      // Klatki/s w przeliczeniu na cel 60 (40 z 60 → 40; 30 z 30 → 60; 20 z 30 → 40).
+      const fps = (windowFrames / windowExpected) * 60;
       windowTime = 0;
       windowFrames = 0;
+      windowExpected = 0;
+      // Automat nie ma już dokąd zejść (albo „Zawsze ostro”), a gra dalej nie nadąża — propozycja oszczędzania.
+      const bottom = mode !== "auto" || autoLevel >= AUTO_MAX_LEVEL;
+      struggleSeconds = bottom && fps < struggleFps ? struggleSeconds + 1 : 0;
+      if (struggleSeconds >= struggleAfter && !struggled) {
+        struggled = true;
+        const detail = { fps, mode, level: level() };
+        for (const listener of struggleListeners) listener(detail);
+      }
+      if (mode !== "auto") return false;
       if (fps < downFps) {
         slowSeconds += 1;
         fastSeconds = 0;
@@ -184,6 +242,11 @@ export function createQuality({
     onChange(listener) {
       listeners.add(listener);
       return () => listeners.delete(listener);
+    },
+    /** Gra nie nadąża mimo najniższego poziomu automatu (albo w trybie „Zawsze ostro”) — raz, do zmiany trybu. */
+    onStruggle(listener) {
+      struggleListeners.add(listener);
+      return () => struggleListeners.delete(listener);
     },
     // Testy i Laboratorium: poziom automatu od razu.
     setAutoLevel: (next) => setAutoLevel(next, "test"),

@@ -6,6 +6,9 @@
 // podsumowanie do profil.records.ogrody). Wczytanie: stan z pola `preview` (zapis z czasu podglądu, E7b–E7d —
 // przenoszony do `state`, a `preview` znika w tym samym zapisie), inaczej `state` (v3 albo dawny v2 — migracja).
 import { connectAudioSettings, createAudio } from "../../shared/engine/audio.js";
+import { createPerfMeter } from "../../shared/engine/perf-meter.js";
+import { createFrameLimiter, createQuality } from "../../shared/engine/quality.js";
+import { createSlowBanner } from "../../shared/engine/shell.js";
 import { createAtlas } from "../../shared/engine/sprites.js";
 import { guideFor } from "../../shared/meta/guides-data.js";
 import { EVENTS, progress } from "../../shared/meta/progress.js";
@@ -84,7 +87,30 @@ const atlas = createAtlas({ catalog: SPRITES, baseUrl: SVG_BASE });
 // Gatunek sowy z Sowiego Butiku (przekolorowanie części sowy w atlasie).
 linkSpecies(atlas);
 const animator = createOwlAnimator();
-const renderer = createGardenRenderer({ canvas, atlas, scroll: shelf });
+// Płynność (Analiza 6, W1–W2): automat ostrości i cząsteczek, rysowanie najwyżej 60 razy na sekundę (ekrany 120 Hz),
+// a w spokoju 30 — ogród kołysze się powoli; licznik `?perf=1`.
+const quality = createQuality();
+const limiter = createFrameLimiter(quality.fps());
+const renderer = createGardenRenderer({
+  canvas,
+  atlas,
+  scroll: shelf,
+  getDpr: () => quality.dpr(window.devicePixelRatio || 1),
+  particleScale: () => quality.particleScale(),
+  // Tło i obrazki roślin: 15 odświeżeń na sekundę, na słabszym telefonie 12 i 10.
+  refreshRate: () => [15, 12, 10, 10][quality.level()],
+});
+const meter = createPerfMeter({ quality, canvas });
+quality.onChange(() => resize());
+// Propozycja „Oszczędzania baterii” (Analiza 6, W6) — jak w grach zręcznościowych, ale dopiero gdy automat zszedł już
+// najniżej (albo wybrano „Zawsze ostro”) i gra dalej nie nadąża (< 45 kl./s przez 5 s); raz, do zmiany trybu.
+const slowBanner = createSlowBanner({ stage: root, page: true, onEnable: () => quality.setMode("saver") });
+quality.onStruggle(() => {
+  if (quality.mode() !== "saver") slowBanner.show();
+});
+// Ostatni dotyk albo klawisz (ms, performance.now) — przez 1,5 s po nim ogród rysuje pełne 60 klatek/s.
+let lastInteraction = 0;
+const IDLE_AFTER_MS = 1500;
 // Jeden komunikat naraz, u góry (jak w trakcie gry) — nie zasłania panelu.
 const toasts = createToasts({ root, isInGame: () => true });
 
@@ -617,6 +643,7 @@ const velocity = createVelocity();
 let dragId = null;
 
 canvas.addEventListener("pointerdown", (event) => {
+  lastInteraction = performance.now();
   if (!ready || (event.pointerType === "mouse" && event.button !== 0)) return;
   const { x, y } = canvasPoint(event);
   if (garden.state.bay || renderer.hit(x, y)) {
@@ -634,6 +661,7 @@ canvas.addEventListener("pointerdown", (event) => {
 canvas.addEventListener("pointermove", (event) => {
   const touch = touches.get(event.pointerId);
   if (!touch) return;
+  lastInteraction = performance.now();
   const { x, y } = canvasPoint(event);
   if (!touch.moved) {
     if (Math.hypot(x - touch.x, y - touch.y) < SHELF.dragThreshold) return;
@@ -648,7 +676,11 @@ canvas.addEventListener("pointermove", (event) => {
   if (dragId === event.pointerId) {
     // Palec w prawo — linia w prawo (widać rośliny z lewej), więc przesunięcie maleje.
     shelf.drag(-(x - touch.lastX) / unit());
-    velocity.add(x, event.timeStamp);
+    // Wszystkie położenia palca od poprzedniej klatki (gdy klatka się spóźni) — rozpęd liczony bez dziur (W3).
+    const samples = event.getCoalescedEvents?.() || [];
+    const left = canvas.getBoundingClientRect().left;
+    if (samples.length > 1) for (const sample of samples) velocity.add(sample.clientX - left, sample.timeStamp);
+    else velocity.add(x, event.timeStamp);
   }
   touch.lastX = x;
 });
@@ -656,6 +688,7 @@ canvas.addEventListener("pointermove", (event) => {
 function endTouch(event, cancelled) {
   const touch = touches.get(event.pointerId);
   if (!touch) return;
+  lastInteraction = performance.now();
   touches.delete(event.pointerId);
   if (dragId === event.pointerId) {
     dragId = null;
@@ -712,6 +745,7 @@ alertsNode.addEventListener("click", (event) => {
   updateEvents();
 });
 canvas.addEventListener("keydown", (event) => {
+  lastInteraction = performance.now();
   if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
     event.preventDefault();
     shelf.page(event.key === "ArrowRight" ? 1 : -1);
@@ -726,9 +760,35 @@ waterButton.addEventListener("click", () => garden.water());
 
 // ---------- Pętla ----------
 
+// Czy coś się dzieje (dotyk, ruch półki, zdarzenie, Zatoka, podlewanie, cząsteczki) — wtedy pełne 60 klatek/s.
+function busy() {
+  const state = garden.state;
+  return (
+    touches.size > 0 ||
+    performance.now() - lastInteraction < IDLE_AFTER_MS ||
+    shelf.info().moving ||
+    Boolean(state.bay || state.goat || state.truck || state.phone) ||
+    (state.effects?.watered || 0) > now() ||
+    renderer.animating() ||
+    !tutorialNode.hidden
+  );
+}
+
+let lastRaf = 0;
+
 function frame(time) {
+  const rafDelta = lastRaf ? (time - lastRaf) / 1000 : 0;
+  lastRaf = time;
+  const target = busy() ? quality.fps() : Math.min(30, quality.fps());
+  if (limiter.rate() !== target) limiter.setRate(target);
+  if (lastFrame && !limiter.tick(rafDelta)) {
+    requestAnimationFrame(frame);
+    return;
+  }
   const dt = lastFrame ? Math.min(0.25, (time - lastFrame) / 1000) : 0;
   lastFrame = time;
+  quality.sample(dt, target);
+  meter.frame();
   if (ready && !testHold) {
     garden.update(dt);
     handleEvents();
@@ -765,7 +825,8 @@ function frame(time) {
   if (hudTimer >= 0.2 || !dt) {
     hudTimer = 0;
     updateHud();
-    panel.render(garden.state, now());
+    // W trakcie przesuwania półki panel czeka (pierwszeństwo dla płynnego ruchu — W3).
+    if (dragId === null) panel.render(garden.state, now());
     tutorial?.update(garden.state);
   }
   requestAnimationFrame(frame);
@@ -775,7 +836,10 @@ function resize() {
   renderer.resize();
   const size = renderer.size();
   const owl = Math.min(size.height * 0.36, size.width * 0.32, 96 * gardenUnit(size.width, size.height));
-  atlas.ensure(Math.max(64, owl / 1.15) * Math.min(2, window.devicePixelRatio || 1)).catch(() => {});
+  // Atlas w ostrości płótna; przy obniżeniu ostrości (automat płynności) zostaje dotychczasowy — przebudowa atlasu
+  // to długa praca (chwilowe „szarpnięcie”), a większy atlas rysuje się tak samo dobrze.
+  const needed = Math.max(64, owl / 1.15) * size.ratio;
+  if (!atlas.ready() || needed > atlas.pixelsPerUnit() * 1.15) atlas.ensure(needed).catch(() => {});
 }
 
 window.addEventListener("resize", resize);
@@ -792,6 +856,8 @@ document.addEventListener("visibilitychange", () => {
   const seconds = (now() - hiddenAt) / 1000;
   hiddenAt = 0;
   lastFrame = 0;
+  lastRaf = 0;
+  limiter.reset();
   const offline = garden.applyOffline(seconds);
   garden.takeEvents();
   if (offline.leaves > 0) welcome({ offline });
@@ -951,5 +1017,22 @@ window.SowieOgrody = Object.freeze({
   // Testy: wstrzymanie logiki w klatkach (np. liście Zatoki stoją w miejscu do stuknięcia); `advance` działa dalej.
   hold: (on = true) => {
     testHold = Boolean(on);
+  },
+  // Płynność (Analiza 6): liczniki pracy rysowania, automat (poziom, tryb, ostrość płótna, limit klatek).
+  renderStats: () => renderer.stats(),
+  quality: () => ({
+    level: quality.level(),
+    mode: quality.mode(),
+    dpr: renderer.size().ratio,
+    canvasWidth: canvas.width,
+    fps: limiter.rate(),
+    busy: busy(),
+    slowBanner: slowBanner.visible(),
+  }),
+  setQualityLevel: (level) => quality.setAutoLevel(level),
+  // Testy: `seconds` sekund klatek po 30 kl./s (przy celu 60) podanych automatowi — jak bardzo wolny telefon.
+  simulateSlow: (seconds = 6) => {
+    for (let index = 0; index < seconds * 30; index += 1) quality.sample(1 / 30, 60);
+    return slowBanner.visible();
   },
 });

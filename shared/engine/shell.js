@@ -100,6 +100,42 @@ export function createPauseController({
   };
 }
 
+export const SLOW_BANNER_TEXT = Object.freeze({
+  slow: "Gra trochę zwalnia. Włączyć tryb „Oszczędzanie baterii”?",
+  enable: "Włącz",
+  dismiss: "Nie teraz",
+});
+
+/**
+ * Propozycja „Oszczędzania baterii” (pasek u dołu planszy z przyciskami „Włącz” i „Nie teraz”; style w ui.css).
+ * `stage` — element, do którego trafia pasek; `page: true` — pasek przypięty do ekranu (gry bez planszy
+ * .sowie-stage: Sowie Ogrody, Łącz i Hoduj); `onEnable` — po „Włącz”.
+ */
+export function createSlowBanner({ stage, strings = {}, onEnable = () => {}, page = false } = {}) {
+  const text = { ...SLOW_BANNER_TEXT, ...strings };
+  let node = null;
+  function hide() {
+    node?.remove();
+    node = null;
+  }
+  function show() {
+    if (node || !stage) return;
+    node = document.createElement("div");
+    node.className = page ? "sowie-slow-banner is-page" : "sowie-slow-banner";
+    node.setAttribute("role", "status");
+    node.innerHTML = `<p>${text.slow}</p><div><button type="button" data-shell-saver>${text.enable}</button>
+      <button type="button" data-shell-dismiss>${text.dismiss}</button></div>`;
+    node.addEventListener("pointerdown", (event) => event.stopPropagation());
+    node.querySelector("[data-shell-saver]").addEventListener("click", () => {
+      onEnable();
+      hide();
+    });
+    node.querySelector("[data-shell-dismiss]").addEventListener("click", hide);
+    stage.appendChild(node);
+  }
+  return { show, hide, visible: () => Boolean(node) };
+}
+
 // Powłoka w przeglądarce. `stage` — element planszy (.sowie-stage), `loop` — pętla gry.
 // `quality` (opcjonalnie) — automat płynności (quality.js): „Oszczędzanie baterii” to jego tryb „saver”, a propozycja
 // oszczędzania pojawia się dopiero, gdy automat zszedł już najniżej i gra dalej nie nadąża (Analiza 6, W1 i W6).
@@ -120,14 +156,11 @@ export function createShell({
       obrot: "Ekran się obrócił",
       gracz: "Odpocznij chwilę",
     },
-    slow: "Gra trochę zwalnia. Włączyć tryb „Oszczędzanie baterii”?",
-    enable: "Włącz",
-    dismiss: "Nie teraz",
+    ...SLOW_BANNER_TEXT,
     ...strings,
   };
   const listeners = new Set();
   let pauseNode = null;
-  let slowNode = null;
   let batterySaver = quality
     ? quality.mode() === "saver"
     : Boolean(globalThis.SowieCloud?.profile?.().settings?.batterySaver);
@@ -197,26 +230,13 @@ export function createShell({
     if (controller.isActive() && controller.state() === "running" && !document.hidden) monitor.sample(fps, delta);
   });
 
-  function showSlowBanner() {
-    if (slowNode) return;
-    slowNode = document.createElement("div");
-    slowNode.className = "sowie-slow-banner";
-    slowNode.setAttribute("role", "status");
-    slowNode.innerHTML = `<p>${text.slow}</p><div><button type="button" data-shell-saver>${text.enable}</button>
-      <button type="button" data-shell-dismiss>${text.dismiss}</button></div>`;
-    slowNode.addEventListener("pointerdown", (event) => event.stopPropagation());
-    slowNode.querySelector("[data-shell-saver]").addEventListener("click", () => {
-      setBatterySaver(true);
-      hideSlowBanner();
-    });
-    slowNode.querySelector("[data-shell-dismiss]").addEventListener("click", hideSlowBanner);
-    stage.appendChild(slowNode);
-  }
-
-  function hideSlowBanner() {
-    slowNode?.remove();
-    slowNode = null;
-  }
+  const slowBanner = createSlowBanner({
+    stage,
+    strings: { slow: text.slow, enable: text.enable, dismiss: text.dismiss },
+    onEnable: () => setBatterySaver(true),
+  });
+  const showSlowBanner = () => slowBanner.show();
+  const hideSlowBanner = () => slowBanner.hide();
 
   function setBatterySaver(on, { save = true } = {}) {
     batterySaver = Boolean(on);

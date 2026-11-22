@@ -1,9 +1,22 @@
 // Łącz i Hoduj — rysowanie planszy na płótnie (piksele CSS): szklarnia z półkami, pola, rośliny (rysunki
 // z `plants.js`), przeszkody Pracu i Amic (karteczki, telefon, skrzynie), zaznaczenie, przedmiot uniesiony nad palcem
 // przy przeciąganiu z podświetleniem pola, na które spadnie, „pyknięcia” po połączeniu i napisy „+N”.
+// Wydajność (Analiza 6, W4): tło szklarni (szkło, deski półek, jasne pola) w osobnej warstwie odświeżanej 5 razy na
+// sekundę; rośliny jako gotowe obrazki — jeden na rodzaj (łańcuch × poziom × wielkość pola × ostrość), odświeżany
+// najwyżej 10 razy na sekundę (kołysanie zostaje), iskierki i kózki rysowane na żywo; ostrość z automatu płynności.
 import { COLORS, font } from "../shared/world/tokens.js";
 import { OBSTACLES } from "./config.js";
-import { createPlantPainter } from "./plants.js";
+import { createPlantPainter, sparkly } from "./plants.js";
+
+// Odświeżanie warstwy tła i obrazków roślin (na sekundę), ile obrazków najwyżej na klatkę i w pamięci.
+export const BACKGROUND_FPS = 5;
+export const ITEM_FPS = 10;
+export const ITEM_REFRESH_PER_FRAME = 3;
+export const ITEM_SPRITES = 48;
+// Pudełko obrazka przedmiotu względem pola (liście i poświata wystają poza pole).
+export const ITEM_BOX = 1.4;
+
+const defaultDpr = () => Math.min(2, globalThis.devicePixelRatio || 1);
 
 // Uniesienie przeciąganego przedmiotu nad palec (w polach) — widać, gdzie spadnie.
 export const LIFT = 0.9;
@@ -33,8 +46,10 @@ export function boardLayout(width, height, cols, rows) {
 /** Ramka płótna wokół siatki (piksele): trzy przerwy, co najmniej 6 px — zawsze nie mniej niż margines układu. */
 export const boardFrame = (layout) => Math.max(6, layout.gap * 3);
 
-export function createBoardRenderer({ canvas, cols, rows }) {
-  const context = canvas.getContext("2d");
+export function createBoardRenderer({ canvas, cols, rows, getDpr = defaultDpr, particleScale = () => 1 }) {
+  const screen = canvas.getContext("2d");
+  // Bieżący cel rysowania: ekran albo warstwa w pamięci (tło szklarni).
+  let context = screen;
   let size = { width: 0, height: 0, ratio: 1 };
   let layout = boardLayout(1, 1, cols, rows);
   // Plansza obrócona (transpozycja: kolumny logiczne → rzędy na ekranie), gdy daje większe pola — telefon poziomo.
@@ -43,7 +58,55 @@ export function createBoardRenderer({ canvas, cols, rows }) {
   const visual = () => (transposed ? { cols: rows, rows: cols } : { cols, rows });
   const pops = new Map();
   const popups = [];
-  const { item } = createPlantPainter(context);
+  const { item, sparkles } = createPlantPainter(screen);
+  // Warstwa tła, obrazki przedmiotów (klucz → { canvas, ctx, item, time }; kolejność = ostatnie użycie), liczniki.
+  const backdrop = { canvas: null, key: "", time: -Infinity };
+  const sprites = new Map();
+  const stats = { frames: 0, backgroundRenders: 0, itemRenders: 0 };
+
+  const layer = (width, height) => {
+    const target = globalThis.document.createElement("canvas");
+    target.width = Math.max(1, Math.ceil(width));
+    target.height = Math.max(1, Math.ceil(height));
+    return target;
+  };
+
+  // Obrazek przedmiotu `target` w polu `s` (z podpisem poziomu albo bez): nowy rysowany od razu, istniejący
+  // odświeżany najwyżej `ITEM_FPS` razy na sekundę, gdy w klatce jest jeszcze miejsce (`budget.left`).
+  function itemSprite(target, s, time, label, budget) {
+    const key = `${target.chain}:${target.level}|${s}|${size.ratio}|${label ? 1 : 0}`;
+    let sprite = sprites.get(key);
+    if (!sprite) {
+      const box = s * ITEM_BOX;
+      const canvasLayer = layer(box * size.ratio, box * size.ratio);
+      const ctx = canvasLayer.getContext("2d");
+      sprite = { canvas: canvasLayer, ctx, painter: createPlantPainter(ctx), box, time: -Infinity };
+    } else sprites.delete(key);
+    sprites.set(key, sprite);
+    while (sprites.size > ITEM_SPRITES) sprites.delete(sprites.keys().next().value);
+    const stale = time - sprite.time >= 1 / ITEM_FPS || time < sprite.time;
+    if (sprite.time === -Infinity || (stale && budget.left > 0)) {
+      if (sprite.time !== -Infinity) budget.left -= 1;
+      const ctx = sprite.ctx;
+      ctx.setTransform(size.ratio, 0, 0, size.ratio, 0, 0);
+      ctx.clearRect(0, 0, sprite.box, sprite.box);
+      sprite.painter.item(target, sprite.box / 2, sprite.box / 2, s, time, label, { sparkles: false });
+      sprite.time = time;
+      stats.itemRenders += 1;
+    }
+    return sprite;
+  }
+
+  // Przedmiot w środku (0, 0) bieżącego układu: rośliny z obrazka (+ iskierki na żywo), kózki na żywo.
+  function drawItem(target, s, time, label, budget) {
+    if (target.goat) {
+      item(target, 0, 0, s, time, label);
+      return;
+    }
+    const sprite = itemSprite(target, s, time, label, budget);
+    context.drawImage(sprite.canvas, -sprite.box / 2, -sprite.box / 2, sprite.box, sprite.box);
+    if (sparkly(target)) sparkles(0, 0, s, time);
+  }
 
   // Płótno przylega do siatki: układ liczony dla miejsca w rodzicu (gniazdo planszy) w obu ułożeniach (zwykłym
   // i obróconym — wygrywa większe pole), potem płótno dostaje rozmiar siatki z ramką `boardFrame` (nie większy niż
@@ -61,12 +124,41 @@ export function createBoardRenderer({ canvas, cols, rows }) {
     const height = Math.max(1, Math.min(slot.height, Math.ceil(fit.height + frame * 2)));
     canvas.style.width = `${width}px`;
     canvas.style.height = `${height}px`;
-    const ratio = Math.min(2, window.devicePixelRatio || 1);
+    const ratio = getDpr();
     size = { width, height, ratio };
-    canvas.width = Math.round(width * ratio);
-    canvas.height = Math.round(height * ratio);
+    // Bez zmiany rozmiaru nie ruszamy płótna (przypisanie czyści je i zajmuje pamięć od nowa).
+    if (canvas.width !== Math.round(width * ratio)) canvas.width = Math.round(width * ratio);
+    if (canvas.height !== Math.round(height * ratio)) canvas.height = Math.round(height * ratio);
     const grid = visual();
     layout = boardLayout(width, height, grid.cols, grid.rows);
+    backdrop.canvas = null;
+    sprites.clear();
+  }
+
+  // Warstwa tła szklarni: przerysowana przy zmianie rozmiaru albo ostrości i najwyżej `BACKGROUND_FPS` razy na
+  // sekundę (wolno przesuwający się odblask na szybie), na ekranie co klatkę jedno kopiowanie.
+  function backgroundLayer(time) {
+    const key = `${size.width}x${size.height}@${size.ratio}|${transposed}`;
+    if (!backdrop.canvas || backdrop.key !== key) {
+      backdrop.canvas = layer(size.width * size.ratio, size.height * size.ratio);
+      backdrop.key = key;
+      backdrop.time = -Infinity;
+    }
+    if (time - backdrop.time >= 1 / BACKGROUND_FPS || time < backdrop.time) {
+      const ctx = backdrop.canvas.getContext("2d");
+      ctx.setTransform(size.ratio, 0, 0, size.ratio, 0, 0);
+      ctx.clearRect(0, 0, size.width, size.height);
+      const previous = context;
+      context = ctx;
+      try {
+        background(time);
+      } finally {
+        context = previous;
+      }
+      backdrop.time = time;
+      stats.backgroundRenders += 1;
+    }
+    context.drawImage(backdrop.canvas, 0, 0, size.width, size.height);
   }
 
   // Lewy górny róg pola na ekranie (w obróconej planszy kolumna logiczna to rząd na ekranie).
@@ -395,10 +487,16 @@ export function createBoardRenderer({ canvas, cols, rows }) {
 
   function effects(dt) {
     context.textAlign = "center";
+    let currentFont = "";
     for (const popup of popups) {
       popup.age += dt;
       context.globalAlpha = Math.max(0, 1 - popup.age);
-      context.font = font(popup.size);
+      // Czcionkę ustawiamy tylko przy zmianie rozmiaru (ustawianie co napis jest drogie).
+      const popupFont = font(popup.size);
+      if (popupFont !== currentFont) {
+        context.font = popupFont;
+        currentFont = popupFont;
+      }
       context.lineWidth = 4;
       context.strokeStyle = COLORS.kontur;
       context.fillStyle = popup.color;
@@ -422,8 +520,13 @@ export function createBoardRenderer({ canvas, cols, rows }) {
     },
     popup(text, x, y, color = COLORS.bialy, textSize = 18) {
       popups.push({ text, x, y, color, size: textSize, age: 0 });
-      if (popups.length > 10) popups.shift();
+      const limit = particleScale() < 1 ? 6 : 10;
+      while (popups.length > limit) popups.shift();
     },
+    /** Czy trwa animacja („pyknięcia”, napisy) — gra rysuje wtedy pełne 60 klatek/s. */
+    animating: () => pops.size > 0 || popups.length > 0,
+    /** Liczniki pracy (testy, `?perf=1`): klatki, przerysowania tła i obrazków przedmiotów. */
+    stats: () => ({ ...stats, sprites: sprites.size }),
     /**
      * draw({ cells, blocks, ringing, selected, drag: { from, x, y, target, kind } | null, time, dt }) — `kind` pola
      * docelowego: "merge" (zielone), "move" / "swap" (niebieskie), "compost" (bez podświetlenia pola); `blocks` —
@@ -444,13 +547,16 @@ export function createBoardRenderer({ canvas, cols, rows }) {
       decor = null,
     }) {
       if (!size.width) resize();
+      stats.frames += 1;
+      context = screen;
       context.setTransform(size.ratio, 0, 0, size.ratio, 0, 0);
       context.clearRect(0, 0, size.width, size.height);
       if (theme === "pool") water(time);
       else {
-        background(time);
+        backgroundLayer(time);
         if (decor?.lampki) lights(time);
       }
+      const budget = { left: ITEM_REFRESH_PER_FRAME };
       const s = layout.size;
       if (drag && drag.target >= 0 && drag.kind !== "compost") {
         const rect = cellRect(drag.target);
@@ -472,7 +578,7 @@ export function createBoardRenderer({ canvas, cols, rows }) {
         context.save();
         context.translate(center.x, center.y);
         context.scale(scale, scale);
-        item(target, 0, 0, s, time);
+        drawItem(target, s, time, true, budget);
         context.restore();
       });
       blocks?.forEach((target, index) => {
@@ -511,7 +617,7 @@ export function createBoardRenderer({ canvas, cols, rows }) {
         context.save();
         context.translate(lifted.x, lifted.y);
         context.scale(1.15, 1.15);
-        item(cells[drag.from], 0, 0, s, time, false);
+        drawItem(cells[drag.from], s, time, false, budget);
         context.restore();
       }
       effects(dt);

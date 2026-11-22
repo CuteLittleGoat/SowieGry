@@ -11,12 +11,32 @@ import { LEAVES, OWL } from "./config.js";
 import { createFinaleScene } from "./finale-scene.js";
 import { goatPose } from "./goats.js";
 import { OBSTACLES, obstacleShape, obstacleX } from "./obstacles.js";
-import { DECOR_PROPS, OBSTACLE_PROPS, drawBoar, drawOverhead } from "./props.js";
+import { PROP_ANIMATED, drawBoar, drawProp as drawPropShape, propBounds } from "./props.js";
 import { ROAD_WIDTH, computeProjection, depthAtScreenY, fogAt, laneX, project } from "./projection.js";
 import { SCENERY, sceneryBetween } from "./scenery.js";
 import { STAGES } from "./stages.js";
 
 const LEAF_SPRITE = { zielony: "lisc-zielony", zloty: "lisc-zloty", teczowy: "lisc-teczowy" };
+
+// Rekwizyty jako obrazki (Analiza 6, W5): rysunek rekwizytu z props.js (regały, lodówki, szyldy z napisami, bloki…)
+// trzymany w pamięci jako gotowy obrazek dla danej wielkości na ekranie — co klatkę jedno kopiowanie zamiast
+// kilkudziesięciu zaokrąglonych prostokątów i napisów. Rekwizyty rosną, zbliżając się do sowy, więc obrazek powstaje
+// `PROP_AHEAD` razy większy niż potrzeba i służy, dopóki skala na ekranie mieści się w `PROP_FIT` jego skali; ruchome
+// (PROP_ANIMATED) odświeżane najwyżej `PROP_FPS` razy na sekundę. W jednej klatce powstaje najwyżej
+// `PROP_REFRESH_PER_FRAME` obrazków — gdy miejsca brak, gra bierze trochę za duży / za mały obrazek (`PROP_STRETCH`)
+// albo rysuje rekwizyt wprost (jak dawniej). Obrazki większe niż `PROP_MAX_PIXELS` pikseli urządzenia (rekwizyt tuż
+// przy sowie) zawsze rysowane wprost; najdawniej używane wypadają ponad `PROP_SPRITES` sztuk i `PROP_TOTAL_PIXELS`.
+export const PROP_FPS = 15;
+export const PROP_REFRESH_PER_FRAME = 4;
+export const PROP_SPRITES = 64;
+export const PROP_MAX_PIXELS = 500000;
+export const PROP_TOTAL_PIXELS = 4000000;
+export const PROP_AHEAD = 1.15;
+export const PROP_FIT = Object.freeze([0.78, 1.06]);
+export const PROP_STRETCH = Object.freeze([0.6, 1.35]);
+const ANIMATED = Object.freeze(
+  Object.fromEntries(Object.entries(PROP_ANIMATED).map(([group, kinds]) => [group, new Set(kinds)])),
+);
 
 // Kolor „#rrggbb” zmieszany z drugim (t = 0–1) — mgła i cienie scenografii.
 export function mix(a, b, t) {
@@ -35,6 +55,13 @@ export function createRenderer({ canvas, view, atlas }) {
   let layout = null;
   let skyCache = null;
   const scene = createFinaleScene({ context, atlas });
+  // Obrazki rekwizytów: klucz (grupa:rodzaj|ziarno|szerokość) → { canvas, ctx, scale, unit, time, … }; kolejność
+  // w Mapie = ostatnie użycie. Liczniki pracy dla testów i licznika `?perf=1`.
+  const propSprites = new Map();
+  let propPixels = 0;
+  let propRatio = 0;
+  let propRefreshes = 0;
+  const stats = { frames: 0, propDraws: 0, propSprites: 0, propRenders: 0, propLive: 0 };
 
   function updateLayout() {
     const screen = view.layout();
@@ -145,14 +172,112 @@ export function createRenderer({ canvas, view, atlas }) {
           if (!base) return;
           context.save();
           context.globalAlpha = 1 - fogAt(layout, item.z) * 0.9;
-          context.translate(base.x, base.y);
-          context.scale(base.scale, base.scale);
-          if (item.overhead) drawOverhead(context, item.kind, item.width, time);
-          else DECOR_PROPS[item.kind]?.(context, time, item.seed);
+          if (item.overhead) prop("overhead", item.kind, item.seed, base, time, item.width);
+          else prop("decor", item.kind, item.seed, base, time);
           context.restore();
         },
       });
     }
+  }
+
+  function forgetSprite(key) {
+    const sprite = propSprites.get(key);
+    if (!sprite) return;
+    propPixels -= sprite.canvas.width * sprite.canvas.height;
+    propSprites.delete(key);
+  }
+
+  function clearProps() {
+    propSprites.clear();
+    propPixels = 0;
+  }
+
+  // Obrazek rekwizytu na skalę `scale` (px CSS na metr) — z pamięci, odświeżony albo nowy; null → rysować wprost.
+  function propSprite(group, kind, seed, scale, time, width) {
+    const bounds = propBounds(group, kind, width);
+    if (!bounds) return null;
+    const ratio = view.layout().pixelRatio;
+    if (ratio !== propRatio) {
+      clearProps();
+      propRatio = ratio;
+    }
+    const key = `${group}:${kind}|${seed}|${width}`;
+    let sprite = propSprites.get(key);
+    const fit = sprite ? scale / sprite.scale : 0;
+    const fits = sprite && fit >= PROP_FIT[0] && fit <= PROP_FIT[1];
+    const stale = sprite && ANIMATED[group]?.has(kind) && (time - sprite.time >= 1 / PROP_FPS || time < sprite.time);
+    if (sprite) {
+      // Ostatnie użycie — na koniec kolejki.
+      propSprites.delete(key);
+      propSprites.set(key, sprite);
+    }
+    if (fits && !stale) return sprite;
+    if (propRefreshes >= PROP_REFRESH_PER_FRAME) {
+      return sprite && fit >= PROP_STRETCH[0] && fit <= PROP_STRETCH[1] ? sprite : null;
+    }
+    const [left, right, up, down] = bounds;
+    const renderScale = fits ? sprite.scale : scale * PROP_AHEAD;
+    const unit = renderScale * ratio;
+    const pixelWidth = Math.max(1, Math.ceil((left + right) * unit));
+    const pixelHeight = Math.max(1, Math.ceil((up + down) * unit));
+    if (pixelWidth * pixelHeight > PROP_MAX_PIXELS) {
+      forgetSprite(key);
+      return null;
+    }
+    if (!sprite) {
+      const canvas = globalThis.document.createElement("canvas");
+      canvas.width = 0;
+      canvas.height = 0;
+      sprite = { canvas, ctx: canvas.getContext("2d"), scale: 0, unit: 0, time: -Infinity, left, up };
+      propSprites.set(key, sprite);
+    }
+    if (sprite.canvas.width !== pixelWidth || sprite.canvas.height !== pixelHeight) {
+      propPixels += pixelWidth * pixelHeight - sprite.canvas.width * sprite.canvas.height;
+      sprite.canvas.width = pixelWidth;
+      sprite.canvas.height = pixelHeight;
+    }
+    const ctx = sprite.ctx;
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.globalAlpha = 1;
+    ctx.clearRect(0, 0, pixelWidth, pixelHeight);
+    ctx.setTransform(unit, 0, 0, unit, left * unit, up * unit);
+    ctx.save();
+    drawPropShape(ctx, group, kind, time, seed, width);
+    ctx.restore();
+    sprite.scale = renderScale;
+    sprite.unit = unit;
+    sprite.time = time;
+    propRefreshes += 1;
+    stats.propRenders += 1;
+    // Najdawniej używane wypadają (liczba obrazków i łączna liczba pikseli).
+    for (const oldest of propSprites.keys()) {
+      if (propSprites.size <= PROP_SPRITES && propPixels <= PROP_TOTAL_PIXELS) break;
+      if (oldest === key) continue;
+      forgetSprite(oldest);
+    }
+    return sprite;
+  }
+
+  // Rekwizyt (props.js) w punkcie `at` (px CSS, `at.scale` px na metr): obrazek z pamięci albo rysunek wprost.
+  function prop(group, kind, seed, at, time, width = 0) {
+    stats.propDraws += 1;
+    const sprite = propSprite(group, kind, seed, at.scale, time, width);
+    if (sprite) {
+      const k = at.scale / sprite.unit;
+      context.drawImage(
+        sprite.canvas,
+        at.x - sprite.left * at.scale,
+        at.y - sprite.up * at.scale,
+        sprite.canvas.width * k,
+        sprite.canvas.height * k,
+      );
+      stats.propSprites += 1;
+      return;
+    }
+    context.translate(at.x, at.y);
+    context.scale(at.scale, at.scale);
+    drawPropShape(context, group, kind, time, seed, width);
+    stats.propLive += 1;
   }
 
   // Otoczka wypukła punktów ekranu (algorytm łańcucha monotonicznego) — sylwetka bryły w perspektywie.
@@ -267,11 +392,9 @@ export function createRenderer({ canvas, view, atlas }) {
           // Cysterna stoi na kołach — bez ciemnej plamy cienia pod tyłem.
           if (!long) drawShadow(context, ground.x, ground.y, 1.3 * scale, {});
           if (info.prop) {
-            // Skórka planszy rysowana kodem (props.js) — w metrach od punktu na ziemi.
+            // Skórka planszy rysowana kodem (props.js) — w metrach od punktu na ziemi, z pamięci obrazków.
             context.save();
-            context.translate(ground.x, ground.y);
-            context.scale(ground.scale, ground.scale);
-            OBSTACLE_PROPS[info.prop](context, time, Math.floor(item.at));
+            prop("obstacle", info.prop, Math.floor(item.at), ground, time);
             context.restore();
             context.globalAlpha = 1;
             return;
@@ -533,9 +656,15 @@ export function createRenderer({ canvas, view, atlas }) {
     clearPopups() {
       popups.length = 0;
     },
+    // Liczniki pracy (testy wydajności, licznik `?perf=1`): ile rekwizytów z obrazków, ile wprost, ile obrazków
+    // narysowano od nowa.
+    stats: () => ({ ...stats, sprites: propSprites.size, spritePixels: propPixels }),
+    clearCaches: () => clearProps(),
     draw({ state, animator, cosmetic = "none", particles, dt = 0, showOwl = true }) {
       updateLayout();
       view.applyScreen(context);
+      stats.frames += 1;
+      propRefreshes = 0;
       if (state.phase === "finale" && state.finale) {
         scene.drawGarden({
           layout,

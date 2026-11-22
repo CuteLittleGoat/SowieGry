@@ -18,7 +18,28 @@ export const POWERUP_STYLE = Object.freeze({
   goraczka: { label: "Gorączka", color: "var(--policzki)" },
 });
 
-export const formatNumber = (value) => Math.floor(Number(value) || 0).toLocaleString("pl-PL");
+// Jeden wspólny formater liczb (Analiza 6, W5) — tworzenie formatera przy każdej liczbie (`toLocaleString`) jest
+// wolniejsze; wynik ten sam („12 345” z twardą spacją, „1234” bez spacji).
+const NUMBER_FORMAT = typeof Intl === "object" && Intl.NumberFormat ? new Intl.NumberFormat("pl-PL") : null;
+export const formatNumber = (value) => {
+  const number = Math.floor(Number(value) || 0);
+  return NUMBER_FORMAT ? NUMBER_FORMAT.format(number) : number.toLocaleString("pl-PL");
+};
+
+// Tekst wyniku zmieniany najwyżej 10 razy na sekundę (wynik biegu rośnie prawie co klatkę); ostatnia wartość zawsze
+// trafia na ekran — zaległy zapis najpóźniej po `SCORE_TEXT_MS`.
+export const SCORE_TEXT_MS = 100;
+// Podskok liczby (jak animacja `sowieBump` w ui.css): Web Animations zamiast przełączania klasy — bez wymuszania
+// przeliczenia układu strony; bez ruchu przy ograniczeniu ruchu w systemie i przy wyłączonych „Efektach”.
+const BUMP_FRAMES = Object.freeze([
+  { transform: "scale(1)", easing: "ease-out" },
+  { transform: "scale(1.18)", offset: 0.4, easing: "ease-out" },
+  { transform: "scale(1)" },
+]);
+const now = () => globalThis.performance?.now?.() ?? Date.now();
+const reducedMotion = () =>
+  Boolean(globalThis.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches) ||
+  Boolean(globalThis.document?.documentElement?.classList.contains("sowie-reduced-effects"));
 
 export function createHud({ root, onPause = () => {}, maxLives = 3 } = {}) {
   const element = document.createElement("div");
@@ -46,20 +67,36 @@ export function createHud({ root, onPause = () => {}, maxLives = 3 } = {}) {
   const powerupsNode = element.querySelector("[data-hud-powerups]");
   const chips = new Map();
   let score = 0;
+  let shownScore = 0;
+  let scoreWrittenAt = -Infinity;
+  let scoreTimer = null;
   let leaves = 0;
   let lives = [maxLives, maxLives];
 
-  // Podskok liczby: najwyżej raz na czas animacji (220 ms) — wynik biegu rośnie prawie co klatkę, a każde
-  // ponowne uruchomienie animacji wymusza przeliczenie układu strony.
+  // Podskok liczby: najwyżej raz na czas animacji (220 ms) — wynik biegu rośnie prawie co klatkę.
   const lastBump = new WeakMap();
   function bump(node) {
-    const now = globalThis.performance?.now?.() ?? Date.now();
-    if (now - (lastBump.get(node) ?? -Infinity) < 250) return;
-    lastBump.set(node, now);
+    const time = now();
+    if (time - (lastBump.get(node) ?? -Infinity) < 250) return;
+    lastBump.set(node, time);
+    if (reducedMotion()) return;
+    if (typeof node.animate === "function") {
+      node.animate(BUMP_FRAMES, { duration: 220 });
+      return;
+    }
+    // Przeglądarka bez Web Animations — ponowne uruchomienie animacji z ui.css.
     node.classList.remove("is-bump");
-    // ponowne uruchomienie animacji
     void node.offsetWidth;
     node.classList.add("is-bump");
+  }
+
+  function writeScore() {
+    if (scoreTimer !== null) globalThis.clearTimeout(scoreTimer);
+    scoreTimer = null;
+    scoreWrittenAt = now();
+    if (shownScore === score && scoreNode.textContent) return;
+    shownScore = score;
+    scoreNode.textContent = formatNumber(score);
   }
 
   const hud = {
@@ -69,7 +106,9 @@ export function createHud({ root, onPause = () => {}, maxLives = 3 } = {}) {
       if (next === score) return;
       const grew = next > score;
       score = next;
-      scoreNode.textContent = formatNumber(score);
+      const since = now() - scoreWrittenAt;
+      if (!animate || since >= SCORE_TEXT_MS) writeScore();
+      else if (scoreTimer === null) scoreTimer = globalThis.setTimeout(writeScore, SCORE_TEXT_MS - since);
       if (animate && grew) bump(scoreNode);
     },
     setLeaves(value) {
@@ -137,6 +176,8 @@ export function createHud({ root, onPause = () => {}, maxLives = 3 } = {}) {
     },
     state: () => ({ score, leaves, lives: lives[0], maxLives: lives[1], powerups: [...chips.keys()] }),
     destroy() {
+      if (scoreTimer !== null) globalThis.clearTimeout(scoreTimer);
+      scoreTimer = null;
       element.remove();
     },
   };

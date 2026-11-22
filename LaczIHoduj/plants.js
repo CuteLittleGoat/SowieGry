@@ -40,8 +40,14 @@ function goatPicture() {
   return goatImage?.complete && goatImage.naturalWidth ? goatImage : null;
 }
 
+/** Czy przedmiot ma iskierki (złoty poziom i wyżej albo hybryda) — kózki nie. */
+export function sparkly(target) {
+  if (!target || GOATS[target.goat]) return false;
+  return Boolean(CHAINS[target.chain]?.hybrid) || target.level >= CROSS_LEVEL;
+}
+
 /**
- * createPlantPainter(context) → { item(target, cx, cy, s, time = 0, label = true) } — rysuje przedmiot
+ * createPlantPainter(context) → { item(target, cx, cy, s, time = 0, label = true), sparkles } — rysuje przedmiot
  * `{ chain, level }` w środku (cx, cy) na polu wielkości `s` (piksele płótna po bieżącej transformacji).
  */
 export function createPlantPainter(context) {
@@ -694,7 +700,9 @@ export function createPlantPainter(context) {
     context.restore();
   }
 
-  function item(target, cx, cy, s, time = 0, label = true) {
+  // `options.sparkles` — iskierki od złotego poziomu i przy hybrydach (renderer planszy rysuje je osobno na żywo,
+  // a resztę przedmiotu z gotowego obrazka — Analiza 6, W4).
+  function item(target, cx, cy, s, time = 0, label = true, { sparkles: withSparkles = true } = {}) {
     if (GOATS[target.goat]) {
       goat(target.goat, cx, cy, s, time);
       return;
@@ -771,7 +779,7 @@ export function createPlantPainter(context) {
     else if (chain === "baobab")
       baobabPlant(shape, cx, bottom, s, sway, green, dark, golden ? COLORS.zlotoCiemne : bloom);
     else monsteraPlant(shape, cx, bottom, s, sway, green, dark);
-    if (top) sparkles(cx, cy, s, time);
+    if (top && withSparkles) sparkles(cx, cy, s, time);
     // Poziom w rogu pola (hybryda — gwiazdka; bez niego przy przedmiocie uniesionym nad palcem — nie zasłania cyfry
     // pola docelowego).
     if (!label) return;
@@ -781,5 +789,5 @@ export function createPlantPainter(context) {
     context.fillText(hybrid ? "★" : String(level), cx + s * 0.44, cy - s * 0.26);
   }
 
-  return { item };
+  return { item, sparkles };
 }

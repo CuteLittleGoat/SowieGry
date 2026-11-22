@@ -6,6 +6,9 @@
 // przeciągnięcie), Basen Humbaka (runda bonusowa na osobnej planszy), pakiet startowy z dawnej Szklarni, samouczek
 // pierwszego wejścia (z powtórzeniem), „Jak grać?”, klawiatura na komputerze, komunikaty i haki testowe.
 import { connectAudioSettings, createAudio } from "../shared/engine/audio.js";
+import { createPerfMeter } from "../shared/engine/perf-meter.js";
+import { createFrameLimiter, createQuality } from "../shared/engine/quality.js";
+import { createSlowBanner } from "../shared/engine/shell.js";
 import { EVENTS, progress } from "../shared/meta/progress.js";
 import { guideFor } from "../shared/meta/guides-data.js";
 import { createToasts, openModal, renderGuide } from "../shared/ui/index.js";
@@ -58,7 +61,28 @@ const orderButtons = [...root.querySelectorAll("[data-order]")];
 // Ostatnio narysowana karta zamówienia (zamówienie i rozmiar) — rysujemy tylko po zmianie.
 const drawnOrders = orderButtons.map(() => "");
 
-const renderer = createBoardRenderer({ canvas, cols: BOARD.cols, rows: BOARD.rows });
+// Płynność (Analiza 6, W1 i W4): automat ostrości, rysowanie najwyżej 60 razy na sekundę (ekrany 120 Hz), a gdy plansza
+// stoi — 30; licznik `?perf=1`.
+const quality = createQuality();
+const limiter = createFrameLimiter(quality.fps());
+const renderer = createBoardRenderer({
+  canvas,
+  cols: BOARD.cols,
+  rows: BOARD.rows,
+  getDpr: () => quality.dpr(window.devicePixelRatio || 1),
+  particleScale: () => quality.particleScale(),
+});
+const meter = createPerfMeter({ quality, canvas });
+quality.onChange(() => fitBoard());
+// Propozycja „Oszczędzania baterii” (Analiza 6, W6) — jak w grach zręcznościowych, ale dopiero gdy automat zszedł już
+// najniżej (albo wybrano „Zawsze ostro”) i gra dalej nie nadąża (< 45 kl./s przez 5 s); raz, do zmiany trybu.
+const slowBanner = createSlowBanner({ stage: root, page: true, onEnable: () => quality.setMode("saver") });
+quality.onStruggle(() => {
+  if (quality.mode() !== "saver") slowBanner.show();
+});
+// Ostatni dotyk albo klawisz (ms, performance.now) — przez 1,5 s po nim pełne 60 klatek/s.
+let lastInteraction = 0;
+const IDLE_AFTER_MS = 1500;
 const toasts = createToasts({ root, isInGame: () => true });
 // Komunikaty Sowiej Akademii i Galerii Sów (wołają toast({ title, detail, reward })).
 window.SowieNotifications ||= {
@@ -955,6 +979,7 @@ function describeCursor() {
 }
 
 canvas.addEventListener("keydown", (event) => {
+  lastInteraction = performance.now();
   if (!ready || event.altKey || event.ctrlKey || event.metaKey) return;
   const arrows = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] };
   let handled = true;
@@ -1001,6 +1026,7 @@ function compostAt(index) {
 }
 
 canvas.addEventListener("pointerdown", (event) => {
+  lastInteraction = performance.now();
   if (!ready) return;
   const point = localPoint(event);
   const index = renderer.cellAt(point.x, point.y);
@@ -1009,6 +1035,7 @@ canvas.addEventListener("pointerdown", (event) => {
 });
 
 canvas.addEventListener("pointermove", (event) => {
+  lastInteraction = performance.now();
   if (!press || event.pointerId !== press.id) return;
   press.point = localPoint(event);
   // Przesunięcie o co najmniej DRAG_START: z rośliną — przeciąganie, bez niej — już nie stuknięcie.
@@ -1143,9 +1170,33 @@ function dragView() {
   return { from: press.index, x: press.point.x, y: press.point.y, target: target === press.index ? -1 : target, kind };
 }
 
+// Czy coś się dzieje (palec, przeciąganie, animacje, Basen Humbaka, dzwoniący telefon, samouczek) — 60 klatek/s.
+function busy() {
+  return (
+    Boolean(press) ||
+    Boolean(pool) ||
+    performance.now() - lastInteraction < IDLE_AFTER_MS ||
+    renderer.animating() ||
+    game.board.blocks.some((block) => block?.type === "phone") ||
+    !tutorialNode.hidden
+  );
+}
+
+let lastRaf = 0;
+
 function frame(time) {
+  const rafDelta = lastRaf ? (time - lastRaf) / 1000 : 0;
+  lastRaf = time;
+  const target = busy() ? quality.fps() : Math.min(30, quality.fps());
+  if (limiter.rate() !== target) limiter.setRate(target);
+  if (lastFrame && !limiter.tick(rafDelta)) {
+    requestAnimationFrame(frame);
+    return;
+  }
   const dt = lastFrame ? Math.min(0.25, (time - lastFrame) / 1000) : 0;
   lastFrame = time;
+  quality.sample(dt, target);
+  meter.frame();
   if (ready && !testHold) {
     if (pool) {
       pool.update(dt);
@@ -1199,6 +1250,8 @@ if (window.ResizeObserver) new ResizeObserver(fitBoard).observe(canvas.parentEle
 document.addEventListener("visibilitychange", () => {
   if (document.hidden) save({ flush: true });
   lastFrame = 0;
+  lastRaf = 0;
+  limiter.reset();
 });
 window.addEventListener("pagehide", () => save({ flush: true }));
 
@@ -1337,4 +1390,21 @@ window.LaczIHoduj = Object.freeze({
   music: () => audio?.currentMusic?.() ?? null,
   save: () => save({ flush: true }),
   reportProgress: () => reportProgress(),
+  // Płynność (Analiza 6): liczniki pracy rysowania i automat (poziom, tryb, ostrość płótna, limit klatek).
+  renderStats: () => renderer.stats(),
+  quality: () => ({
+    level: quality.level(),
+    mode: quality.mode(),
+    dpr: renderer.size().ratio,
+    canvasWidth: canvas.width,
+    fps: limiter.rate(),
+    busy: busy(),
+    slowBanner: slowBanner.visible(),
+  }),
+  setQualityLevel: (level) => quality.setAutoLevel(level),
+  // Testy: `seconds` sekund klatek po 30 kl./s (przy celu 60) podanych automatowi — jak bardzo wolny telefon.
+  simulateSlow: (seconds = 6) => {
+    for (let index = 0; index < seconds * 30; index += 1) quality.sample(1 / 30, 60);
+    return slowBanner.visible();
+  },
 });

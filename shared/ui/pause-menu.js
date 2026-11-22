@@ -1,6 +1,7 @@
 // Menu pauzy (Analiza 2, rozdz. 4.3): Wznów, Zacznij od nowa, Jak grać, Ustawienia, Garderoba, Wyjdź do menu.
 // Duże przyciski w dolnej połowie ekranu. Współpracuje z powłoką telefonu (createShell({ overlay: false })):
 // auto-pauza otwiera menu, „Wznów” uruchamia odliczanie 3-2-1 powłoki, a menu pokazuje cyfry.
+import { createQuality, deviceQualityStore, markQualityChoice, qualityChoiceHtml } from "../engine/quality.js";
 import { guideFor } from "../meta/guides-data.js";
 import { renderGuide } from "./guide-view.js";
 import { ICONS } from "./icons.js";
@@ -30,6 +31,9 @@ export function createPauseMenu({
   // Opcjonalnie „Zakończ bieg” (np. Tryb Przytulny bez końca gry): { label, onClick } albo null.
   endAction = null,
 } = {}) {
+  // Automat płynności gry (z powłoki) albo — bez niego — sam zapis wyboru na urządzeniu.
+  let ownQuality = null;
+  const quality = () => shell?.quality?.() || (ownQuality ||= createQuality({ store: deviceQualityStore(cloud) }));
   const overlay = document.createElement("div");
   overlay.className = "sowie-pause-overlay sowie-ui-pause";
   overlay.hidden = true;
@@ -79,6 +83,7 @@ export function createPauseMenu({
       ${slider("music", "Muzyka")}
       ${slider("sfx", "Efekty dźwiękowe")}
       ${toggle("Efekty (wstrząsy, cząsteczki)", "effects", !current.reducedEffects)}
+      ${qualityChoiceHtml(quality().mode(), "sowie-ui-chip")}
       ${toggle("Wibracje", "vibration", current.vibration !== false)}
       ${toggle("Tryb Przytulny (wolniej, bez końca gry)", "cozy", Boolean(current.cozy))}
       <button type="button" class="sowie-ui-button is-primary" data-pause="back">Gotowe</button>
@@ -140,6 +145,12 @@ export function createPauseMenu({
     else if (action === "end") {
       api.close();
       endAction?.onClick?.();
+    }
+    // „Płynność” (Analiza 6, W6): automat gry (przez powłokę) — zmiana działa od razu i zostaje na tym urządzeniu.
+    const choice = event.target.closest("[data-quality]");
+    if (choice) {
+      quality().setMode(choice.dataset.quality);
+      markQualityChoice(choice.closest(".sowie-quality"), choice.dataset.quality);
     }
     const setting = event.target.closest("[data-setting]");
     if (setting) {

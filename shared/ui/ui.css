@@ -458,6 +458,87 @@
   cursor: default;
 }
 
+/* Propozycja „Oszczędzania baterii” (shared/engine/shell.js — createSlowBanner): w grach na powłoce pasek u dołu
+   planszy, w Sowich Ogrodach i Łącz i Hoduj (.is-page) przypięty do ekranu. Przeniesione z shell.css (W6). */
+.sowie-slow-banner {
+  position: absolute;
+  left: max(16px, env(safe-area-inset-left));
+  right: max(16px, env(safe-area-inset-right));
+  bottom: max(16px, env(safe-area-inset-bottom));
+  z-index: 40;
+  padding: 14px;
+  border-radius: 18px;
+  color: #3b2f4a;
+  background: rgba(255, 246, 227, 0.97);
+  box-shadow: 0 12px 30px rgba(20, 22, 30, 0.25);
+  font:
+    600 16px/1.35 system-ui,
+    sans-serif;
+}
+
+.sowie-slow-banner.is-page {
+  position: fixed;
+  z-index: 60;
+  max-width: 520px;
+  margin: 0 auto;
+}
+
+.sowie-slow-banner p {
+  margin: 0 0 10px;
+}
+
+.sowie-slow-banner div {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.sowie-slow-banner button {
+  min-height: 52px;
+  width: 100%;
+  border: 0;
+  border-radius: 16px;
+  color: #3b2f4a;
+  background: #f4c542;
+  font:
+    800 18px/1 system-ui,
+    sans-serif;
+  cursor: pointer;
+}
+
+.sowie-slow-banner button:focus-visible {
+  outline: 3px solid #4d8fd6;
+  outline-offset: 3px;
+}
+
+.sowie-slow-banner [data-shell-dismiss] {
+  background: #fff;
+  box-shadow: inset 0 0 0 2px rgba(59, 47, 74, 0.18);
+}
+
+/* Wybór „Płynność” (Analiza 6, W6) — w menu pauzy gier i w ustawieniach menu głównego. */
+.sowie-quality {
+  display: grid;
+  gap: 6px;
+  text-align: left;
+}
+
+.sowie-quality-title {
+  font-weight: var(--czcionka-pogrubiona);
+}
+
+.sowie-quality-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.sowie-quality small {
+  color: var(--szary-ciemny);
+  font-size: 14px;
+  line-height: 1.3;
+}
+
 /* ---------- Okno modalne (arkusz od dołu) ---------- */
 
 .sowie-ui-backdrop {

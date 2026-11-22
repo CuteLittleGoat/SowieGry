@@ -4,6 +4,8 @@ import { connectAudioSettings, createAudio } from "../shared/engine/audio.js";
 import { bindInput } from "../shared/engine/input.js";
 import { createLoop } from "../shared/engine/loop.js";
 import { createParticles } from "../shared/engine/particles.js";
+import { createPerfMeter } from "../shared/engine/perf-meter.js";
+import { createQuality } from "../shared/engine/quality.js";
 import { createShell } from "../shared/engine/shell.js";
 import { createAtlas } from "../shared/engine/sprites.js";
 import { createView } from "../shared/engine/view.js";
@@ -41,9 +43,10 @@ const dailyNote = document.querySelector("[data-daily-note]");
 const dailyLink = document.querySelector("[data-daily]");
 const tasksButton = document.querySelector("[data-tasks]");
 
-// Adaptacyjna rozdzielczość płótna: najwyżej DPR 2; gdy bieg przez 3 s ma średnio < 50 kl./s, 1,5, potem 1
-// (słabszy telefon: płynność ważniejsza niż ostrość). Zmniejszamy tylko w trakcie biegu, nigdy nie zwiększamy.
-let dprCap = 2;
+// Automat płynności (Analiza 6, W1 — wspólny dla wszystkich gier): ostrość płótna 2 → 1,5 → 1 i mniej cząsteczek, gdy
+// telefon nie nadąża (przez 3 s < 50 kl./s), powrót po 20 s płynnej gry; wybór „Płynność” i poziom zapamiętane na
+// urządzeniu; rysowanie najwyżej 60 razy na sekundę (ekrany 120 Hz).
+const quality = createQuality();
 const view = createView({
   canvas,
   minWorld: VIEW.minWorld,
@@ -51,7 +54,7 @@ const view = createView({
     const rect = stage.getBoundingClientRect();
     return { width: rect.width, height: rect.height };
   },
-  getDpr: () => Math.min(window.devicePixelRatio || 1, dprCap),
+  getDpr: () => quality.dpr(window.devicePixelRatio || 1),
 });
 const camera = createRunCamera();
 const atlas = createAtlas({ catalog: SPRITES, baseUrl: SVG_BASE });
@@ -95,7 +98,13 @@ const shell = createShell({
   stage,
   loop,
   overlay: false,
-  onBatterySaver: (on) => particles.setDensity(on ? 0.4 : reducedMotion() ? 0.5 : 1),
+  quality,
+  onBatterySaver: () => applyDensity(),
+});
+const meter = createPerfMeter({ quality, canvas });
+quality.onChange(() => {
+  view.resize();
+  applyDensity();
 });
 const inGame = () => screen === "playing" && shell.state() === "running";
 const hud = createHud({ root: stage, onPause: () => shell.pause("gracz"), maxLives: CLOUD.steps });
@@ -749,24 +758,17 @@ if (debugNode) {
 }
 let debugTime = 0;
 let debugFrames = 0;
-let perfTime = 0;
-let perfFrames = 0;
 
+// Klatka biegu dla automatu płynności (licznik `?perf=1` liczy wszystkie narysowane klatki).
 function adaptResolution(dt) {
-  if (screen !== "playing" || shell.state() !== "running" || tutorial?.frozen() || dt <= 0) {
-    perfTime = 0;
-    perfFrames = 0;
-    return;
-  }
-  perfTime += dt;
-  perfFrames += 1;
-  if (perfTime < 3) return;
-  const fps = perfFrames / perfTime;
-  perfTime = 0;
-  perfFrames = 0;
-  if (fps >= 50 || Math.min(window.devicePixelRatio || 1, dprCap) <= 1) return;
-  dprCap = dprCap > 1.5 ? 1.5 : 1;
-  view.resize();
+  meter.frame();
+  if (screen !== "playing" || shell.state() !== "running" || tutorial?.frozen() || dt <= 0) return;
+  quality.sample(dt, loop.renderRate());
+}
+
+// Gęstość cząsteczek: automat płynności (połowa na słabszym telefonie i w oszczędzaniu baterii) i ograniczenie ruchu.
+function applyDensity() {
+  particles.setDensity(Math.min(quality.particleScale(), reducedMotion() ? 0.5 : 1));
 }
 
 function updateDebug(dt) {
@@ -907,7 +909,7 @@ cloud?.ready
     const saved = cloud.game(GAME_ID)?.difficulty;
     selectDifficulty(DIFFICULTY_ORDER.includes(saved) ? saved : difficulty, { save: false });
     document.documentElement.classList.toggle("sowie-reduced-effects", Boolean(settings().reducedEffects));
-    particles.setDensity(shell.batterySaver() ? 0.4 : reducedMotion() ? 0.5 : 1);
+    applyDensity();
     progress.emit(EVENTS.VISIT, { gameId: GAME_ID });
   })
   .catch((error) => console.warn("SowiaUcieczka: chmura", error));
@@ -916,6 +918,15 @@ cloud?.ready
 window.SowiaUcieczka = Object.freeze({
   screen: () => screen,
   ready: () => gameReady,
+  // Płynność (Analiza 6): automat (poziom, tryb, ostrość płótna, limit klatek).
+  quality: () => ({
+    level: quality.level(),
+    mode: quality.mode(),
+    dpr: view.layout().pixelRatio,
+    canvasWidth: canvas.width,
+    fps: loop.renderRate(),
+  }),
+  setQualityLevel: (level) => quality.setAutoLevel(level),
   state: () =>
     game ? { ...game.summary(), cloud: game.state.cloud, speed: game.state.speed, owl: { ...game.state.owl } } : null,
   start: (level) => {

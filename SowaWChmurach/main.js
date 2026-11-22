@@ -6,6 +6,8 @@ import { connectAudioSettings, createAudio } from "../shared/engine/audio.js";
 import { bindInput } from "../shared/engine/input.js";
 import { createLoop } from "../shared/engine/loop.js";
 import { createParticles } from "../shared/engine/particles.js";
+import { createPerfMeter } from "../shared/engine/perf-meter.js";
+import { createQuality } from "../shared/engine/quality.js";
 import { createShell } from "../shared/engine/shell.js";
 import { createAtlas } from "../shared/engine/sprites.js";
 import { createView } from "../shared/engine/view.js";
@@ -36,8 +38,10 @@ const difficultyGroup = document.querySelector("[data-difficulty]");
 const tiltButton = document.querySelector("[data-tilt]");
 const tiltNote = document.querySelector("[data-tilt-note]");
 
-// Adaptacyjna rozdzielczość płótna: najwyżej DPR 2, przy < 50 kl./s przez 3 s — 1,5, potem 1.
-let dprCap = 2;
+// Automat płynności (Analiza 6, W1 — wspólny dla wszystkich gier): ostrość płótna 2 → 1,5 → 1 i mniej cząsteczek, gdy
+// telefon nie nadąża (przez 3 s < 50 kl./s), powrót po 20 s płynnej gry; wybór „Płynność” i poziom zapamiętane na
+// urządzeniu; rysowanie najwyżej 60 razy na sekundę (ekrany 120 Hz).
+const quality = createQuality();
 const view = createView({
   canvas,
   minWorld: { width: WORLD.width, height: WORLD.minVisible },
@@ -45,7 +49,7 @@ const view = createView({
     const rect = stage.getBoundingClientRect();
     return { width: rect.width, height: rect.height };
   },
-  getDpr: () => Math.min(window.devicePixelRatio || 1, dprCap),
+  getDpr: () => quality.dpr(window.devicePixelRatio || 1),
 });
 const atlas = createAtlas({ catalog: SPRITES, baseUrl: SVG_BASE });
 // Gatunek sowy z Sowiego Butiku (przekolorowanie części sowy w atlasie).
@@ -82,7 +86,13 @@ const shell = createShell({
   stage,
   loop,
   overlay: false,
-  onBatterySaver: (on) => particles.setDensity(on ? 0.4 : reducedMotion() ? 0.5 : 1),
+  quality,
+  onBatterySaver: () => applyDensity(),
+});
+const meter = createPerfMeter({ quality, canvas });
+quality.onChange(() => {
+  view.resize();
+  applyDensity();
 });
 const inGame = () => screen === "playing" && shell.state() === "running";
 const hud = createHud({ root: stage, onPause: () => shell.pause("gracz"), maxLives: DIFFICULTIES.chill.lives });
@@ -705,24 +715,17 @@ if (debugNode) {
 }
 let debugTime = 0;
 let debugFrames = 0;
-let perfTime = 0;
-let perfFrames = 0;
 
+// Klatka lotu dla automatu płynności (licznik `?perf=1` liczy wszystkie narysowane klatki).
 function adaptResolution(dt) {
-  if (screen !== "playing" || shell.state() !== "running" || dt <= 0) {
-    perfTime = 0;
-    perfFrames = 0;
-    return;
-  }
-  perfTime += dt;
-  perfFrames += 1;
-  if (perfTime < 3) return;
-  const fps = perfFrames / perfTime;
-  perfTime = 0;
-  perfFrames = 0;
-  if (fps >= 50 || Math.min(window.devicePixelRatio || 1, dprCap) <= 1) return;
-  dprCap = dprCap > 1.5 ? 1.5 : 1;
-  view.resize();
+  meter.frame();
+  if (screen !== "playing" || shell.state() !== "running" || dt <= 0) return;
+  quality.sample(dt, loop.renderRate());
+}
+
+// Gęstość cząsteczek: automat płynności (połowa na słabszym telefonie i w oszczędzaniu baterii) i ograniczenie ruchu.
+function applyDensity() {
+  particles.setDensity(Math.min(quality.particleScale(), reducedMotion() ? 0.5 : 1));
 }
 
 function updateDebug(dt) {
@@ -837,6 +840,15 @@ cloud?.ready
 window.SowaWChmurach = Object.freeze({
   screen: () => screen,
   ready: () => gameReady,
+  // Płynność (Analiza 6): automat (poziom, tryb, ostrość płótna, limit klatek).
+  quality: () => ({
+    level: quality.level(),
+    mode: quality.mode(),
+    dpr: view.layout().pixelRatio,
+    canvasWidth: canvas.width,
+    fps: loop.renderRate(),
+  }),
+  setQualityLevel: (level) => quality.setAutoLevel(level),
   atlasReady: () => atlas.ready(),
   state: () =>
     game

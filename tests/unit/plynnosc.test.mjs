@@ -110,6 +110,12 @@ test("automat płynności: wraca poziom wyżej po 20 s ≥ 58 kl./s, najwyżej r
   assert.equal(fresh.level(), 1, "kolejny powrót dopiero po minucie od zmiany");
   feed(fresh, 60, 40);
   assert.equal(fresh.level(), 0);
+  // Celowe 30 klatek/s w spokoju (cel 30) to nie spowolnienie; 20 z celu 30 — już tak.
+  const idle = createQuality({ store: memoryStore() });
+  for (let index = 0; index < 30 * 10; index += 1) idle.sample(1 / 30, 30);
+  assert.equal(idle.level(), 0, "30 z 30 — w porządku");
+  for (let index = 0; index < 20 * 4; index += 1) idle.sample(1 / 20, 30);
+  assert.equal(idle.level(), 1, "20 z 30 — za wolno");
   // Długie przerwy (karta w tle) nie są pomiarem.
   const paused = createQuality({ store: memoryStore() });
   for (let index = 0; index < 20; index += 1) paused.sample(2);
@@ -139,6 +145,46 @@ test("tryby: „Zawsze ostro” i „Oszczędzanie baterii”; dawne ustawienie 
   assert.equal(createQuality({ store: memoryStore({ mode: "sharp" }, true) }).mode(), "sharp");
   // Ekran o gęstości 1 — ostrość nigdy poniżej 1.
   assert.equal(createQuality({ store: memoryStore() }).dpr(1), 1);
+});
+
+test("propozycja „Oszczędzania baterii” (W6): gdy automat zszedł najniżej albo „Zawsze ostro” i dalej < 45 kl./s przez 5 s", () => {
+  const quality = createQuality({ store: memoryStore() });
+  const calls = [];
+  quality.onStruggle((detail) => calls.push(detail));
+  feed(quality, 30, 6.2);
+  assert.equal(quality.level(), 2, "najpierw automat schodzi (3 s + 3 s)");
+  assert.equal(calls.length, 0, "na poziomach 0 i 1 bez propozycji");
+  feed(quality, 30, 4.5);
+  assert.equal(calls.length, 0, "4 s na najniższym poziomie to za mało");
+  feed(quality, 30, 1.5);
+  assert.equal(calls.length, 1);
+  assert.equal(calls[0].mode, "auto");
+  assert.equal(calls[0].level, 2);
+  feed(quality, 30, 20);
+  assert.equal(calls.length, 1, "tylko raz");
+  // 47 kl./s: dość wolno, żeby automat schodził (< 50), ale za mało na propozycję (< 45).
+  const mild = createQuality({ store: memoryStore({ mode: "auto", level: 2 }) });
+  let mildCalls = 0;
+  mild.onStruggle(() => (mildCalls += 1));
+  feed(mild, 47, 10);
+  assert.equal(mildCalls, 0);
+  // „Zawsze ostro”: propozycja po 5 s; w „Oszczędzaniu baterii” nigdy; po zmianie trybu może paść znowu.
+  const sharp = createQuality({ store: memoryStore(), mode: "sharp" });
+  let sharpCalls = 0;
+  const off = sharp.onStruggle(() => (sharpCalls += 1));
+  feed(sharp, 30, 5.5);
+  assert.equal(sharpCalls, 1);
+  sharp.setMode("saver");
+  feed(sharp, 20, 10);
+  assert.equal(sharpCalls, 1, "w oszczędzaniu bez propozycji");
+  sharp.setMode("sharp");
+  feed(sharp, 30, 5.5);
+  assert.equal(sharpCalls, 2, "po zmianie trybu znowu");
+  off();
+  sharp.setMode("auto");
+  sharp.setMode("sharp");
+  feed(sharp, 30, 6);
+  assert.equal(sharpCalls, 2, "po odpięciu słuchacza cisza");
 });
 
 test("SowieCloud: ustawienia urządzenia we wpisie urządzenia, nigdy w bazie; automat korzysta z nich", async () => {
