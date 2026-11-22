@@ -2,8 +2,10 @@
 
 > Data: 2026-11-22 · Podstawa: prośba właściciela z 2026-11-22 (dosłownie w [rozdziale 1](#1-prośba-dosłownie-i-numer)),
 > przegląd gier Candy Crush Saga, Royal Match i Gardenscapes ([rozdział 2](#2-czego-uczą-candy-crush-saga-royal-match-i-gardenscapes),
-> źródła w [Załączniku A](#załącznik-a-źródła)) i kod na `main` (commit `1e45273`) · Status: **analiza — projekt gry,
-> bez zmian w kodzie**; prace ruszają po odpowiedziach na pytania z [rozdziału 18](#18-pytania-do-właściciela-prostym-językiem).
+> źródła w [Załączniku A](#załącznik-a-źródła)) i kod na `main` (commit `1e45273`) · Status: **projekt zatwierdzony —
+> decyzje właściciela z 2026-11-22 w [rozdziale 19](#19-decyzje-właściciela-2026-11-22)** (wszystkie według
+> rekomendacji; Sowia Dziupla jako osobna funkcja — [`ANALIZA_7_Sowia_Dziupla.md`](ANALIZA_7_Sowia_Dziupla.md));
+> budowa gry (podgląd) to krok 4 kolejności prac, po poprawkach wydajności z Analizy 6, w jednym PR na `main`.
 > Druga analiza z tego dnia: [`ANALIZA_6_Wydajnosc_lagi.md`](ANALIZA_6_Wydajnosc_lagi.md) (wydajność) — nowa gra
 > korzysta z jej usprawnień od pierwszego dnia. Zasady pracy bez zmian:
 > [`ANALIZA_3_Plan_prac.md`, rozdz. 8.1](ANALIZA_3_Plan_prac.md).
@@ -41,6 +43,12 @@ humbak, kózka, Sówka) i kilku prostych nowych ikon — prawdziwa gra będzie w
   nowa gra od razu działała płynnie na słabszych telefonach.
 - **12 pytań** prostym językiem: [rozdział 18](#18-pytania-do-właściciela-prostym-językiem) (m.in. nazwa, miejsce
   Sówki, kafelki, liczba poziomów, zgoda na zmianę reguł bazy).
+- **Decyzje (2026-11-22):** wszystko według rekomendacji — nazwa „Sowie Trójki”, Sówka w dolnym rogu (wariant A),
+  kafelki jak na obrazku, bez żyć, 45 poziomów (później „tryb bez końca”), podgląd przed kartą w menu, Tryb
+  Przytulny bez przegrywania, głos Sówki jak dziś. **Sowia Dziupla** będzie osobną funkcją zamiast obecnego menu
+  (Analiza 7), a **Galeria** urośnie o zdjęcia sów, kóz, wielorybów i roślin ozdobnych. Pełna treść nowych reguł
+  Firestore do skopiowania: [Załącznik B](#załącznik-b-reguły-firestore--co-zmienić-i-jak-to-opublikować).
+  Szczegóły: [rozdział 19](#19-decyzje-właściciela-2026-11-22).
 
 ![Makieta ekranu: wariant A — Sówka duża w dolnym rogu, wariant B — mała w pasku z boku planszy](ANALIZA_5_makieta.png)
 
@@ -577,13 +585,16 @@ gotowych trójek na starcie, co najmniej jeden ruch na starcie, najwyżej 3–4 
 Nieskończenie wiele podejść, od razu. Tryb Przytulny — Sówka dokłada ruchy, nie da się przegrać. Gwiazdki zbierane
 są na mapie; za każde 10 gwiazdek — pochwała Sówki (krótka animacja na mapie).
 
-### 9.6. Drugi etap (po pierwszej wersji, jeśli zechcesz)
+### 9.6. Drugi etap (po pierwszej wersji)
 
-- **Sowia Dziupla:** kącik Sówki obok planszy urządzany za gwiazdki (lampka, huśtawka, gniazdko, kwiaty, hamak…) —
-  podobnie jak ogród w Gardenscapes czy zamek w Royal Match, ale mały i widoczny w trakcie gry (pytanie 7).
+- **Sowia Dziupla — osobna funkcja całego SowieGry (decyzja z 2026-11-22):** dziupla zastąpi obecne menu główne,
+  a przedmioty do niej odblokowuje się grając we wszystkie gry — także w Sowie Trójki (np. gwiazdki i rozdziały).
+  Projekt: [`ANALIZA_7_Sowia_Dziupla.md`](ANALIZA_7_Sowia_Dziupla.md). W samej grze nie ma już osobnego kącika.
+- **„Tryb bez końca”** (decyzja 5): po 45 poziomach — plansza bez celu i bez limitu, z rekordem punktów.
 - **Wyzwanie dnia:** jeden poziom dnia z rekordem punktów (platforma ma już wyzwania dnia w grach zręcznościowych).
 - **Kolejne rozdziały** po 15 poziomów i Dymek Pracu.
-- **Nowe zdjęcia w Galerii** za Sowie Trójki (pytanie 8).
+- **Nowe zdjęcia w Galerii** (decyzja 8): zdjęcia **sów, kóz, wielorybów i roślin ozdobnych** z Pexels za cele
+  w Sowich Trójkach i w innych grach (rozdz. 19).
 
 ---
 
@@ -646,6 +657,12 @@ o tym wspominała.
 - **Tło:** polana w Sowim Lesie w trzech warstwach (niebo, drzewa, trawa) zmieniająca się z rozdziałem; gałąź
   Sówki wyrasta z krawędzi ekranu; na planszy delikatna szachownica jasnych pól.
 - **Wstrząs ekranu** tylko przy poziomie radości 5 i połączeniach dwóch mocy, wyłączany przy ograniczeniu ruchu.
+- **Styl ulubiony przez gracza (2026-11-22): mrugająca sówka jako kwiat.** Użytkownikowi bardzo podoba się pomysł
+  z Sowim storczykiem z Sowich Ogrodów — kwiaty jak sowie główki, które mrugają i się rozglądają. Nowe ikony i ozdoby
+  tej gry rysujemy w tym duchu: **ikona Storczyka** to storczyk z mrugającą, różową sowią buzią (rodzaj kafelka
+  i jego pomarańczowe tło-romb bez zmian), a pomysły „liście w kształcie kózki albo humbaka” zostają na kolejne
+  kafelki, ozdoby i rozdziały. Przepis na ten styl: `docs/Documentation.md`, „Styl ulubiony przez gracza: mrugająca
+  sówka jako kwiat”.
 - **Spokojne tempo:** zamiana 0,15 s, spadanie 0,25–0,4 s (z przyspieszeniem jak grawitacja), pauzy między
   kaskadami 0,1 s — żeby było widać każde combo i żeby Sówka zdążyła zareagować.
 
@@ -663,7 +680,7 @@ o tym wspominała.
 | **„Powtórz samouczki”** (`TUTORIAL_GAMES`) | dopisane `trojki` |
 | **„Jak grać?”** (`shared/meta/guides-data.js`) | instrukcja `trojki`: Cel gry, Ruch (gest), Moce, Przeszkody (Pracu i Amic), Sówka i Sowia pomoc, Gwiazdki; `GUIDE_ORDER` |
 | **Sowia Akademia** (`shared/meta/academy.js`) | metryki `trojkiLevels`, `trojkiStars`, `trojkiThree`, `trojkiCombo`, `trojkiOwlets`, `trojkiVisits`; 3 zadania dnia („Ukończ 2 poziomy w Sowich Trójkach”, „Zrób combo ×4”, „Wyklucie pisklęcia”), osiągnięcia („Trójkowa sówka: 15 poziomów na 3 gwiazdki”, „Sowie gniazdo: 10 wyklutych piskląt”); wizyty — zdjęcie nr 28 („zagraj w każdą grę”) zostaje przy 5 grach (kto je ma, ma) |
-| **Galeria** (`shared/owl-gallery.js`) | jeśli zechcesz (pytanie 8): zdjęcia nr 41–45 za cele w Sowich Trójkach (np. rozdział 1, 3 gwiazdki na 15 poziomach, 10 piskląt) |
+| **Galeria** (`shared/owl-gallery.js`, `Obrazki/`, `assets/gallery-thumbs/`) | decyzja 8: nowe zdjęcia z Pexels — **sowy, kozy, wieloryby (humbaki) i rośliny ozdobne** — za cele w Sowich Trójkach (np. rozdział 1, 3 gwiazdki na 15 poziomach, 10 piskląt) i w innych grach; numery od 41, opis źródła i autora w `Obrazki/README.md`, miniatury skryptem `scripts/make-thumbs.cjs`; Galeria pokaże rodzaje zdjęć (filtr: sowy / kozy / wieloryby / rośliny) |
 | **Sowi Butik** | gatunek sowy i stroje działają same (wspólne `drawOwl` + `linkSpecies`) |
 | **Wersja demo** (`demo.html`, `shared/menu/demo.js`) | 6. karta; gra w pamięci strony, bez zapisu |
 | **Opisy „pięć gier”** | `index.html`, `demo.html`, `manifest.webmanifest`, `docs/README.md` → „sześć gier” |
@@ -694,6 +711,24 @@ Stan gry w polu `state` dokumentu `trojki` (JSON, `saveVersion: 1`), podsumowani
 - **Nieznane pola** z nowszej wersji gry zostają w zapisie (jak w Łącz i Hoduj).
 - **Zasada „nic nie ginie”** jak przy wszystkich zmianach: nowe pola tylko dopisujemy, identyfikatory poziomów,
   rodzajów i mocy się nie zmieniają (Analiza 4, rozdz. 2).
+
+### 13.1a. Bramka zapisu — bezpieczeństwo produkcji (dopisane 2026-11-22)
+
+Gramy na prawdziwej bazie, więc nowa gra **nie może niczego zepsuć ani skasować**. Sprawdziłem, jak
+`shared/sowie-cloud.js` wysyła zmiany: profil (Akademia, piórka, Butik, rekordy) i dokumenty gier idą **jedną paczką**
+(`buildOps` → `writeBatch`). Gdyby w paczce znalazł się zapis dokumentu `trojki`, a reguły w Firestore jeszcze by go
+nie dopuszczały, baza odrzuciłaby **całą paczkę** — razem ze zmianami profilu — a moduł nie wysyła odrzuconej paczki
+ponownie (bazy zmian są już przesunięte). Dlatego:
+
+1. **Reguły najpierw:** nową treść reguł (Załącznik B) publikujesz w Firestore **przed** scaleniem PR z nową grą —
+   to bezpieczne w każdej chwili, bo tylko dopisuje jedną grę do listy i niczego nie zmienia dla obecnych gier.
+2. **Bramka w kodzie:** `SowieCloud` zapisuje dokumenty gier **tylko z listy `GAME_IDS`** (ta sama lista co
+   w regułach). Każda inna gra działa w pamięci strony i niczego nie wysyła; test jednostkowy pilnuje, że zapis
+   gry spoza listy nie trafia do paczki. Skrót `trojki` dopisuję do `GAME_IDS` w osobnym, małym commicie — **dopiero
+   gdy potwierdzisz, że reguły są opublikowane** (do tego czasu podgląd gry działa bez zapisu postępu).
+3. **Test reguł:** kopia reguł w `firestore.rules` i test na emulatorze (`tests/rules/`) sprawdzają, że `trojki`
+   przechodzi, a gra spoza listy jest odrzucana — jak dziś.
+4. **Testy tylko na emulatorze i w pamięci** (zasada z Analizy 3, rozdz. 8.1) — nic nie trafia do produkcyjnej bazy.
 
 ### 13.2. Zdarzenia dla Akademii i statystyk
 
@@ -775,16 +810,28 @@ zadania i zdjęcie nr 10) — Sowie Trójki mają własne zadania.
 
 ### 14.4. Wydajność od pierwszego dnia (wnioski z Analizy 6)
 
+Uzgodnione z Analizą 6 po odpowiedziach z 2026-11-22 (rozdz. 10 tamtej analizy). Gra powstaje **po** poprawkach
+W0–W8, więc od razu korzysta ze wspólnych modułów, zamiast mieć własne kopie.
+
+- **Telefon odniesienia: Redmi Note 10 Pro (MIUI Global 14.0.7, Chrome)** — telefon użytkownika: ekran do 120 Hz,
+  szerokość ok. 393 px CSS, gęstość 2,75. Plansza 8 × 9 ma na nim pola ok. 43 px (rozdz. 4.1).
+- **Limit 60 klatek/s** (wspólna pętla po W1) — na ekranie 120 Hz gra nie rysuje 120 razy na sekundę.
+- **Wspólny automat płynności** (`shared/engine/quality.js`, W1): ostrość 2 → 1,5 → 1 i mniej cząsteczek, gdy telefon
+  nie nadąża; ustawienie „Płynność” (W6) i poziom automatu zapamiętane na urządzeniu; licznik `?perf=1` (W0) działa
+  też w tej grze.
 - Kafelki rysowane **raz** do gotowych obrazków (6 rodzajów + moce + przeszkody, w rozmiarze pola i ostrości
-  ekranu) — klatka to kilkadziesiąt kopiowań obrazków, a nie setki kształtów.
+  ekranu) — klatka to kilkadziesiąt kopiowań obrazków, a nie setki kształtów (wniosek z Łącz i Hoduj: obrazki
+  + niższa ostrość dały tam 49–55 zamiast 22–24 klatek/s).
 - Tło lasu i plansza (szachownica pól, ramka) — jedna warstwa z pamięci, przerysowywana tylko przy zmianie rozmiaru,
-  poziomu albo ostrości.
+  poziomu albo ostrości (wniosek z Sowich Ogrodów: tło z pamięci +6–9 klatek/s).
 - **Rysowanie według potrzeby:** 60 klatek/s w trakcie animacji, w spokoju 30 (oddech Sówki i kołysanie
-  podpowiedzi); logika poza klatkami (oś czasu liczona od razu po ruchu, w ułamku milisekundy).
-- Wspólny automat płynności (ostrość 2 → 1,5 → 1, mniej cząsteczek), limit cząsteczek, bez nowych obiektów co
-  klatkę, napisy combo jako element strony albo gotowy obrazek.
-- Budżet: na „średnim telefonie” (CPU ×4 w pomiarze) ≥ 55 klatek/s w trakcie kaskad i wątek zajęty ≤ 70%;
-  rozstrzygnięcie ruchu z kaskadami ≤ 2 ms.
+  podpowiedzi) — mniej pracy, mniej grzania telefonu; logika poza klatkami (oś czasu liczona od razu po ruchu,
+  w ułamku milisekundy).
+- Wspólna pula cząsteczek z limitem zależnym od automatu, bez nowych obiektów co klatkę, napisy combo jako element
+  strony albo gotowy obrazek; nic nie jest rysowane „pod spodem” zakrytych warstw (wniosek z Zatoki Humbaka).
+- **Budżet** (sprawdzany skryptem `scripts/perf-bench.cjs` z W7 na profilu „Redmi Note 10 Pro”, CPU ×4): ≥ 55 klatek/s
+  w trakcie kaskad, wątek zajęty ≤ 70%, rozstrzygnięcie ruchu z kaskadami ≤ 2 ms; na Twoim telefonie — pomiar
+  z `?perf=1` w teście T6.
 
 ---
 
@@ -894,6 +941,7 @@ liści przy CPU ×1/×4/×6; w CI — liczniki pracy (ile kafelków z obrazków,
 | Sówka zasłania planszę | błędne dotknięcia | stoi poza planszą; lot tylko w czasie, gdy plansza nie przyjmuje ruchów; test nakładania |
 | Lagi na słabszych telefonach | gra „tnie” | Analiza 6 najpierw; kafelki z obrazków, warstwy, automat płynności, budżet w 14.4 |
 | Zapis nie działa (reguły) | postęp się nie zapisuje | reguły publikujesz przed dodaniem karty do menu; do tego czasu podgląd działa w pamięci |
+| Zapis nowej gry przed publikacją reguł | baza odrzuca całą paczkę zapisu — także zmiany profilu (Akademia, piórka) | bramka zapisu (13.1a): zapis tylko gier z listy `GAME_IDS`, `trojki` dopisane dopiero po Twoim potwierdzeniu; test jednostkowy bramki |
 | Dwa telefony | „cofnięty” postęp | łączenie zapisów „więcej wygrywa” (13.1), test na emulatorze |
 | Zmiany we wspólnych plikach | zepsucie innych gier | tylko dopisywanie (owl.js, Akademia, menu), wszystkie dotychczasowe testy |
 | Dłuższe testy w GitHubie | przebieg już ok. 45 min (limit 75) | większość sprawdzeń w szybkich testach jednostkowych, e2e oszczędnie (12 scenariuszy) |
@@ -914,13 +962,14 @@ liści przy CPU ×1/×4/×6; w CI — liczniki pracy (ile kafelków z obrazków,
 | **M2** | **podgląd** gry: plansza z obrazków, gesty, animacje, prosta Sówka (3 reakcje), 10 poziomów, tryb pamięci; adres `…/SowieTrojki/` (jeszcze bez karty w menu) | L (3 dni) | Ty — na telefonie |
 | **M3** | Sówka w pełni: reżyser reakcji, nowe pozy i oczy, dymki, odgłosy, Radość i Sowia pomoc; muzyka i efekty; „soczystość” | M–L (2–3 dni) | Ty |
 | **M4** | przeszkody, cele, jajka, Humbaczy Finał, mapa, samouczek, 45 poziomów ustawionych symulatorem | L (4–5 dni) | — |
-| **M5** | włączenie do SowieGry: reguły bazy (Ty), rejestr, zapis i łączenie, karta w menu, „Jak grać?”, Akademia, Rekordy, demo, testy 5 → 6, dokumentacja | M (2 dni) | Ty — reguły |
+| **M5** | włączenie do SowieGry: reguły bazy (Ty — Załącznik B), bramka zapisu (13.1a), rejestr, zapis i łączenie, „Jak grać?”, Akademia, Rekordy, demo, testy 5 → 6, dokumentacja; **karta w menu dopiero po Twojej akceptacji podglądu** (decyzja 10) | M (2 dni) | Ty — reguły i akceptacja |
 | **M6** | wydajność i dostępność, poprawki po Twoich testach T1–T6 | M (2 dni) | Ty |
-| **M7** (opcjonalnie) | Sowia Dziupla, wyzwanie dnia, zdjęcia Galerii 41–45, kolejne rozdziały | M (3 dni) | Ty |
+| **M7** (później) | „tryb bez końca”, wyzwanie dnia, nowe zdjęcia Galerii (sowy, kozy, wieloryby, rośliny ozdobne — decyzja 8), kolejne rozdziały; **Sowia Dziupla — osobno, według Analizy 7** | M (3 dni) | Ty |
 
 Razem ok. 17–22 dni pracy (bez M7 ok. 15–19). Każdy etap małymi commitami z zielonym `npm test`, dokumentacją gry
-(AGENTS.md) i wpisem w `STAN_PRAC.md`. **Kolejność z Analizą 6:** najpierw W0–W2 (pomiar, automat płynności,
-Sowie Ogrody), potem M1–M6; W4–W5 mogą iść równolegle.
+(AGENTS.md) i wpisem w `STAN_PRAC.md`. **Kolejność prac (decyzja z 2026-11-22):** 1) dokumentacja, 2) analiza
+Sowiej Dziupli, 3) poprawki wydajności W0–W8 z Analizy 6, 4) ta gra (M1–M6 jako podgląd) — wszystko w jednym
+zadaniu i jednym PR na `main`.
 
 ### 17.2. Twoje czynności
 
@@ -928,12 +977,14 @@ Sowie Ogrody), potem M1–M6; W4–W5 mogą iść równolegle.
 | --- | --- |
 | teraz | odpowiedzi na pytania z rozdz. 18 |
 | po M2 | zagrać w podgląd na telefonie i napisać, czy kierunek jest dobry |
-| przed M5 | opublikować regułę bazy (Załącznik B — ok. 2 minuty) |
-| po M5–M6 | testy T1–T6 na telefonie |
+| przed scaleniem PR z grą (najlepiej od razu — to bezpieczne) | skopiować nowe reguły z Załącznika B do Firestore i opublikować (ok. 2 minuty), potem napisać mi „reguły opublikowane” — wtedy dopiszę `trojki` do bramki zapisu |
+| po M5–M6 | testy T1–T6 na telefonie; zgoda na kartę w menu |
 
 ---
 
 ## 18. Pytania do właściciela (prostym językiem)
+
+Odpowiedzi z 2026-11-22: [rozdział 19](#19-decyzje-właściciela-2026-11-22).
 
 1. **Nazwa gry:** czy może być **„Sowie Trójki”**? (Inne pomysły: „Trzy Liście”, „Sówka i Trójki”.) Nazwę na ekranie
    można zmienić później, ale wewnętrzny skrót w bazie (`trojki`) zostanie na zawsze.
@@ -961,6 +1012,35 @@ Sowie Ogrody), potem M1–M6; W4–W5 mogą iść równolegle.
     tak, to dobre dla dzieci.)
 12. **Kolejność:** najpierw poprawki płynności z Analizy 6 (pomiar i Sowie Ogrody), potem nowa gra? (**Polecam**:
     tak — nowa gra od razu skorzysta z tych samych usprawnień.)
+
+---
+
+## 19. Decyzje właściciela (2026-11-22)
+
+| # | Pytanie | Decyzja (dosłownie) | Co robimy |
+| --- | --- | --- | --- |
+| 1 | Nazwa | „Zgodnie z rekomendacją” | **Sowie Trójki**, skrót w bazie `trojki`, folder `SowieTrojki/` |
+| 2 | Miejsce Sówki na telefonie w pionie | „Zgodnie z rekomendacją” | **wariant A** — duża Sówka w dolnym rogu na gałęzi; poziomo i na komputerze — kolumna z boku |
+| 3 | Kafelki | „Zgodnie z rekomendacją - najwyżej po testach użytkownika się zmieni w osobnym zadaniu.” | 6 rodzajów jak na obrazku; ewentualne zmiany po testach użytkownika — osobne zadanie |
+| 4 | Przegrana | „Zgodnie z rekomendacją” | **bez żyć i czekania**, prezent +3 ruchy, „Spróbuj jeszcze raz” |
+| 5 | Liczba poziomów | „Zgodnie z rekomendacją - potem pomyślimy o jakimś „endless mode”.” | **45 poziomów** (3 rozdziały); „tryb bez końca” — później (rozdz. 9.6) |
+| 6 | Reguły Firestore | „Jeżeli trzeba zmienić Rules to wklej mi gdzieś w pliku nową treść. Skopiuje ją do Firestore.” | pełna nowa treść reguł do skopiowania: **Załącznik B**; bramka zapisu (13.1a) |
+| 7 | Sowia Dziupla | „„Sowia Dziupla” to fajny feature, który powinien być niezależny od gier. Znaczy grając w gry odblokowuje się itemy a potem dekoruje dziuplę. Dziupla zastąpiłaby obecne menu główne. To znaczy gdzieś na ekranie byłoby przewijane menu (np. coś jak tablica korkowa wewnątrz dziupli), na której gracz by wybierał grę. Garderoba/szafa do zmiany wyglądy sówki itd. Elementy dekoracyjne gracz by sam wybierał przez menu „Dekorator Dziupli”. Przeprowadź dodatkową analizę dotyczącą wprowadzenia takiej funkcjonalności.” | osobna analiza: [`ANALIZA_7_Sowia_Dziupla.md`](ANALIZA_7_Sowia_Dziupla.md); w Sowich Trójkach nie ma kącika — gra tylko odblokowuje przedmioty do Dziupli |
+| 8 | Galeria | „Trzeba będzie rozbudować galerię do doblokowania o zdjęcia sów, kóz, wielorybów oraz roślin ozdobnych. Możesz wybrać z Pexels.” | nowe zdjęcia z Pexels (sowy, kozy, wieloryby, rośliny ozdobne) za cele w grach — rozdz. 13 i 9.6 |
+| 9 | Głos Sówki | „Zostaje jak teraz.” | syntetyczne „hu-hu” z `scripts/make-audio.mjs` |
+| 10 | Podgląd | „Zgoda.” | najpierw podgląd pod adresem `…/SowieTrojki/` (bez karty w menu), karta po Twojej akceptacji |
+| 11 | Tryb Przytulny | „Zgoda.” | w Trybie Przytulnym nie da się przegrać — Sówka dokłada ruchy |
+| 12 | Kolejność | „Kolejność napisałem wyżej.” | 1) dokumentacja, 2) analiza Sowiej Dziupli, 3) poprawki wydajności (Analiza 6), 4) nowa gra |
+
+Dodatkowo z tej samej wiadomości:
+
+- **Telefon użytkownika:** Redmi Note 10 Pro, MIUI Global 14.0.7, Chrome — telefon odniesienia dla wydajności
+  (rozdz. 14.4, Analiza 6 rozdz. 10).
+- **Styl ulubiony przez gracza:** mrugająca sówka jako kwiat (Sowi storczyk) — w tym stylu kolejne kwiatki
+  i ilustracje (rozdz. 12; `docs/Documentation.md`).
+- **„Pamiętaj, że pracujemy cały czas na prawdziwej grze na produkcji. Nie chcę, żeby w trakcie testów coś się
+  popsuło z Firestore i skasował się postęp.”** — bramka zapisu (13.1a), reguły przed scaleniem, testy tylko na
+  emulatorze i w pamięci, nowe pola zapisu tylko dopisywane.
 
 ---
 
@@ -995,32 +1075,73 @@ pobieranie — opierałem się na stronach, które dało się przeczytać, i na 
 ## Załącznik B. Reguły Firestore — co zmienić i jak to opublikować
 
 **Po co:** baza SowieGry pozwala zapisywać tylko gry z listy (`runner`, `jumper`, `sowa3`, `ogrody`, `szklarnia`).
-Nowa gra potrzebuje na tej liście swojego skrótu `trojki`. Nic innego się nie zmienia — kolekcje Twojego drugiego
-projektu (`audio`, `character_builder`, `dataslate`) i reszta zasad zostają dokładnie takie same.
+Nowa gra potrzebuje na tej liście swojego skrótu `trojki`. **Nic innego się nie zmienia** — kolekcje Twojego
+drugiego projektu (`audio`, `character_builder`, `dataslate`), profil i wszystkie dotychczasowe gry działają dokładnie
+tak samo. Sowia Dziupla (Analiza 7) zmiany reguł nie potrzebuje (zapisuje się w profilu).
 
-**Zmiana (jedna linia):**
+**Kiedy:** możesz opublikować **od razu** — to bezpieczne, bo tylko dopisuje jedną nazwę do listy dozwolonych gier.
+Musi być opublikowane **przed scaleniem PR z nową grą**. Po publikacji napisz mi „reguły opublikowane” — wtedy
+dopiszę `trojki` do bramki zapisu w kodzie (rozdz. 13.1a).
+
+### Nowa treść reguł (skopiuj całość)
+
+Jedyna różnica względem obecnych reguł: na liście gier na końcu dochodzi `, "trojki"`.
 
 ```
-        allow create, update, delete: if gra in ["runner", "jumper", "sowa3", "ogrody", "szklarnia"];
-```
+rules_version = '2';
 
-na:
+service cloud.firestore {
+  match /databases/{database}/documents {
 
-```
+    // 1) Drugi projekt (audio, character_builder, dataslate i każda inna kolekcja):
+    //    pełny dostęp jak dotąd, także zapytania collectionGroup.
+    //    Wyjątek: trzy kolekcje SowieGry.
+    match /{sciezka=**}/{kolekcja}/{dokument} {
+      allow read, write: if !(kolekcja in ["sowiegry", "sowiegry_gry", "sowiegry_historia"]);
+    }
+
+    // 2) SowieGry
+    match /sowiegry/meta {
+      allow read: if true;
+      allow create, update: if request.resource.data.schemaVersion is int;
+      allow delete: if false;
+    }
+
+    match /sowiegry/profil {
+      allow read: if true;
+      allow create, update: if request.resource.data.schemaVersion is int
+                            && request.resource.data.size() <= 30;
+      allow delete: if false;
+
+      match /sowiegry_gry/{gra} {
+        allow read: if true;
         allow create, update, delete: if gra in ["runner", "jumper", "sowa3", "ogrody", "szklarnia", "trojki"];
+
+        match /sowiegry_historia/{wpis} {
+          allow read: if true;
+          allow create: if request.resource.data.score is number;
+          allow delete: if true;          // przycinanie historii do 50 wpisów
+          allow update: if false;
+        }
+      }
+    }
+  }
+}
 ```
 
-**Krok po kroku (ok. 2 minuty, zrobisz to, gdy napiszę, że gra jest gotowa do menu — etap M5):**
+### Krok po kroku (ok. 2 minuty)
 
 1. Otwórz <https://console.firebase.google.com> i zaloguj się kontem, na którym jest projekt.
 2. Wybierz projekt **rpg-dataslate-relay**.
 3. W menu po lewej: **Firestore Database** → u góry zakładka **Reguły** (Rules).
-4. Znajdź linię z `gra in ["runner", "jumper", "sowa3", "ogrody", "szklarnia"]` i przed zamykającym nawiasem `]`
-   dopisz `, "trojki"` (przecinek, spacja, cudzysłów, trojki, cudzysłów).
-5. Kliknij **Opublikuj** (Publish). Gotowe — zmiana działa po minucie.
+4. Zaznacz cały tekst w edytorze reguł (Ctrl+A), usuń go i wklej całą treść z ramki powyżej (od `rules_version`
+   do ostatniego nawiasu `}`).
+5. Kliknij **Opublikuj** (Publish). Zmiana działa po ok. minucie.
+6. Napisz mi „reguły opublikowane”.
 
-Pełny tekst reguł po zmianie będzie w repozytorium w pliku `firestore.rules` (ta sama treść co dziś + `"trojki"`),
-razem z testem, który sprawdza, że reguły przepuszczają nową grę i nadal blokują wszystko spoza listy.
+**Gdyby coś poszło nie tak:** w zakładce Reguły jest historia wersji — można wrócić do poprzedniej jednym
+kliknięciem. Obecna treść (do porównania) jest w repozytorium w pliku `firestore.rules`; nowa trafi tam razem
+z grą, z testem na emulatorze, który sprawdza, że `trojki` przechodzi, a gra spoza listy jest odrzucana.
 
 ---
 

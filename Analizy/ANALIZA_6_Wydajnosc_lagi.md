@@ -1,8 +1,10 @@
 # Analiza 6 — wydajność: „jak się za dużo dzieje na ekranie, gra laguje” (zwłaszcza Sowie Ogrody)
 
 > Data: 2026-11-22 · Podstawa: zgłoszenie użytkownika przekazane przez właściciela 2026-11-22 (dosłownie
-> w [rozdziale 1](#1-zgłoszenie-dosłownie-i-numer)) i kod na `main` (commit `1e45273`) · Status: **analiza — bez zmian
-> w kodzie gier**; kod zmieniamy po odpowiedziach na pytania z [rozdziału 9](#9-pytania-do-właściciela-prostym-językiem).
+> w [rozdziale 1](#1-zgłoszenie-dosłownie-i-numer)) i kod na `main` (commit `1e45273`) · Status: **analiza
+> z odpowiedziami właściciela (2026-11-22, [rozdział 10](#10-odpowiedzi-właściciela-i-zmiany-planu-2026-11-22))** —
+> telefon użytkownika: **Redmi Note 10 Pro, MIUI Global 14.0.7, przeglądarka Chrome**; wdrożenie W0–W8 to krok 3
+> kolejności prac (po dokumentacji i analizie Sowiej Dziupli), w jednym zadaniu i jednym PR na `main`.
 > Druga analiza z tego dnia: [`ANALIZA_5_Nowa_gra_Sowie_Trojki_match3.md`](ANALIZA_5_Nowa_gra_Sowie_Trojki_match3.md)
 > (nowa gra „match 3”) — korzysta z poprawek opisanych tutaj. Zasady pracy bez zmian:
 > [`ANALIZA_3_Plan_prac.md`, rozdz. 8.1](ANALIZA_3_Plan_prac.md).
@@ -38,6 +40,11 @@ pliku). Jak mierzyłem i czego te liczby nie mówią: [rozdział 2](#2-jak-mierz
   (W4), gry zręcznościowe (W5). **Nic z postępu nie ginie** — zmiany dotyczą tylko rysowania.
 - **Pytania do Ciebie** (m.in. na jakim telefonie laguje i w której grze „zawiesza się przesuwanie roślin”):
   [rozdział 9](#9-pytania-do-właściciela-prostym-językiem).
+- **Telefon użytkownika (odpowiedź z 2026-11-22): Redmi Note 10 Pro z MIUI Global 14.0.7, gra w Chrome.** To telefon
+  średniej klasy z ekranem, który może odświeżać obraz **120 razy na sekundę** — jeśli Chrome korzysta z tej
+  częstotliwości, Sowie Ogrody i Łącz i Hoduj próbują rysować 120 klatek na sekundę, czyli robią dwa razy więcej
+  pracy niż na zwykłym ekranie. Dlatego plan dostał **limit 60 klatek/s** (W1). Szczegóły i pozostałe odpowiedzi:
+  [rozdział 10](#10-odpowiedzi-właściciela-i-zmiany-planu-2026-11-22).
 
 | Gra (scenariusz) | Komputer (CPU ×1) | „Średni telefon” (CPU ×4) | „Słabszy telefon” (CPU ×6) | Po poprawkach (próba, ×4 / ×6) |
 | --- | --- | --- | --- | --- |
@@ -235,6 +242,10 @@ danej gry (AGENTS.md) i wpisem w `STAN_PRAC.md`. Rozmiar: S — do kilku godzin,
 
 ### W1 — wspólny „automat płynności” dla wszystkich gier (M)
 
+- **Limit 60 klatek/s (od odpowiedzi z 2026-11-22):** na ekranach 90/120 Hz (jak w Redmi Note 10 Pro) przeglądarka
+  może wołać rysowanie 90–120 razy na sekundę; gra rysuje najwyżej 60 razy (klatkę, która przyszła po mniej niż
+  ok. 14 ms od poprzedniego rysunku, pomija — logika liczy się dalej według czasu). W pętli silnika
+  (`shared/engine/loop.js`, `setRenderRate`) „60” znaczy dziś „przy każdej klatce” — zmieniamy na prawdziwy limit.
 - Nowy moduł `shared/engine/quality.js` zamiast trzech kopii `dprCap` w grach zręcznościowych. Poziomy:
   - **0** — ostrość 2, wszystkie efekty (jak dziś na dobrym telefonie);
   - **1** — ostrość 1,5;
@@ -242,8 +253,9 @@ danej gry (AGENTS.md) i wpisem w `STAN_PRAC.md`. Rozmiar: S — do kilku godzin,
   - **3** — ostrość 1, połowa cząsteczek i rysowanie 30 razy na sekundę („Oszczędzanie baterii”).
 - Zejście poziom niżej, gdy przez 3 s średnio < 50 klatek/s (jak dziś w grach zręcznościowych); powrót poziom wyżej
   dopiero po 20 s stabilnych ≥ 58 klatek/s i najwyżej raz na minutę (żeby obraz nie „mrugał” ostrością). Poziom
-  zapamiętany na urządzeniu w profilu (`settings.quality`, przez `SowieCloud.updateProfile`, jak `batterySaver`) —
-  następne wejście zaczyna od ostatniego poziomu, a nie od zera.
+  zapamiętany **na tym urządzeniu** (wpis urządzenia w `shared/sowie-cloud.js`, obok odblokowania hasłem — nie
+  w profilu, bo profil jest wspólny dla wszystkich urządzeń; rozdz. 10.3) — następne wejście zaczyna od ostatniego
+  poziomu, a nie od zera.
 - Ręczny wybór w menu (Sowa → Ustawienia → „Płynność”): **Automatyczna** (domyślnie) / „Zawsze ostro” / „Oszczędzanie
   baterii” — wymaga Twojej decyzji (pytanie 5).
 - Ograniczenie ruchu w systemie i wyłączone „Efekty” w menu działają jak dotąd (mniej cząsteczek, bez wstrząsów).
@@ -402,6 +414,8 @@ ocenę da pomiar na Twoim telefonie (W0 → po W2–W5).
 
 ## 9. Pytania do właściciela (prostym językiem)
 
+Odpowiedzi z 2026-11-22 i co z nich wynika: [rozdział 10](#10-odpowiedzi-właściciela-i-zmiany-planu-2026-11-22).
+
 1. **Na jakim telefonie gra laguje?** Wystarczy nazwa z ustawień telefonu (np. „iPhone 11”, „Samsung Galaxy A12”,
    „Xiaomi Redmi Note 9”). Czy to ten sam telefon, na którym robisz testy, czy telefon innej osoby?
 2. **„Zawiesza się przesuwanie roślin” — w której grze?** (a) w **Sowich Ogrodach**, gdy przesuwasz palcem linię
@@ -419,6 +433,73 @@ ocenę da pomiar na Twoim telefonie (W0 → po W2–W5).
    korzystała z tych samych usprawnień, więc nie będzie lagować na słabszych telefonach.
 8. **Czy możesz raz zrobić pomiar na telefonie, na którym laguje?** Po pierwszej poprawce (W0) wyślę adres
    z dopiskiem `?perf=1` — w rogu ekranu pojawią się liczby; wystarczy zagrać minutę i wysłać zrzut ekranu.
+
+---
+
+## 10. Odpowiedzi właściciela i zmiany planu (2026-11-22)
+
+### 10.1. Odpowiedzi
+
+| # | Pytanie | Odpowiedź | Co z tego wynika |
+| --- | --- | --- | --- |
+| 1 | Na jakim telefonie laguje? | „użytkownik korzysta z **Redmi Note 10 Pro** z oprogramowaniem **MIUI Global 14.0.7** i gra na mobilnej przeglądarce **Chrome**” | profil pomiarowy tego telefonu (10.2), limit 60 klatek/s (W1) |
+| 2 | „Zawiesza się przesuwanie roślin” — w której grze? | bez odpowiedzi | poprawiamy obie: półkę w Sowich Ogrodach (W3) i przeciąganie w Łącz i Hoduj (W4) |
+| 3 | Kiedy laguje najbardziej? | bez odpowiedzi | poprawiamy wszystkie scenariusze z rozdz. 3; pomiar W0 pokaże resztę |
+| 4 | Czy gra może sama zmniejszyć ostrość na słabszym telefonie? | „Zgodnie z rekomendacją” — **tak, automatycznie** | automat płynności (W1) |
+| 5 | Czy w ustawieniach ma być przełącznik „Płynność”? | „Zgodnie z rekomendacją” — **automat + przełącznik** | W6 |
+| 6 | Kolejność: najpierw Ogrody i Łącz i Hoduj, potem gry z biegającą sową? | „Zgoda, chociaż i tak wszystkie poprawki zrobimy w ramach jednego zadania i jednego PR na main.” | W0–W8 w jednym zadaniu, jeden PR na `main` (rozdz. 10.3) |
+| 7 | Najpierw poprawki wydajności, potem nowa gra? | „Zgoda.” | kolejność prac — 10.3 |
+| 8 | Pomiar na telefonie z `?perf=1`? | „Bardzo dobry pomysł. Zgoda.” | W0 z instrukcją pomiaru (10.3) |
+
+### 10.2. Telefon użytkownika i co z tego wynika
+
+| | Redmi Note 10 Pro (wersja globalna) |
+| --- | --- |
+| System | MIUI Global 14.0.7 (Android) |
+| Przeglądarka | Chrome na Androidzie — płótno rysowane przez kartę graficzną, obsługuje `getCoalescedEvents()` (W3) |
+| Procesor | Snapdragon 732G (2 rdzenie 2,3 GHz + 6 rdzeni 1,8 GHz) — telefon średniej klasy; w pomiarach z kontenera to w przybliżeniu „CPU ×3–4” |
+| Karta graficzna | Adreno 618 |
+| Ekran | 6,67″ AMOLED 1080 × 2400, **do 120 Hz**; w Chrome szerokość ok. 393 px CSS przy gęstości 2,75 (gry rysują płótno w ostrości 2 — górny limit w kodzie) |
+
+Wnioski:
+
+1. **120 Hz:** jeśli w telefonie jest włączone odświeżanie 120 Hz (MIUI: Ustawienia → Wyświetlacz → Częstotliwość
+   odświeżania), Chrome może wywoływać rysowanie 120 razy na sekundę. Sowie Ogrody i Łącz i Hoduj rysują wtedy dwa
+   razy więcej niż na ekranie 60 Hz (gry zręcznościowe też — pętla rysuje przy każdej klatce). Na płynność obrazu
+   gry 60 klatek/s w zupełności wystarcza, więc **W1 dostaje limit 60 klatek/s**. Licznik `?perf=1` (W0) pokaże,
+   ile razy na sekundę przeglądarka naprawdę woła rysowanie.
+2. **Nagrzewanie:** długie, ciężkie rysowanie nagrzewa telefon, a MIUI obniża wtedy taktowanie procesora — gra
+   może „z czasem” zwalniać (pasuje do „animacje się spowalniają i wszystko wolniej działa”). Limit 60 klatek/s,
+   rysowanie według potrzeby (W2.5, W4) i automat płynności zmniejszają też grzanie i zużycie baterii.
+3. **Oszczędzanie baterii w MIUI** obniża taktowanie i odświeżanie — przy pomiarze W0 warto je wyłączyć (albo
+   zapisać, że było włączone), żeby liczby były porównywalne przed i po poprawkach.
+4. **Profil pomiarowy:** skrypt `scripts/perf-bench.cjs` (W7) dostaje profil „Redmi Note 10 Pro” — 393 × 873 px CSS,
+   gęstość 2,75, przeglądarka Chrome na Androidzie, CPU ×4 (i ×3) — jako profil odniesienia dla wszystkich gier
+   i nowej gry z Analizy 5. Do testów w GitHubie go nie dokładamy (każdy nowy profil to ok. 1/10 dłuższy przebieg);
+   układ ekranu takiej szerokości sprawdzają już profile Pixel 7 (412 px) i Android 360 px.
+
+### 10.3. Zmiany w planie
+
+- **Kolejność prac (decyzja z 2026-11-22):** 1) aktualizacja dokumentacji, 2) analiza Sowiej Dziupli
+  (`ANALIZA_7`), **3) poprawki W0–W8 z tej analizy**, 4) nowa gra Sowie Trójki (Analiza 5) — wszystko w jednym
+  zadaniu i jednym PR na `main`. Przed scaleniem: pełny `npm test` u mnie i zielone testy w GitHubie.
+- **W0** — licznik `?perf=1` pokazuje także, ile razy na sekundę przeglądarka woła klatki (60 / 90 / 120).
+  Instrukcja pomiaru dla Ciebie (dopiszę do `TESTY_NA_TELEFONIE.md` jako test W1): Chrome na Redmi, oszczędzanie
+  baterii w telefonie wyłączone, po minucie w Sowich Ogrodach (spokój, szybkie stukanie, Zatoka Humbaka) i w Łącz
+  i Hoduj (przeciąganie roślin) — zrzut ekranu z licznikiem. Ten sam pomiar po wdrożeniu poprawek.
+- **W1** — limit 60 klatek/s (rozdz. 5); **poziom automatu i wybór „Płynność” zapamiętywane na tym urządzeniu**, a nie
+  w profilu: profil jest wspólny dla wszystkich telefonów i komputerów rodziny, a każde urządzenie ma inną moc.
+  Zapis przez `shared/sowie-cloud.js` (tylko ten plik może używać pamięci przeglądarki — zasada z Analizy 3) w tym
+  samym wpisie co odblokowanie urządzenia hasłem; **nic nie trafia do bazy Firestore**. Dotychczasowe ustawienie
+  `settings.batterySaver` w profilu zostaje i dalej działa (włączone = „Oszczędzanie baterii”).
+- **W6** — przełącznik „Płynność: Automatyczna / Zawsze ostro / Oszczędzanie baterii” w menu (Sowa → Ustawienia);
+  w grach zręcznościowych także w menu pauzy.
+- **Bezpieczeństwo produkcji:** poprawki zmieniają tylko rysowanie — zapis postępu, jego format i reguły Firestore
+  zostają bez zmian; wszystkie testy na emulatorze albo w pamięci (zasada z Analizy 3, rozdz. 8.1); po scaleniu
+  PR dwukrotne odświeżenie strony pobiera nową wersję jak zwykle.
+- **Nowa gra (Analiza 5, rozdz. 14.4 „Wydajność od pierwszego dnia”)** korzysta z tych samych rozwiązań od
+  pierwszego dnia: limit 60 klatek/s, automat płynności, licznik `?perf=1`, rysowanie według potrzeby, kafelki
+  z gotowych obrazków, budżet sprawdzany na profilu „Redmi Note 10 Pro”.
 
 ---
 

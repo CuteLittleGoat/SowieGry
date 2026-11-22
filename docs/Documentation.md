@@ -429,6 +429,30 @@ Tylko wygląd (Analiza 2, rozdz. 2.2): ten sam rysunek Sówki w innych kolorach.
 - `recolorOwl(tekst, gatunek)` — jedno przejście wyrażeniem regularnym po pięciu kolorach `OWL_PALETTE` (wielkość liter bez znaczenia), więc podmieniony kolor nie jest zamieniany drugi raz; Sówka i nieznany gatunek → tekst bez zmian;
 - `speciesTransform(gatunek)` → `null` dla Sówki i nieznanego, inaczej funkcja dla atlasu przekolorowująca tylko pliki zaczynające się od `sowa/`.
 
+### Styl ulubiony przez gracza: mrugająca sówka jako kwiat (2026-11-22)
+
+**Wskazówka na kolejne aktualizacje.** Użytkownikowi bardzo podoba się pomysł z **mrugającą sówką jako kwiatem** —
+roślina **Sowi storczyk** w Sowich Ogrodach (rozdział Podniebny ogród; rysunek `owlOrchid` w
+`SowieOgrody/ogrod/plants.js`). Właściciel: pasuje to do „cute” stylu gier; **kolejne kwiatki i ilustracje można
+robić w tym samym stylu** (np. liście w kształcie kózki albo humbaka). Przepis na ten styl:
+
+1. **Prawdziwa roślina jako podstawa** — rozpoznawalne liście, łodyga albo pęd i kwiat (tu: liście i łukowaty pęd
+   storczyka).
+2. **Postać Sowiego Świata zbudowana z części rośliny** — w Sowim storczyku kwiat jest sowią główką: płatki to
+   uszka, środek kwiatu to głowa z jasnymi tarczami wokół oczu, okrągłe oczy z żółtą tęczówką, mały pomarańczowy
+   dziobek i jasny „brzuszek”. Postać ma być od razu widoczna, ale roślina dalej wygląda jak roślina.
+3. **Delikatne życie** — oczy mrugają i rozglądają się (każda sówka w innej chwili), pęd się kołysze; z etapem
+   wzrostu przybywa sówek. Ruch mały i spokojny (bez skakania), żeby ogród był przytulny, a nie męczący.
+4. **Kolory z palety rośliny** — główny kolor kwiatu (Sowi storczyk: różowo-fioletowy `#c98ad8`), jaśniejsze tarcze
+   twarzy i brzuszek, ciemniejsze uszka-płatki, zielone liście; oczy i dziobek jak u Sówki (żółty, pomarańczowy).
+   Zasady Sowiego Świata bez zmian: bez czystej czerni, zaokrąglone kształty; w plikach SVG kontur `#3b2f4a`.
+5. **Pomysły na kolejne rośliny i ilustracje w tym stylu:** „Kozi liść” — liście jak główki kózek z profilu
+   (zawinięte różki u nasady liścia, oklapnięte uszko, oko z odblaskiem, bródka na czubku; liście „skubią” powietrze);
+   „Humbakowiec” — wodna roślina z liśćmi jak małe humbaki (płetwa ogonowa na czubku, płetwy piersiowe jako płaty
+   liścia, bruzdy brzucha jako nerwy) i pąkiem, z którego czasem tryska fontanna kropelek; „Pisklęce pąki” — pąki jak
+   pisklęta wyglądające ze skorupek; dzwonki z sowimi buziami. Tak samo mogą wyglądać ikony i ozdoby w nowych grach
+   i funkcjach (np. kafelek Storczyka w Sowich Trójkach — Analiza 5, ozdoby Sowiej Dziupli — Analiza 7).
+
 ## Wspólny interfejs gier (`shared/ui/`) — etap E2d
 
 Moduły ES (`shared/ui/package.json` z `"type": "module"`, `index.js` eksportuje wszystko) i style `shared/ui/ui.css` (wymaga `shared/world/tokens.css` i `shared/engine/shell.css`). Wszystkie elementy liczą rozmiar z `box-sizing: border-box`, czcionka Fredoka, cele dotyku ≥ 48 px, fokus `outline: 3px solid var(--niebieski)`; animacje wyłączane przy `prefers-reduced-motion` i klasie `sowie-reduced-effects`.
