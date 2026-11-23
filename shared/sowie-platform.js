@@ -63,6 +63,17 @@
       saveVersion: 2,
       rebuilt: true,
     },
+    // Sowie Trójki (Analiza 5): gra logiczna „match 3” z Sówką — od M5 (2026-11-23, reguły z „trojki” opublikowane)
+    // w menu i z zapisem postępu (stan w polu `state` dokumentu gry, jak w grach idle).
+    {
+      id: "trojki",
+      name: "Sowie Trójki",
+      path: "SowieTrojki/",
+      icon: "🍓",
+      kind: "idle",
+      saveVersion: 1,
+      rebuilt: true,
+    },
   ]);
 
   const COSMETICS = Object.freeze({

@@ -219,7 +219,7 @@ test("instrukcje obecnych gier: każda gra z rejestru ma przewodnik (treść z d
   const { readFileSync } = await import("node:fs");
   const { GUIDE_ORDER } = await import("../../shared/meta/guides-data.js");
   const platform = readFileSync(new URL("../../shared/sowie-platform.js", import.meta.url), "utf8");
-  const ids = [...platform.matchAll(/id: "(runner|jumper|sowa3|ogrody|szklarnia)"/g)].map((match) => match[1]);
+  const ids = [...platform.matchAll(/id: "(runner|jumper|sowa3|ogrody|szklarnia|trojki)"/g)].map((match) => match[1]);
   assert.deepEqual(GUIDE_ORDER, ["swiat", ...ids]);
   for (const id of ids) {
     const guide = guideFor(id);

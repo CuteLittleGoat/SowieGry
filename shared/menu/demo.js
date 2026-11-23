@@ -1,4 +1,4 @@
-// Menu wersji demo (E10, uwaga właściciela G2 — demo.html): karty pięciu gier z ilustracjami jak w menu głównym,
+// Menu wersji demo (E10, uwaga właściciela G2 — demo.html): karty sześciu gier z ilustracjami jak w menu głównym,
 // „Jak grać?” i muzyka menu, bez Galerii, zakładki „Sowa”, rekordów i hasła. Postęp gier jest tylko w pamięci strony
 // (SowieCloud w trybie demo — shared/sowie-cloud.js), a odnośniki „Graj” mają `?demo=1`.
 import { createAudio } from "../engine/audio.js";

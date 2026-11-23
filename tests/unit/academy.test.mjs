@@ -75,7 +75,8 @@ test("każda metryka zadań i osiągnięć pochodzi ze zdarzeń gier (academyCal
     [EVENTS.RUN_ENDED, { gameId: "sowa3", score: 1, bestCombo: 1, finished: true, run }],
     [EVENTS.IDLE, { gameId: "ogrody", lifetimeLeaves: 1, clicks: 1, buys: 1, watering: 1, prestiges: 1, plants: 1 }],
     [EVENTS.IDLE, { gameId: "szklarnia", rooms: 1, plants: 1, goats: 1, hybrids: 1 }],
-    ...["runner", "jumper", "sowa3", "ogrody", "szklarnia"].map((gameId) => [EVENTS.VISIT, { gameId }]),
+    [EVENTS.IDLE, { gameId: "trojki", levels: 1, stars: 1, three: 1, wins: 1, owlets: 1, combo: 1 }],
+    ...["runner", "jumper", "sowa3", "ogrody", "szklarnia", "trojki"].map((gameId) => [EVENTS.VISIT, { gameId }]),
   ];
   const metrics = new Set(events.flatMap(([type, detail]) => academyCalls(type, detail).map((call) => call[1])));
   for (const task of TASK_POOL) assert.ok(metrics.has(task.metric), task.id);

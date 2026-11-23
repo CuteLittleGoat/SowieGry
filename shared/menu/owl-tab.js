@@ -35,6 +35,14 @@ const IDLE_SUMMARY = {
     ["hybrids", "Hybrydy"],
     ["poolBest", "Rekord Basenu Humbaka"],
   ],
+  // Sowie Trójki (od M5): podsumowanie stanu gry (state.js → summaryOf) zapisywane przez saveGameState.
+  trojki: [
+    ["level", "Najwyższy poziom"],
+    ["stars", "Gwiazdki"],
+    ["three", "Poziomy na 3 gwiazdki"],
+    ["bestCombo", "Najlepsze combo"],
+    ["owlets", "Wyklute pisklęta"],
+  ],
 };
 
 const escapeHtml = (value) =>
@@ -70,8 +78,9 @@ export function speciesSwatch(colors) {
   </svg>`;
 }
 
-// Gry z samouczkiem (identyfikatory w bazie): Sowia Ucieczka, Sowie Tory (sowa3), Sowa w Chmurach (jumper), nowe Ogrody.
-export const TUTORIAL_GAMES = Object.freeze(["runner", "sowa3", "jumper", "ogrody", "szklarnia"]);
+// Gry z samouczkiem (identyfikatory w bazie): Sowia Ucieczka, Sowie Tory (sowa3), Sowa w Chmurach (jumper), nowe Ogrody,
+// Łącz i Hoduj (szklarnia) i Sowie Trójki (karty „Nowość”).
+export const TUTORIAL_GAMES = Object.freeze(["runner", "sowa3", "jumper", "ogrody", "szklarnia", "trojki"]);
 
 export function createOwlTab({
   root,
@@ -471,7 +480,7 @@ export function createOwlTab({
     openModal({
       title: "Powtórzyć samouczki?",
       content:
-        "Przy następnym wejściu do Sowiej Ucieczki, Sowich Torów, Sowy w Chmurach, nowych Sowich Ogrodów i Łącz i Hoduj samouczek pokaże się jeszcze raz. Postęp i rekordy zostają.",
+        "Przy następnym wejściu do Sowiej Ucieczki, Sowich Torów, Sowy w Chmurach, nowych Sowich Ogrodów, Łącz i Hoduj i Sowich Trójek samouczek pokaże się jeszcze raz. Postęp i rekordy zostają.",
       actions: [
         { label: "Anuluj", onClick: (close) => close() },
         {

@@ -365,10 +365,65 @@ export const GUIDES = Object.freeze({
       },
     ],
   },
+  // Sowie Trójki (SowieTrojki/, Analiza 5) — od M5 w menu; grafiki ze wspólnego atlasu (menu i gra).
+  trojki: {
+    id: "trojki",
+    title: "Sowie Trójki",
+    summary:
+      "Zamieniaj sąsiednie kafelki, żeby ułożyć trzy takie same w rzędzie albo w kolumnie. Sówka kibicuje Ci z gałęzi!",
+    cards: [
+      {
+        id: "cel",
+        title: "Cel gry",
+        text: "Każdy poziom ma cel (np. „Zbierz 20 truskawek”) i liczbę ruchów — widać je u góry. Zrób cel, zanim skończą się ruchy, a odblokujesz następny poziom na mapie.",
+        sprite: "lisc-zielony",
+      },
+      {
+        id: "ruch",
+        title: "Ruch",
+        text: "Przesuń kafelek palcem na sąsiednie pole albo stuknij dwa sąsiednie kafelki po kolei.",
+        gesture: "swipe-right",
+        sprite: "lisc-zloty",
+        tip: "Ruch bez trójki wraca na miejsce i nie zabiera ruchu.",
+      },
+      {
+        id: "moce",
+        title: "Moce",
+        text: "4 w linii — Pióro (cały rząd), kwadrat — Pisklę (leci do celu), L albo T — Bąbel (wszystko dookoła), 5 w linii — Tęczowy liść (wszystkie takie same). Stuknij moc albo ją przesuń; dwie moce razem robią coś wielkiego!",
+        gesture: "tap",
+        sprite: "lisc-teczowy",
+      },
+      {
+        id: "przeszkody",
+        title: "Pracu Pracu i Amic",
+        text: "Karteczki Pracu zerwiesz trójkami obok, skrzynie Amic rozbijesz tak samo. Kanister Amic rozbijesz tylko mocą, a telefon Pracu dokleja karteczki, gdy go nie trafiasz.",
+        sprite: "pracu-telefon",
+      },
+      {
+        id: "jajka",
+        title: "Jajka i gniazda",
+        text: "Sprowadź jajko na dół do gniazda — wykluje się pisklę i poleci do Sówki.",
+        sprite: "sowa-stoi",
+      },
+      {
+        id: "sowka",
+        title: "Sówka i Sowia pomoc",
+        text: "Im większe combo, tym bardziej Sówka się cieszy. Gdy pasek „Radość Sówki” jest pełny, stuknij Sówkę — zrzuci 3 Pióra, a ruch nie przepadnie.",
+        gesture: "tap",
+        sprite: "sowa-radosc",
+      },
+      {
+        id: "gwiazdki",
+        title: "Gwiazdki i Humbaczy Finał",
+        text: "Za wygraną jest gwiazdka, za dużo punktów — dwie albo trzy. Pozostałe ruchy humbak zamienia w Pióra. Bez żyć i czekania — przegrany poziom grasz od razu jeszcze raz.",
+        sprite: "humbak",
+      },
+    ],
+  },
 });
 
 // Kolejność przewodników w zakładce „Jak grać” (najpierw „Poznaj Sowi Świat”, potem gry jak w rejestrze).
-export const GUIDE_ORDER = Object.freeze(["swiat", "runner", "jumper", "sowa3", "ogrody", "szklarnia"]);
+export const GUIDE_ORDER = Object.freeze(["swiat", "runner", "jumper", "sowa3", "ogrody", "szklarnia", "trojki"]);
 
 // Sprawdza przewodnik (błędy jako lista napisów — pusta, gdy wszystko w porządku).
 export function validateGuide(guide, { sprites = null } = {}) {

@@ -11,23 +11,26 @@ import { createPerfMeter } from "../shared/engine/perf-meter.js";
 import { createFrameLimiter, createQuality } from "../shared/engine/quality.js";
 import { createSlowBanner } from "../shared/engine/shell.js";
 import { createAtlas } from "../shared/engine/sprites.js";
+import { guideFor } from "../shared/meta/guides-data.js";
+import { EVENTS, progress } from "../shared/meta/progress.js";
 import { linkSpecies } from "../shared/meta/shop.js";
 import { createPauseMenu, createToasts, ICONS, openModal, renderGuide } from "../shared/ui/index.js";
 import { SVG_BASE } from "../shared/world/catalog.js";
 import { adjacent, boardToText, setLayout, swappable } from "./board.js";
-import { GAME_ID, JOY, KIND_INFO, comboWord, goalText } from "./config.js";
+import { GAME_ID, JOY, KIND_INFO, SAVE_VERSION, comboWord, goalText } from "./config.js";
 import { createLevelRun } from "./game.js";
-import { GUIDE } from "./guide.js";
 import { LEVELS, levelById } from "./levels.js";
 import { renderMap } from "./map.js";
 import { createOwlDirector } from "./owl-director.js";
 import { createOwlView } from "./owl-view.js";
 import { createBoardRenderer } from "./render.js";
-import { defaultState, loadState, recordResult, summaryOf } from "./state.js";
+import { defaultState, loadState, mergeStates, recordResult, summaryOf } from "./state.js";
 import { TROJKI_SPRITES } from "./tiles.js";
 import { showHand, showIntro } from "./tutorial.js";
 
 const AUDIO_BASE = new URL("../assets/audio/", import.meta.url).href;
+// Instrukcja „Jak grać?” ze wspólnego katalogu (ta sama w menu i w grze).
+const GUIDE = guideFor(GAME_ID);
 const MUSIC = "ogrod";
 const FINALE_MUSIC = "humbak";
 const GAME_SOUNDS = ["klik", "polaczenie", "hu-hu", "rekord", "koniec-gry", "humbak-plusk", "lisc-teczowy", "dzwonek"];
@@ -616,6 +619,7 @@ function finishRecord(won) {
     totalLevels: LEVELS.length,
   });
   save();
+  reportProgress({ combo: run.state.stats.bestCombo });
 }
 
 function showWin() {
@@ -710,10 +714,36 @@ function showLose() {
 
 // ---------- Zapis ----------
 
-function save() {
-  progressState.savedAt = Date.now();
+// Stan do porównań: bez znacznika czasu, klucze i obejrzane karty w stałej kolejności — zapis tylko po zmianie
+// i łączenie zapisów dwóch telefonów bez „odbijania” zapisów między nimi.
+const sortKeys = (value) =>
+  Array.isArray(value)
+    ? value.map(sortKeys)
+    : value && typeof value === "object"
+      ? Object.fromEntries(
+          Object.keys(value)
+            .sort()
+            .map((key) => [key, sortKeys(value[key])]),
+        )
+      : value;
+const stateKey = (state) =>
+  JSON.stringify(
+    sortKeys({ ...state, savedAt: 0, tutorial: { ...state.tutorial, seen: [...(state.tutorial?.seen || [])].sort() } }),
+  );
+let savedKey = "";
+
+// Zapis po każdym końcu poziomu i przy zejściu do tła (Analiza 5, rozdz. 13.1) — tylko gdy stan się zmienił.
+function save({ force = false } = {}) {
   if (!SAVE_ENABLED || !cloud?.saveGameState) return;
-  cloud.saveGameState(GAME_ID, progressState, { immediate: true, saveVersion: 1, summary: summaryOf(progressState) });
+  const key = stateKey(progressState);
+  if (!force && key === savedKey) return;
+  savedKey = key;
+  progressState.savedAt = Date.now();
+  cloud.saveGameState(GAME_ID, progressState, {
+    immediate: true,
+    saveVersion: SAVE_VERSION,
+    summary: summaryOf(progressState),
+  });
 }
 
 async function loadProgress() {
@@ -724,6 +754,49 @@ async function loadProgress() {
   } catch {
     // brak zapisu — zaczynamy od nowa
   }
+  // „Powtórz samouczki we wszystkich grach” (menu → Sowa): karty „Nowość” pokażą się znowu.
+  if (cloud?.game?.(GAME_ID)?.tutorialDone === false) {
+    progressState.tutorial = { ...progressState.tutorial, done: false, seen: [] };
+    cloud.updateGame?.(GAME_ID, { tutorialDone: true });
+  }
+  savedKey = stateKey(progressState);
+  // Nowszy zapis z innego telefonu: łączymy oba (więcej gwiazdek, wyższe odblokowanie — nic się nie cofa).
+  cloud?.setMergeHandler?.(GAME_ID, mergeRemote);
+}
+
+// Zapis z innego urządzenia (dokument gry z bazy) → połączenie ze stanem tej strony.
+function mergeRemote(doc) {
+  let remote = null;
+  try {
+    remote = typeof doc?.state === "string" ? loadState(JSON.parse(doc.state)) : null;
+  } catch {
+    remote = null;
+  }
+  if (!remote) return;
+  const merged = mergeStates(progressState, remote);
+  const changed = stateKey(merged) !== stateKey(progressState);
+  progressState = merged;
+  // Zapis tylko, gdy ten telefon ma coś, czego w bazie nie ma.
+  if (stateKey(merged) !== stateKey(remote)) save({ force: true });
+  else savedKey = stateKey(merged);
+  if (!changed) return;
+  if (screen === "map") showMap();
+  reportProgress();
+}
+
+// Sowia Akademia (rozdz. 13.2): poziomy, gwiazdki, poziomy na 3 gwiazdki, wygrane, pisklęta i combo poziomu.
+function reportProgress({ combo = 0 } = {}) {
+  if (!SAVE_ENABLED) return;
+  const summary = summaryOf(progressState);
+  progress.emit(EVENTS.IDLE, {
+    gameId: GAME_ID,
+    levels: summary.level,
+    stars: summary.stars,
+    three: summary.three,
+    wins: progressState.stats.wins,
+    owlets: progressState.stats.owlets,
+    combo,
+  });
 }
 
 // ---------- Gesty i klawiatura ----------
@@ -942,6 +1015,10 @@ function frame(time) {
     // bez chmury — gra działa w pamięci
   }
   await loadProgress();
+  if (SAVE_ENABLED) {
+    progress.emit(EVENTS.VISIT, { gameId: GAME_ID });
+    reportProgress();
+  }
   ready = true;
   if (params.get("poziom")) {
     await startLevel(Number(params.get("poziom")) || 1, { skipIntro: params.get("nowosc") !== "1" });

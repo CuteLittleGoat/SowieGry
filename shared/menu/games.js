@@ -32,6 +32,11 @@ export const MENU_GAMES = Object.freeze({
     description: "Łącz rośliny na półkach szklarni i spełniaj zamówienia sowich sąsiadek.",
     biome: [COLORS.wodaJasna, COLORS.monsteraJasna],
   },
+  trojki: {
+    station: "Las",
+    description: "Układaj trójki liści, humbaków i kózek — Sówka kibicuje Ci z gałęzi!",
+    biome: [COLORS.monsteraJasna, COLORS.nieboDol],
+  },
 });
 
 export const formatNumber = (value) => Math.floor(Number(value) || 0).toLocaleString("pl-PL");
@@ -46,6 +51,8 @@ export function recordText(gameId, records = {}) {
   if (gameId === "sowa3") return best("bestScore") ? `Rekord: ${formatNumber(best("bestScore"))} pkt` : null;
   if (gameId === "ogrody") return entry.lifetimeLeaves ? `Liście: ${formatNumber(entry.lifetimeLeaves)}` : null;
   if (gameId === "szklarnia") return entry.rooms ? `Pomieszczenia: ${formatNumber(entry.rooms)}` : null;
+  if (gameId === "trojki")
+    return entry.level ? `Poziom ${formatNumber(entry.level)} · ⭐ ${formatNumber(entry.stars)}` : null;
   return null;
 }
 
@@ -101,6 +108,43 @@ function workCloud(context, x, y, size, time) {
 }
 
 // Każda scena rysuje w jednostkach świata: szerokość w (zwykle ok. 5–6 j.), wysokość 2,3 j.
+// Kafelek Sowich Trójek na karcie: tło-kształt w kolorze rodzaju (jak w grze) i obrazek ze wspólnego atlasu.
+const TROJKI_TILES = Object.freeze({
+  lisc: { color: COLORS.zloto, sprite: "lisc-zielony", width: 0.62 },
+  zloty: { color: COLORS.niebieski, sprite: "lisc-zloty", width: 0.62 },
+  humbak: { color: COLORS.policzki, sprite: "humbak", width: 0.8 },
+});
+
+function trojkiTile(context, atlas, kind, x, y, size, { scale = 1, alpha = 1 } = {}) {
+  const info = TROJKI_TILES[kind];
+  const r = (size / 2) * 0.86 * scale;
+  context.save();
+  context.globalAlpha *= Math.max(0, alpha);
+  context.beginPath();
+  if (kind === "zloty") context.arc(x, y, r, 0, Math.PI * 2);
+  else if (kind === "humbak") {
+    context.moveTo(x, y + r * 0.9);
+    context.bezierCurveTo(x - r * 1.25, y, x - r * 0.75, y - r * 1.05, x, y - r * 0.45);
+    context.bezierCurveTo(x + r * 0.75, y - r * 1.05, x + r * 1.25, y, x, y + r * 0.9);
+  } else {
+    const half = r * 0.92;
+    const corner = r * 0.3;
+    context.moveTo(x - half + corner, y - half);
+    context.arcTo(x + half, y - half, x + half, y + half, corner);
+    context.arcTo(x + half, y + half, x - half, y + half, corner);
+    context.arcTo(x - half, y + half, x - half, y - half, corner);
+    context.arcTo(x - half, y - half, x + half, y - half, corner);
+  }
+  context.closePath();
+  context.fillStyle = info.color;
+  context.fill();
+  context.lineWidth = 0.035;
+  context.strokeStyle = COLORS.kontur;
+  context.stroke();
+  atlas.draw(context, info.sprite, x, y, { width: size * info.width * scale });
+  context.restore();
+}
+
 const SCENES = {
   runner(context, atlas, time, w, state) {
     ground(context, w, 2.05, COLORS.monstera);
@@ -225,6 +269,49 @@ const SCENES = {
       width: 0.95,
     });
   },
+};
+
+// Sowie Trójki: plansza 3 × 3, środkowa kolumna to trójka Liści Monstery — pęka, z góry spadają nowe kafelki,
+// a Sówka podskakuje z radości (cykl 2,4 s).
+SCENES.trojki = function trojki(context, atlas, time, w, state) {
+  ground(context, w, 2.05, COLORS.monstera);
+  const cycle = time % 2.4;
+  const pop = cycle > 1.6 && cycle < 2.0 ? (cycle - 1.6) / 0.4 : 0;
+  const fall = cycle >= 2.0 ? Math.min(1, (cycle - 2.0) / 0.35) : 1;
+  const cheering = pop > 0 || cycle >= 2.0;
+  state.owl.set(cheering ? "radosc" : "stoi");
+  const lift = cheering ? Math.abs(Math.sin((cycle - 1.6) * Math.PI * 2.5)) * 0.22 : 0;
+  drawOwl(context, atlas, 0.95, 2.05 - lift, { state: state.owl.state(), size: 1.0, cosmetic: state.cosmetic });
+  const size = 0.5;
+  const step = 0.56;
+  const x0 = Math.max(1.95, w / 2 - 0.35);
+  const y0 = 0.42;
+  const rows = [
+    ["zloty", "lisc", "humbak"],
+    ["humbak", "lisc", "zloty"],
+    ["zloty", "lisc", "humbak"],
+  ];
+  context.save();
+  context.beginPath();
+  context.rect(x0 - size, y0 - size / 2 - 0.02, step * 3 + size, step * 3 + 0.04);
+  context.clip();
+  rows.forEach((row, rowIndex) => {
+    row.forEach((kind, col) => {
+      const x = x0 + col * step;
+      let y = y0 + rowIndex * step;
+      let scale = 1;
+      let alpha = 1;
+      if (col === 1 && pop > 0) {
+        scale = 1 + pop * 0.35;
+        alpha = 1 - pop;
+      } else if (col === 1 && fall < 1) {
+        const eased = 1 - (1 - fall) * (1 - fall);
+        y -= (1 - eased) * step * 3;
+      }
+      trojkiTile(context, atlas, kind, x, y, size, { scale, alpha });
+    });
+  });
+  context.restore();
 };
 
 export function drawCardArt(context, atlas, gameId, time, cssWidth, cssHeight, state) {

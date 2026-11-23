@@ -18,12 +18,10 @@ const newGamePages = [
 const previewPages = ["SowieOgrody/index.html"];
 const gamePages = [...newGamePages, ...previewPages];
 
-test("centralny rejestr zawiera dokładnie pięć gier", async () => {
+test("centralny rejestr zawiera dokładnie sześć gier (od M5 także Sowie Trójki)", async () => {
   const platform = await read("shared/sowie-platform.js");
-  const ids = [...platform.matchAll(/^\s*(?:\{ )?id: "(runner|jumper|sowa3|ogrody|szklarnia)"/gm)].map(
-    (match) => match[1],
-  );
-  assert.deepEqual(ids, ["runner", "jumper", "sowa3", "ogrody", "szklarnia"]);
+  const ids = [...platform.matchAll(/^\s*(?:\{ )?id: "([a-z0-9]+)",$/gm)].map((match) => match[1]);
+  assert.deepEqual(ids, ["runner", "jumper", "sowa3", "ogrody", "szklarnia", "trojki"]);
 });
 
 test("menu główne jest generowane wyłącznie z centralnego rejestru", async () => {

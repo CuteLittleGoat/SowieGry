@@ -13,7 +13,7 @@
   const MODE_KEY = "sowiegry:tryb-chmury";
   // Wersja demo (E10) — znacznik tej karty w sessionStorage (nigdy w localStorage).
   const DEMO_KEY = "sowiegry:demo";
-  const GAME_IDS = Object.freeze(["runner", "jumper", "sowa3", "ogrody", "szklarnia"]);
+  const GAME_IDS = Object.freeze(["runner", "jumper", "sowa3", "ogrody", "szklarnia", "trojki"]);
   const EMULATOR = Object.freeze({ host: "127.0.0.1", port: 8080, projectId: "demo-sowiegry" });
 
   const PATHS = Object.freeze({
@@ -450,6 +450,9 @@
 
     const statusListeners = new Set();
     const conflictListeners = new Set();
+    // Gry, które same łączą swój stan z nowszym zapisem z innego urządzenia (Sowie Trójki — „nic się nie cofa”):
+    // zamiast pytania „wczytać nowszy postęp?” dostają dokument z bazy (gameId → handler(dokument)).
+    const mergeHandlers = new Map();
     const profileListeners = new Set();
     const readyQueue = [];
     const profileCounters = new Set(PROFILE_COUNTERS);
@@ -717,6 +720,17 @@
         const local = games.get(gameId) || {};
         const remoteRev = Number(data.rev) || 0;
         if (remoteRev > (Number(local.rev) || 0) && data.deviceId && data.deviceId !== device.deviceId) {
+          const merge = mergeHandlers.get(gameId);
+          if (merge) {
+            // Gra łączy zapisy sama: numer zapisu z bazy, żeby następny zapis tej strony go przewyższył.
+            local.rev = remoteRev;
+            try {
+              merge(clone(data));
+            } catch (error) {
+              logError("SowieCloud: łączenie zapisu gry nie powiodło się", error);
+            }
+            return;
+          }
           const decide = (load) => {
             if (load) reload();
             else local.rev = remoteRev;
@@ -1013,6 +1027,11 @@
       onConflict(listener) {
         conflictListeners.add(listener);
         return () => conflictListeners.delete(listener);
+      },
+      // Łączenie stanu gry idle z nowszym zapisem z innego urządzenia (zamiast pytania); null — wyłącza.
+      setMergeHandler(gameId, handler) {
+        if (typeof handler === "function") mergeHandlers.set(gameId, handler);
+        else mergeHandlers.delete(gameId);
       },
       onProfileReload,
       offlineReason: () => fallbackReason,

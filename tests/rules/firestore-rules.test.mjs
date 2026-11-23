@@ -78,13 +78,14 @@ test("inne ścieżki pod sowiegry są odrzucane", async () => {
   await assertFails(setDoc(doc(db, "inny/dokument/sowiegry_gry/runner"), { x: 1 }));
 });
 
-test("sowiegry_gry: tylko pięć stałych identyfikatorów gier", async () => {
-  for (const gameId of ["runner", "jumper", "sowa3", "ogrody", "szklarnia"]) {
+test("sowiegry_gry: tylko sześć stałych identyfikatorów gier (od M5 także trojki)", async () => {
+  for (const gameId of ["runner", "jumper", "sowa3", "ogrody", "szklarnia", "trojki"]) {
     await assertSucceeds(setDoc(doc(db, `sowiegry/profil/sowiegry_gry/${gameId}`), { difficulty: "arcade" }));
     await assertSucceeds(getDoc(doc(db, `sowiegry/profil/sowiegry_gry/${gameId}`)));
   }
   await assertFails(setDoc(doc(db, "sowiegry/profil/sowiegry_gry/tetris"), { x: 1 }));
   await assertFails(setDoc(doc(db, "sowiegry/profil/sowiegry_gry/SowaRunner"), { x: 1 }));
+  await assertFails(setDoc(doc(db, "sowiegry/profil/sowiegry_gry/Trojki"), { x: 1 }));
 });
 
 test("sowiegry_historia: tworzenie z liczbowym score, kasowanie tak, edycja nie", async () => {

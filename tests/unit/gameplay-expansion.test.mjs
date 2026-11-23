@@ -15,12 +15,12 @@ const gameIndexes = [
   "LaczIHoduj/index.html",
 ];
 
-test("katalog instrukcji (shared/meta/guides-data.js) obejmuje pięć gier i „Poznaj Sowi Świat”", async () => {
+test("katalog instrukcji (shared/meta/guides-data.js) obejmuje sześć gier i „Poznaj Sowi Świat”", async () => {
   const { GUIDES } = await import("../../shared/meta/guides-data.js");
   // Klucze = identyfikatory gier: `sowa3` to Sowie Tory (E5f), `jumper` — Sowa w Chmurach (E6f), `ogrody` — nowa
-  // odsłona Sowich Ogrodów (E7e), `szklarnia` — Łącz i Hoduj (E8e).
-  assert.deepEqual(Object.keys(GUIDES).sort(), ["jumper", "ogrody", "runner", "sowa3", "swiat", "szklarnia"]);
-  for (const id of ["runner", "jumper", "sowa3", "ogrody", "szklarnia"]) {
+  // odsłona Sowich Ogrodów (E7e), `szklarnia` — Łącz i Hoduj (E8e), `trojki` — Sowie Trójki (M5).
+  assert.deepEqual(Object.keys(GUIDES).sort(), ["jumper", "ogrody", "runner", "sowa3", "swiat", "szklarnia", "trojki"]);
+  for (const id of ["runner", "jumper", "sowa3", "ogrody", "szklarnia", "trojki"]) {
     assert.ok(GUIDES[id].summary && GUIDES[id].cards.length >= 4, id);
   }
 });
