@@ -7,7 +7,7 @@ const { cloudUrl, readDoc, seedDoc, uniqueProject } = require("../emulator");
 async function openMenu(page, query = "seed=menu-telefon&testNow=1783656000000") {
   await page.goto(`/?${query}`, { waitUntil: "load" });
   await waitForCloud(page);
-  await expect(page.locator(".game-card")).toHaveCount(5);
+  await expect(page.locator(".game-card")).toHaveCount(6);
 }
 
 // Gest w przeglądarce zdjęć: zdarzenia wskaźnika (jak palec) na scenie zdjęcia.
@@ -145,7 +145,7 @@ test("instrukcje: „Jak grać?” na karcie i zakładka z kartami wszystkich gi
 
   await page.getByRole("tab", { name: "Jak grać" }).click();
   const panel = page.locator("#jak-grac");
-  await expect(panel.locator(".menu-guide")).toHaveCount(6);
+  await expect(panel.locator(".menu-guide")).toHaveCount(7);
   await expect(panel.locator(".menu-guide").first()).toContainText("Poznaj Sowi Świat");
   // Karty sterowania mają animowaną demonstrację gestu: po jednej w obecnych grach i po trzy w Sowiej Ucieczce
   // (skok — stuknięcie, szybowanie — przytrzymanie, ślizg — przesunięcie w dół) i Sowich Torach (zmiana toru,
@@ -289,7 +289,7 @@ test("zakładka „Sowa”: osiągnięcia Sowiej Akademii z postępem i nagrodą
   await openMenu(page);
   await page.getByRole("tab", { name: "Sowa" }).click();
   const card = page.locator('[data-owl-card="osiagniecia"]');
-  await expect(card.locator("[data-achievements-count]")).toHaveText("0 / 13");
+  await expect(card.locator("[data-achievements-count]")).toHaveText("0 / 15");
   await expect(card.locator('[data-achievement="zbieraczka"]')).toContainText("0 / 1000");
 
   await page.evaluate(() => window.SowieAcademy.record("runner", "leaves", 1000, "add"));

@@ -14,7 +14,7 @@ test("demo.html: własne menu bez hasła, karty z „?demo=1”, instrukcja, muz
   const { context, blocked, page } = await lockedDevice(browser, testInfo);
   const errors = watchErrors(page);
   await page.goto("/demo.html", { waitUntil: "load" });
-  await expect(page.locator(".game-card")).toHaveCount(5);
+  await expect(page.locator(".game-card")).toHaveCount(6);
   await expect(page.locator(".demo-badge")).toHaveText("Wersja demo");
   await expect(page.getByRole("dialog", { name: "Hasło sowy" })).toHaveCount(0);
   await expect(page.locator("[data-demo-note]")).toContainText("Bez logowania i bez zapisu");
@@ -60,7 +60,7 @@ test("demo.html: własne menu bez hasła, karty z „?demo=1”, instrukcja, muz
   // „Menu” (odnośnik do menu głównego) w karcie demo prowadzi do demo.html.
   await page.getByRole("link", { name: "Menu" }).click();
   await expect(page).toHaveURL(/\/demo\.html$/);
-  await expect(page.locator(".game-card")).toHaveCount(5);
+  await expect(page.locator(".game-card")).toHaveCount(6);
   expect(await page.evaluate(() => Object.keys(localStorage))).toEqual([]);
   expect(await page.evaluate(() => sessionStorage.getItem("sowiegry:demo"))).toBe("1");
 

@@ -38,7 +38,7 @@ test("menu startuje bez zasięgu po pierwszej wizycie", async ({ page, context, 
     await context.setOffline(true);
     await page.reload({ waitUntil: "load" });
     await waitForCloud(page);
-    await expect(page.locator(".game-card")).toHaveCount(5);
+    await expect(page.locator(".game-card")).toHaveCount(6);
     await expect(page.getByRole("tab")).toHaveCount(4);
     // Grafiki postaci (SVG w pamięci startowej) też są dostępne bez sieci.
     await page.waitForFunction(() => window.SowieMenu?.atlas?.ready?.() === true);

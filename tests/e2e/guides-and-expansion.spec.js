@@ -23,8 +23,8 @@ test("menu oferuje osobną instrukcję każdej gry i zadania Sowiej Akademii", a
   const errors = watchErrors(page);
   await page.goto("/?seed=guides-menu&testNow=1783656000000", { waitUntil: "load" });
 
-  await expect(page.locator(".game-card")).toHaveCount(5);
-  await expect(page.locator("[data-guide]")).toHaveCount(5);
+  await expect(page.locator(".game-card")).toHaveCount(6);
+  await expect(page.locator("[data-guide]")).toHaveCount(6);
   // Nowe menu nie dokleja starych przycisków Akademii i Galerii do nagłówka.
   await expect(page.locator("#academyButton, #galleryButton")).toHaveCount(0);
 
