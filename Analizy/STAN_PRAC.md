@@ -248,6 +248,14 @@ Testy u mnie: pełny `npm test` — składnia, ESLint, Prettier, HTML, 376 test�
 bazy na emulatorze, 689 testów przeglądarkowych (Chromium: 5 profili telefonów i komputer, emulator Firestore) —
 wszystkie zielone. WebKit (Safari) sprawdzą testy w GitHubie po wypchnięciu na `main`.
 
+**Testy w GitHubie (WebKit):** przebiegi 262 (krok 4) i 263 (przeniesienie bazy) skończyły się błędem — nie przez gry,
+tylko przez testy zależne od tempa klatek, a WebKit na maszynie GitHuba rysuje czasem 2–3 klatki na sekundę: pomiar
+płynności Ogrodów i Łącz i Hoduj (za mało klatek w oknie 1,5 s; automat płynności zmieniał ostrość w trakcie pomiaru),
+oczekiwanie 5 s na koniec powitania Sówki w Trójkach, zgubione pierwsze kliknięcie portfela w Łącz i Hoduj. Poprawione
+w testach (gry bez zmian): pomiar do co najmniej 6 klatek z przypiętym poziomem automatu, w Trójkach 60 s na test,
+15 s na spokój Sówki i dokańczanie animacji hakiem `settle`, w Łącz i Hoduj ponowne stuknięcie portfela, gdy okno nie
+pojawi się w 3 s. Opis: `docs/Documentation.md` (`plynnosc.spec.js`), dokumentacje Trójek i Łącz i Hoduj (Testy).
+
 ## 1. Co jest zrobione — plan E0–E10 (stan z 2026-10-06)
 
 Wszystkie etapy planu E0–E10 są na gałęzi `main`, więc są też na stronie

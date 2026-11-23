@@ -16,12 +16,18 @@ async function open(page, url, hook) {
 const call = (page, hook, name, ...args) =>
   page.evaluate(([game, method, rest]) => window[game][method](...rest), [hook, name, args]);
 
-// Liczniki pracy w oknie `ms` (różnice) i czas okna w sekundach.
-async function measure(page, hook, ms = 1500) {
+// Liczniki pracy (różnice) w oknie co najmniej `ms` i co najmniej `minFrames` narysowanych klatek, czas okna
+// w sekundach. WebKit na maszynach GitHuba rysuje czasem tylko 2–3 klatki na sekundę — warunki są względne (na klatkę,
+// na sekundę), więc dłuższe okno ich nie zmienia (przebiegi 262–263 z 2026-11-23).
+async function measure(page, hook, ms = 1500, minFrames = 6) {
   const read = () => page.evaluate((game) => ({ ...window[game].renderStats(), at: performance.now() }), hook);
   const before = await read();
   await page.waitForTimeout(ms);
-  const after = await read();
+  let after = await read();
+  for (let waited = 0; after.frames - before.frames < minFrames && waited < 20_000; waited += 250) {
+    await page.waitForTimeout(250);
+    after = await read();
+  }
   const delta = Object.fromEntries(
     Object.keys(after)
       .filter((key) => typeof after[key] === "number" && typeof before[key] === "number")
@@ -37,6 +43,15 @@ const canvasRatio = (page, selector = "[data-canvas]") =>
     return canvas.width / canvas.getBoundingClientRect().width;
   }, selector);
 
+// Automat płynności przypięty na najniższym poziomie (2 — ostrość 1): niżej zejść nie może, a w górę wraca dopiero po
+// minucie płynnej gry, więc w trakcie pomiaru płótno nie zmienia rozmiaru. Na wolnej maszynie (WebKit w GitHubie)
+// automat schodził poziom niżej w środku pomiaru — nowa ostrość to nowe „zdjęcie” Zatoki i nowe obrazki roślin.
+async function pinQuality(page, hook) {
+  await call(page, hook, "setQualityLevel", 2);
+  await expect.poll(() => canvasRatio(page)).toBeCloseTo(1, 1);
+  await page.waitForTimeout(500);
+}
+
 test("Sowie Ogrody: tło i rośliny z pamięci obrazków, Zatoka Humbaka bez ogrodu pod wodą, ostrość z automatu", async ({
   page,
 }) => {
@@ -51,6 +66,7 @@ test("Sowie Ogrody: tło i rośliny z pamięci obrazków, Zatoka Humbaka bez ogr
   await page.waitForTimeout(800);
   const visible = Object.values((await call(page, "SowieOgrody", "shelf")).spots).filter((spot) => spot.visible).length;
   expect(visible).toBeGreaterThan(2);
+  await pinQuality(page, "SowieOgrody");
   const garden = await measure(page, "SowieOgrody");
   expect(garden.frames).toBeGreaterThan(3);
   // Tło rozdziału najwyżej 15 razy na sekundę (+1 na początek okna) — niezależnie od liczby klatek.
@@ -88,6 +104,7 @@ test("Łącz i Hoduj: pełna plansza rysowana z obrazków, ostrość z automatu"
     for (let index = 0; index < 63; index += 1) window.LaczIHoduj.place(index, 1 + (index % 5), chains[index % 4]);
   });
   await page.waitForTimeout(500);
+  await pinQuality(page, "LaczIHoduj");
   const board = await measure(page, "LaczIHoduj");
   expect(board.frames).toBeGreaterThan(3);
   // 63 rośliny w 20 wyglądach (z podpisem poziomu i bez): najwyżej 3 odświeżenia na klatkę (+ nowe obrazki), zamiast

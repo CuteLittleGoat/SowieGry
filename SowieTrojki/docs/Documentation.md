@@ -773,7 +773,9 @@ automat płynności obniża ostrość, a w spoczynku plansza nie jest przerysowy
   odsetek wygranych symulatora na każdym poziomie (łatwy ≥ 75%, średni ≥ 55%, trudny ≥ 35% w 12 podejściach).
 - `tests/unit/trojki-sowka.test.mjs` — zapis stanu (wczytanie, łączenie, wynik, podsumowanie) i reżyser Sówki
   (skala radości, priorytety, dymki, „hu”, „Hm?”, ograniczenie ruchu, wygrana).
-- `tests/e2e/telefon/trojki.spec.js` (5 profili telefonów × Chromium i WebKit, emulator Firestore): mapa 45
+- `tests/e2e/telefon/trojki.spec.js` (5 profili telefonów × Chromium i WebKit, emulator Firestore; od 2026-11-23 zapas
+  czasu na wolny WebKit w GitHubie — 60 s na test, do 15 s na koniec reakcji Sówki, a `quiet()` dokańcza animacje hakiem
+  `settle` zamiast czekać na rzadkie klatki): mapa 45
   poziomów bez napisu podglądu (`preview()` = false, nowy gracz — 44 poziomy z kłódką), karta startu z „Nowością”,
   ruch przesunięciem palca (Sówka się cieszy), zła zamiana bez utraty ruchu, dwa stuknięcia i pięć w rzędzie →
   Tęczowy liść i salto, Sowia pomoc bez kosztu ruchu, wygrana z finałem i „Dalej” oraz **zapis w chmurze** (dokument

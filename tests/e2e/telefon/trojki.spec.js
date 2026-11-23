@@ -6,6 +6,11 @@
 const { test, expect, swipe, waitForCloud, watchErrors } = require("../fixtures");
 const { cloudUrl, readDoc, seedDoc, uniqueProject } = require("../emulator");
 
+// WebKit na maszynach GitHuba bywa bardzo wolny (rzadkie klatki, długie rysowanie obrazków kafelków), więc testy mają
+// zapas czasu: 60 s na test i do 15 s na koniec reakcji Sówki (przebiegi 262–263 z 2026-11-23).
+test.describe.configure({ timeout: 60_000 });
+const CALM = 15_000;
+
 // Plansza 8 × 8 bez gotowych trójek (rodzaje: 1 Liść Monstery, 2 Złoty Liść, 3 Humbak, 4 Kózka, 5 Truskawka,
 // 6 Storczyk). Zamiana pól 0 ↔ 1 (lewy górny róg) niczego nie układa.
 const BASE = ["34563456", "56345634", "34563456", "56345634", "34563456", "56345634", "34563456", "56345634"];
@@ -24,7 +29,17 @@ async function openGame(page, testInfo, extra = "") {
 
 const state = (page) => page.evaluate(() => window.SowieTrojki.state());
 const owl = (page) => page.evaluate(() => window.SowieTrojki.owl());
-const quiet = (page) => page.waitForFunction(() => !window.SowieTrojki.busy(), null, { timeout: 20_000 });
+// Spokój planszy: animacje dokończone od razu (hak `settle` — jak przy rzadkich klatkach, gdy animacja trwałaby
+// dziesiątki sekund), reakcje Sówki ustalone są już przy ruchu.
+const quiet = (page) =>
+  page.waitForFunction(
+    () => {
+      window.SowieTrojki.settle();
+      return !window.SowieTrojki.busy();
+    },
+    null,
+    { timeout: 20_000 },
+  );
 
 // Poziom od razu (bez karty startu i „Nowości”), po wczytaniu obrazków i po powitaniu Sówki (macha 1,4 s —
 // słabsze reakcje nie przerywają ważniejszej, więc testy reakcji czekają na spokój).
@@ -34,7 +49,7 @@ async function startLevel(page, id, layout = null) {
     timeout: 20_000,
   });
   if (layout) await page.evaluate((rows) => window.SowieTrojki.setLayout(rows), layout);
-  await expect.poll(async () => (await owl(page)).current, { timeout: 5_000 }).toBeNull();
+  await expect.poll(async () => (await owl(page)).current, { timeout: CALM }).toBeNull();
 }
 
 // Środek pola planszy w oknie (px).
@@ -81,7 +96,7 @@ test("Sowie Trójki: mapa 45 poziomów (otwarty pierwszy), karta startu, „Nowo
   await expect(page.locator(".trojki-pause")).toBeVisible();
   await expect(page.locator("[data-hand]")).toBeVisible();
   await page.waitForFunction(() => window.SowieTrojki.atlasReady(), null, { timeout: 20_000 });
-  await expect.poll(async () => (await owl(page)).current, { timeout: 5_000 }).toBeNull();
+  await expect.poll(async () => (await owl(page)).current, { timeout: CALM }).toBeNull();
 
   const before = await state(page);
   await expect(page.locator("[data-moves]")).toHaveText(String(before.moves));
@@ -118,7 +133,7 @@ test("Sowie Trójki: zła zamiana nie zabiera ruchu, dwa stuknięcia zamieniają
   await quiet(page);
   expect((await state(page)).moves).toBe(moves);
   expect((await owl(page)).last.reaction).toBe("tilt");
-  await expect.poll(async () => (await owl(page)).current, { timeout: 5_000 }).toBeNull();
+  await expect.poll(async () => (await owl(page)).current, { timeout: CALM }).toBeNull();
 
   await tapCell(page, 50);
   await tapCell(page, 58);

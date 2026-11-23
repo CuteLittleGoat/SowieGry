@@ -325,9 +325,13 @@ test("Łącz i Hoduj: odnawianie pomieszczeń — okno z portfela, etapy za gwia
   await game(page, "setStars", 3);
   await expect(wallet).toHaveClass(/is-ready/);
   await expect(wallet).toHaveAttribute("aria-label", /3 gwiazdek odnowy/);
-  await wallet.click();
   const dialog = page.getByRole("dialog", { name: "Pomieszczenia szklarni" });
-  await expect(dialog).toBeVisible();
+  // WebKit na przeciążonej maszynie GitHuba zgubił dwa razy pierwsze kliknięcie tuż po starcie gry (przebieg 262
+  // z 2026-11-23: przycisk z fokusem, okna brak) — kolejne stuknięcie otwiera okno, jak zrobiłby gracz.
+  await expect(async () => {
+    if (!(await dialog.isVisible())) await wallet.click({ timeout: 3000 });
+    await expect(dialog).toBeVisible({ timeout: 3000 });
+  }).toPass({ timeout: 15_000 });
   await expect(dialog.locator(".lacz-room")).toHaveCount(16);
   await expect(dialog.locator('[data-room="grow"]')).toContainText("🔒 Najpierw: Doniczarnia");
   // Trzy etapy Doniczarni po 1 gwiazdce.
