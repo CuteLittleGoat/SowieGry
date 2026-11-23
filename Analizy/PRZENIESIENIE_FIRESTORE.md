@@ -99,7 +99,7 @@ service cloud.firestore {
 | 3 | właściciel | reguły z rozdziału 3 opublikowane w nowym projekcie | ✅ 2026-11-23 |
 | 4 | Claude | kopia starego → nowy (`kopiuj`): 49 / 49 dokumentów, porównanie pól 1:1 zgodne; stary projekt bez zmian (porównanie z kopią) | ✅ 2026-11-23 |
 | 5 | Claude | `config/firebase-config.js` → `sowiegry-1e1f9`, `sw.js` wersja `sowiegry-v14`, na `main` | ✅ 2026-11-23 |
-| 6 | właściciel i użytkownik | odświeżyć aplikację dwa razy; postęp jest; nowa gra zapisuje się w nowym projekcie (test M1 w `TESTY_NA_TELEFONIE.md`) | ⏳ |
+| 6 | właściciel i użytkownik | odświeżyć aplikację dwa razy; postęp jest; nowa gra zapisuje się w nowym projekcie (test M1 w `TESTY_NA_TELEFONIE.md`) | ✅ 2026-11-23 — nowe urządzenie: hasło, stary postęp widoczny; bieg w Sowiej Ucieczce i zmiana stroju zostały po wylogowaniu i CTRL+F5. W bazie: nowy projekt 50 dokumentów (nowy wpis historii, zmieniony profil i dokument gry), stary projekt bez zmian (49, zgodny z kopią) |
 | 7 | właściciel | po potwierdzeniu, że wszystko działa — decyzja, czy i kiedy usunąć stare dane SowieGry (do tego czasu **nic nie kasujemy**) | ⏳ |
 
 **Między krokiem 4 a odświeżeniem telefonów (krok 6) najlepiej nie grać** — postęp zapisany w tej chwili trafiłby
