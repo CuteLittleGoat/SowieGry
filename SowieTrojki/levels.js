@@ -12,7 +12,8 @@ export const CHAPTERS = Object.freeze([
   { id: "staw", name: "Staw Humbaka", from: 31, to: 45 },
 ]);
 
-// Karty „Nowość” przed poziomem (rozdz. 10).
+// Karty „Nowość” przed poziomem (rozdz. 10); poziom ma jedną (`intro: "pioro"`) albo kilka po kolei
+// (`intro: ["jajko", "teczowy"]`).
 export const INTROS = Object.freeze({
   zamiana: {
     title: "Zamiana",
@@ -104,7 +105,7 @@ const LEVEL_LIST = [
   },
   { id: 9, moves: 20, kinds: FIVE_B, difficulty: "latwy", goals: [goal.collect("storczyk", 45)], board: OPEN8 },
   {
-    id: 10, moves: 25, kinds: FIVE, difficulty: "sredni", intro: "jajko", goals: [goal.eggs(2)],
+    id: 10, moves: 25, kinds: FIVE, difficulty: "sredni", intro: ["jajko", "teczowy"], goals: [goal.eggs(2)],
     board: ["..J..J..", "........", "........", "........", "........", "........", "........", "GGGGGGGG"],
   },
   {

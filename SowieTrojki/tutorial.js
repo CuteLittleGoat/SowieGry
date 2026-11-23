@@ -4,10 +4,19 @@
 import { openModal } from "../shared/ui/modal.js";
 import { INTROS } from "./levels.js";
 
-/** Karta „Nowość” (jeśli poziom ją ma i gracz jej jeszcze nie widział) → Promise po zamknięciu. */
-export function showIntro(level, { seen = [], onSeen = () => {} } = {}) {
-  const intro = INTROS[level.intro];
-  if (!intro || seen.includes(level.intro)) return Promise.resolve(false);
+/**
+ * Karty „Nowość” poziomu (`level.intro` — klucz albo lista kluczy), których gracz jeszcze nie widział — po kolei.
+ * → Promise po zamknięciu ostatniej (`true`, gdy jakaś była).
+ */
+export async function showIntro(level, { seen = [], onSeen = () => {} } = {}) {
+  const keys = [level.intro].flat().filter((key) => INTROS[key] && !seen.includes(key));
+  for (const key of keys) await showCard(key, onSeen);
+  return keys.length > 0;
+}
+
+// Jedna karta: obrazek słowami „Nowość”, jedno zdanie, „Rozumiem”.
+function showCard(key, onSeen) {
+  const intro = INTROS[key];
   return new Promise((resolve) => {
     const content = document.createElement("div");
     content.className = "trojki-intro";
@@ -23,7 +32,7 @@ export function showIntro(level, { seen = [], onSeen = () => {} } = {}) {
       className: "trojki-intro-modal",
       actions: [{ label: "Rozumiem", primary: true, onClick: (close) => close() }],
       onClose: () => {
-        onSeen(level.intro);
+        onSeen(key);
         resolve(true);
       },
     });

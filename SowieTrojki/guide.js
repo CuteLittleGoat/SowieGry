@@ -50,7 +50,7 @@ export const GUIDE = Object.freeze({
     {
       id: "gwiazdki",
       title: "Gwiazdki i Humbaczy Finał",
-      text: "Za wygraną jest gwiazdka, za dużo punktów — dwie albo trzy. Zostałe ruchy humbak zamienia w Pióra. Bez żyć i czekania — przegrany poziom grasz od razu jeszcze raz.",
+      text: "Za wygraną jest gwiazdka, za dużo punktów — dwie albo trzy. Pozostałe ruchy humbak zamienia w Pióra. Bez żyć i czekania — przegrany poziom grasz od razu jeszcze raz.",
       sprite: "humbak",
     },
   ],

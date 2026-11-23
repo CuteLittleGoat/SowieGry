@@ -23,7 +23,7 @@ test("45 poziomów w 3 rozdziałach po 15, każdy poprawny; „piła” trudnoś
   LEVELS.forEach((level, at) => {
     assert.equal(level.id, at + 1);
     assert.ok(level.stars[1] < level.stars[2], `progi gwiazdek ${level.id}`);
-    if (level.intro) assert.ok(INTROS[level.intro], `karta „Nowość” ${level.intro}`);
+    for (const key of [level.intro ?? []].flat()) assert.ok(INTROS[key], `karta „Nowość” ${key}`);
     const next = LEVELS[at + 1];
     if (level.difficulty === "trudny" && next) assert.equal(next.difficulty, "latwy", `po poziomie ${level.id}`);
   });
@@ -34,7 +34,9 @@ test("45 poziomów w 3 rozdziałach po 15, każdy poprawny; „piła” trudnoś
     assert.ok(five.filter((value) => value === "trudny").length <= 1, `poziomy ${start + 1}–${start + 5}`);
   }
   // Nowości w kolejności z rozdz. 10.
-  const introAt = Object.fromEntries(LEVELS.filter((level) => level.intro).map((level) => [level.intro, level.id]));
+  const introAt = Object.fromEntries(
+    LEVELS.flatMap((level) => [level.intro ?? []].flat().map((key) => [key, level.id])),
+  );
   assert.deepEqual(introAt, {
     zamiana: 1,
     pioro: 2,
@@ -44,10 +46,13 @@ test("45 poziomów w 3 rozdziałach po 15, każdy poprawny; „piła” trudnoś
     piskle: 7,
     skrzynia: 8,
     jajko: 10,
+    teczowy: 10,
     tasma: 13,
     kanister: 19,
     telefon: 25,
   });
+  // Każda karta „Nowość” jest na jakimś poziomie.
+  assert.deepEqual(Object.keys(introAt).sort(), Object.keys(INTROS).sort());
 });
 
 test("ruch: zła zamiana nie zabiera ruchu, dobra — jeden; cele i punkty rosną; podpowiedź to dozwolony ruch", () => {
