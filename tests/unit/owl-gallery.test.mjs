@@ -62,9 +62,13 @@ const photoFiles = [
   "roslina-53-monstera-w-wazonie.jpg",
   "roslina-54-rozowy-storczyk.jpg",
   "roslina-55-bukiet-storczykow.jpg",
+  // M5 Sowich Trójek (2026-11-23): zdjęcia za cele w Sowich Trójkach.
+  "sowa-56-piskle-puszczyka.jpg",
+  "roslina-57-fioletowy-storczyk.jpg",
+  "koza-58-koziol-z-profilu.jpg",
 ];
 
-test("folder Obrazki zawiera 55 poprawnych, zoptymalizowanych plików JPEG (z miniaturami WebP)", () => {
+test("folder Obrazki zawiera 58 poprawnych, zoptymalizowanych plików JPEG (z miniaturami WebP)", () => {
   for (const filename of photoFiles) {
     const file = path.join(root, "Obrazki", filename);
     assert.equal(fs.existsSync(file), true, `Brak ${filename}`);
@@ -80,7 +84,7 @@ test("folder Obrazki zawiera 55 poprawnych, zoptymalizowanych plików JPEG (z mi
       assert.equal(fs.existsSync(thumb), true, `Brak miniatury ${width} px dla ${filename}`);
     }
   }
-  assert.equal(fs.readdirSync(path.join(root, "Obrazki")).filter((name) => name.endsWith(".jpg")).length, 55);
+  assert.equal(fs.readdirSync(path.join(root, "Obrazki")).filter((name) => name.endsWith(".jpg")).length, 58);
 });
 
 test("dokumentacja podaje licencję i źródło każdego zdjęcia", () => {
@@ -90,9 +94,9 @@ test("dokumentacja podaje licencję i źródło każdego zdjęcia", () => {
   for (const filename of photoFiles) assert.match(documentation, new RegExp(filename.replaceAll(".", "\\.")));
 });
 
-test("katalog galerii ma 55 trwałych nagród i warunki z pięciu gier", () => {
+test("katalog galerii ma 58 trwałych nagród i warunki z sześciu gier", () => {
   const source = read("shared/owl-gallery.js");
-  assert.equal((source.match(/id: "owl-\d\d"/g) || []).length, 55);
+  assert.equal((source.match(/id: "owl-\d\d"/g) || []).length, 58);
   assert.match(source, /profile\?\.\(\)\.gallery/);
   assert.match(source, /profile\.gallery = stored/);
   assert.match(source, /const VERSION = 2/);
@@ -148,7 +152,7 @@ async function loadGallery() {
 
 test("cele galerii są danymi: warunek odblokowania i postęp do paska", async () => {
   const gallery = await loadGallery();
-  assert.equal(gallery.PHOTOS.length, 55);
+  assert.equal(gallery.PHOTOS.length, 58);
   // Zdjęcia 31–40 (uwaga G4): wymagania z nowych treści — Mgławica, Olimp, Sowie Zaświaty, rozdziały Ogrodów, diamentowa
   // i tęczowa roślina, nowe pomieszczenia Łącz i Hoduj.
   // Kopia JSON — tablice z piaskownicy `vm` mają inny prototyp niż tablice testu.
@@ -161,8 +165,8 @@ test("cele galerii są danymi: warunek odblokowania i postęp do paska", async (
     ["szklarniaRooms", 16],
     ["level", 10],
   ]);
-  assert.equal(new Set(gallery.PHOTOS.map((photo) => photo.file)).size, 55);
-  assert.equal(new Set(gallery.PHOTOS.map((photo) => photo.id)).size, 55);
+  assert.equal(new Set(gallery.PHOTOS.map((photo) => photo.file)).size, 58);
+  assert.equal(new Set(gallery.PHOTOS.map((photo) => photo.id)).size, 58);
   // Zdjęcia 41–55 (uwaga G7): rodzaje sowa / koza / humbak / roslina (filtr w zakładce), wymagania z kózek, humbaków
   // i roślin we wszystkich grach; zdjęcia 1–40 bez pola `kind` to sowy.
   const kindCount = (kind) => gallery.PHOTOS.filter((photo) => gallery.kindOf(photo) === kind).length;
@@ -172,10 +176,12 @@ test("cele galerii są danymi: warunek odblokowania i postęp do paska", async (
     "humbak",
     "roslina",
   ]);
-  assert.deepEqual([kindCount("sowa"), kindCount("koza"), kindCount("humbak"), kindCount("roslina")], [43, 4, 4, 4]);
+  assert.deepEqual([kindCount("sowa"), kindCount("koza"), kindCount("humbak"), kindCount("roslina")], [44, 5, 4, 5]);
   assert.deepEqual(goalsOf("owl-44"), [["goatsCaught", 40]]);
   assert.deepEqual(goalsOf("owl-48"), [["whaleRides", 15]]);
   assert.deepEqual(goalsOf("owl-49"), [["sowa3Finishes", 3]]);
+  assert.deepEqual(goalsOf("owl-56"), [["trojkiOwlets", 10]]);
+  assert.deepEqual(goalsOf("owl-58"), [["trojkiLevels", 45]]);
   assert.deepEqual(goalsOf("owl-55"), [
     ["ogrodyChapters", 22],
     ["szklarniaRooms", 16],
@@ -212,7 +218,7 @@ test("cele galerii są danymi: warunek odblokowania i postęp do paska", async (
   assert.equal(both.share, (2 / 8 + 5 / 8) / 2);
   assert.equal(gallery.progressOf("owl-08", { level: 1, achievements: { a: 1, b: 1, c: 1 } }).done, true);
   assert.equal(gallery.progressOf("owl-27", { level: 1, metrics: { nearMisses: 20, whaleRides: 2 } }).done, false);
-  assert.equal(gallery.progressOf("owl-26", { level: 1, feathers: 0, metrics: {} }).goals.length, 5);
+  assert.equal(gallery.progressOf("owl-26", { level: 1, feathers: 0, metrics: {} }).goals.length, 6);
   assert.equal(gallery.progressOf("nie-ma", academy), null);
 });
 
@@ -230,7 +236,7 @@ test("miniatury WebP 400 i 600 px dla każdego zdjęcia, siatka poniżej 1 MB", 
     }
   }
   assert.ok(total400 < 1024 * 1024, `miniatury 400 px: ${total400} B`);
-  assert.equal(fs.readdirSync(path.join(root, "assets/gallery-thumbs")).length, 110);
+  assert.equal(fs.readdirSync(path.join(root, "assets/gallery-thumbs")).length, 116);
 });
 
 test("każdy cel zdjęcia powstaje ze zdarzeń gier (Sowia Akademia, E9d) albo to poziom / liczba osiągnięć", async () => {
@@ -247,7 +253,8 @@ test("każdy cel zdjęcia powstaje ze zdarzeń gier (Sowia Akademia, E9d) albo t
       { gameId: "ogrody", lifetimeLeaves: 1, clicks: 1, buys: 1, watering: 1, prestiges: 1, plants: 1, chapters: 1 },
     ],
     [EVENTS.IDLE, { gameId: "szklarnia", rooms: 1, plants: 1, goats: 1, hybrids: 1, best: 1 }],
-    ...["runner", "jumper", "sowa3", "ogrody", "szklarnia"].map((gameId) => [EVENTS.VISIT, { gameId }]),
+    [EVENTS.IDLE, { gameId: "trojki", levels: 1, stars: 1, three: 1, wins: 1, owlets: 1, combo: 1 }],
+    ...["runner", "jumper", "sowa3", "ogrody", "szklarnia", "trojki"].map((gameId) => [EVENTS.VISIT, { gameId }]),
   ];
   const metrics = new Set(events.flatMap(([type, detail]) => academyCalls(type, detail).map((call) => call[1])));
   for (const photo of gallery.PHOTOS) {

@@ -160,13 +160,15 @@ export const ACHIEVEMENTS = Object.freeze([
     id: "pierwsze-kroki",
     icon: "🗺️",
     label: "Pierwsze kroki",
-    text: "Zagraj w każdą z pięciu gier.",
+    // Od M5 (2026-11-23) także Sowie Trójki — zdobyte osiągnięcie zostaje (academy.achievements), nikt go nie traci.
+    text: "Zagraj w każdą z sześciu gier.",
     goals: [
       ["runnerVisits", 1],
       ["jumperVisits", 1],
       ["sowa3Visits", 1],
       ["ogrodyVisits", 1],
       ["szklarniaVisits", 1],
+      ["trojkiVisits", 1],
     ],
     xp: 100,
     feathers: 10,

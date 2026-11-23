@@ -1,10 +1,10 @@
-// Sowie Trójki (podgląd, Analiza 5) na telefonach: mapa 45 poziomów, karta startu i „Nowość”, zamiana przesunięciem
+// Sowie Trójki (Analiza 5; od M5 w menu i z zapisem) na telefonach: mapa 45 poziomów, karta startu i „Nowość”, zamiana przesunięciem
 // palca i dwoma stuknięciami, zła zamiana bez utraty ruchu, combo z Tęczowym Liściem i radość Sówki, Sowia pomoc bez
 // kosztu ruchu, wygrana z Humbaczym Finałem i gwiazdkami, prezent Sówki i „Spróbuj jeszcze raz” od razu (bez żyć),
 // Tryb Przytulny włączony w pauzie, układ ekranu (pole ≥ 34 px, Sówka i „Sowia pomoc” w oknie), licznik ?perf=1.
-// Podgląd: gry nie ma w rejestrze, więc jej postęp nie trafia do chmury (sprawdzane na emulatorze Firestore).
+// Zapis (od M5): stan gry w dokumencie `trojki`, podsumowanie w profilu, po ponownym otwarciu postęp jest (emulator).
 const { test, expect, swipe, waitForCloud, watchErrors } = require("../fixtures");
-const { cloudUrl, readDoc, uniqueProject } = require("../emulator");
+const { cloudUrl, readDoc, seedDoc, uniqueProject } = require("../emulator");
 
 // Plansza 8 × 8 bez gotowych trójek (rodzaje: 1 Liść Monstery, 2 Złoty Liść, 3 Humbak, 4 Kózka, 5 Truskawka,
 // 6 Storczyk). Zamiana pól 0 ↔ 1 (lewy górny róg) niczego nie układa.
@@ -53,17 +53,17 @@ async function tapCell(page, cell) {
   await page.mouse.click(point.x, point.y);
 }
 
-test("Sowie Trójki (podgląd): mapa 45 poziomów, karta startu, „Nowość” i ruch przesunięciem palca", async ({
+test("Sowie Trójki: mapa 45 poziomów (otwarty pierwszy), karta startu, „Nowość” i ruch przesunięciem palca", async ({
   page,
 }, testInfo) => {
   const errors = watchErrors(page);
   await openGame(page, testInfo);
   await expect(page.getByRole("heading", { name: "Sowie Trójki" })).toBeVisible();
-  await expect(page.locator("[data-preview]")).toBeVisible();
-  expect(await page.evaluate(() => window.SowieTrojki.preview())).toBe(true);
-  // Podgląd: wszystkie poziomy otwarte; na mapie „Menu”, bez pauzy.
+  await expect(page.locator("[data-preview]")).toBeHidden();
+  expect(await page.evaluate(() => window.SowieTrojki.preview())).toBe(false);
+  // Nowy gracz: otwarty tylko poziom 1 (pozostałe z kłódką); na mapie „Menu”, bez pauzy.
   await expect(page.locator(".trojki-level")).toHaveCount(45);
-  await expect(page.locator(".trojki-level:disabled")).toHaveCount(0);
+  await expect(page.locator(".trojki-level:disabled")).toHaveCount(44);
   await expect(page.locator("[data-menu-link]")).toBeVisible();
   await expect(page.locator(".trojki-pause")).toBeHidden();
   await expect(page.locator(".sowie-perf-meter")).toHaveCount(0);
@@ -154,7 +154,7 @@ test("Sowie Trójki: Sowia pomoc przy pełnej Radości zrzuca Pióra, a ruch nie
   expect(errors).toEqual([]);
 });
 
-test("Sowie Trójki: wygrana — Humbaczy Finał, gwiazdki, „Dalej”; w podglądzie postęp nie trafia do chmury", async ({
+test("Sowie Trójki: wygrana — Humbaczy Finał, gwiazdki, „Dalej”; postęp zapisany w chmurze i po ponownym otwarciu", async ({
   page,
 }, testInfo) => {
   const errors = watchErrors(page);
@@ -179,10 +179,81 @@ test("Sowie Trójki: wygrana — Humbaczy Finał, gwiazdki, „Dalej”; w podgl
 
   await dialog.getByRole("button", { name: "Dalej" }).click();
   await expect(page.getByRole("dialog")).toContainText("Poziom 2");
-  // Bramka zapisu: podgląd nie zapisuje dokumentu gry (nie ma jej w regułach Firestore).
-  await page.waitForTimeout(1500);
-  expect(await readDoc(project, "sowiegry/profil/sowiegry_gry/trojki")).toBeNull();
-  expect(JSON.stringify((await readDoc(project, "sowiegry/profil")) || {})).not.toContain("trojki");
+  // Zapis w chmurze (od M5): stan gry w dokumencie `trojki`, podsumowanie w profilu (karta w menu i „Rekordy”).
+  await page.evaluate(() => window.SowieCloud.flush());
+  const doc = await readDoc(project, "sowiegry/profil/sowiegry_gry/trojki");
+  const saved = JSON.parse(doc.state);
+  expect(saved.levels["1"].stars).toBe(result.stars);
+  expect(saved.unlocked).toBe(2);
+  expect(doc.saveVersion).toBe(1);
+  const profile = await readDoc(project, "sowiegry/profil");
+  expect(profile.records.trojki).toMatchObject({ level: 1, stars: result.stars });
+  // Ponowne otwarcie: poziom 2 otwarty, przy poziomie 1 zdobyte gwiazdki.
+  await page.reload({ waitUntil: "load" });
+  await waitForCloud(page);
+  await page.waitForFunction(() => window.SowieTrojki?.ready?.(), null, { timeout: 20_000 });
+  await expect(page.locator(".trojki-level:disabled")).toHaveCount(43);
+  await expect(page.locator('[data-level="1"]')).toHaveClass(/is-done/);
+  expect((await page.evaluate(() => window.SowieTrojki.progress())).levels["1"].stars).toBe(result.stars);
+  expect(errors).toEqual([]);
+});
+
+test("Sowie Trójki w Sowiej Akademii i Galerii: wejście kończy „Pierwsze kroki”, wygrana trafia do metryk (emulator)", async ({
+  page,
+}, testInfo) => {
+  const errors = watchErrors(page);
+  // Profil zapisany wcześniej (emulator): wizyty w pięciu pozostałych grach — do „Pierwszych kroków” i zdjęcia 26
+  // brakuje tylko Sowich Trójek.
+  const project = uniqueProject(testInfo);
+  await seedDoc(project, "sowiegry/profil", {
+    schemaVersion: 1,
+    academy: {
+      version: 2,
+      xp: 0,
+      feathers: 0,
+      metrics: { runnerVisits: 1, jumperVisits: 1, sowa3Visits: 1, ogrodyVisits: 1, szklarniaVisits: 1 },
+      achievements: {},
+      daily: null,
+      weekly: null,
+      awards: {},
+    },
+  });
+  await page.goto(cloudUrl("/SowieTrojki/", project), { waitUntil: "load" });
+  await waitForCloud(page);
+  await page.waitForFunction(() => window.SowieTrojki?.ready?.(), null, { timeout: 20_000 });
+  // Akademia działa na stronie gry (<body data-sowie-game="trojki">), komunikaty pokazuje gra.
+  await expect(page.locator(".sowie-toast-chip", { hasText: "Osiągnięcie: Pierwsze kroki" })).toBeVisible({
+    timeout: 10_000,
+  });
+  await expect(page.locator(".sowie-toast-chip", { hasText: "Nowa fotografia w Galerii Sów!" })).toBeVisible();
+
+  // Wygrana poziomu 1 → metryki Trójek; komunikaty są nad oknem wyniku (arkusz od dołu).
+  await startLevel(page, 1, THREE_GOLD);
+  await page.evaluate(() => {
+    window.SowieTrojki.setGoalDone(0, 25);
+    window.SowieTrojki.setMoves(3);
+  });
+  await swipeCells(page, 58, 59);
+  await expect(page.getByRole("dialog")).toContainText(/Brawo!|Trzy gwiazdki!/, { timeout: 20_000 });
+  const toastLayer = await page.evaluate(() => {
+    const style = getComputedStyle(document.querySelector(".trojki .sowie-toasts"));
+    const backdrop = getComputedStyle(document.querySelector(".sowie-ui-backdrop"));
+    return { position: style.position, toasts: Number(style.zIndex), backdrop: Number(backdrop.zIndex) };
+  });
+  expect(toastLayer.position).toBe("fixed");
+  expect(toastLayer.toasts).toBeGreaterThan(toastLayer.backdrop);
+  const { stars } = await state(page);
+
+  await page.evaluate(() => window.SowieCloud.flush());
+  const profile = await readDoc(project, "sowiegry/profil");
+  expect(profile.academy.metrics).toMatchObject({
+    trojkiVisits: 1,
+    trojkiWins: 1,
+    trojkiLevels: 1,
+    trojkiStars: stars,
+  });
+  expect(profile.academy.achievements["pierwsze-kroki"]).toBeTruthy();
+  expect(profile.gallery.unlocked).toContain("owl-26");
   expect(errors).toEqual([]);
 });
 

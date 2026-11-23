@@ -30,7 +30,7 @@ async function gesture(page, points) {
   }, points);
 }
 
-test("zakładka „Gry”: pięć kart z rejestru, „Graj” otwiera grę", async ({ page }) => {
+test("zakładka „Gry”: sześć kart z rejestru, „Graj” otwiera grę", async ({ page }) => {
   const errors = watchErrors(page);
   await openMenu(page);
   await expect(page.getByRole("tab", { name: "Gry" })).toHaveAttribute("aria-selected", "true");
@@ -151,7 +151,7 @@ test("instrukcje: „Jak grać?” na karcie i zakładka z kartami wszystkich gi
   // (skok — stuknięcie, szybowanie — przytrzymanie, ślizg — przesunięcie w dół) i Sowich Torach (zmiana toru,
   // skok — przesunięcie w górę, ślizg — w dół).
   // Od E8e Łącz i Hoduj ma dwie (przeciągnięcie — łączenie, stuknięcie — doniczka).
-  await expect(panel.locator(".sowie-gesture-demo")).toHaveCount(10);
+  await expect(panel.locator(".sowie-gesture-demo")).toHaveCount(13);
   await expect(panel.locator("#jak-grac-szklarnia .sowie-gesture-demo")).toHaveCount(2);
   await expect(panel.locator("#jak-grac-runner .sowie-gesture-demo")).toHaveCount(3);
   await expect(panel.locator("#jak-grac-sowa3 .sowie-gesture-demo")).toHaveCount(3);
@@ -186,9 +186,9 @@ test("galeria: nowe zdjęcia, zablokowane z postępem i przeglądarka z gestami"
   });
   await page.getByRole("tab", { name: "Galeria" }).click();
   const panel = page.locator("#galeria");
-  await expect(panel.locator("[data-gallery-count]")).toHaveText("3 / 55");
+  await expect(panel.locator("[data-gallery-count]")).toHaveText("3 / 58");
   await expect(panel.locator(".menu-tile.is-new")).toHaveCount(3);
-  await expect(panel.locator(".menu-tile.is-locked")).toHaveCount(52);
+  await expect(panel.locator(".menu-tile.is-locked")).toHaveCount(55);
   const locked = panel.locator(".menu-tile.is-locked").first();
   await expect(locked.locator(".menu-tile-lock")).toBeVisible();
   await expect(locked.locator("[role=progressbar]")).toHaveAttribute("aria-valuenow", /^\d+$/);
@@ -293,7 +293,7 @@ test("zakładka „Sowa”: osiągnięcia Sowiej Akademii z postępem i nagrodą
   await expect(card.locator('[data-achievement="zbieraczka"]')).toContainText("0 / 1000");
 
   await page.evaluate(() => window.SowieAcademy.record("runner", "leaves", 1000, "add"));
-  await expect(card.locator("[data-achievements-count]")).toHaveText("1 / 13");
+  await expect(card.locator("[data-achievements-count]")).toHaveText("1 / 15");
   const collector = card.locator("li").first();
   await expect(collector).toHaveAttribute("data-achievement", "zbieraczka");
   await expect(collector).toHaveClass(/is-done/);

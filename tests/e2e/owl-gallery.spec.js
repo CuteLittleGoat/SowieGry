@@ -23,30 +23,30 @@ test("Galeria Sów w menu: odblokowane i zablokowane zdjęcia, przeglądarka, ul
 
   await page.getByRole("tab", { name: "Galeria" }).click();
   const panel = page.locator("#galeria");
-  await expect(panel.locator("[data-gallery-count]")).toHaveText("1 / 55");
-  await expect(panel.locator(".menu-tile")).toHaveCount(55);
-  await expect(panel.locator(".menu-tile.is-locked")).toHaveCount(54);
+  await expect(panel.locator("[data-gallery-count]")).toHaveText("1 / 58");
+  await expect(panel.locator(".menu-tile")).toHaveCount(58);
+  await expect(panel.locator(".menu-tile.is-locked")).toHaveCount(57);
   // Zablokowane: wymaganie i pasek postępu; siatka używa miniatur WebP zamiast pełnych zdjęć.
-  await expect(panel.locator(".menu-tile.is-locked [role=progressbar]")).toHaveCount(54);
+  await expect(panel.locator(".menu-tile.is-locked [role=progressbar]")).toHaveCount(57);
   await expect(panel.locator('[data-photo="owl-02"] .menu-tile-need')).not.toBeEmpty();
   await expect(panel.locator('[data-photo="owl-01"] img')).toHaveAttribute("src", /gallery-thumbs\/.+-400\.webp$/);
   await expect(panel.locator('[data-open-photo="owl-01"]')).toHaveClass(/is-new/);
 
   await panel.getByRole("button", { name: "Do zdobycia" }).click();
-  await expect(panel.locator(".menu-tile")).toHaveCount(54);
+  await expect(panel.locator(".menu-tile")).toHaveCount(57);
   await panel.getByRole("button", { name: "Odblokowane" }).click();
   await expect(panel.locator(".menu-tile")).toHaveCount(1);
   await panel.getByRole("button", { name: "Wszystkie", exact: true }).click();
   // Rodzaj zdjęć (uwaga G7): sowy, kozy, humbaki, rośliny ozdobne.
   await panel.getByRole("button", { name: "Kozy" }).click();
-  await expect(panel.locator(".menu-tile")).toHaveCount(4);
+  await expect(panel.locator(".menu-tile")).toHaveCount(5);
   await expect(panel.locator('[data-photo="owl-44"] .menu-tile-need')).toContainText("kózek");
   await panel.getByRole("button", { name: "Rośliny" }).click();
-  await expect(panel.locator(".menu-tile")).toHaveCount(4);
+  await expect(panel.locator(".menu-tile")).toHaveCount(5);
   await panel.getByRole("button", { name: "Sowy" }).click();
-  await expect(panel.locator(".menu-tile")).toHaveCount(43);
+  await expect(panel.locator(".menu-tile")).toHaveCount(44);
   await panel.getByRole("button", { name: "Wszystkie rodzaje" }).click();
-  await expect(panel.locator(".menu-tile")).toHaveCount(55);
+  await expect(panel.locator(".menu-tile")).toHaveCount(58);
 
   const tile = panel.locator('[data-open-photo="owl-01"]');
   await tile.click();
@@ -76,7 +76,7 @@ test("Galeria Sów w menu: odblokowane i zablokowane zdjęcia, przeglądarka, ul
   expect(errors).toEqual([]);
 });
 
-test("osiągnięcia Akademii z Firestore trwale odblokowują komplet 55 fotografii", async ({ page }, testInfo) => {
+test("osiągnięcia Akademii z Firestore trwale odblokowują komplet 58 fotografii", async ({ page }, testInfo) => {
   // Profil zapisany wcześniej w bazie (emulator) — jak postęp z innego urządzenia.
   const project = uniqueProject(testInfo);
   await seedDoc(project, "sowiegry/profil", {
@@ -112,6 +112,11 @@ test("osiągnięcia Akademii z Firestore trwale odblokowują komplet 55 fotograf
         szklarniaGoats: 20,
         szklarniaHybrids: 8,
         szklarniaVisits: 1,
+        // Od M5 Sowie Trójki: zdjęcia 56–58 (pisklęta, gwiazdki, wszystkie poziomy).
+        trojkiOwlets: 10,
+        trojkiStars: 135,
+        trojkiLevels: 45,
+        trojkiVisits: 1,
         // Od E9d: liczniki z całych biegów (Akademia przyzna z nich osiągnięcia — zdjęcia 8 i 30 wymagają ich liczby).
         leaves: 1000,
         goatsCaught: 80,
@@ -131,19 +136,19 @@ test("osiągnięcia Akademii z Firestore trwale odblokowują komplet 55 fotograf
   await page.getByRole("tab", { name: "Galeria" }).click();
   const panel = page.locator("#galeria");
 
-  await expect(panel.locator("[data-gallery-count]")).toHaveText("55 / 55");
+  await expect(panel.locator("[data-gallery-count]")).toHaveText("58 / 58");
   await expect(panel.locator(".menu-tile.is-locked")).toHaveCount(0);
-  await expect(panel.locator("[data-open-photo] img")).toHaveCount(55);
+  await expect(panel.locator("[data-open-photo] img")).toHaveCount(58);
 
   // Przeglądarka przechodzi między odblokowanymi zdjęciami (strzałki na klawiaturze, przyciski).
   await panel.locator('[data-open-photo="owl-01"]').click();
   const viewer = page.getByRole("dialog", { name: /^Zdjęcie: / });
-  await expect(viewer.locator("[data-viewer-count]")).toHaveText("1 / 55");
+  await expect(viewer.locator("[data-viewer-count]")).toHaveText("1 / 58");
   await page.keyboard.press("ArrowRight");
-  await expect(viewer.locator("[data-viewer-count]")).toHaveText("2 / 55");
+  await expect(viewer.locator("[data-viewer-count]")).toHaveText("2 / 58");
   await viewer.getByRole("button", { name: "Poprzednie zdjęcie" }).click();
   await viewer.getByRole("button", { name: "Poprzednie zdjęcie" }).click();
-  await expect(viewer.locator("[data-viewer-count]")).toHaveText("55 / 55");
+  await expect(viewer.locator("[data-viewer-count]")).toHaveText("58 / 58");
   await viewer.getByRole("button", { name: "Zamknij zdjęcie" }).click();
   await expect(viewer).toBeHidden();
   // Z filtrem „Humbaki” przeglądarka przechodzi tylko między humbakami.
@@ -154,7 +159,7 @@ test("osiągnięcia Akademii z Firestore trwale odblokowują komplet 55 fotograf
 
   await page.evaluate(() => window.SowieCloud.flush());
   const profile = await readDoc(project, "sowiegry/profil");
-  expect(profile.gallery.unlocked).toHaveLength(55);
+  expect(profile.gallery.unlocked).toHaveLength(58);
   expect(profile.academy.xp).toBeGreaterThanOrEqual(6000);
   expect(Object.keys(profile.academy.achievements).length).toBeGreaterThanOrEqual(8);
   expect(errors).toEqual([]);

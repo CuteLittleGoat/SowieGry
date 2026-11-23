@@ -1,7 +1,7 @@
 // Sowie Trójki — stan zapisu (Analiza 5, rozdz. 13.1): domyślny, wczytanie (normalizacja, nieznane pola zostają),
-// łączenie dwóch zapisów („więcej wygrywa” — nic się nie cofa), wynik poziomu i podsumowanie do profilu. Zapis do
-// chmury włącza się dopiero, gdy gra jest w rejestrze i w regułach Firestore (bramka zapisu — rozdz. 13.1a); do
-// tego czasu podgląd trzyma postęp w pamięci strony.
+// łączenie dwóch zapisów („więcej wygrywa” — nic się nie cofa), wynik poziomu i podsumowanie do profilu. Od M5
+// (2026-11-23) stan trafia do chmury (dokument gry `trojki`; bramka zapisu — rozdz. 13.1a); bez rejestru gier
+// podgląd trzyma postęp w pamięci strony.
 import { SAVE_VERSION, SPECIALS } from "./config.js";
 
 const count = (value) => Math.max(0, Math.floor(Number(value) || 0));
@@ -159,7 +159,7 @@ export function recordResult(state, levelId, { won, stars = 0, score = 0, stats 
   return state;
 }
 
-/** Podsumowanie do profilu (karta i okno „Rekordy” w menu — po włączeniu gry do menu). */
+/** Podsumowanie do profilu (karta gry w menu i „Rekordy” w zakładce „Sowa”). */
 export function summaryOf(state) {
   const entries = Object.entries(state.levels);
   return {

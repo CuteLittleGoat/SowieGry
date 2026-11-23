@@ -13,6 +13,8 @@ const newGamePages = [
   "SowieTory/index.html",
   "SowaWChmurach/index.html",
   "LaczIHoduj/index.html",
+  // Sowie Trójki (Analiza 5, od M5 w rejestrze).
+  "SowieTrojki/index.html",
 ];
 // Nowa odsłona Sowich Ogrodów (od E7e główna strona folderu): moduł ogrod/main.js.
 const previewPages = ["SowieOgrody/index.html"];
@@ -22,6 +24,17 @@ test("centralny rejestr zawiera dokładnie sześć gier (od M5 także Sowie Tró
   const platform = await read("shared/sowie-platform.js");
   const ids = [...platform.matchAll(/^\s*(?:\{ )?id: "([a-z0-9]+)",$/gm)].map((match) => match[1]);
   assert.deepEqual(ids, ["runner", "jumper", "sowa3", "ogrody", "szklarnia", "trojki"]);
+});
+
+// Sowia Akademia (shared/meta/academy.js) powstaje tylko na stronie z `data-sowie-menu` albo `data-sowie-game` —
+// bez znacznika gra wysyła zdarzenia (wizyty, wyniki) w próżnię: brak zadań, osiągnięć i zdjęć Galerii (M5).
+test("strona każdej gry z rejestru ma <body data-sowie-game> z identyfikatorem gry", async () => {
+  const platform = await read("shared/sowie-platform.js");
+  const games = [...platform.matchAll(/id: "([a-z0-9]+)",\s+name: "[^"]+",\s+path: "([^"]+)"/g)];
+  assert.equal(games.length, 6);
+  for (const [, id, path] of games) {
+    assert.match(await read(`${path}index.html`), new RegExp(`<body data-sowie-game="${id}">`), `${path}index.html`);
+  }
 });
 
 test("menu główne jest generowane wyłącznie z centralnego rejestru", async () => {

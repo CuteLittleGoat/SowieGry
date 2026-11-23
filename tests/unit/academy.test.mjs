@@ -133,9 +133,11 @@ test("osiągnięcia: postęp z metryk, nagroda raz, a XP z nagrody może od razu
   assert.equal(academy.state().xp, xp, "nagroda za osiągnięcie tylko raz");
 
   // Wiele celów („Pierwsze kroki”: wizyty we wszystkich grach).
-  for (const game of ["runner", "jumper", "sowa3", "ogrody"]) academy.record(game, `${game}Visits`, 1, "add");
-  assert.equal(academy.state().achievements["pierwsze-kroki"], undefined);
-  academy.record("szklarnia", "szklarniaVisits", 1, "add");
+  for (const game of ["runner", "jumper", "sowa3", "ogrody", "szklarnia"]) {
+    academy.record(game, `${game}Visits`, 1, "add");
+  }
+  assert.equal(academy.state().achievements["pierwsze-kroki"], undefined, "od M5 także Sowie Trójki");
+  academy.record("trojki", "trojkiVisits", 1, "add");
   assert.equal(academy.state().achievements["pierwsze-kroki"], MONDAY);
 
   // Poziom 10 od 2160 XP: 2100 XP + 80 XP za „Zbieraczkę” → „Prymuska” w tym samym przeliczeniu.

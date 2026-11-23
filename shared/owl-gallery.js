@@ -1,4 +1,4 @@
-// Galeria Sów: 55 fotografii (sowy, kozy, humbaki i rośliny ozdobne) odblokowywanych celami Akademii. Stan w profilu
+// Galeria Sów: 58 fotografii (sowy, kozy, humbaki i rośliny ozdobne) odblokowywanych celami Akademii. Stan w profilu
 // (profil.gallery) przez SowieCloud.
 (() => {
   "use strict";
@@ -271,8 +271,12 @@
       alt: "Rudy syczek wyglądający z dziupli w starym pniu.",
       photographer: "Anne-Marie Gionet-Lavoie",
       sourceUrl: "https://www.pexels.com/photo/19898940/",
-      requirement: "Odwiedź każdą z pięciu gier przynajmniej raz.",
-      goals: [["runnerVisits", 1], ["jumperVisits", 1], ["sowa3Visits", 1], ["ogrodyVisits", 1], ["szklarniaVisits", 1]],
+      // Od M5 (2026-11-23) także Sowie Trójki — odblokowane zdjęcie zostaje odblokowane (profil.gallery.unlocked).
+      requirement: "Odwiedź każdą z sześciu gier przynajmniej raz.",
+      goals: [
+        ["runnerVisits", 1], ["jumperVisits", 1], ["sowa3Visits", 1],
+        ["ogrodyVisits", 1], ["szklarniaVisits", 1], ["trojkiVisits", 1],
+      ],
     },
     {
       id: "owl-27",
@@ -583,6 +587,40 @@
       sourceUrl: "https://www.pexels.com/photo/4607177/",
       requirement: "Ukończ wszystkie 22 rozdziały Sowich Ogrodów i odnów wszystkie 16 pomieszczeń w Łącz i Hoduj.",
       goals: [["ogrodyChapters", 22], ["szklarniaRooms", 16]],
+    },
+    // Fotografie 56–58 (M5 Sowich Trójek, 2026-11-23): pisklęta, gwiazdki i wszystkie poziomy Sowich Trójek.
+    {
+      id: "owl-56",
+      kind: "sowa",
+      file: "sowa-56-piskle-puszczyka.jpg",
+      title: "Pisklę puszczyka",
+      alt: "Puchate pisklę puszczyka kreskowanego siedzące wśród wiosennych gałązek.",
+      photographer: "Andrew Patrick Photo",
+      sourceUrl: "https://www.pexels.com/photo/23897177/",
+      requirement: "Wykluj 10 piskląt w Sowich Trójkach.",
+      goals: [["trojkiOwlets", 10]],
+    },
+    {
+      id: "owl-57",
+      kind: "roslina",
+      file: "roslina-57-fioletowy-storczyk.jpg",
+      title: "Fioletowy storczyk",
+      alt: "Kwiat fioletowego storczyka z bliska — płatki i żółty środek.",
+      photographer: "Giovana Spiller",
+      sourceUrl: "https://www.pexels.com/photo/13617457/",
+      requirement: "Zbierz 60 gwiazdek w Sowich Trójkach.",
+      goals: [["trojkiStars", 60]],
+    },
+    {
+      id: "owl-58",
+      kind: "koza",
+      file: "koza-58-koziol-z-profilu.jpg",
+      title: "Kozioł z profilu",
+      alt: "Kozioł z długimi rogami i brodą, z profilu, na tle zielonej łąki.",
+      photographer: "Michelle Chadwick",
+      sourceUrl: "https://www.pexels.com/photo/30672371/",
+      requirement: "Ukończ wszystkie 45 poziomów Sowich Trójek.",
+      goals: [["trojkiLevels", 45]],
     },
   ]);
 

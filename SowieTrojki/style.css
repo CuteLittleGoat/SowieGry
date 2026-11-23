@@ -1,4 +1,4 @@
-/* Sowie Trójki (podgląd). Telefon w pionie (wariant A z Analizy 5, rozdz. 4.1): u góry Menu, numer poziomu, „?”
+/* Sowie Trójki. Telefon w pionie (wariant A z Analizy 5, rozdz. 4.1): u góry Menu, numer poziomu, „?”
    i pauza; pasek z ruchami, celami i punktami (z paskiem gwiazdek); plansza na całą szerokość; pod nią Sówka duża
    na gałęzi w dolnym rogu, dymek, „Radość Sówki” i „Sowia pomoc”. Telefon poziomo i komputer: Sówka w kolumnie
    z lewej, plansza na środku, cele i ruchy w kolumnie z prawej. Mapa poziomów: ścieżka kółek w zygzak. */
@@ -450,6 +450,14 @@ body {
   margin: -1px;
   overflow: hidden;
   clip: rect(0 0 0 0);
+}
+
+/* Komunikaty Akademii i Galerii (shared/ui/toasts.js, od M5) nad oknem wyniku: okno to arkusz od dołu (tło okna
+   ma z-index 9000), a komunikat w grze jest u góry — nie zasłania przycisków. Dotyk przechodzi pod spód
+   (pointer-events: none ze wspólnego stylu). */
+.trojki .sowie-toasts {
+  position: fixed;
+  z-index: 9100;
 }
 
 .trojki-goal-list {

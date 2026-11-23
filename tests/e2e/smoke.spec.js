@@ -87,7 +87,7 @@ async function openGame(page, game) {
   return errors;
 }
 
-test("menu główne jest generowane z rejestru pięciu gier", async ({ page }) => {
+test("menu główne jest generowane z rejestru sześciu gier", async ({ page }) => {
   const errors = watchRuntimeErrors(page);
   await page.goto("/?seed=menu-audit", { waitUntil: "load" });
   const cards = page.locator(".game-card");

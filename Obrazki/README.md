@@ -1,6 +1,6 @@
 # Fotografie w Galerii Sów
 
-Folder zawiera 55 fotografii (sowy, kozy, humbaki i rośliny ozdobne) wykorzystywanych jako odblokowywane nagrody w grze. Pliki zostały pobrane z serwisu Pexels i technicznie przetworzone na potrzeby projektu: wykadrowane do proporcji 4:3, zmniejszone do 1200 × 900 px oraz skompresowane jako progresywne pliki JPEG.
+Folder zawiera 58 fotografii (sowy, kozy, humbaki i rośliny ozdobne) wykorzystywanych jako odblokowywane nagrody w grze. Pliki zostały pobrane z serwisu Pexels i technicznie przetworzone na potrzeby projektu: wykadrowane do proporcji 4:3, zmniejszone do 1200 × 900 px oraz skompresowane jako progresywne pliki JPEG.
 
 **Podmiany (2026-11-01, uwaga G5):** zdjęcia nr 2, 12, 22, 25 i 26 były bardzo podobnymi ujęciami tej samej sowy co
 inne zdjęcia Galerii (nr 2 — ta sama fotografia co nr 1, tylko przybliżona). Dostały nowe fotografie pod tymi samymi
@@ -18,6 +18,9 @@ z bliska), 4 kozy (`koza-…`), 4 humbaki (`humbak-…`) i 4 rośliny ozdobne �
 Wymagania: złapane kózki, rejsy z humbakiem, ukończone kampanie Sowich Torów, rozdziały Sowich Ogrodów, kózki
 i hybrydy w Łącz i Hoduj, wysokość w Sowie w Chmurach, poziom i osiągnięcia Sowiej Akademii. W zakładce „Galeria”
 nowy filtr rodzaju: Sowy, Kozy, Humbaki, Rośliny. Miniatury: `node scripts/make-thumbs.cjs <pliki>` (tylko nowe).
+
+**Zdjęcia za Sowie Trójki (2026-11-23, etap M5):** nr 56–58 — pisklę puszczyka kreskowanego (10 wyklutych piskląt),
+fioletowy storczyk (60 gwiazdek) i kozioł z profilu (wszystkie 45 poziomów).
 
 ## Licencja
 
@@ -92,6 +95,9 @@ Galeria pokazuje autora lub informację o twórcy w serwisie Pexels oraz odnośn
 | `roslina-53-monstera-w-wazonie.jpg` | Pexels — Lisa Fotios | https://www.pexels.com/photo/1831126/ |
 | `roslina-54-rozowy-storczyk.jpg` | Pexels — Emil Mondoa | https://www.pexels.com/photo/12701202/ |
 | `roslina-55-bukiet-storczykow.jpg` | Pexels — Miguel Marmolejos Fernández | https://www.pexels.com/photo/4607177/ |
+| `sowa-56-piskle-puszczyka.jpg` | Pexels — Andrew Patrick Photo | https://www.pexels.com/photo/23897177/ |
+| `roslina-57-fioletowy-storczyk.jpg` | Pexels — Giovana Spiller | https://www.pexels.com/photo/13617457/ |
+| `koza-58-koziol-z-profilu.jpg` | Pexels — Michelle Chadwick | https://www.pexels.com/photo/30672371/ |
 
 ## Zasady dalszej rozbudowy
 

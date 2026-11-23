@@ -1,11 +1,12 @@
-// Sowie Trójki — strona gry (Analiza 5, rozdz. 4, 8, 10, 13 i 14.4; podgląd przed kartą w menu — decyzja 10):
+// Sowie Trójki — strona gry (Analiza 5, rozdz. 4, 8, 10, 13 i 14.4; od M5 karta w menu i zapis w chmurze):
 // mapa poziomów, karta startu, plansza z gestami (przesunięcie palcem albo dwa stuknięcia, klawiatura), animacje osi
 // czasu ruchu, Sówka z boku planszy (reżyser reakcji, dymki, Radość i Sowia pomoc), podpowiedź po 5 s, wygrana
 // z Humbaczym Finałem i gwiazdkami, przegrana z prezentem od Sówki, pauza i ustawienia (wspólne menu pauzy),
 // automat płynności (Analiza 6) i haki testowe `window.SowieTrojki`.
 //
-// Zapis: dopóki gry nie ma w rejestrze SowiePlatform (i w regułach Firestore), postęp jest tylko w pamięci strony
-// (podgląd — wszystkie poziomy otwarte); bramka zapisu w SowieCloud i tak nie wyśle dokumentu gry spoza listy.
+// Zapis (M5, 2026-11-23): gra jest w rejestrze SowiePlatform i w regułach Firestore — postęp w dokumencie gry
+// `sowiegry_gry/trojki` (po końcu poziomu i przy zejściu do tła; zapisy z dwóch telefonów łączy mergeStates). Bez
+// rejestru (strona bez platformy) działa podgląd: wszystkie poziomy otwarte, postęp tylko w pamięci strony.
 import { connectAudioSettings, createAudio } from "../shared/engine/audio.js";
 import { createPerfMeter } from "../shared/engine/perf-meter.js";
 import { createFrameLimiter, createQuality } from "../shared/engine/quality.js";
@@ -126,7 +127,13 @@ let bubbleTimer = null;
 let lastInteraction = 0;
 // Komunikaty (jeden naraz w grze) — po zmiennych stanu (createToasts od razu pyta o ekran).
 const toasts = createToasts({ root, isInGame: () => screen === "game" });
-void toasts;
+// Komunikaty Sowiej Akademii i Galerii Sów (wołają toast({ title, detail, reward })) — od M5, jak w innych grach.
+// Po wygranej przychodzą razem z oknem wyniku, więc w style.css są nad oknem (arkusz od dołu ich nie zasłania).
+window.SowieNotifications ||= {
+  toast({ title = "", detail = "", reward = "" } = {}) {
+    toasts.show([title, detail, reward].filter(Boolean).join(" · "), { kind: "reward", duration: 3200 });
+  },
+};
 
 function play(name, options) {
   try {

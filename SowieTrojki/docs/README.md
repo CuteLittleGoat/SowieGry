@@ -1,19 +1,41 @@
 # Sowie Trójki — instrukcja
 
-**Sowie Trójki** to nowa, spokojna gra logiczna z Sówką: zamieniasz sąsiednie kafelki, żeby ułożyć **trzy takie
-same w rzędzie albo w kolumnie**. Sówka siedzi na gałęzi obok planszy i cieszy się z każdej trójki — im większe
-combo, tym większa radość.
+**Sowie Trójki** to spokojna gra logiczna z Sówką — szósta gra SowieGry: zamieniasz sąsiednie kafelki, żeby
+ułożyć **trzy takie same w rzędzie albo w kolumnie**. Sówka siedzi na gałęzi obok planszy i cieszy się z każdej
+trójki — im większe combo, tym większa radość.
 
-## To jest wersja podglądowa
+## Jak zacząć
 
-- Gry **nie ma jeszcze w menu** — otwierasz ją adresem **`SowieTrojki/`** dopisanym do adresu SowieGry
-  (np. `https://cutelittlegoat.github.io/SowieGry/SowieTrojki/`). Hasło sowy działa jak w innych grach.
-- Na mapie poziomów jest napis „Podgląd gry: wszystkie poziomy są otwarte, a postęp nie zapisuje się jeszcze
-  w chmurze”. **Wszystkie 45 poziomów są od razu otwarte**, a gwiazdki pamiętają się tylko do zamknięcia strony.
-- Gra **niczego nie zapisuje w chmurze** — Twój postęp w pozostałych grach jest bezpieczny. Karta w menu i zapis
-  postępu pojawią się, gdy podgląd zostanie zaakceptowany (najpierw trzeba wkleić nowe reguły Firestore).
-- Ustawienia (głośność, komentarze Sówki, Tryb Przytulny, strój z garderoby) są wspólne dla wszystkich gier —
-  działają tu tak samo jak w innych grach.
+- W menu SowieGry, w zakładce **Gry**, znajdź kartę **Sowie Trójki** (stacja „Las”, ikonka 🍓) i stuknij **Graj**.
+  Na karcie widać Twój postęp, np. „Poziom 12 · ⭐ 30”, a **Jak grać?** pokazuje krótką instrukcję (ta sama jest
+  w zakładce z instrukcjami wszystkich gier i pod znakiem **?** w grze).
+- Gra działa po zalogowaniu hasłem sowy, jak pozostałe gry.
+- Ustawienia (głośność, komentarze Sówki, Tryb Przytulny, strój z garderoby, gatunek sowy z Sowiego Butiku) są
+  wspólne dla wszystkich gier — działają tu tak samo jak w innych grach.
+
+## Zapis postępu
+
+- Postęp **zapisuje się w chmurze sam**: po każdym końcu poziomu (wygranej i przegranej) i gdy przejdziesz do innej
+  aplikacji. Zapisują się otwarte poziomy, gwiazdki i najlepszy wynik każdego poziomu, liczniki (wygrane, wyklute
+  pisklęta, najlepsze combo, moce) i obejrzane karty „Nowość”.
+- Na początku otwarty jest **poziom 1** — **każda wygrana otwiera następny poziom**. Na poziomie zostają **najlepsze
+  gwiazdki ze wszystkich podejść**: słabsza gra niczego nie zabiera.
+- **Dwa telefony:** gdy grasz na dwóch urządzeniach, gra łączy oba zapisy — zostaje więcej gwiazdek i dalszy
+  poziom z każdego z nich, nic się nie cofa.
+- Bez internetu gra działa dalej, a zapis wyśle się, gdy wróci sieć.
+
+## Trójki w menu SowieGry
+
+- **Rekordy:** zakładka **Sowa** → **Rekordy** → Sowie Trójki: najwyższy poziom, gwiazdki, poziomy na 3 gwiazdki,
+  najlepsze combo i wyklute pisklęta.
+- **Sowia Akademia** — zadania dnia: „Wygraj 2 poziomy w Sowich Trójkach”, „Zrób combo ×4 w Sowich Trójkach”,
+  „Sprowadź jajko do gniazda w Sowich Trójkach”; osiągnięcia: **Trójkowa sówka** (3 gwiazdki na 15 poziomach)
+  i **Sowie gniazdo** (10 wyklutych piskląt). Wejście do gry liczy się też do osiągnięcia **Pierwsze kroki**
+  (zagraj w każdą z sześciu gier).
+- **Galeria** — trzy zdjęcia za Trójki: **Pisklę puszczyka** (wykluj 10 piskląt), **Fioletowy storczyk** (zbierz
+  60 gwiazdek) i **Kozioł z profilu** (ukończ wszystkie 45 poziomów). Do zdjęcia „Odwiedź każdą z sześciu gier”
+  liczy się też wejście do Trójek.
+- **Powtórz samouczki we wszystkich grach** (zakładka **Sowa**) pokaże znowu karty „Nowość” także w Trójkach.
 
 ## Mapa poziomów
 
@@ -25,7 +47,8 @@ Mapa to **ścieżka przez Sowi Las** w trzech rozdziałach po 15 poziomów:
 3. **Staw Humbaka** (31–45) — wszystko razem, w trudniejszych układach.
 
 Przy każdym rozdziale widać zdobyte gwiazdki (np. „★ 12 / 45”), a pod numerem poziomu — gwiazdki tego poziomu.
-Bieżący poziom pulsuje złotą obwódką. Stuknij poziom, a zobaczysz **kartę startu**: cele, liczbę ruchów i swoje
+Zamknięte poziomy mają kłódkę — otwiera je wygrana na poprzednim. Bieżący poziom (najdalszy otwarty) pulsuje,
+a ukończone mają złotawe tło. Stuknij poziom, a zobaczysz **kartę startu**: cele, liczbę ruchów i swoje
 gwiazdki. Przycisk **Graj** zaczyna poziom. W lewym górnym rogu mapy jest **Menu** (powrót do menu SowieGry),
 a znak **?** otwiera instrukcję „Jak grać”.
 
@@ -54,8 +77,8 @@ strzałka przy zaznaczonym kafelku robi zamianę, **Esc** zdejmuje zaznaczenie.
 **Podpowiedź:** po 5 sekundach bez ruchu (w Trybie Przytulnym po 3 s) dwa kafelki dobrego ruchu zaczynają się
 kołysać, a Sówka się zamyśla. Na pierwszych poziomach dobry ruch pokazuje też **ręka** — aż wykonasz pierwszy ruch.
 Przed poziomem z nową rzeczą pojawia się karta **„Nowość”** z jednym zdaniem i przyciskiem **Rozumiem**
-(na poziomie 10 dwie po kolei: jajka i Tęczowy liść). Każdą kartę widzisz tylko raz (w podglądzie — do
-zamknięcia strony).
+(na poziomie 10 dwie po kolei: jajka i Tęczowy liść). Każdą kartę widzisz tylko raz — zapis pamięta, które już
+były (zakładka **Sowa** → „Powtórz samouczki we wszystkich grach” pokaże je znowu).
 
 ## Kafelki
 
@@ -161,8 +184,10 @@ Sówka. Licznik klatek pokażesz, dopisując do adresu **`?perf=1`** (np. `Sowie
 
 ## Dla testujących
 
-- `SowieTrojki/?poziom=7` — od razu poziom 7 (bez karty startu); `&nowosc=1` pokazuje też kartę „Nowość”.
-- `SowieTrojki/?cloud=memory` — gra bez połączenia z chmurą (pamięć karty).
+- `SowieTrojki/?poziom=7` — od razu poziom 7 (bez karty startu, także zamknięty); `&nowosc=1` pokazuje też kartę
+  „Nowość”. **Uwaga:** to zwykła gra — wynik zapisze się w Twoim postępie (wygrana na poziomie 7 otworzy poziomy
+  do 8.). Do prób bez zapisu dopisz `&cloud=memory`.
+- `SowieTrojki/?cloud=memory` — gra bez połączenia z chmurą (pamięć karty, nic nie trafia do bazy).
 - Testy automatyczne gry: `npm run test:unit` (pliki `tests/unit/trojki-*.test.mjs`) i `npm run test:e2e`
   (plik `tests/e2e/telefon/trojki.spec.js` — telefony w pionie i poziomie, na emulatorze Firestore).
 - Pomiar płynności: `node scripts/perf-bench.cjs --gry trojki --cpu 1,4` (po `npm run serve`).

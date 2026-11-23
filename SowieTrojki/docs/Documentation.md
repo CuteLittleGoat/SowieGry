@@ -4,19 +4,26 @@ Nowa gra „match-3” z Sówką (Analiza 5: `Analizy/ANALIZA_5_Nowa_gra_Sowie_T
 **`trojki`**, folder `SowieTrojki/`. Zbudowana na Sowim Silniku (`shared/engine/`), Sowim Świecie (`shared/world/`)
 i wspólnym interfejsie (`shared/ui/`), bez zewnętrznych bibliotek — moduły ES w przeglądarce.
 
-**Stan: podgląd (etapy M1–M6 z Analizy 5).** Gry nie ma w rejestrze `SowiePlatform.GAME_REGISTRY`, w menu ani na
-liście `GAME_IDS` w `shared/sowie-cloud.js`. Skutki (decyzja właściciela „najpierw podgląd, karta w menu po
-akceptacji”):
+**Stan: w menu SowieGry (etap M5 z Analizy 5, 2026-11-23).** Po podglądzie (M1–M6) i akceptacji właściciela
+(testy na telefonie, reguły z grą `trojki` opublikowane) Sowie Trójki są szóstą grą SowieGry:
 
-- strona działa pod adresem `SowieTrojki/` (hasło sowy jak w innych grach — `shared/password-gate.js`),
-- `SAVE_ENABLED = false`, `PREVIEW = true`: wszystkie 45 poziomów otwarte, postęp tylko w pamięci strony,
-  napis „Podgląd gry…” na mapie,
-- **bramka zapisu** w `shared/sowie-cloud.js` (`allowedGamePath`, `GAME_PATH`) i tak odrzuca każdy dokument
-  `sowiegry/profil/sowiegry_gry/<gra>` spoza `GAME_IDS` — nawet błąd w kodzie gry nie wyśle zapisu, którego nie
-  przepuszczą reguły Firestore (jedna odrzucona operacja w `writeBatch` zablokowałaby cały zapis innych gier),
-- nowe reguły Firestore do wklejenia przy włączaniu zapisu: Analiza 5, **Załącznik B**. Kolejność włączania:
-  właściciel wkleja reguły → „reguły opublikowane” → wpis w `GAME_REGISTRY` i `GAME_IDS`, karta w menu, instrukcja
-  w `shared/meta/guides-data.js` pod kluczem `trojki`.
+- wpis w rejestrze `SowiePlatform.GAME_REGISTRY` (`shared/sowie-platform.js`):
+  `{ id: "trojki", name: "Sowie Trójki", path: "SowieTrojki/", icon: "🍓", kind: "idle", saveVersion: 1, rebuilt: true }`
+  — karta w zakładce „Gry” menu (`shared/menu/games.js`), instrukcja „Jak grać?” w `shared/meta/guides-data.js` pod
+  kluczem `trojki`,
+- identyfikator na liście `GAME_IDS` w `shared/sowie-cloud.js` (bramka zapisu przepuszcza dokument
+  `sowiegry/profil/sowiegry_gry/trojki`) i w regułach Firestore (`firestore.rules` — projekt `sowiegry-1e1f9`,
+  `Analizy/PRZENIESIENIE_FIRESTORE.md`, rozdz. 3),
+- `SAVE_ENABLED = true`, `PREVIEW = false`: na starcie otwarty poziom 1, kolejne po wygranej; postęp w chmurze
+  (zapis, wczytanie, łączenie zapisów z dwóch telefonów — `main.js`, „Zapis”), Sowia Akademia (zdarzenia `VISIT`
+  i `IDLE`: zadania dnia, osiągnięcia), Galeria (zdjęcia 56–58) i „Rekordy” w zakładce „Sowa”.
+
+**Tryb podglądu został w kodzie jako zabezpieczenie:** gdy strona nie widzi gry w rejestrze (np. bez
+`shared/sowie-platform.js`), `SAVE_ENABLED = false` i `PREVIEW = true` — wszystkie 45 poziomów otwarte, postęp tylko
+w pamięci strony, napis „Podgląd gry…” na mapie. **Bramka zapisu** w `shared/sowie-cloud.js` (`allowedGamePath`,
+`GAME_PATH`) odrzuca każdy dokument `sowiegry/profil/sowiegry_gry/<gra>` spoza `GAME_IDS` — błąd w kodzie gry nie
+wyśle zapisu, którego nie przepuszczą reguły Firestore (jedna odrzucona operacja w `writeBatch` zablokowałaby cały
+zapis innych gier).
 
 Wspólne ustawienia profilu (głośność, `quips`, `cozy`, `reducedEffects`, `vibration`) i strój Sówki
 (`cosmetics.selected`) są czytane z profilu chmury tak jak w innych grach; zmiany ustawień w menu pauzy zapisują
@@ -41,7 +48,6 @@ SowieTrojki/
   owl-view.js      rysowanie Sówki na gałęzi, przekształcenia reakcji, drobinki, lot nad planszą
   map.js           mapa poziomów (3 rozdziały × 15 kółek)
   tutorial.js      karty „Nowość” i ręka podpowiedzi
-  guide.js         instrukcja „Jak grać?” (7 kart)
   main.js          strona: ekrany, gesty, HUD, Sówka, zapis, pauza, pętla klatek, haki testowe
   docs/            ta dokumentacja i instrukcja gracza (README.md)
 scripts/trojki-strojenie.mjs   strojenie ruchów i progów gwiazdek symulatorem (ręcznie, nie w CI)
@@ -49,6 +55,16 @@ assets/svg/trojki/             truskawka, storczyk, storczyk-mruga, pioro, jajko
 assets/svg/sowa/               nowe oczy Sówki: oczy-gwiazdki, oczy-serduszka, oczy-smutne
 tests/unit/trojki-plansza.test.mjs, trojki-gra.test.mjs, trojki-sowka.test.mjs
 tests/e2e/telefon/trojki.spec.js
+
+Poza folderem gry (M5):
+shared/sowie-platform.js      wpis w rejestrze gier
+shared/sowie-cloud.js         "trojki" w GAME_IDS, setMergeHandler (gra sama łączy zapisy z dwóch telefonów)
+shared/meta/guides-data.js    instrukcja „Jak grać?” (7 kart; do M5 plik SowieTrojki/guide.js)
+shared/meta/academy.js        metryki trojki*, 3 zadania dnia, 2 osiągnięcia, Trójki w „Pierwszych krokach”
+shared/menu/games.js          karta w menu (opis, rekord „Poziom N · ⭐ M”, ruchoma scena)
+shared/menu/owl-tab.js        „Rekordy” (IDLE_SUMMARY.trojki) i „Powtórz samouczki” (TUTORIAL_GAMES)
+shared/owl-gallery.js         zdjęcia 56–58 za Trójki; zdjęcie 26 — wizyty we wszystkich sześciu grach
+firestore.rules               "trojki" na liście dozwolonych dokumentów gier
 ```
 
 Czcionka: **Fredoka 700** (`assets/fonts/fredoka-700.woff2`, wczytywana wstępnie w `<head>`; w CSS
@@ -403,12 +419,15 @@ Format (wersja 1):
   `unlocked`, liczniki i `attempt`/`savedAt`; suma obejrzanych kart; pola spoza formatu z obu (przewaga `a`).
 - `recordResult(state, id, { won, stars, score, stats, totalLevels })` — próba +1; wygrana: wygrane +1, gwiazdki
   i wynik bez cofania, `unlocked` do `id + 1` (najwyżej 45); statystyki ze `stats` przebiegu.
-- `summaryOf(state)` → `{ level (najwyższy wygrany), stars (suma), three (poziomy z 3 gwiazdkami), bestCombo,
-owlets }` — do karty gry i „Rekordów” po włączeniu do menu.
+- `summaryOf(state)` → `{ level, stars, three, bestCombo, owlets }` (`level` — najwyższy wygrany poziom, `stars` —
+  suma gwiazdek, `three` — poziomy z 3 gwiazdkami) — podsumowanie do profilu: `profil.records.trojki` (karta gry
+  „Poziom N · ⭐ M” i „Rekordy”).
 
-W podglądzie stan żyje tylko w pamięci strony (`progressState` w `main.js`); `save()` i `loadProgress()` wracają od
-razu, gdy `SAVE_ENABLED` jest fałszem. Po włączeniu: `cloud.saveGameState("trojki", stan, { immediate: true,
-saveVersion: 1, summary })` i `cloud.loadGameState("trojki")`.
+Zapis w chmurze (od M5): `cloud.saveGameState("trojki", stan, { immediate: true, saveVersion: 1, summary })` —
+dokument `sowiegry/profil/sowiegry_gry/trojki` (pole `state` = JSON stanu, `saveVersion`, `summary`, `rev`,
+`deviceId`, `clientSavedAt`), a `summary` trafia też do `profil.records.trojki`; wczytanie
+`cloud.loadGameState("trojki")` → `loadState`. W podglądzie (bez wpisu w rejestrze) stan żyje tylko w pamięci strony
+(`progressState` w `main.js`), a `save()` i `loadProgress()` wracają od razu.
 
 ## `tiles.js` — wygląd kafelków
 
@@ -540,7 +559,7 @@ czas)`, `burst(rodzaj)`, `fly(cel)`, `head()`, `animating`, `state`.
 - `fly(cel)` — lot nad planszą (radość 5 i Sowia pomoc): animacja elementu płótna (Web Animations, 1,6 s, ease-in-out)
   do środka planszy z pełnym obrotem i z powrotem; przy ograniczeniu ruchu — bez lotu.
 
-## `map.js`, `tutorial.js`, `guide.js`
+## `map.js`, `tutorial.js` i instrukcja „Jak grać?”
 
 - `renderMap(root, { state, current, open, onPick })` — dla każdego rozdziału sekcja `.trojki-chapter.is-<id>`
   z nagłówkiem „1. Sowia Łąka” i licznikiem „★ suma / 45”, lista `ol.trojki-path` z 15 przyciskami
@@ -550,18 +569,39 @@ czas)`, `burst(rodzaj)`, `fly(cel)`, `head()`, `animating`, `state`.
 - `showIntro(level, { seen, onSeen })` — karty „Nowość” (`openModal` z `shared/ui/modal.js`, klasa
   `trojki-intro-modal`, znaczek „Nowość”, zdanie, przycisk „Rozumiem”) po kolei dla nieobejrzanych kluczy;
   `showHand(element, { from, to } | null)` — ręka podpowiedzi (zmienne CSS `--x`, `--y`, `--dx`, `--dy`).
-- `GUIDE` — instrukcja w formacie `shared/meta/guides-data.js` (`id: "trojki"`, `summary`, 7 kart: Cel poziomu,
-  Ruch (gest `swipe-right`, wskazówka), Moce (gest `tap`), Pracu Pracu i Amic, Jajka i gniazda, Sówka i Sowia
-  pomoc (gest `tap`), Gwiazdki i Humbaczy Finał). Pokazywana przez `renderGuide` w oknie „Jak grać — Sowie
-  Trójki” (przycisk „?”) i w menu pauzy (opcja `guide` w `createPauseMenu`).
+- `GUIDE = guideFor("trojki")` — instrukcja ze wspólnego katalogu `shared/meta/guides-data.js` (od M5; do M5 plik
+  `SowieTrojki/guide.js`): `id: "trojki"`, `summary`, 7 kart — Cel gry (obrazek `lisc-zielony`), Ruch (gest
+  `swipe-right`, `lisc-zloty`, wskazówka „Ruch bez trójki wraca na miejsce i nie zabiera ruchu.”), Moce (gest `tap`,
+  `lisc-teczowy`), Pracu Pracu i Amic (`pracu-telefon`), Jajka i gniazda (`sowa-stoi`), Sówka i Sowia pomoc (gest
+  `tap`, `sowa-radosc`), Gwiazdki i Humbaczy Finał (`humbak`). Ta sama instrukcja jest w menu („Jak grać?” na karcie
+  gry i zakładka instrukcji — kolejność `GUIDE_ORDER`), w oknie „Jak grać — Sowie Trójki” (przycisk „?”,
+  `renderGuide`) i w menu pauzy (opcja `guide` w `createPauseMenu`).
 
 ## `main.js` — strona gry
 
 - **Stałe:** muzyka `ogrod` (gra) i `humbak` (finał); dźwięki wczytywane po odblokowaniu: `klik`, `polaczenie`,
   `hu-hu`, `rekord`, `koniec-gry`, `humbak-plusk`, `lisc-teczowy`, `dzwonek`; podpowiedź po 5 s (Tryb Przytulny
   3 s), sen Sówki po 40 s.
-- **Zapis:** `SAVE_ENABLED` = gra jest w `GAME_REGISTRY`; `PREVIEW = !SAVE_ENABLED` (napis podglądu, wszystkie
-  poziomy otwarte).
+- **Zapis** (od M5): `SAVE_ENABLED` = gra jest w `GAME_REGISTRY`; `PREVIEW = !SAVE_ENABLED` (napis podglądu,
+  wszystkie poziomy otwarte — tylko bez rejestru). `stateKey(stan)` — JSON stanu z posortowanymi kluczami
+  (`sortKeys`), `savedAt: 0` i posortowaną listą `tutorial.seen` (porównanie bez znacznika czasu i kolejności);
+  `savedKey` — klucz ostatnio zapisanego stanu. `save({ force })` — gdy zapis włączony i stan się zmienił (albo
+  `force`): `savedAt = Date.now()` i
+  `cloud.saveGameState(GAME_ID, stan, { immediate: true, saveVersion: SAVE_VERSION, summary: summaryOf(stan) })`;
+  wołane po każdym końcu poziomu (`finishRecord`) i przy zejściu strony do tła.
+  `loadProgress()` — `cloud.loadGameState` → `loadState`; gdy dokument gry ma `tutorialDone === false` („Powtórz
+  samouczki we wszystkich grach” w zakładce „Sowa”), `tutorial` = `{ done: false, seen: [] }`
+  i `cloud.updateGame(GAME_ID, { tutorialDone: true })`; `savedKey` z wczytanego stanu;
+  `cloud.setMergeHandler(GAME_ID, mergeRemote)`. `mergeRemote(dokument)` — nowszy zapis z innego urządzenia
+  (SowieCloud woła go zamiast okna konfliktu): `loadState(JSON.parse(doc.state))`, `mergeStates(ten, zdalny)`; zapis
+  (`force`) tylko, gdy połączony stan różni się od zdalnego (ten telefon ma coś, czego w bazie nie ma — bez
+  przerzucania zapisów tam i z powrotem); po zmianie — mapa od nowa i `reportProgress()`.
+  `reportProgress({ combo })` —
+  `progress.emit(EVENTS.IDLE, { gameId: "trojki", levels, stars, three, wins, owlets, combo })` (`levels`, `stars`,
+  `three` z `summaryOf`, `wins` i `owlets` ze `stats`) → metryki Akademii `trojkiLevels`, `trojkiStars`,
+  `trojkiThree`, `trojkiWins`, `trojkiOwlets`, `trojkiCombo` (strona ma `<body data-sowie-game="trojki">` — bez tego
+  znacznika Akademia na stronie nie powstaje). `finishRecord(won)` — `recordResult` (gwiazdki, wynik,
+  statystyki przebiegu, 45 poziomów), `save()`, `reportProgress({ combo: najlepsze combo przebiegu })`.
 - **Silnik:** `createQuality()` (automat płynności, Analiza 6), `createFrameLimiter`, ostrość `quality.dpr()`,
   atlas `createAtlas({ catalog: TROJKI_SPRITES, baseUrl: SVG_BASE })` z gatunkiem sowy z Butiku (`linkSpecies`),
   renderer planszy, widok Sówki, reżyser (`quips` z ustawień profilu), licznik `?perf=1`, komunikat „Gra trochę
@@ -604,13 +644,19 @@ none`): stuknięcie w trakcie animacji przyspiesza ją (`skip`); przesunięcie �
   (`setDrag`); puszczenie bez przesunięcia = stuknięcie (`tapCell`). Klawiatura (płótno ma `tabindex="0"`):
   strzałki — ramka (`cursor`, komunikat „Kolumna X, rząd Y”), przy zaznaczeniu — zamiana w tym kierunku; Enter /
   spacja — stuknięcie; Esc — bez zaznaczenia.
+- **Komunikaty:** `createToasts({ root, isInGame: () => screen === "game" })` (w grze jeden naraz u góry, na mapie do
+  trzech przy dolnej krawędzi) i od M5 `window.SowieNotifications.toast({ title, detail, reward })` — jak w Łącz
+  i Hoduj i w Ogrodach: Akademia („Zadanie wykonane”, „Osiągnięcie: …”) i Galeria („Nowa fotografia w Galerii Sów!”)
+  pokazują komunikat `toasts.show("tytuł · opis · nagroda", { kind: "reward", duration: 3200 })`.
 - **Pauza i tło:** `createPauseMenu({ gameId: "trojki", guide: GUIDE, onRestart, onExit })` — przycisk pauzy
   tylko w grze; przejście do innej karty / aplikacji otwiera pauzę („tło”) i woła `save()`.
 - **Pętla** (`requestAnimationFrame`): cel klatek — `quality.fps()` (60) gdy coś się dzieje (`busy`: przeciąganie,
   1,5 s po dotyku, animacja planszy lub Sówki, reakcja, podpowiedź, ręka), inaczej najwyżej 30; ogranicznik klatek,
   próbka automatu płynności, licznik `?perf=1`; w grze `renderer.update/draw` (rysowanie na żądanie) i
   `owlView.draw`; bezczynność → podpowiedź (reakcja `think`), po 40 s sen (`sleep`).
-- **Start:** napis podglądu, czekanie na `cloud.ready`, `loadProgress`, `?poziom` albo mapa; `audio.json` →
+- **Start:** napis podglądu (ukryty, gdy zapis włączony), czekanie na `cloud.ready`, `loadProgress`; przy zapisie
+  zdarzenie `EVENTS.VISIT` (`{ gameId: "trojki" }` → metryka `trojkiVisits`) i `reportProgress()`; `?poziom` albo
+  mapa; `audio.json` →
   `createAudio` (podłączone ustawienia głośności z profilu, odblokowanie dźwięku pierwszym dotknięciem poza
   linkami).
 - **Haki testowe** `window.SowieTrojki`: `ready`, `atlasReady`, `screen`, `preview`, `level`, `state` (faza, ruchy,
@@ -623,10 +669,14 @@ none`): stuknięcie w trakcie animacji przyspiesza ją (`skip`); przesunięcie �
 ## `index.html`
 
 `<html lang="pl" class="sowie-shell">`; w `<head>`: viewport z `viewport-fit=cover`, `theme-color` #dff7ea, opis,
-tytuł „Sowie Trójki — SowieGry (podgląd)”, manifest i ikony PWA, skrypty w kolejności wspólnej dla gier
-(`config/firebase-config.js`, `shared/sowie-platform.js`, `shared/sowie-cloud.js`, `shared/password-gate.js`,
-`shared/pwa.js`), wstępne wczytanie Fredoki, style `shared/cute-ui.css`, `shared/world/tokens.css`,
-`shared/ui/ui.css`, `style.css`, moduł `main.js`. W `<body>` jeden `<main class="trojki" data-trojki>`:
+tytuł „Sowie Trójki — SowieGry” (do M5 z dopiskiem „(podgląd)”), manifest i ikony PWA, skrypty w kolejności
+wspólnej dla gier (`config/firebase-config.js`, `shared/sowie-platform.js`, `shared/sowie-cloud.js`,
+`shared/password-gate.js`, `shared/pwa.js`), wstępne wczytanie Fredoki, style `shared/cute-ui.css`,
+`shared/world/tokens.css`, `shared/ui/ui.css`, `style.css`, skrypt `shared/owl-gallery.js` (`defer`, od M5 — jak
+w innych grach: Galeria odblokowuje zdjęcia i pokazuje powiadomienie także w trakcie gry), moduł `main.js`.
+`<body data-sowie-game="trojki">` (od M5 — po tym znaczniku `shared/meta/academy.js` tworzy na stronie Sowią
+Akademię; test `tests/unit/architecture.test.mjs` pilnuje go na stronach wszystkich gier z rejestru), a w nim jeden
+`<main class="trojki" data-trojki>`:
 
 - `header.trojki-top`: link „Menu” (`data-menu-link`, `href="../"`), przycisk „Mapa” (`data-to-map`, ukryty na mapie),
   `h1.trojki-title` (`data-level-title`), „?” (`data-guide`), pauza `.trojki-pause` (`data-pause`, ikona
@@ -675,6 +725,9 @@ tytuł „Sowie Trójki — SowieGry (podgląd)”, manifest i ikony PWA, skrypt
   0,5 s co 0,25 s), znaczek „Nowość” (biały na `--monstera`).
 - `prefers-reduced-motion: reduce` i klasa `sowie-reduced-effects`: bez pulsowania, ręki, poświaty i animacji
   gwiazdek.
+- Komunikaty (od M5): `.trojki .sowie-toasts { position: fixed; z-index: 9100 }` — nad tłem okna (`.sowie-ui-backdrop`,
+  z-index 9000), bo komunikaty Akademii i Galerii przychodzą razem z oknem wyniku; okno to arkusz od dołu, a komunikat
+  w grze jest u góry, więc nie zasłania przycisków (dotyk przechodzi pod spód — `pointer-events: none`).
 
 ## Grafiki gry (`assets/svg/`)
 
@@ -721,10 +774,19 @@ automat płynności obniża ostrość, a w spoczynku plansza nie jest przerysowy
 - `tests/unit/trojki-sowka.test.mjs` — zapis stanu (wczytanie, łączenie, wynik, podsumowanie) i reżyser Sówki
   (skala radości, priorytety, dymki, „hu”, „Hm?”, ograniczenie ruchu, wygrana).
 - `tests/e2e/telefon/trojki.spec.js` (5 profili telefonów × Chromium i WebKit, emulator Firestore): mapa 45
-  poziomów i karta startu z „Nowością”, ruch przesunięciem palca (Sówka się cieszy), zła zamiana bez utraty ruchu,
-  dwa stuknięcia i pięć w rzędzie → Tęczowy liść i salto, Sowia pomoc bez kosztu ruchu, wygrana z finałem
-  i „Dalej” oraz **brak dokumentu `trojki` w chmurze**, prezent i „Spróbuj jeszcze raz”, Tryb Przytulny z pauzy,
-  układ ekranu (pole ≥ 34 px, Sówka i pomoc w oknie, poziomo: Sówka z lewej, cele z prawej), licznik `?perf=1`.
+  poziomów bez napisu podglądu (`preview()` = false, nowy gracz — 44 poziomy z kłódką), karta startu z „Nowością”,
+  ruch przesunięciem palca (Sówka się cieszy), zła zamiana bez utraty ruchu, dwa stuknięcia i pięć w rzędzie →
+  Tęczowy liść i salto, Sowia pomoc bez kosztu ruchu, wygrana z finałem i „Dalej” oraz **zapis w chmurze** (dokument
+  `trojki`: gwiazdki poziomu 1, `unlocked` 2, `saveVersion` 1; `profil.records.trojki` z poziomem i gwiazdkami)
+  i **po ponownym otwarciu** (43 poziomy z kłódką, poziom 1 `is-done`), prezent i „Spróbuj jeszcze raz”, Tryb
+  Przytulny z pauzy, układ ekranu (pole ≥ 34 px, Sówka i pomoc w oknie, poziomo: Sówka z lewej, cele z prawej),
+  licznik `?perf=1`.
+- Testy wspólne (M5): `tests/unit/sowie-cloud.test.mjs` (`trojki` w `GAME_IDS`, zapis stanu i podsumowania
+  w `records.trojki`, `setMergeHandler` — nowszy zapis z drugiego urządzenia trafia do gry zamiast okna konfliktu,
+  następny zapis ma wyższy `rev`), `tests/unit/academy.test.mjs` (zdarzenie `IDLE` Trójek → metryki, zadania
+  i osiągnięcia, „Pierwsze kroki” po wizytach w sześciu grach), `tests/unit/owl-gallery.test.mjs` (58 zdjęć, cele
+  z metryk Trójek), `tests/rules/firestore-rules.test.mjs` (dokument `trojki` dozwolony), testy menu (sześć kart,
+  instrukcja, „Rekordy”, samouczki) i Galerii (`tests/e2e/owl-gallery.spec.js` — komplet 58 zdjęć).
 
 ## Dodatek A — kod grafik
 
