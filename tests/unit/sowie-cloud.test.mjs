@@ -354,6 +354,36 @@ test("gra idle robi najwyżej 120 zapisów na godzinę, a ważna akcja zapisuje 
   assert.equal(profile.records.ogrody.lifetimeLeaves, 3599);
 });
 
+test("bramka zapisu: gra spoza GAME_IDS (podgląd nowej gry) zostaje w pamięci strony, profil i inne gry zapisują się dalej", async () => {
+  // Analiza 5, rozdz. 13.1a: reguły Firestore dopuszczają tylko gry z listy — zapis dokumentu innej gry w tej samej
+  // paczce odrzuciłby całą paczkę (także profil). Dlatego taki dokument nigdy nie wychodzi z telefonu.
+  const { cloud, backend } = makeCloud();
+  await cloud.ready;
+  await tick();
+  cloud.updateGame("trojki", { unlocked: 3 });
+  cloud.saveGameState("trojki", { version: 1, unlocked: 3 }, { immediate: true, saveVersion: 1 });
+  cloud.submitRun("trojki", { score: 1200 });
+  cloud.updateGame("ogrody", { scene: "parapet" });
+  cloud.updateProfile((profile) => {
+    profile.missions.leaves20.progress = 5;
+  });
+  await cloud.flush();
+  assert.equal(await backend.getDoc(PATHS.game("trojki")), null);
+  assert.deepEqual(
+    [...backend.docs.keys()].filter((path) => path.includes("sowiegry_gry/trojki")),
+    [],
+    "ani dokumentu gry, ani historii",
+  );
+  for (const ops of backend.commits) {
+    for (const op of ops) assert.ok(!String(op.path || op.collection).includes("/trojki"), JSON.stringify(op));
+  }
+  assert.equal((await backend.getDoc(PATHS.profile)).missions.leaves20.progress, 5);
+  assert.equal((await backend.getDoc(PATHS.game("ogrody"))).scene, "parapet");
+  // W pamięci strony dokument gry jest (gra działa normalnie, tylko bez zapisu).
+  assert.equal(cloud.game("trojki").unlocked, 3);
+  assert.deepEqual(JSON.parse(cloud.game("trojki").state), { version: 1, unlocked: 3 });
+});
+
 test("flush wysyła kolejkę od razu (przejście aplikacji w tło)", async () => {
   const { cloud, backend } = makeCloud();
   await cloud.ready;

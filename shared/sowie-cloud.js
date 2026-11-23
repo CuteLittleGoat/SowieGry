@@ -46,6 +46,13 @@
     "stats.finishes",
     ...GAME_IDS.map((gameId) => `records.${gameId}.runs`),
   ]);
+
+  // Ścieżka w bazie należy do gry spoza GAME_IDS? (bramka zapisu — Analiza 5, rozdz. 13.1a)
+  const GAME_PATH = /^sowiegry\/profil\/sowiegry_gry\/([^/]+)/;
+  function allowedGamePath(path) {
+    const match = GAME_PATH.exec(String(path || ""));
+    return !match || GAME_IDS.includes(match[1]);
+  }
   const GAME_COUNTERS = Object.freeze(["historyCount"]);
 
   // Znaczniki operacji specjalnych; backend zamienia je na increment() / serverTimestamp() / deleteField().
@@ -772,8 +779,15 @@
 
       for (const [gameId, doc] of games) {
         if (unknownGames.has(gameId)) continue;
-        const patch = diff(gameBases.get(gameId), doc, isGameCounter);
         const increments = gameIncrements.get(gameId);
+        // Bramka zapisu (Analiza 5, rozdz. 13.1a): dokument gry spoza GAME_IDS (ta sama lista co w regułach
+        // Firestore) zostaje w pamięci strony — baza odrzuciłaby całą paczkę, razem ze zmianami profilu.
+        if (!GAME_IDS.includes(gameId)) {
+          gameBases.set(gameId, clone(doc));
+          increments?.clear();
+          continue;
+        }
+        const patch = diff(gameBases.get(gameId), doc, isGameCounter);
         if (patch || increments?.size) {
           const data = patch || {};
           for (const [path, amount] of increments || []) setPath(data, path.split("."), increment(amount));
@@ -784,7 +798,8 @@
         gameBases.set(gameId, clone(doc));
         increments?.clear();
       }
-      ops.push(...pendingOps.splice(0));
+      // Historia i jej przycinanie też tylko dla gier z GAME_IDS (bramka zapisu).
+      ops.push(...pendingOps.splice(0).filter((op) => allowedGamePath(op.path || op.collection)));
       return ops;
     }
 
