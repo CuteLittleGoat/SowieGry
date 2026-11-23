@@ -1,4 +1,5 @@
-// Testy reguł Firestore (firestore.rules = reguły opublikowane 2026-09-27) na emulatorze.
+// Testy reguł Firestore (firestore.rules = reguły projektu sowiegry-1e1f9, opublikowane 2026-11-23) na emulatorze.
+// Od przeniesienia SowieGry do własnego projektu (2026-11-23) reguły obejmują tylko SowieGry — reszta jest zamknięta.
 // Uruchamiane przez `npm run test:e2e` (firebase emulators:exec ustawia FIRESTORE_EMULATOR_HOST).
 import { readFile } from "node:fs/promises";
 import { after, before, beforeEach, test } from "node:test";
@@ -45,14 +46,14 @@ beforeEach(async () => {
 
 const fields = (count) => Object.fromEntries(Array.from({ length: count }, (_, index) => [`pole${index}`, index]));
 
-test("drugi projekt ma pełny dostęp jak dotąd", async () => {
-  await assertSucceeds(getDoc(doc(db, "audio/favorites")));
-  await assertSucceeds(setDoc(doc(db, "dataslate/test"), { x: 1 }));
-  await assertSucceeds(updateDoc(doc(db, "audio/favorites"), { list: [3] }));
-  await assertSucceeds(deleteDoc(doc(db, "audio/favorites")));
-  await assertSucceeds(setDoc(doc(db, "character_builder/postac/wersje/v1"), { x: 1 }));
-  await assertSucceeds(setDoc(doc(db, "nowa_kolekcja/dok"), { x: 1 }));
-  await assertSucceeds(getDocs(query(collectionGroup(db, "wersje"))));
+test("kolekcje spoza SowieGry są zamknięte (projekt tylko dla SowieGry)", async () => {
+  await assertFails(getDoc(doc(db, "audio/favorites")));
+  await assertFails(setDoc(doc(db, "dataslate/test"), { x: 1 }));
+  await assertFails(updateDoc(doc(db, "audio/favorites"), { list: [3] }));
+  await assertFails(deleteDoc(doc(db, "audio/favorites")));
+  await assertFails(setDoc(doc(db, "character_builder/postac/wersje/v1"), { x: 1 }));
+  await assertFails(setDoc(doc(db, "nowa_kolekcja/dok"), { x: 1 }));
+  await assertFails(getDocs(query(collectionGroup(db, "wersje"))));
 });
 
 test("sowiegry/meta: zapis tylko z całkowitym schemaVersion, bez kasowania", async () => {
@@ -78,8 +79,8 @@ test("inne ścieżki pod sowiegry są odrzucane", async () => {
   await assertFails(setDoc(doc(db, "inny/dokument/sowiegry_gry/runner"), { x: 1 }));
 });
 
-test("sowiegry_gry: tylko pięć stałych identyfikatorów gier", async () => {
-  for (const gameId of ["runner", "jumper", "sowa3", "ogrody", "szklarnia"]) {
+test("sowiegry_gry: tylko sześć stałych identyfikatorów gier (także trojki)", async () => {
+  for (const gameId of ["runner", "jumper", "sowa3", "ogrody", "szklarnia", "trojki"]) {
     await assertSucceeds(setDoc(doc(db, `sowiegry/profil/sowiegry_gry/${gameId}`), { difficulty: "arcade" }));
     await assertSucceeds(getDoc(doc(db, `sowiegry/profil/sowiegry_gry/${gameId}`)));
   }

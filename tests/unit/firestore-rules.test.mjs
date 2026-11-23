@@ -5,12 +5,16 @@ import { test } from "node:test";
 const read = (path) => readFile(path, "utf8");
 
 // Kopia reguł w repo musi być identyczna z regułami opublikowanymi 2026-09-27 (Analiza 1, rozdz. 9.2).
-test("firestore.rules jest dokładną kopią reguł z Analizy 1, rozdział 9.2", async () => {
-  const analysis = await read("Analizy/ANALIZA_1_Firestore_zapis_postepu.md");
-  const section = analysis.slice(analysis.indexOf("### 9.2"), analysis.indexOf("### 9.3"));
+test("firestore.rules jest dokładną kopią reguł nowego projektu (Analizy/PRZENIESIENIE_FIRESTORE.md, rozdz. 3)", async () => {
+  // Od 2026-11-23 SowieGry mają własny projekt sowiegry-1e1f9: reguły SowieGry z Analizy 1 (rozdz. 9.2) z grą „trojki”,
+  // bez reguły ogólnej dla kolekcji drugiej aplikacji (zostały w starym projekcie).
+  const plan = await read("Analizy/PRZENIESIENIE_FIRESTORE.md");
+  const section = plan.slice(plan.indexOf("## 3."), plan.indexOf("## 4."));
   const block = section.match(/```\n([\s\S]*?)```/);
-  assert.ok(block, "Brak bloku reguł w rozdziale 9.2");
+  assert.ok(block, "Brak bloku reguł w rozdziale 3");
   assert.equal(await read("firestore.rules"), block[1]);
+  assert.doesNotMatch(block[1], /sciezka=\*\*/, "bez reguły ogólnej starego projektu");
+  assert.match(block[1], /"szklarnia", "trojki"\]/);
 });
 
 test("firebase.json konfiguruje tylko emulator Firestore z plikiem reguł", async () => {

@@ -22,7 +22,7 @@ Identyfikatory w bazie są stałe (są wpisane w opublikowane reguły Firestore)
 index.html                (menu główne — szkielet zakładek; treść rysuje shared/menu/)
 demo.html                 (wersja demo — własne menu gier bez hasła i zapisu; shared/menu/demo.js, demo.css)
 config/
-  firebase-config.js      (window.firebaseConfig — projekt rpg-dataslate-relay)
+  firebase-config.js      (window.firebaseConfig — od 2026-11-23 projekt sowiegry-1e1f9; wcześniej rpg-dataslate-relay)
 shared/
   sowie-platform.js       (rejestr gier, stałe, zdarzenia, ?seed= i ?testNow=)
   sowie-cloud.js          (SowieCloud — jedyny moduł z Firestore i pamięcią przeglądarki)
@@ -998,15 +998,36 @@ Parametr:
 
 wyświetla dane diagnostyczne konkretnej gry.
 
-## Firebase / Firestore — stan konfiguracji (2026-09-27)
+## Firebase / Firestore — stan konfiguracji
 
-### `config/firebase-config.js`
+### Od 2026-11-23: własny projekt `sowiegry-1e1f9`
+
+SowieGry przeniesiono do własnego projektu Firebase **`sowiegry-1e1f9`** (konto właściciela, aplikacja internetowa
+„SowieGry”, darmowy plan Spark). Plan, kroki i plan powrotu: `Analizy/PRZENIESIENIE_FIRESTORE.md`.
+
+- `config/firebase-config.js` — konfiguracja nowego projektu (komentarz w pliku opisuje przeniesienie).
+- **Reguły** (`firestore.rules`, opublikowane przez właściciela w nowym projekcie): reguły SowieGry jak niżej (meta,
+  profil, gry z listy `runner`, `jumper`, `sowa3`, `ogrody`, `szklarnia`, `trojki`, historia) **bez reguły ogólnej**
+  dla kolekcji drugiej aplikacji — w nowym projekcie wszystko poza SowieGry jest zamknięte (test na emulatorze:
+  „kolekcje spoza SowieGry są zamknięte”).
+- **Dane** skopiowane 1:1 skryptem `scripts/kopia-firestore.mjs` (REST API Firestore z kluczem aplikacji — działa na
+  darmowym planie; w źródle tylko odczyt, w celu tylko tworzenie brakujących dokumentów z warunkiem „nie istnieje”,
+  porównanie pól po imporcie). Ten sam skrypt robi kopię zapasową w dowolnej chwili (`eksport` → plik JSON z sumą
+  kontrolną SHA-256) i wgrywa ją do dowolnego projektu z regułami SowieGry (`import`, `--proba` bez zapisu).
+- Stary projekt `rpg-dataslate-relay` jest nietknięty (dane SowieGry jako archiwum, druga aplikacja działa dalej);
+  o usunięciu starych danych decyduje właściciel po potwierdzeniu, że wszystko działa.
+- Pamięć Firestore w przeglądarce (IndexedDB) jest osobna dla każdego projektu — telefony po przełączeniu nie mieszają
+  danych; `sw.js` dostał nową wersję, żeby od razu pobrać nową konfigurację.
+
+### Do 2026-11-23: projekt `rpg-dataslate-relay` (stan z 2026-09-27)
+
+#### `config/firebase-config.js`
 
 Ustawia globalny obiekt `window.firebaseConfig` (bez `export`, żeby działał także z bibliotekami `firebase-*-compat`) dla projektu Firebase `rpg-dataslate-relay`. Projekt i baza Firestore są **współdzielone z innym projektem właściciela** (kolekcje `audio`, `character_builder`, `dataslate`; projekt ma też Realtime Database z osobnymi regułami, których SowieGry nie dotykają).
 
 Od etapu E1 plik jest ładowany na każdej stronie jako pierwszy skrypt; czyta go wyłącznie `shared/sowie-cloud.js` (Firebase JS SDK 12.19.0, nazwana aplikacja `sowiegry`). Komentarz w pliku opisuje współdzielenie projektu i to, że SowieGry używają tylko kolekcji `sowiegry` (z podkolekcjami `sowiegry_gry` i `sowiegry_historia`). Wartości konfiguracji nie są zmieniane. Kolekcja `sowiegry` powstaje przy pierwszym uruchomieniu wersji E1 na docelowej domenie po wpisaniu hasła (zapis `sowiegry/meta` i `sowiegry/profil`).
 
-### Reguły Firestore
+#### Reguły Firestore
 
 2026-09-27 właściciel opublikował w konsoli Firebase poniższe reguły (wcześniej obowiązywało `allow read, write: if true` dla całej bazy):
 

@@ -104,7 +104,7 @@ W Sowiej Ucieczce, Sowich Torach i Sowie w Chmurach komunikaty w trakcie gry poj
 
 ## Zapis postępu w chmurze
 
-Cały postęp — profil, kosmetyki, misje, Sowia Akademia, Galeria Sów, rekordy i stan gier idle — zapisuje się automatycznie w chmurze (baza Firestore). Dzięki temu:
+Cały postęp — profil, kosmetyki, misje, Sowia Akademia, Galeria Sów, rekordy i stan gier idle — zapisuje się automatycznie w chmurze (baza Firestore; od 23 listopada 2026 we własnym projekcie SowieGry `sowiegry-1e1f9` — postęp został przeniesiony 1:1, a stara baza została nietknięta jako archiwum). Dzięki temu:
 
 - **ten sam postęp jest na telefonie i na komputerze** (rekord zrobiony na telefonie widać na komputerze i odwrotnie),
 - wyczyszczenie danych przeglądarki nie kasuje postępu — wystarczy znów wpisać `huhu`,
