@@ -17,6 +17,8 @@ telefonie — i jeśli się da, zrób zrzut ekranu.
 
 | Test  | Co sprawdza                                                                                             | Od kiedy   |
 | ----- | ------------------------------------------------------------------------------------------------------- | ---------- |
+| T1–T6 | Sowie Trójki (podgląd): pierwszy poziom, combo i Sówka, moce, wygrana i przegrana, zapis, ekran         | 2026-11-23 |
+| G3    | Galeria: 15 nowych zdjęć (nr 41–55) — sowy, kozy, humbaki, rośliny ozdobne — i filtr rodzaju           | 2026-11-23 |
 | P1    | Płynność: pomiar licznikiem `?perf=1` na Twoim telefonie (Sowie Ogrody, Łącz i Hoduj, Sowie Tory)       | 2026-11-22 |
 | P2    | Płynność: ustawienie „Płynność” w menu i w menu pauzy, zapamiętane na tym telefonie                     | 2026-11-22 |
 | P3    | Płynność: wygląd bez zmian — rośliny, rekwizyty i efekty dalej się ruszają                              | 2026-11-22 |
@@ -35,6 +37,103 @@ telefonie — i jeśli się da, zrób zrzut ekranu.
 | B1–B4 | Sowi Butik: zakupy i kolory sowy nie cofają się, przeprosinowe piórka                                   | 2026-11-01 |
 
 ---
+
+## T — Sowie Trójki (podgląd nowej gry)
+
+Nowa gra „match 3” z Sówką (Analiza 5). To **podgląd**: gry nie ma jeszcze w menu, wszystkie 45 poziomów są otwarte,
+a postęp **nie zapisuje się w bazie** — Twoje zapisy z innych gier są bezpieczne. Instrukcja dla gracza:
+`SowieTrojki/docs/README.md`. Adres: https://cutelittlegoat.github.io/SowieGry/SowieTrojki/ (w aplikacji na ekranie
+głównym: otwórz menu, potem dopisz `SowieTrojki/` do adresu w przeglądarce).
+
+### T1 — pierwszy poziom, Sówka się cieszy
+
+1. Otwórz adres `SowieTrojki/`. **Powinno być:** mapa „Sowie Trójki” z napisem „Podgląd gry…”, trzy rozdziały
+   (Sowia Łąka, Ogródek Sówki, Staw Humbaka) po 15 kółek, kółko 1 pulsuje złotą obwódką.
+2. Stuknij **1**. **Powinno być:** okno „Poziom 1” — „Zbierz 25 Liści Monstery”, „Ruchy: 8”, trzy puste gwiazdki
+   i przycisk **Graj**. Stuknij **Graj**.
+3. **Powinno być:** karta „Nowość — Zamiana” z jednym zdaniem i przyciskiem **Rozumiem**. Stuknij go.
+4. **Powinno być:** plansza 8 × 8 z kafelkami na tłach różnych kształtów i kolorów, nad nią ruchy, cel i punkty, pod
+   nią Sówka na gałęzi macha i mówi w dymku „Zbierzmy 25 Liści Monstery!”. Ręka (białe kółko) pokazuje dobry ruch.
+5. Przesuń palcem kafelek na sąsiednie pole tak, jak pokazuje ręka. **Powinno być:** kafelki się zamieniają, trójka
+   pęka z drobinkami, z góry spadają nowe, ruchów jest o 1 mniej, punkty rosną, ręka znika, Sówka podskakuje
+   (po pierwszym stuknięciu w ekran słychać też „hu!”).
+6. Przesuń kafelek tak, żeby **nie** powstała trójka. **Powinno być:** kafelek wraca na miejsce, ruchów nie ubywa,
+   czasem Sówka przechyla głowę („Hm?”).
+7. Stuknij dwa sąsiednie kafelki po kolei (pierwszy dostaje złotą ramkę). **Powinno być:** zamieniają się tak samo
+   jak przy przesunięciu palcem.
+8. Poczekaj 5 sekund bez ruchu. **Powinno być:** dwa kafelki dobrego ruchu się kołyszą (podpowiedź).
+
+### T2 — combo i radość Sówki
+
+1. Graj dalej (np. poziom 3 albo 9). Gdy po spadnięciu same ułożą się kolejne trójki, **powinno być:** nad planszą
+   napis „Ładnie! ×2”, „Super! ×3”, „Ekstra! ×4”…, a Sówka cieszy się coraz bardziej: podskok → macha skrzydłami →
+   podwójny skok z serduszkami → salto z gwiazdkami w oczach → przy bardzo długim combo przelatuje nad planszą.
+2. **Powinno być:** dymek Sówki („Ładnie!”, „Super!”, „Ekstra!”…) najwyżej raz na 2 sekundy, nie ten sam dwa razy
+   z rzędu; pasek **Radość Sówki** pod Sówką rośnie.
+3. Stuknij Sówkę. **Powinno być:** chichocze („Hi-hi!”) i się obraca.
+
+### T3 — moce i Sowia pomoc
+
+1. Poziom 2: ułóż 4 takie same w linii. **Powinno być:** powstaje **Pióro** (biała bańka z piórem i strzałkami).
+   Stuknij je. **Powinno być:** przelatuje przez cały rząd (albo kolumnę) i zbija kafelki.
+2. Poziom 7: ułóż kwadrat 2 × 2 → **Pisklę** (mała sówka w bańce), które po odpaleniu leci do celu (np. karteczki).
+3. Poziom 5: ułóż literę L albo T → **Bąbel**, który pęka z pluskiem i zbija wszystko dookoła.
+4. Poziom 10: na starcie dwie karty „Nowość” (Jajka i Tęczowy liść). Ułóż 5 w linii → **Tęczowy liść** (tęczowa
+   obwódka); zamień go z kafelkiem — znikają wszystkie takie kafelki.
+5. Zamień ze sobą dwie moce, gdy staną obok siebie. **Powinno być:** wielki efekt (krzyż, wielki bąbel, trzy pisklęta
+   albo cała plansza przy dwóch Tęczowych liściach) i Sówka w zachwycie.
+6. Gdy pasek **Radość Sówki** jest pełny, przycisk **Sowia pomoc** świeci, a Sówka mówi „Mogę pomóc!”. Stuknij go
+   (albo Sówkę). **Powinno być:** Sówka leci nad planszę, spadają 3 Pióra, **liczba ruchów się nie zmienia**,
+   pasek Radości zaczyna od zera.
+
+### T4 — przegrana, prezent i wygrana
+
+1. Graj tak, żeby skończyły się ruchy, gdy cel jest prawie zrobiony (np. zostały 3–4 liście). **Powinno być:**
+   Sówka: „Prawie! Masz ode mnie 3 ruchy!” — i są 3 nowe ruchy (raz na podejście).
+2. Gdy ruchy skończą się znowu (albo cel był daleko): okno „Ojej, zabrakło ruchów” z tym, czego brakowało, Sówka
+   na chwilę smutna. Stuknij **Spróbuj jeszcze raz**. **Powinno być:** poziom od razu od nowa — bez żyć i czekania.
+3. Zrób cel z zapasem ruchów. **Powinno być:** „Humbaczy Finał!” — przez planszę przepływa humbak, a każdy
+   pozostały ruch zamienia się w Pióro (punkty rosną), potem okno „Brawo!” albo „Trzy gwiazdki!” z gwiazdkami,
+   Sówka tańczy. **Dalej** otwiera kartę następnego poziomu, **Mapa** wraca do mapy (zdobyte gwiazdki są pod kółkiem).
+4. Pauza (**II**) → **Ustawienia** → włącz **Tryb Przytulny** → **Gotowe** → **Wznów**. Skończ ruchy bez zrobionego
+   celu. **Powinno być:** zamiast przegranej Sówka dokłada 5 ruchów („Dokładam 5 ruchów — graj spokojnie!”).
+   Wyłącz potem Tryb Przytulny, jeśli w innych grach go nie używasz (to ustawienie wspólne dla wszystkich gier).
+
+### T5 — zapis w podglądzie (nic się nie zapisuje i nic nie kasuje)
+
+1. Zdobądź gwiazdki na kilku poziomach, zamknij aplikację i otwórz `SowieTrojki/` ponownie. **Powinno być:**
+   gwiazdek Sowich Trójek już nie ma (podgląd zapisuje tylko do zamknięcia strony).
+2. Otwórz menu SowieGry i inne gry. **Powinno być:** wszystko jak przed testem — rekordy, ogród, szklarnia, Galeria,
+   Akademia, piórka (podgląd niczego nie zapisał w bazie i niczego nie skasował).
+3. Po Twojej akceptacji podglądu i publikacji reguł ten test zmieni się na „postęp jest po ponownym otwarciu i na
+   drugim telefonie” (etap M5).
+
+### T6 — ekran: poziomo, mały telefon, płynność
+
+1. Obróć telefon poziomo. **Powinno być:** Sówka z lewej, plansza na środku, ruchy, cele i punkty z prawej; nic się
+   nie nakłada, dymek Sówki jest nad nią.
+2. Jeśli masz mały telefon (np. iPhone SE) — w pionie wszystko mieści się bez przewijania, kafelki da się wygodnie
+   trafić palcem.
+3. Otwórz `SowieTrojki/?perf=1`, zacznij poziom i rób ruchy. **Powinno być:** w rogu licznik klatek — przy ruchach
+   blisko 60, w spoczynku plansza stoi (rusza się tylko Sówka). Przyślij zrzut ekranu z licznikiem.
+
+## G3 — Galeria: zdjęcia kóz, humbaków i roślin
+
+Poprawka (uwaga G7): w Galerii jest 55 zdjęć (wcześniej 40). Nowe zdjęcia nr 41–55: 3 sowy gatunków, których jeszcze
+nie było, 4 kozy, 4 humbaki i 4 rośliny ozdobne (Monstery i storczyki).
+
+1. Menu → zakładka **Galeria**. **Powinno być:** licznik „… / 55”; wszystkie zdjęcia, które były odblokowane, dalej
+   są odblokowane.
+2. **Powinno być:** pod filtrami **Wszystkie / Odblokowane / Do zdobycia** drugi rząd: **Wszystkie rodzaje, Sowy,
+   Kozy, Humbaki, Rośliny** (na wąskim telefonie każdy rząd przesuniesz palcem w bok).
+3. Stuknij **Kozy**. **Powinno być:** 4 zdjęcia kóz — zablokowane z opisem celu, np. „Złap 40 skaczących kózek
+   w grach zręcznościowych”, „Wznieś się na 2500 m w Sowie w Chmurach”, „Skorzystaj 15 razy z pomocy kózek w Łącz
+   i Hoduj”. Tak samo **Humbaki** (rejsy z humbakiem, 3 ukończone kampanie Sowich Torów) i **Rośliny** (rozdziały
+   Sowich Ogrodów, 8 hybryd w Łącz i Hoduj).
+4. Jeśli masz już taki wynik (np. złapane 40 kózek), po otwarciu menu **powinno być:** „Nowa fotografia w Galerii
+   Sów!”, a zdjęcie ze znaczkiem **Nowe!**. Otwórz je — pod spodem autor i link do Pexels.
+5. Z filtrem **Humbaki** otwórz odblokowane zdjęcie i przesuń palcem w bok. **Powinno być:** przechodzisz tylko
+   między zdjęciami humbaków.
 
 ## P — Płynność (Analiza 6: „jak się za dużo dzieje na ekranie to gra laguje”)
 

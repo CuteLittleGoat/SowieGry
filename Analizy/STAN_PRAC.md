@@ -1,4 +1,4 @@
-# Stan prac — 2026-11-22
+# Stan prac — 2026-11-23
 
 Podsumowanie dla właściciela: co jest zrobione, co zostało, jakie są decyzje do podjęcia i na czym polegają problemy
 z testami automatycznymi. Szczegóły techniczne: `docs/Documentation.md`; plany: `ANALIZA_3_Plan_prac.md` (etapy
@@ -30,6 +30,16 @@ rekomendacji; telefon użytkownika: Redmi Note 10 Pro, MIUI Global 14.0.7, Chrom
 1) dokumentacja, 2) analiza Sowiej Dziupli, 3) poprawki wydajności, 4) nowa gra jako podgląd — w jednym zadaniu
 i jednym PR na `main` (punkt 0.3). **Dla Ciebie teraz:** nowe reguły Firestore do skopiowania są w Analizie 5,
 Załącznik B — możesz je opublikować od razu (to bezpieczne), potem napisz „reguły opublikowane”.
+
+**2026-11-23:** krok 4 zrobiony (punkt 0.5): nowa gra **Sowie Trójki jako podgląd** — 45 poziomów w trzech
+rozdziałach, Sówka na gałęzi obok planszy cieszy się z każdego combo (aż do salta i lotu nad planszą), moce, przeszkody
+Pracu i Amic, jajka, Sowia pomoc, Humbaczy Finał, bez żyć. Otwierasz ją adresem **`SowieTrojki/`**
+(https://cutelittlegoat.github.io/SowieGry/SowieTrojki/ — po włączeniu zmian na `main`); w menu jeszcze jej nie ma,
+wszystkie poziomy są otwarte, a postęp **nie zapisuje się w bazie** (Twoje zapisy z innych gier są bezpieczne).
+**Galeria (G7):** 15 nowych zdjęć — sowy, kozy, humbaki i rośliny ozdobne — i filtr rodzaju zdjęć. Wszystko idzie
+jednym PR na `main`. **Dla Ciebie:** testy T1–T6 i G3 w [`TESTY_NA_TELEFONIE.md`](TESTY_NA_TELEFONIE.md), a gdy podgląd
+Ci się spodoba — „akceptuję podgląd” i (jeśli jeszcze nie) „reguły opublikowane”; wtedy dodam kartę gry w menu i zapis
+postępu (etap M5).
 
 ## 0. Poprawki po testach z 2026-11-01 (etapy P1–P8)
 
@@ -115,7 +125,7 @@ Prośba i zgłoszenie dosłownie: [`UWAGI_WLASCICIELA.md`](UWAGI_WLASCICIELA.md)
 | G6 | „jak się za dużo dzieje na ekranie to gra laguje” (zwłaszcza Sowie Ogrody; „zawiesza się przesuwanie roślin”) | przyczyną jest rysowanie całego obrazu od nowa co klatkę w podwójnej ostrości (logika i panel są lekkie — bez rysowania gra ma 60 kl./s nawet na „wolnym telefonie”); Ogrody na symulowanym średnim telefonie: 43 kl./s w spokoju, 24–28 w Zatoce Humbaka; Łącz i Hoduj z pełną planszą 18–24; Sowie Tory 17 (na słabszym telefonie gra zwalnia o ok. 12%); próbne poprawki dają w Ogrodach 55–60 kl./s, w Łącz i Hoduj 49–55 | ✅ odpowiedzi 2026-11-22 (rozdz. 10 Analizy 6) — ⏳ wdrożenie W0–W8 (krok 3) |
 | N1 | nowa gra „match 3” z sową z boku ekranu, reagującą na postępy (radośniej przy combo); kafelki z istniejących grafik, każdy rodzaj z własnym tłem (kolor + kształt) | projekt „Sowie Trójki”: 6 rodzajów kafelków (liście, humbak, kózka, truskawka, storczyk) na tłach różnych kształtów i kolorów, 4 moce i ich połączenia, przeszkody Pracu i Amic, jajka i pisklęta, skala radości Sówki 0–5, Sowia pomoc, 45 poziomów na start, bez żyć i płatności; plan M0–M7 (ok. 3–4 tygodnie) | ✅ decyzje 2026-11-22 (rozdz. 19 Analizy 5) — ⏳ budowa podglądu (krok 4); reguły Firestore do skopiowania: Załącznik B |
 | D1 | Sowia Dziupla zamiast menu głównego (tablica korkowa z grami, szafa, Dekorator Dziupli, przedmioty odblokowywane w grach; roślinki z gier na półce w co najmniej 3 miejscach; wygląd dziupli do wyboru) | projekt: Dziupla jako ekran startowy (podgląd, potem przełączenie), ozdoby z postępu w grach i za piórka, zapis w profilu bez zmiany reguł, plan D0–D7 (ok. 10–14 dni) | ✅ analiza 2026-11-22 (`ANALIZA_7_Sowia_Dziupla.md`) — czeka na odpowiedzi (rozdz. 16); budowa jako osobne zadanie po Sowich Trójkach |
-| G7 | Galeria: nowe zdjęcia sów, kóz, wielorybów i roślin ozdobnych z Pexels | — | ⏳ razem z nową grą (krok 4) |
+| G7 | Galeria: nowe zdjęcia sów, kóz, wielorybów i roślin ozdobnych z Pexels | — | ✅ 2026-11-23 — 15 zdjęć (nr 41–55) i filtr rodzaju w Galerii (punkt 0.5) |
 
 **Kolejność prac (Twoja decyzja) i miejsce wznowienia** — aktualizuję po każdym kroku:
 
@@ -124,7 +134,7 @@ Prośba i zgłoszenie dosłownie: [`UWAGI_WLASCICIELA.md`](UWAGI_WLASCICIELA.md)
 | 1 | dokumentacja: telefon użytkownika i odpowiedzi w Analizie 6 (rozdz. 10, limit 60 kl./s dla ekranu 120 Hz), decyzje w Analizie 5 (rozdz. 19, rozdz. 14.4 zgodny z Analizą 6, pełne reguły w Załączniku B, bramka zapisu 13.1a), styl „mrugająca sówka jako kwiat” (`docs/Documentation.md`, dokumentacja Sowich Ogrodów, Analiza 5 rozdz. 12), `UWAGI_WLASCICIELA.md`, ten plik | ✅ 2026-11-22 |
 | 2 | analiza Sowiej Dziupli (`ANALIZA_7_Sowia_Dziupla.md`) z makietą (`ANALIZA_7_dziupla_makieta.png`): tablica korkowa z grami, Szafa, Dekorator, półka z co najmniej 3 roślinkami z gier, wygląd dziupli do wyboru; 8 pytań w rozdz. 16 | ✅ 2026-11-22 |
 | 3 | poprawki wydajności W0–W8 (Analiza 6): automat płynności i limit 60 kl./s we wszystkich grach, Ogrody i Łącz i Hoduj warstwami z obrazkami roślin, Zatoka bez ogrodu pod wodą, rekwizyty Torów z obrazków, HUD 10×/s, ustawienie „Płynność” (menu i pauza, zapamiętane na urządzeniu), propozycja oszczędzania baterii, licznik `?perf=1`, skrypt `scripts/perf-bench.cjs`, testy `plynnosc` (jednostkowe i e2e), dokumentacja; pomiar niżej (0.4) | ✅ 2026-11-22 (8dbc30f, 79eb786, dokumentacja) |
-| 4 | nowa gra Sowie Trójki jako podgląd (Analiza 5, M1–M6), nowe zdjęcia Galerii | ⏳ |
+| 4 | nowa gra Sowie Trójki jako podgląd (Analiza 5, M1–M6), nowe zdjęcia Galerii | ✅ 2026-11-23 (punkt 0.5) |
 | — | jeden PR na `main` z całością (pełny `npm test` u mnie, testy w GitHubie zielone) | ⏳ |
 
 **Bezpieczeństwo produkcji** (Twoja prośba z 2026-11-22): testy tylko na emulatorze i w pamięci; zapis postępu
@@ -154,6 +164,42 @@ jednostkowych, reguły Firestore, 598 testów przeglądarkowych w Chromium (5 pr
 przed rekwizytami Torów i 195 po nich (gry, menu, laboratorium) + 14 nowych testów `plynnosc` — wszystkie zielone;
 WebKit (Safari) sprawdzą testy w GitHubie. **Dla Ciebie:** testy P1–P3 w [`TESTY_NA_TELEFONIE.md`](TESTY_NA_TELEFONIE.md)
 (pomiar licznikiem `?perf=1` na Twoim Redmi — przyślij zrzut ekranu z licznikiem).
+
+### 0.5. Krok 4 — Sowie Trójki (podgląd) i Galeria (G7) — wynik
+
+**Sowie Trójki** — według [`ANALIZA_5_Nowa_gra_Sowie_Trojki_match3.md`](ANALIZA_5_Nowa_gra_Sowie_Trojki_match3.md)
+(etapy M1–M6 jako podgląd); instrukcja dla gracza: [`SowieTrojki/docs/README.md`](../SowieTrojki/docs/README.md),
+opis kodu: `SowieTrojki/docs/Documentation.md`.
+
+- **Gra:** zamiana sąsiednich kafelków (przesunięcie palcem albo dwa stuknięcia, także klawiatura), 6 rodzajów
+  kafelków na tłach różnych kształtów i kolorów (Liść Monstery, złoty liść, humbak, kózka, truskawka i mrugający
+  Sowi storczyk), moce Pióro / Pisklę / Bąbel / Tęczowy liść i 7 połączeń dwóch mocy, przeszkody Pracu i Amic
+  (karteczki, skrzynie, kanister, telefon, taśma), jajka do gniazd, dziury w planszy, samo mieszanie bez ruchów.
+- **45 poziomów** w 3 rozdziałach (Sowia Łąka, Ogródek Sówki, Staw Humbaka), „piła” trudności; liczba ruchów
+  i progi gwiazdek ustawione symulatorem (gracz „rozsądny, nie idealny”); karty „Nowość” przed nowymi rzeczami
+  i ręka z podpowiedzią na pierwszych poziomach.
+- **Sówka** na gałęzi pod planszą (poziomo — z lewej): 5 stopni radości (podskok → skrzydła → podwójny skok → salto
+  z gwiazdkami w oczach → lot nad planszą), dymki (najwyżej raz na 2 s), „hu-hu”, przytulanie pisklęcia, smutek
+  tylko na chwilę, sen po 40 s; **Radość Sówki** → **Sowia pomoc** (3 Pióra bez zabierania ruchu).
+- **Koniec poziomu:** Humbaczy Finał (pozostałe ruchy → Pióra) i 1–3 gwiazdki; przy ¾ celu prezent +3 ruchy;
+  bez żyć — „Spróbuj jeszcze raz” od razu; **Tryb Przytulny** (pauza → Ustawienia) — nie da się przegrać.
+- **Ekran:** telefon w pionie (pole planszy ≥ 34 px nawet na 320 × 568), poziomo (Sówka z lewej, cele z prawej),
+  pauza i ustawienia wspólne z innymi grami, licznik `?perf=1`. Pomiar płynności (profil Twojego Redmi, procesor
+  ×4): ruch za ruchem 54 kl./s, w spoczynku plansza się nie przerysowuje (wątek 56% zamiast 86%).
+- **Bezpieczeństwo:** gry nie ma w rejestrze ani w `GAME_IDS`, więc niczego nie zapisuje w bazie; dodatkowo bramka
+  zapisu w SowieCloud odrzuca dokumenty gier spoza listy (Analiza 5, rozdz. 13.1a). Test e2e sprawdza na emulatorze,
+  że po wygranej w bazie nie ma dokumentu `trojki`.
+
+**Galeria (G7):** zdjęcia nr 41–55 z Pexels (autorzy w `Obrazki/README.md`): 3 sowy gatunków, których w Galerii nie
+było (puszczak mszarny, syczek, śnieżna z bliska), 4 kozy, 4 humbaki, 4 rośliny ozdobne (Monstery i storczyki).
+Wymagania: 12. poziom Akademii, 12 osiągnięć, rozdziały Sowich Ogrodów (11, 18, 20, wszystkie 22), 40 i 80 złapanych
+kózek, 2500 m w Sowie w Chmurach, 15 kózek i 8 hybryd w Łącz i Hoduj, 15 / 30 / 50 rejsów z humbakiem, 3 ukończone
+kampanie Sowich Torów (opis każdego w `docs/Documentation.md`). W zakładce „Galeria” drugi rząd filtrów: **Sowy, Kozy,
+Humbaki, Rośliny**. Zdjęcia za Sowie Trójki dojdą z kartą gry w menu (M5).
+
+Testy u mnie: ESLint, Prettier, HTML, 369 testów jednostkowych (w tym nowe: plansza, poziomy i symulator, Sówka
+i zapis), testy przeglądarkowe Sowich Trójek (8 scenariuszy × 5 profili telefonów), Galerii i menu na emulatorze —
+zielone; pełny `npm test` przed PR.
 
 ## 1. Co jest zrobione — plan E0–E10 (stan z 2026-10-06)
 
@@ -228,7 +274,8 @@ W repozytorium nie ma innych plików tymczasowych. Na GitHubie została stara ga
 | 9 | **Wydajność (G6, 2026-11-22)** — Analiza 6: plan W0–W8, pytania w rozdz. 9 (m.in. model telefonu, w której grze zawiesza się przesuwanie roślin, zgoda na automatyczne obniżanie ostrości) | ✅ odpowiedzi 2026-11-22 (Redmi Note 10 Pro, MIUI Global 14.0.7, Chrome; automat + przełącznik „Płynność”; pomiar `?perf=1` — zgoda); wdrożenie w kroku 3 (punkt 0.3); punkt 7 wyżej zastąpiony przez tę analizę |
 | 10 | **Nowa gra „match 3” (N1, 2026-11-22)** — Analiza 5 „Sowie Trójki”: pytania w rozdz. 18 (nazwa, miejsce Sówki, kafelki, liczba poziomów, reguły Firestore) | ✅ decyzje 2026-11-22 (wszystko według rekomendacji); budowa podglądu w kroku 4; **reguły Firestore do skopiowania: Analiza 5, Załącznik B** |
 | 11 | **Sowia Dziupla zamiast menu głównego (D1, 2026-11-22)** — `ANALIZA_7_Sowia_Dziupla.md`, 8 pytań w rozdz. 16 | ✅ analiza; budowa — osobne zadanie po Sowich Trójkach |
-| 12 | **Galeria: zdjęcia sów, kóz, wielorybów i roślin ozdobnych (G7, 2026-11-22)** | razem z nową grą (krok 4) |
+| 12 | **Galeria: zdjęcia sów, kóz, wielorybów i roślin ozdobnych (G7, 2026-11-22)** | ✅ 2026-11-23 — zdjęcia 41–55 i filtr rodzaju (punkt 0.5); wymagania do przejrzenia przy teście G3 |
+| 13 | **Sowie Trójki — akceptacja podglądu (2026-11-23)** — testy T1–T6; po akceptacji i publikacji reguł: karta w menu, zapis postępu, „Jak grać?”, Akademia, Rekordy, zdjęcia za Sowie Trójki (etap M5) | czeka na Twoje testy i „akceptuję podgląd” / „reguły opublikowane” |
 
 ### 3.1. Zadanie 9.5 — stare adresy gier i sprzątanie starej pamięci (decyzja z 2026-11-02)
 
@@ -373,8 +420,10 @@ przybyło (P3–P7) i przebieg zbliżył się do limitu 60 minut, limit czasu CI
 ## 5. Co dalej
 
 0. Zadanie z 2026-11-22 (punkt 0.3): dokumentacja ✅ → analiza Sowiej Dziupli ✅ → poprawki wydajności W0–W8 ✅ →
-   nowa gra „Sowie Trójki” jako podgląd ⏳ → jeden PR na `main`. Twoja czynność: opublikować nowe reguły Firestore
-   (Analiza 5, Załącznik B) i napisać „reguły opublikowane”.
+   nowa gra „Sowie Trójki” jako podgląd i nowe zdjęcia Galerii ✅ → jeden PR na `main` ⏳. Twoje czynności: testy
+   T1–T6 i G3, opublikować nowe reguły Firestore (Analiza 5, Załącznik B) i napisać „reguły opublikowane”,
+   a po testach — „akceptuję podgląd” (albo uwagi). Potem: etap M5 (karta w menu, zapis), a jako osobne zadanie —
+   Sowia Dziupla (Analiza 7, po Twoich odpowiedziach w rozdz. 16).
 1. Twoje testy na telefonie (`TESTY_NA_TELEFONIE.md`) i uwagi (w nowym oknie) → wpis w `UWAGI_WLASCICIELA.md` →
    poprawki małymi commitami, każdy z zielonym `npm test`, z aktualizacją dokumentacji gry i tego pliku.
 2. Ewentualnie inne wymagania zdjęć Galerii (punkt 3, wiersz 2) i ceny w Butiku albo w Kramie ogrodnika.

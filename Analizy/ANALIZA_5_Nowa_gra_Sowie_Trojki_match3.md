@@ -9,6 +9,15 @@
 > Druga analiza z tego dnia: [`ANALIZA_6_Wydajnosc_lagi.md`](ANALIZA_6_Wydajnosc_lagi.md) (wydajność) — nowa gra
 > korzysta z jej usprawnień od pierwszego dnia. Zasady pracy bez zmian:
 > [`ANALIZA_3_Plan_prac.md`, rozdz. 8.1](ANALIZA_3_Plan_prac.md).
+>
+> **Stan budowy (2026-11-23): podgląd zrobiony (M1–M4 i M6, z M5 — bramka zapisu, stan zapisu, instrukcja, testy).**
+> Gra działa pod adresem `SowieTrojki/` bez karty w menu i bez zapisu w bazie; opis: `SowieTrojki/docs/README.md`
+> (dla gracza) i `SowieTrojki/docs/Documentation.md` (kod); wynik i testy na telefonie: `STAN_PRAC.md`, punkt 0.5,
+> i `TESTY_NA_TELEFONIE.md` (T1–T6). Zmiany względem projektu: poziom 10 ma dwie karty „Nowość” (jajka i Tęczowy
+> liść — rozdz. 10); liczba ruchów i progi gwiazdek z symulatora (rozdz. 15.2); nowe zdjęcia Galerii (decyzja 8)
+> zrobione od razu w kroku 4 (G7) — za cele w innych grach; zdjęcia za Sowie Trójki dojdą w M5. Zostało z M5 (po
+> akceptacji podglądu i publikacji reguł): rejestr i karta w menu, zapis i łączenie z drugim telefonem, „Jak grać?”
+> w `guides-data.js`, Akademia, Rekordy, demo, testy „5 → 6 gier” (rozdz. 15.8).
 
 Makieta i kafelki w tej analizie to **rysunek poglądowy** zrobiony z istniejących grafik Sowiego Świata (liście,
 humbak, kózka, Sówka) i kilku prostych nowych ikon — prawdziwa gra będzie wyglądać podobnie, ale dopracowana.
@@ -908,7 +917,7 @@ liści przy CPU ×1/×4/×6; w CI — liczniki pracy (ile kafelków z obrazków,
   (różne kształty i kolory tła dla wszystkich par rodzajów; kontrast obrazka z tłem).
 - Ograniczenie ruchu, wyłączone komentarze, gra klawiaturą (strzałki, Spacja), fokus widoczny.
 
-### 15.7. Testy na telefonie dla Ciebie (dopiszę do `TESTY_NA_TELEFONIE.md`)
+### 15.7. Testy na telefonie dla Ciebie (dopisane do `TESTY_NA_TELEFONIE.md` 2026-11-23 — w podglądzie T5 sprawdza, że nic się nie zapisuje)
 
 | Test | Co sprawdzasz |
 | --- | --- |
