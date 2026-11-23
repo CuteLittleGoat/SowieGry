@@ -17,6 +17,7 @@ telefonie — i jeśli się da, zrób zrzut ekranu.
 
 | Test  | Co sprawdza                                                                                             | Od kiedy   |
 | ----- | ------------------------------------------------------------------------------------------------------- | ---------- |
+| M1    | Przeniesienie do nowej bazy (projekt sowiegry-1e1f9): postęp jest, nowe wyniki zapisują się w nowej bazie | 2026-11-23 |
 | T1–T6 | Sowie Trójki (podgląd): pierwszy poziom, combo i Sówka, moce, wygrana i przegrana, zapis, ekran         | 2026-11-23 |
 | G3    | Galeria: 15 nowych zdjęć (nr 41–55) — sowy, kozy, humbaki, rośliny ozdobne — i filtr rodzaju           | 2026-11-23 |
 | P1    | Płynność: pomiar licznikiem `?perf=1` na Twoim telefonie (Sowie Ogrody, Łącz i Hoduj, Sowie Tory)       | 2026-11-22 |
@@ -37,6 +38,27 @@ telefonie — i jeśli się da, zrób zrzut ekranu.
 | B1–B4 | Sowi Butik: zakupy i kolory sowy nie cofają się, przeprosinowe piórka                                   | 2026-11-01 |
 
 ---
+
+## M1 — przeniesienie do nowej bazy (projekt sowiegry-1e1f9)
+
+Poprawka: SowieGry mają od 23 listopada 2026 własny projekt Firebase. Cały postęp został skopiowany 1:1 (49 dokumentów:
+profil, wszystkie gry, rekordy, historia), stara baza jest nietknięta. Szczegóły: `Analizy/PRZENIESIENIE_FIRESTORE.md`.
+
+1. Na każdym urządzeniu (telefon, komputer) **odśwież SowieGry dwa razy** (albo dwa razy zamknij i otwórz aplikację).
+   Jeśli pojawi się ekran „Hasło sowy”, wpisz `huhu`.
+2. **Powinno być:** w menu stan zapisu „Zapisano” / „…w chmurze” (bez paska „Tryb offline”), na kartach gier te same
+   rekordy co wcześniej, w zakładce **Sowa** ten sam poziom Akademii, piórka, gatunek i strój sowy, w **Galerii** te
+   same odblokowane zdjęcia.
+3. Otwórz **Sowie Ogrody** i **Łącz i Hoduj**. **Powinno być:** ogród i szklarnia dokładnie jak przed przeniesieniem.
+4. Zagraj jeden bieg w **Sowiej Ucieczce** (albo lot w **Sowie w Chmurach**). **Powinno być:** wynik na ekranie
+   wyników i w oknie **Rekordy** (zakładka Sowa) — także po zamknięciu i ponownym otwarciu aplikacji.
+5. W **Sowich Ogrodach** zbierz trochę liści, zamknij aplikację i otwórz ją ponownie (najlepiej na drugim urządzeniu).
+   **Powinno być:** liście są — postęp zapisał się w nowej bazie.
+6. Właściciel (opcjonalnie): konsola Firebase → projekt **sowiegry-1e1f9** → Firestore → **Dane**: kolekcja `sowiegry`
+   (dokumenty `meta` i `profil`, w `profil` podkolekcja `sowiegry_gry` z grami); po teście z kroku 4 w historii gry
+   przybywa wpis. W starym projekcie dane SowieGry są dalej (bez nowych wyników).
+
+Gdyby czegoś brakowało — nic nie ginie: stara baza jest nietknięta, a powrót to jedna zmiana konfiguracji.
 
 ## T — Sowie Trójki (podgląd nowej gry)
 

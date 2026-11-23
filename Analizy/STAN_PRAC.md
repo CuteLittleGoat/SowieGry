@@ -41,6 +41,14 @@ jednym PR na `main`. **Dla Ciebie:** testy T1–T6 i G3 w [`TESTY_NA_TELEFONIE.m
 Ci się spodoba — „akceptuję podgląd” i (jeśli jeszcze nie) „reguły opublikowane”; wtedy dodam kartę gry w menu i zapis
 postępu (etap M5).
 
+**2026-11-23 (później):** testy T1–T6 i G3 zrobione — wszystko działa, reguły z grą `trojki` opublikowane, podgląd
+Sowich Trójek zaakceptowany. **Przeniesienie do nowego projektu Firebase `sowiegry-1e1f9`** (Twoja prośba, darmowy
+plan): skrypt kopii `scripts/kopia-firestore.mjs` (kopia zapasowa i przeniesienie przez REST API — w starej bazie tylko
+odczyt, w nowej tylko tworzenie brakujących dokumentów), reguły nowego projektu (tylko SowieGry), kopia 49 / 49
+dokumentów zgodna 1:1, aplikacja przełączona na nowy projekt (`main`). **Stara baza nietknięta** do Twojej decyzji.
+Plan i kroki: [`PRZENIESIENIE_FIRESTORE.md`](PRZENIESIENIE_FIRESTORE.md). **Dla Ciebie:** test M1
+w [`TESTY_NA_TELEFONIE.md`](TESTY_NA_TELEFONIE.md). Następnie: Sowie Trójki w menu i z zapisem (etap M5 — w toku).
+
 ## 0. Poprawki po testach z 2026-11-01 (etapy P1–P8)
 
 Diagnoza i plan: [`ANALIZA_4_Uwagi_z_testow_poprawki_i_rozbudowa.md`](ANALIZA_4_Uwagi_z_testow_poprawki_i_rozbudowa.md);
