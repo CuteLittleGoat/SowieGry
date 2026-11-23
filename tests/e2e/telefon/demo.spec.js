@@ -77,6 +77,8 @@ const GAMES = [
   ["Sowa w Chmurach", "/SowaWChmurach/", "SowaWChmurach"],
   ["Sowie Ogrody", "/SowieOgrody/", "SowieOgrody"],
   ["Łącz i Hoduj", "/LaczIHoduj/", "LaczIHoduj"],
+  // Od M5 karta Sowich Trójek jest też w menu demo.
+  ["Sowie Trójki", "/SowieTrojki/", "SowieTrojki"],
 ];
 
 for (const [name, path, api] of GAMES) {

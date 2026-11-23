@@ -6,7 +6,7 @@ trójki — im większe combo, tym większa radość.
 
 ## Jak zacząć
 
-- W menu SowieGry, w zakładce **Gry**, znajdź kartę **Sowie Trójki** (stacja „Las”, ikonka 🍓) i stuknij **Graj**.
+- W menu SowieGry, w zakładce **Gry**, znajdź kartę **Sowie Trójki** (szósty przystanek „6. Las”, znaczek „Nowe!”) i stuknij **Graj**.
   Na karcie widać Twój postęp, np. „Poziom 12 · ⭐ 30”, a **Jak grać?** pokazuje krótką instrukcję (ta sama jest
   w zakładce z instrukcjami wszystkich gier i pod znakiem **?** w grze).
 - Gra działa po zalogowaniu hasłem sowy, jak pozostałe gry.

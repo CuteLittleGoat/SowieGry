@@ -28,12 +28,15 @@ test("rekord na karcie: najlepszy wynik ze wszystkich poziomów, gry idle — po
     sowa3: { chaos: { bestScore: 15300 } },
     ogrody: { lifetimeLeaves: 123456 },
     szklarnia: { rooms: 4 },
+    trojki: { level: 12, stars: 30, three: 4 },
   };
   assert.equal(recordText("runner", records), "Rekord: 1250 m");
   assert.equal(recordText("jumper", records), "Rekord: 88 m");
   assert.equal(recordText("sowa3", records), "Rekord: 15 300 pkt");
   assert.equal(recordText("ogrody", records), "Liście: 123 456");
   assert.equal(recordText("szklarnia", records), "Pomieszczenia: 4");
+  // Sowie Trójki (od M5): najwyższy wygrany poziom i suma gwiazdek z podsumowania gry.
+  assert.equal(recordText("trojki", records), "Poziom 12 · ⭐ 30");
   for (const id of registryIds) assert.equal(recordText(id, {}), null, id);
 });
 

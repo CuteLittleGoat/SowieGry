@@ -103,7 +103,8 @@ test("pierwsze połączenie tworzy sowiegry/meta i sowiegry/profil", async ({ pa
 
   const meta = await readDoc(project, "sowiegry/meta");
   expect(meta.schemaVersion).toBe(1);
-  expect(meta.games).toEqual(["runner", "jumper", "sowa3", "ogrody", "szklarnia"]);
+  // Od M5 także Sowie Trójki (GAME_IDS). Istniejący dokument meta nie jest nadpisywany — to tylko nowy projekt.
+  expect(meta.games).toEqual(["runner", "jumper", "sowa3", "ogrody", "szklarnia", "trojki"]);
   expect(typeof meta.createdAt).toBe("number");
   const profile = await readDoc(project, "sowiegry/profil");
   expect(profile.schemaVersion).toBe(1);

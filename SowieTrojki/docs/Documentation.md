@@ -778,15 +778,24 @@ automat płynności obniża ostrość, a w spoczynku plansza nie jest przerysowy
   ruch przesunięciem palca (Sówka się cieszy), zła zamiana bez utraty ruchu, dwa stuknięcia i pięć w rzędzie →
   Tęczowy liść i salto, Sowia pomoc bez kosztu ruchu, wygrana z finałem i „Dalej” oraz **zapis w chmurze** (dokument
   `trojki`: gwiazdki poziomu 1, `unlocked` 2, `saveVersion` 1; `profil.records.trojki` z poziomem i gwiazdkami)
-  i **po ponownym otwarciu** (43 poziomy z kłódką, poziom 1 `is-done`), prezent i „Spróbuj jeszcze raz”, Tryb
-  Przytulny z pauzy, układ ekranu (pole ≥ 34 px, Sówka i pomoc w oknie, poziomo: Sówka z lewej, cele z prawej),
-  licznik `?perf=1`.
+  i **po ponownym otwarciu** (43 poziomy z kłódką, poziom 1 `is-done`), **Akademia i Galeria na stronie gry**
+  (profil w emulatorze z wizytami w pięciu pozostałych grach → komunikaty „Osiągnięcie: Pierwsze kroki” i „Nowa
+  fotografia w Galerii Sów!”; po wygranej warstwa komunikatów `position: fixed` nad tłem okna wyniku; w bazie metryki
+  `trojkiVisits` 1, `trojkiWins` 1, `trojkiLevels` 1, `trojkiStars`, osiągnięcie `pierwsze-kroki` i zdjęcie
+  `owl-26`), prezent i „Spróbuj jeszcze raz”, Tryb Przytulny z pauzy, układ ekranu (pole ≥ 34 px, Sówka i pomoc
+  w oknie, poziomo: Sówka z lewej, cele z prawej), licznik `?perf=1`.
 - Testy wspólne (M5): `tests/unit/sowie-cloud.test.mjs` (`trojki` w `GAME_IDS`, zapis stanu i podsumowania
   w `records.trojki`, `setMergeHandler` — nowszy zapis z drugiego urządzenia trafia do gry zamiast okna konfliktu,
   następny zapis ma wyższy `rev`), `tests/unit/academy.test.mjs` (zdarzenie `IDLE` Trójek → metryki, zadania
   i osiągnięcia, „Pierwsze kroki” po wizytach w sześciu grach), `tests/unit/owl-gallery.test.mjs` (58 zdjęć, cele
-  z metryk Trójek), `tests/rules/firestore-rules.test.mjs` (dokument `trojki` dozwolony), testy menu (sześć kart,
-  instrukcja, „Rekordy”, samouczki) i Galerii (`tests/e2e/owl-gallery.spec.js` — komplet 58 zdjęć).
+  z metryk Trójek), `tests/unit/menu.test.mjs` (rekord na karcie „Poziom 12 · ⭐ 30”),
+  `tests/unit/architecture.test.mjs` (strona w rejestrze z `<body data-sowie-game="trojki">`),
+  `tests/rules/firestore-rules.test.mjs` (dokument `trojki` dozwolony), testy e2e menu (sześć kart, instrukcja,
+  „Rekordy”, „Powtórz samouczki” — `tutorialDone: false` także w dokumencie `trojki`), Galerii
+  (`tests/e2e/owl-gallery.spec.js` — komplet 58 zdjęć), `tests/e2e/smoke.spec.js` (mapa i karta startu poziomu 1),
+  `tests/e2e/telefon/start.spec.js` (strona otwiera się bez błędów), `tests/e2e/telefon/demo.spec.js` (w wersji demo:
+  bez hasła, tylko pamięć, bez Akademii, pusty localStorage) i `tests/e2e/telefon/chmura.spec.js` (nowy dokument
+  `sowiegry/meta` z sześcioma grami).
 
 ## Dodatek A — kod grafik
 

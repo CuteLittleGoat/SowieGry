@@ -48,6 +48,13 @@ odczyt, w nowej tylko tworzenie brakujących dokumentów), reguły nowego projek
 dokumentów zgodna 1:1, aplikacja przełączona na nowy projekt (`main`). **Stara baza nietknięta** do Twojej decyzji.
 Plan i kroki: [`PRZENIESIENIE_FIRESTORE.md`](PRZENIESIENIE_FIRESTORE.md). **Dla Ciebie:** test M1
 w [`TESTY_NA_TELEFONIE.md`](TESTY_NA_TELEFONIE.md). Następnie: Sowie Trójki w menu i z zapisem (etap M5 — w toku).
+Test M1 zaliczony tego samego dnia (nowe urządzenie z hasłem, stary postęp widoczny, bieg i zmiana stroju zapisane
+w nowej bazie; stara baza bez zmian).
+
+**2026-11-23 (M5):** **Sowie Trójki są w menu i zapisują postęp** (punkt 0.6) — szósta karta „Las”, zapis w bazie
+(otwarte poziomy, gwiazdki; zapisy z dwóch telefonów łączą się — nic się nie cofa), „Jak grać?” w menu, zadania
+dnia i osiągnięcia Sowiej Akademii, „Rekordy”, zdjęcia Galerii 56–58. Jest na `main` i na stronie (odśwież ją dwa
+razy). **Dla Ciebie:** testy T7–T9 w [`TESTY_NA_TELEFONIE.md`](TESTY_NA_TELEFONIE.md).
 
 ## 0. Poprawki po testach z 2026-11-01 (etapy P1–P8)
 
@@ -143,7 +150,8 @@ Prośba i zgłoszenie dosłownie: [`UWAGI_WLASCICIELA.md`](UWAGI_WLASCICIELA.md)
 | 2 | analiza Sowiej Dziupli (`ANALIZA_7_Sowia_Dziupla.md`) z makietą (`ANALIZA_7_dziupla_makieta.png`): tablica korkowa z grami, Szafa, Dekorator, półka z co najmniej 3 roślinkami z gier, wygląd dziupli do wyboru; 8 pytań w rozdz. 16 | ✅ 2026-11-22 |
 | 3 | poprawki wydajności W0–W8 (Analiza 6): automat płynności i limit 60 kl./s we wszystkich grach, Ogrody i Łącz i Hoduj warstwami z obrazkami roślin, Zatoka bez ogrodu pod wodą, rekwizyty Torów z obrazków, HUD 10×/s, ustawienie „Płynność” (menu i pauza, zapamiętane na urządzeniu), propozycja oszczędzania baterii, licznik `?perf=1`, skrypt `scripts/perf-bench.cjs`, testy `plynnosc` (jednostkowe i e2e), dokumentacja; pomiar niżej (0.4) | ✅ 2026-11-22 (8dbc30f, 79eb786, dokumentacja) |
 | 4 | nowa gra Sowie Trójki jako podgląd (Analiza 5, M1–M6), nowe zdjęcia Galerii | ✅ 2026-11-23 (punkt 0.5) |
-| — | jeden PR na `main` z całością (pełny `npm test` u mnie, testy w GitHubie zielone) | ⏳ |
+| — | jeden PR na `main` z całością (pełny `npm test` u mnie, testy w GitHubie zielone) | ✅ 2026-11-23 ([CuteLittleGoat/SowieGry#14](https://github.com/CuteLittleGoat/SowieGry/pull/14), 0c7292f) |
+| M5 | Sowie Trójki w menu i z zapisem, po akceptacji podglądu i publikacji reguł (punkt 0.6) | ✅ 2026-11-23 |
 
 **Bezpieczeństwo produkcji** (Twoja prośba z 2026-11-22): testy tylko na emulatorze i w pamięci; zapis postępu
 i jego format bez zmian w krokach 1–3; nowa gra niczego nie zapisuje do bazy, dopóki nie potwierdzisz publikacji
@@ -203,11 +211,40 @@ było (puszczak mszarny, syczek, śnieżna z bliska), 4 kozy, 4 humbaki, 4 rośl
 Wymagania: 12. poziom Akademii, 12 osiągnięć, rozdziały Sowich Ogrodów (11, 18, 20, wszystkie 22), 40 i 80 złapanych
 kózek, 2500 m w Sowie w Chmurach, 15 kózek i 8 hybryd w Łącz i Hoduj, 15 / 30 / 50 rejsów z humbakiem, 3 ukończone
 kampanie Sowich Torów (opis każdego w `docs/Documentation.md`). W zakładce „Galeria” drugi rząd filtrów: **Sowy, Kozy,
-Humbaki, Rośliny**. Zdjęcia za Sowie Trójki dojdą z kartą gry w menu (M5).
+Humbaki, Rośliny**. Zdjęcia za Sowie Trójki dojdą z kartą gry w menu (M5) — ✅ nr 56–58 (punkt 0.6).
 
 Testy u mnie: ESLint, Prettier, HTML, 369 testów jednostkowych (w tym nowe: plansza, poziomy i symulator, Sówka
 i zapis), testy przeglądarkowe Sowich Trójek (8 scenariuszy × 5 profili telefonów), Galerii i menu na emulatorze —
 zielone; pełny `npm test` przed PR.
+
+### 0.6. Etap M5 — Sowie Trójki w menu i z zapisem — wynik (2026-11-23)
+
+Po Twojej wiadomości („wszystkie testy z pliku zrobione i wszystko działa. Rules opublikowałem. Wygląd
+zaakceptowany.”) i po przeniesieniu bazy do projektu `sowiegry-1e1f9` (reguły nowego projektu mają już grę `trojki`):
+
+- **Menu:** szósta karta **Sowie Trójki** („6. Las”, „Nowe!”) z ruchomym obrazkiem (Sówka i plansza 3 × 3, w której
+  znika i spada kolumna liści), rekord „Poziom N · ⭐ M”, „Jak grać?” (7 kart — także w zakładce „Jak grać”),
+  „Rekordy” w zakładce „Sowa” (najwyższy poziom, gwiazdki, poziomy na 3 gwiazdki, najlepsze combo, wyklute pisklęta),
+  „Powtórz samouczki” obejmuje też karty „Nowość” w Trójkach; wersja demo też ma kartę Trójek (bez zapisu).
+- **Zapis:** dokument gry `sowiegry/profil/sowiegry_gry/trojki` (po końcu poziomu i przy przejściu do innej
+  aplikacji; tylko gdy coś się zmieniło); na starcie otwarty poziom 1, każda wygrana otwiera następny. **Dwa
+  telefony:** gdy drugi telefon zapisze nowszy stan, gra łączy oba (więcej gwiazdek, dalszy poziom, większe liczniki)
+  zamiast pytać „Nowszy postęp?” — nic się nie cofa.
+- **Sowia Akademia:** zadania dnia „Wygraj 2 poziomy w Sowich Trójkach”, „Zrób combo ×4…”, „Sprowadź jajko do
+  gniazda…”; osiągnięcia **Trójkowa sówka** (3 gwiazdki na 15 poziomach) i **Sowie gniazdo** (10 piskląt) — razem 15;
+  „Pierwsze kroki” i zdjęcie 26 („Odwiedź każdą z sześciu gier”) liczą też Trójki — kto je już ma, zachowuje je
+  (zdobyte osiągnięcia i zdjęcia nigdy się nie cofają).
+- **Galeria:** 58 zdjęć — nowe nr 56 pisklę puszczyka (10 wyklutych piskląt), 57 fioletowy storczyk (60 gwiazdek),
+  58 kozioł z profilu (wszystkie 45 poziomów); autorzy w `Obrazki/README.md`.
+- **Znalezione i poprawione przy M5:** strona gry nie miała znacznika `data-sowie-game`, bez którego Sowia Akademia
+  na stronie w ogóle nie powstaje — wizyty i wyniki z Trójek nie liczyłyby się do zadań, osiągnięć ani Galerii.
+  Dodane, a test architektury pilnuje znacznika na stronach wszystkich gier; komunikaty Akademii i Galerii są
+  w grze widoczne (także nad oknem wygranej).
+- **Bezpieczeństwo produkcji:** wszystkie testy tylko na emulatorze i w pamięci (bezpiecznik w testach przerywa każde
+  połączenie z prawdziwą bazą); istniejący dokument `sowiegry/meta` nie jest nadpisywany; dzisiejsze zadania dnia
+  zostają (są zapisane w profilu), nowa pula zadań działa od następnego dnia.
+
+Testy u mnie: pełny `npm test` — wynik w punkcie 0.6a niżej.
 
 ## 1. Co jest zrobione — plan E0–E10 (stan z 2026-10-06)
 
@@ -283,7 +320,7 @@ W repozytorium nie ma innych plików tymczasowych. Na GitHubie została stara ga
 | 10 | **Nowa gra „match 3” (N1, 2026-11-22)** — Analiza 5 „Sowie Trójki”: pytania w rozdz. 18 (nazwa, miejsce Sówki, kafelki, liczba poziomów, reguły Firestore) | ✅ decyzje 2026-11-22 (wszystko według rekomendacji); budowa podglądu w kroku 4; **reguły Firestore do skopiowania: Analiza 5, Załącznik B** |
 | 11 | **Sowia Dziupla zamiast menu głównego (D1, 2026-11-22)** — `ANALIZA_7_Sowia_Dziupla.md`, 8 pytań w rozdz. 16 | ✅ analiza; budowa — osobne zadanie po Sowich Trójkach |
 | 12 | **Galeria: zdjęcia sów, kóz, wielorybów i roślin ozdobnych (G7, 2026-11-22)** | ✅ 2026-11-23 — zdjęcia 41–55 i filtr rodzaju (punkt 0.5); wymagania do przejrzenia przy teście G3 |
-| 13 | **Sowie Trójki — akceptacja podglądu (2026-11-23)** — testy T1–T6; po akceptacji i publikacji reguł: karta w menu, zapis postępu, „Jak grać?”, Akademia, Rekordy, zdjęcia za Sowie Trójki (etap M5) | czeka na Twoje testy i „akceptuję podgląd” / „reguły opublikowane” |
+| 13 | **Sowie Trójki — akceptacja podglądu (2026-11-23)** — testy T1–T6; po akceptacji i publikacji reguł: karta w menu, zapis postępu, „Jak grać?”, Akademia, Rekordy, zdjęcia za Sowie Trójki (etap M5) | ✅ testy T1–T6 zaliczone, reguły opublikowane, podgląd zaakceptowany (2026-11-23); M5 zrobiony (punkt 0.6) — testy T7–T9 |
 
 ### 3.1. Zadanie 9.5 — stare adresy gier i sprzątanie starej pamięci (decyzja z 2026-11-02)
 
@@ -428,10 +465,10 @@ przybyło (P3–P7) i przebieg zbliżył się do limitu 60 minut, limit czasu CI
 ## 5. Co dalej
 
 0. Zadanie z 2026-11-22 (punkt 0.3): dokumentacja ✅ → analiza Sowiej Dziupli ✅ → poprawki wydajności W0–W8 ✅ →
-   nowa gra „Sowie Trójki” jako podgląd i nowe zdjęcia Galerii ✅ → jeden PR na `main` ⏳. Twoje czynności: testy
-   T1–T6 i G3, opublikować nowe reguły Firestore (Analiza 5, Załącznik B) i napisać „reguły opublikowane”,
-   a po testach — „akceptuję podgląd” (albo uwagi). Potem: etap M5 (karta w menu, zapis), a jako osobne zadanie —
-   Sowia Dziupla (Analiza 7, po Twoich odpowiedziach w rozdz. 16).
+   nowa gra „Sowie Trójki” jako podgląd i nowe zdjęcia Galerii ✅ → jeden PR na `main` ✅ → przeniesienie bazy ✅ →
+   etap M5 (Trójki w menu i z zapisem) ✅. Twoje czynności: testy T7–T9; decyzja, czy i kiedy usunąć stare dane
+   SowieGry ze starego projektu (`PRZENIESIENIE_FIRESTORE.md`, krok 7 — do tego czasu nic nie kasujemy). Następne
+   zadanie: Sowia Dziupla (Analiza 7, po Twoich odpowiedziach w rozdz. 16).
 1. Twoje testy na telefonie (`TESTY_NA_TELEFONIE.md`) i uwagi (w nowym oknie) → wpis w `UWAGI_WLASCICIELA.md` →
    poprawki małymi commitami, każdy z zielonym `npm test`, z aktualizacją dokumentacji gry i tego pliku.
 2. Ewentualnie inne wymagania zdjęć Galerii (punkt 3, wiersz 2) i ceny w Butiku albo w Kramie ogrodnika.

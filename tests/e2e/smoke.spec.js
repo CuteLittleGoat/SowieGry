@@ -56,6 +56,17 @@ const games = [
     ready: "window.LaczIHoduj?.ready?.() === true",
     core: false,
   },
+  {
+    // Sowie Trójki (Analiza 5, od M5 w menu): stuknięcie poziomu 1 na mapie otwiera kartę startu.
+    id: "trojki",
+    name: "Sowie Trójki",
+    path: "/SowieTrojki/",
+    marker: "[data-map] .trojki-level",
+    action: '[data-level="1"]',
+    started: "window.SowieTrojki.screen() === 'map' && Boolean(document.querySelector('.trojki-start-modal'))",
+    ready: "window.SowieTrojki?.ready?.() === true",
+    core: false,
+  },
 ];
 
 function watchRuntimeErrors(page) {

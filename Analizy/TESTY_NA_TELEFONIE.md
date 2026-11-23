@@ -17,8 +17,9 @@ telefonie — i jeśli się da, zrób zrzut ekranu.
 
 | Test  | Co sprawdza                                                                                             | Od kiedy   |
 | ----- | ------------------------------------------------------------------------------------------------------- | ---------- |
+| T7–T9 | Sowie Trójki w menu (M5): karta „Las”, zapis postępu (także na drugim telefonie), Akademia, Galeria     | 2026-11-23 |
 | M1    | Przeniesienie do nowej bazy (projekt sowiegry-1e1f9): postęp jest, nowe wyniki zapisują się w nowej bazie | 2026-11-23 |
-| T1–T6 | Sowie Trójki (podgląd): pierwszy poziom, combo i Sówka, moce, wygrana i przegrana, zapis, ekran         | 2026-11-23 |
+| T1–T6 | Sowie Trójki (podgląd): pierwszy poziom, combo i Sówka, moce, wygrana i przegrana, zapis, ekran — ✅     | 2026-11-23 |
 | G3    | Galeria: 15 nowych zdjęć (nr 41–55) — sowy, kozy, humbaki, rośliny ozdobne — i filtr rodzaju           | 2026-11-23 |
 | P1    | Płynność: pomiar licznikiem `?perf=1` na Twoim telefonie (Sowie Ogrody, Łącz i Hoduj, Sowie Tory)       | 2026-11-22 |
 | P2    | Płynność: ustawienie „Płynność” w menu i w menu pauzy, zapamiętane na tym telefonie                     | 2026-11-22 |
@@ -38,6 +39,51 @@ telefonie — i jeśli się da, zrób zrzut ekranu.
 | B1–B4 | Sowi Butik: zakupy i kolory sowy nie cofają się, przeprosinowe piórka                                   | 2026-11-01 |
 
 ---
+
+## T7–T9 — Sowie Trójki w menu, zapis postępu, Akademia i Galeria (etap M5)
+
+Poprawka: Sowie Trójki są od 23 listopada 2026 **szóstą grą w menu** i **zapisują postęp w bazie** (otwarte poziomy,
+gwiazdki, obejrzane karty „Nowość”). Postęp z podglądu nie był zapisywany, więc zaczynasz od poziomu 1. Instrukcja
+dla gracza: `SowieTrojki/docs/README.md`.
+
+### T7 — karta w menu i instrukcja
+
+1. Odśwież SowieGry **dwa razy**. Zakładka **Gry**. **Powinno być:** sześć kart, ostatnia **Sowie Trójki** („6. Las”,
+   znaczek „Nowe!”); na obrazku Sówka obok planszy 3 × 3, w której środkowa kolumna liści co chwilę znika i spada
+   z góry, a Sówka podskakuje; pod opisem „Jeszcze bez rekordu — zagraj pierwszy raz!”.
+2. Stuknij **Jak grać?** na karcie. **Powinno być:** okno „Jak grać — Sowie Trójki” z 7 kartami (Cel gry, Ruch, Moce,
+   Pracu Pracu i Amic, Jajka i gniazda, Sówka i Sowia pomoc, Gwiazdki i Humbaczy Finał). W zakładce **Jak grać** ta sama
+   instrukcja jest na końcu listy.
+3. **Graj**. **Powinno być:** mapa poziomów **bez** napisu „Podgląd gry…”; otwarty tylko poziom 1 (pulsuje), pozostałe
+   mają kłódkę. „Menu” w lewym górnym rogu wraca do menu SowieGry.
+
+### T8 — zapis postępu (zamiast T5)
+
+1. Wygraj poziom 1 (i jeśli chcesz — 2). **Powinno być:** okno „Brawo!” albo „Trzy gwiazdki!”; po „Mapa” następny
+   poziom jest otwarty, a pod numerem wygranego — gwiazdki.
+2. Wróć do menu. **Powinno być:** na karcie Trójek np. „Poziom 2 · ⭐ 5”.
+3. Zamknij aplikację i otwórz ją ponownie → **Sowie Trójki**. **Powinno być:** te same gwiazdki i otwarte poziomy.
+4. Na drugim urządzeniu (inny telefon albo komputer; hasło `huhu`) otwórz Trójki. **Powinno być:** ten sam postęp.
+   Wygraj tam kolejny poziom, potem na pierwszym telefonie odśwież stronę. **Powinno być:** ten poziom też jest
+   wygrany — nic się nie cofa (gra łączy zapisy z obu urządzeń: zostaje więcej gwiazdek i dalszy poziom).
+5. Zakładka **Sowa** → **Rekordy** przy Sowich Trójkach. **Powinno być:** „Najwyższy poziom”, „Gwiazdki”, „Poziomy
+   na 3 gwiazdki”, „Najlepsze combo”, „Wyklute pisklęta”.
+6. **Powinno być:** pozostałe gry, Galeria, Akademia i piórka bez zmian.
+
+### T9 — Sowia Akademia i Galeria
+
+1. Zakładka **Sowa** → **Osiągnięcia**. **Powinno być:** licznik „… / 15”; nowe osiągnięcia **Trójkowa sówka**
+   (3 gwiazdki na 15 poziomach Sowich Trójek) i **Sowie gniazdo** (10 wyklutych piskląt); „Pierwsze kroki” ma opis
+   „Zagraj w każdą z sześciu gier.” (kto je już zdobył, ma je dalej).
+2. Gdy wśród **zadań dnia** jest zadanie z Trójek („Wygraj 2 poziomy w Sowich Trójkach”, „Zrób combo ×4 w Sowich
+   Trójkach” albo „Sprowadź jajko do gniazda w Sowich Trójkach”) — zrób je. **Powinno być:** u góry ekranu gry
+   komunikat z nagrodą (widać go także nad oknem wygranej), a w zakładce **Sowa** zadanie odhaczone.
+3. Zakładka **Galeria**. **Powinno być:** licznik „… / 58”; nowe zdjęcia z opisem celu: **Pisklę puszczyka** (Sowy —
+   „Wykluj 10 piskląt w Sowich Trójkach”), **Fioletowy storczyk** (Rośliny — „Zbierz 60 gwiazdek w Sowich Trójkach”)
+   i **Kozioł z profilu** (Kozy — „Ukończ wszystkie 45 poziomów Sowich Trójek”). Wszystkie wcześniej odblokowane
+   zdjęcia dalej są odblokowane.
+4. (Opcjonalnie — samouczki wrócą we **wszystkich** grach.) **Sowa** → „Powtórz samouczki we wszystkich grach” →
+   **Powtórz**. **Powinno być:** w Trójkach przed poziomem 1 znowu karta „Nowość”.
 
 ## M1 — przeniesienie do nowej bazy (projekt sowiegry-1e1f9)
 
@@ -61,6 +107,9 @@ profil, wszystkie gry, rekordy, historia), stara baza jest nietknięta. Szczegó
 Gdyby czegoś brakowało — nic nie ginie: stara baza jest nietknięta, a powrót to jedna zmiana konfiguracji.
 
 ## T — Sowie Trójki (podgląd nowej gry)
+
+**Testy T1–T6 zrobione 2026-11-23 — wszystko działa, podgląd zaakceptowany.** Od etapu M5 gra jest w menu i zapisuje
+postęp — T5 zastępuje test T8 (wyżej); opis niżej dotyczy podglądu.
 
 Nowa gra „match 3” z Sówką (Analiza 5). To **podgląd**: gry nie ma jeszcze w menu, wszystkie 45 poziomów są otwarte,
 a postęp **nie zapisuje się w bazie** — Twoje zapisy z innych gier są bezpieczne. Instrukcja dla gracza:

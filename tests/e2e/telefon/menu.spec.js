@@ -452,7 +452,8 @@ test("zakładka „Sowa”: „Powtórz samouczki we wszystkich grach” — `tu
   await confirm.getByRole("button", { name: "Powtórz" }).click();
   await expect(page.locator("[data-tutorials-reset]")).toContainText("Samouczki wrócą przy następnym wejściu");
   await page.evaluate(() => window.SowieCloud.flush());
-  for (const gameId of ["runner", "sowa3", "jumper", "ogrody", "szklarnia"]) {
+  // Od M5 także Sowie Trójki (karty „Nowość” wrócą przy następnym wejściu).
+  for (const gameId of ["runner", "sowa3", "jumper", "ogrody", "szklarnia", "trojki"]) {
     expect((await readDoc(project, `sowiegry/profil/sowiegry_gry/${gameId}`)).tutorialDone, gameId).toBe(false);
   }
   // Reszta dokumentu gry bez zmian (Top 10 zostaje) — zapis tylko pola `tutorialDone`.

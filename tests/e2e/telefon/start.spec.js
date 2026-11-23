@@ -8,6 +8,8 @@ const pages = [
   { name: "Sowie Tory", path: "/SowieTory/", marker: "[data-stage] canvas" },
   { name: "Sowie Ogrody", path: "/SowieOgrody/", marker: "[data-canvas]" },
   { name: "Łącz i Hoduj", path: "/LaczIHoduj/", marker: "[data-canvas]" },
+  // Od M5 w menu: mapa poziomów Sowich Trójek.
+  { name: "Sowie Trójki", path: "/SowieTrojki/", marker: "[data-map] .trojki-level" },
 ];
 
 for (const entry of pages) {

@@ -18,6 +18,15 @@
 > zrobione od razu w kroku 4 (G7) — za cele w innych grach; zdjęcia za Sowie Trójki dojdą w M5. Zostało z M5 (po
 > akceptacji podglądu i publikacji reguł): rejestr i karta w menu, zapis i łączenie z drugim telefonem, „Jak grać?”
 > w `guides-data.js`, Akademia, Rekordy, demo, testy „5 → 6 gier” (rozdz. 15.8).
+>
+> **Stan budowy (2026-11-23, później): M5 zrobiony** — testy T1–T6 zaliczone, reguły z grą `trojki` opublikowane (od
+> przeniesienia bazy — projekt `sowiegry-1e1f9`, `PRZENIESIENIE_FIRESTORE.md`), podgląd zaakceptowany. Gra jest
+> szóstą kartą menu („Las”), w rejestrze i w `GAME_IDS`; postęp w dokumencie gry `trojki`, zapisy z dwóch telefonów
+> łączy `mergeStates` (SowieCloud woła grę przez `setMergeHandler` zamiast okna konfliktu); instrukcja w
+> `guides-data.js`; Akademia (3 zadania dnia, 2 osiągnięcia, „Pierwsze kroki” z sześciu gier); „Rekordy”; demo;
+> zdjęcia Galerii 56–58 (pisklęta, gwiazdki, wszystkie poziomy). Strona gry ma `<body data-sowie-game="trojki">` —
+> bez tego znacznika Akademia na stronie nie powstaje (znalezione przy M5, pilnuje test architektury). Testy na
+> telefonie: T7–T9.
 
 Makieta i kafelki w tej analizie to **rysunek poglądowy** zrobiony z istniejących grafik Sowiego Świata (liście,
 humbak, kózka, Sówka) i kilku prostych nowych ikon — prawdziwa gra będzie wyglądać podobnie, ale dopracowana.
