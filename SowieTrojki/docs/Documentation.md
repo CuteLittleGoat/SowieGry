@@ -780,7 +780,10 @@ automat płynności obniża ostrość, a w spoczynku plansza nie jest przerysowy
   ruch przesunięciem palca (Sówka się cieszy), zła zamiana bez utraty ruchu, dwa stuknięcia i pięć w rzędzie →
   Tęczowy liść i salto, Sowia pomoc bez kosztu ruchu, wygrana z finałem i „Dalej” oraz **zapis w chmurze** (dokument
   `trojki`: gwiazdki poziomu 1, `unlocked` 2, `saveVersion` 1; `profil.records.trojki` z poziomem i gwiazdkami)
-  i **po ponownym otwarciu** (43 poziomy z kłódką, poziom 1 `is-done`), **Akademia i Galeria na stronie gry**
+  i **po ponownym otwarciu** (43 poziomy z kłódką, poziom 1 `is-done`; od 2026-11-23 w **nowej karcie** tego samego
+  telefonu zamiast przeładowania — WebKit zgłaszał przerwane przeładowaniem długie zapytania kanału Firestore jako
+  błędy strony „…due to access control checks”, przez co test padał na wszystkich 5 telefonach WebKit w przebiegach
+  CI 264–265; tak samo jak `tory.spec.js` i `rekordy.spec.js`), **Akademia i Galeria na stronie gry**
   (profil w emulatorze z wizytami w pięciu pozostałych grach → komunikaty „Osiągnięcie: Pierwsze kroki” i „Nowa
   fotografia w Galerii Sów!”; po wygranej warstwa komunikatów `position: fixed` nad tłem okna wyniku; w bazie metryki
   `trojkiVisits` 1, `trojkiWins` 1, `trojkiLevels` 1, `trojkiStars`, osiągnięcie `pierwsze-kroki` i zdjęcie

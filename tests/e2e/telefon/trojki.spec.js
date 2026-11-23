@@ -203,14 +203,20 @@ test("Sowie Trójki: wygrana — Humbaczy Finał, gwiazdki, „Dalej”; postęp
   expect(doc.saveVersion).toBe(1);
   const profile = await readDoc(project, "sowiegry/profil");
   expect(profile.records.trojki).toMatchObject({ level: 1, stars: result.stars });
-  // Ponowne otwarcie: poziom 2 otwarty, przy poziomie 1 zdobyte gwiazdki.
-  await page.reload({ waitUntil: "load" });
-  await waitForCloud(page);
-  await page.waitForFunction(() => window.SowieTrojki?.ready?.(), null, { timeout: 20_000 });
-  await expect(page.locator(".trojki-level:disabled")).toHaveCount(43);
-  await expect(page.locator('[data-level="1"]')).toHaveClass(/is-done/);
-  expect((await page.evaluate(() => window.SowieTrojki.progress())).levels["1"].stars).toBe(result.stars);
   expect(errors).toEqual([]);
+  // Ponowne otwarcie: poziom 2 otwarty, przy poziomie 1 zdobyte gwiazdki. Nowa karta tego samego telefonu zamiast
+  // przeładowania — WebKit zgłasza przerwane przeładowaniem długie zapytania kanału Firestore jako błędy strony
+  // („…due to access control checks”), jak w tory.spec.js i rekordy.spec.js (przebiegi 264–265 z 2026-11-23).
+  const again = await page.context().newPage();
+  await page.close();
+  const errorsAgain = watchErrors(again);
+  await again.goto(cloudUrl("/SowieTrojki/", project), { waitUntil: "load" });
+  await waitForCloud(again);
+  await again.waitForFunction(() => window.SowieTrojki?.ready?.(), null, { timeout: 20_000 });
+  await expect(again.locator(".trojki-level:disabled")).toHaveCount(43);
+  await expect(again.locator('[data-level="1"]')).toHaveClass(/is-done/);
+  expect((await again.evaluate(() => window.SowieTrojki.progress())).levels["1"].stars).toBe(result.stars);
+  expect(errorsAgain).toEqual([]);
 });
 
 test("Sowie Trójki w Sowiej Akademii i Galerii: wejście kończy „Pierwsze kroki”, wygrana trafia do metryk (emulator)", async ({

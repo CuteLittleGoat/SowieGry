@@ -56,6 +56,16 @@ w nowej bazie; stara baza bez zmian).
 dnia i osiągnięcia Sowiej Akademii, „Rekordy”, zdjęcia Galerii 56–58. Jest na `main` i na stronie (odśwież ją dwa
 razy). **Dla Ciebie:** testy T7–T9 w [`TESTY_NA_TELEFONIE.md`](TESTY_NA_TELEFONIE.md).
 
+**2026-11-23 (Sowia Farma i testy w GitHubie):** nowa analiza
+[`ANALIZA_8_Nowa_gra_Sowia_Farma.md`](ANALIZA_8_Nowa_gra_Sowia_Farma.md) z makietą
+([`ANALIZA_8_farma_makieta.png`](ANALIZA_8_farma_makieta.png)) — duża, przytulna gra farmerska po Sowiej Dziupli:
+pole, ogród, szklarnia i rośliny ozdobne w domu, dzień bez zegara i bez staminy (kończy go sen — także na gałęzi),
+pogoda z prognozą w telewizorze, miasteczko z kozami, humbakiem i sowami, ekwipunek, ulepszenia, gołębie i dziki
+do przepędzania bez walki; plan F0–F10 (ok. 44–50 dni pracy) i **16 pytań** w rozdz. 20. **Testy w GitHubie** nie
+były zawieszone (punkt 0.7): przebieg 265 doszedł do testu 1351 z 1364, gdy został anulowany — trwa po prostu ok.
+55 minut; czerwony wynik dawał **jeden test Sowich Trójek w WebKit** (przeładowanie strony) — poprawiony w teście,
+gry bez zmian. **Dla Ciebie:** odpowiedzi na pytania Analizy 8 (w wolnej chwili — budowa i tak po Dziupli).
+
 ## 0. Poprawki po testach z 2026-11-01 (etapy P1–P8)
 
 Diagnoza i plan: [`ANALIZA_4_Uwagi_z_testow_poprawki_i_rozbudowa.md`](ANALIZA_4_Uwagi_z_testow_poprawki_i_rozbudowa.md);
@@ -256,6 +266,36 @@ w testach (gry bez zmian): pomiar do co najmniej 6 klatek z przypiętym poziomem
 15 s na spokój Sówki i dokańczanie animacji hakiem `settle`, w Łącz i Hoduj ponowne stuknięcie portfela, gdy okno nie
 pojawi się w 3 s. Opis: `docs/Documentation.md` (`plynnosc.spec.js`), dokumentacje Trójek i Łącz i Hoduj (Testy).
 
+### 0.7. 2026-11-23: Analiza 8 (Sowia Farma) i „zacięte” testy w GitHubie
+
+**Analiza 8 — Sowia Farma (N2):** [`ANALIZA_8_Nowa_gra_Sowia_Farma.md`](ANALIZA_8_Nowa_gra_Sowia_Farma.md) — projekt
+gry na podstawie Twojej prośby, atlasu mechanik czterech gier i krótkiego przeglądu w internecie (sterowanie na
+telefonie, gry „cozy” bez staminy, sowy-straszaki na gołębie). Makieta (telefon w pionie): farma z podlewaniem
+przeciągnięciem palca, dom z gałęzią do spania i telewizorem, miasteczko ze sklepem kóz i targiem humbaka. Bez zmian
+w kodzie gier. Plan F0–F10 (ok. 44–50 dni pracy), budowa po Sowiej Dziupli; pytania — rozdz. 20 analizy.
+
+**Testy w GitHubie — co się stało z przebiegiem 265:**
+
+| Przebieg | Commit | Wynik | Co pokazuje log |
+| --- | --- | --- | --- |
+| 263 | 8c178d5 (przeniesienie bazy) | ❌ | testy płynności i Trójek w WebKit (poprawione w 3bb01ca) |
+| 264 | cd42d97 (stan prac M5) | ❌ po 54 min | 1346 przeszło, 12 niestabilnych przeszło w powtórce, **6 nie przeszło**: 5 × „Sowie Trójki: wygrana … po ponownym otwarciu” (wszystkie telefony WebKit) i 1 × pomiar płynności Ogrodów (Pixel 7, WebKit) |
+| 265 | 3bb01ca (poprawki testów WebKit) | anulowany po 55 min | **nie był zawieszony** — doszedł do testu 1351 z 1364 (ok. 1 minuta do końca); pomiar płynności już przechodził, ale „Sowie Trójki: wygrana …” znowu nie przeszedł na 5 telefonach WebKit (także w powtórce) |
+| 266 | 7a1678a (Twój plik z mechanikami) | ❌ po 48 min | 1354 przeszło (44,7 min testów), 5 niestabilnych przeszło w powtórce, **nie przeszedł tylko** „Sowie Trójki: wygrana …” na 5 telefonach WebKit — potwierdzenie przyczyny |
+
+- **Dlaczego to trwa prawie godzinę:** ok. 1360 testów w Chromium i WebKit na 5 profilach telefonów i komputerze,
+  na dwóch procesach — same testy ok. 45–47 minut, instalacja przeglądarek 5–10 minut. Limit to 75 minut, więc
+  przebieg, który „kręci się” 55 minut, zwykle jest tuż przed końcem.
+- **Przyczyna czerwonego wyniku:** test wygranej w Sowich Trójkach na końcu **przeładowywał stronę**
+  (`page.reload`). WebKit zgłasza wtedy przerwane długie zapytania do bazy (emulatora Firestore) jako błędy strony
+  („…due to access control checks”), a test wymaga zera błędów. To ten sam znany problem co wcześniej w Sowich Torach
+  i w rekordach (punkt 4.3 a) — **gra działa dobrze**.
+- **Poprawka (tylko test):** ponowne otwarcie gry w **nowej karcie** tego samego telefonu zamiast przeładowania
+  (`tests/e2e/telefon/trojki.spec.js`), jak w `tory.spec.js` i `rekordy.spec.js`. U mnie w Chromium: wszystkie testy
+  Trójek przechodzą (18 / 18, iPhone SE i Pixel 7, emulator); WebKit sprawdzi GitHub po wypchnięciu na `main`.
+- **Propozycja:** rozdzielić testy w GitHubie na dwie równoległe części (Chromium i WebKit) — ok. 30 minut zamiast
+  prawie godziny (Analiza 8, pytanie 16). Nie zmieniam tego bez Twojej zgody.
+
 ## 1. Co jest zrobione — plan E0–E10 (stan z 2026-10-06)
 
 Wszystkie etapy planu E0–E10 są na gałęzi `main`, więc są też na stronie
@@ -331,6 +371,8 @@ W repozytorium nie ma innych plików tymczasowych. Na GitHubie została stara ga
 | 11 | **Sowia Dziupla zamiast menu głównego (D1, 2026-11-22)** — `ANALIZA_7_Sowia_Dziupla.md`, 8 pytań w rozdz. 16 | ✅ analiza; budowa — osobne zadanie po Sowich Trójkach |
 | 12 | **Galeria: zdjęcia sów, kóz, wielorybów i roślin ozdobnych (G7, 2026-11-22)** | ✅ 2026-11-23 — zdjęcia 41–55 i filtr rodzaju (punkt 0.5); wymagania do przejrzenia przy teście G3 |
 | 13 | **Sowie Trójki — akceptacja podglądu (2026-11-23)** — testy T1–T6; po akceptacji i publikacji reguł: karta w menu, zapis postępu, „Jak grać?”, Akademia, Rekordy, zdjęcia za Sowie Trójki (etap M5) | ✅ testy T1–T6 zaliczone, reguły opublikowane, podgląd zaakceptowany (2026-11-23); M5 zrobiony (punkt 0.6) — testy T7–T9 |
+| 14 | **Sowia Farma — nowa duża gra farmerska (N2, 2026-11-23)** — [`ANALIZA_8_Nowa_gra_Sowia_Farma.md`](ANALIZA_8_Nowa_gra_Sowia_Farma.md) z makietą, 16 pytań w rozdz. 20 | ✅ analiza (punkt 0.7); budowa po Sowiej Dziupli, po Twoich odpowiedziach |
+| 15 | **Testy w GitHubie „zacięte” (2026-11-23)** — przebiegi 264–266 | ✅ nie zawieszone (ok. 55 min); jedyny stały błąd — test Trójek w WebKit (przeładowanie) poprawiony w teście (punkt 0.7); propozycja szybszych testów — Analiza 8, pytanie 16 |
 
 ### 3.1. Zadanie 9.5 — stare adresy gier i sprzątanie starej pamięci (decyzja z 2026-11-02)
 
@@ -478,7 +520,8 @@ przybyło (P3–P7) i przebieg zbliżył się do limitu 60 minut, limit czasu CI
    nowa gra „Sowie Trójki” jako podgląd i nowe zdjęcia Galerii ✅ → jeden PR na `main` ✅ → przeniesienie bazy ✅ →
    etap M5 (Trójki w menu i z zapisem) ✅. Twoje czynności: testy T7–T9; decyzja, czy i kiedy usunąć stare dane
    SowieGry ze starego projektu (`PRZENIESIENIE_FIRESTORE.md`, krok 7 — do tego czasu nic nie kasujemy). Następne
-   zadanie: Sowia Dziupla (Analiza 7, po Twoich odpowiedziach w rozdz. 16).
+   zadanie: Sowia Dziupla (Analiza 7, po Twoich odpowiedziach w rozdz. 16), potem **Sowia Farma** (Analiza 8, po
+   odpowiedziach w rozdz. 20; najpierw ewentualnie szybsze testy w GitHubie — pytanie 16).
 1. Twoje testy na telefonie (`TESTY_NA_TELEFONIE.md`) i uwagi (w nowym oknie) → wpis w `UWAGI_WLASCICIELA.md` →
    poprawki małymi commitami, każdy z zielonym `npm test`, z aktualizacją dokumentacji gry i tego pliku.
 2. Ewentualnie inne wymagania zdjęć Galerii (punkt 3, wiersz 2) i ceny w Butiku albo w Kramie ogrodnika.

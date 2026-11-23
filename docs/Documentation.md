@@ -764,7 +764,7 @@ Zależności deweloperskie są przypięte tam, gdzie wersja wpływa na przegląd
 
 `lacz.spec.js` (E8 — Łącz i Hoduj, od E8e gra „szklarnia”): opis w `LaczIHoduj/docs/Documentation.md`, rozdział „Testy” (tam też test jednostkowy `tests/unit/lacz-plansza.test.mjs` — m.in. to, że plansza nigdy nie blokuje się bez wyjścia).
 
-`trojki.spec.js` (Analiza 5 — Sowie Trójki, od M5 w menu): opis w `SowieTrojki/docs/Documentation.md`, rozdział „Testy” (mapa, gesty, moce, Sowia pomoc, wygrana z zapisem w chmurze i po ponownym otwarciu, Akademia i Galeria na stronie gry — „Pierwsze kroki”, zdjęcie 26, metryki po wygranej, komunikaty nad oknem wyniku; tam też testy jednostkowe `tests/unit/trojki-plansza.test.mjs`, `trojki-gra.test.mjs`, `trojki-sowka.test.mjs`).
+`trojki.spec.js` (Analiza 5 — Sowie Trójki, od M5 w menu): opis w `SowieTrojki/docs/Documentation.md`, rozdział „Testy” (mapa, gesty, moce, Sowia pomoc, wygrana z zapisem w chmurze i po ponownym otwarciu — od 2026-11-23 w nowej karcie zamiast przeładowania, jak w `tory.spec.js` i `rekordy.spec.js` (WebKit zgłasza przerwane przeładowaniem zapytania kanału Firestore jako błędy strony), Akademia i Galeria na stronie gry — „Pierwsze kroki”, zdjęcie 26, metryki po wygranej, komunikaty nad oknem wyniku; tam też testy jednostkowe `tests/unit/trojki-plansza.test.mjs`, `trojki-gra.test.mjs`, `trojki-sowka.test.mjs`).
 
 `chmury.spec.js` (E6 — Sowa w Chmurach, podgląd): opis w `SowaWChmurach/docs/Documentation.md`, rozdział „Testy” (tam też testy jednostkowe `tests/unit/chmury.test.mjs`, `tests/unit/chmury-przeszkody.test.mjs`, `tests/unit/chmury-dodatki.test.mjs`, `tests/unit/chmury-ocean.test.mjs`, `tests/unit/chmury-strefy.test.mjs` i `tests/unit/chmury-samouczek.test.mjs`).
 
@@ -1324,6 +1324,11 @@ Service worker (v12) ma w `SHELL` także `demo.html`, `shared/menu/demo.js` i `s
 - `Analizy/ANALIZA_1_Firestore_zapis_postepu.md` — przeniesienie zapisu postępu do Firestore (model danych, hasło, reguły).
 - `Analizy/ANALIZA_2_Przebudowa_gier.md` — przebudowa gier, menu główne, telefon jako główne urządzenie.
 - `Analizy/ANALIZA_3_Plan_prac.md` — kolejność prac (etapy E0–E10) i tabela stanu.
+- `Analizy/ANALIZA_4_Uwagi_z_testow_poprawki_i_rozbudowa.md` — uwagi z testów z 2026-11-01, poprawki i rozbudowa (etapy P1–P8).
+- `Analizy/ANALIZA_5_Nowa_gra_Sowie_Trojki_match3.md` — projekt Sowich Trójek (gra „match 3”, M0–M7), bramka zapisu nowej gry (rozdz. 13.1a).
+- `Analizy/ANALIZA_6_Wydajnosc_lagi.md` — płynność gier (W0–W8).
+- `Analizy/ANALIZA_7_Sowia_Dziupla.md` — Sowia Dziupla zamiast menu głównego (D0–D7; makieta `ANALIZA_7_dziupla_makieta.png`).
+- `Analizy/ANALIZA_8_Nowa_gra_Sowia_Farma.md` — projekt dużej gry farmerskiej **Sowia Farma** (bez zegara i staminy, pole, szklarnia i dom, pogoda z prognozą, miasteczko, ekwipunek, ulepszenia, gołębie i dziki bez walki; F0–F10; makieta `ANALIZA_8_farma_makieta.png`) — budowa po Sowiej Dziupli. Podstawa: atlas mechanik `Analizy/Mechaniki_Littlewood_Stardew_Valley_Sprout_Valley_Fields_of_Mistria.md`.
 - `Analizy/UWAGI_WLASCICIELA.md` — uwagi właściciela z testów i decyzje (np. zgoda na podmiany, propozycja wymagań Galerii E9d).
 - `Analizy/STAN_PRAC.md` — stan prac dla właściciela: co zrobione (commity), jak testować, co zostało, wyniki CI i problemy z testami WebKit.
 - Nieaktualne dokumenty starego układu (`docs/AUDYT_MERGE_CUTE_POLISH.md`, `docs/PLAN_ROZWOJU_CUTE_POLISH.md`, `docs/WDROZENIE_CUTE_POLISH.md`) usunięto po akceptacji właściciela (E0.4, porządki po E2).
