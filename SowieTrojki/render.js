@@ -60,7 +60,11 @@ export function createBoardRenderer({
   let hint = null;
   let drag = null;
   let time = 0;
-  const stats = { frames: 0, phases: 0, tileDraws: 0, backgroundRenders: 0 };
+  // Rysowanie na żądanie (Analiza 6, W4): w spoczynku plansza stoi, więc płótna nie trzeba malować od nowa.
+  let dirty = true;
+  let wasActive = false;
+  let blinkKey = "";
+  const stats = { frames: 0, skipped: 0, phases: 0, tileDraws: 0, backgroundRenders: 0 };
 
   // ---------- Obraz planszy ----------
 
@@ -114,6 +118,7 @@ export function createBoardRenderer({
 
   /** Obraz planszy zgodny z logiką (po każdej akcji — zabezpieczenie przed rozjechaniem się animacji). */
   function sync(board) {
+    dirty = true;
     blocks = board.cells.map((cell) => (cell.block ? { ...cell.block, shake: 0, scale: 1 } : null));
     const seen = new Set();
     board.cells.forEach((cell, at) => {
@@ -147,6 +152,29 @@ export function createBoardRenderer({
     };
     painter.clear();
     layer.key = "";
+    dirty = true;
+  }
+
+  // Czy coś na planszy zmienia się z klatki na klatkę: fazy ruchu, efekty, cząstki, napisy, przeciąganie, podpowiedź
+  // (kołysanie), zaznaczenie (pulsowanie), moce (pulsują, chyba że ograniczenie ruchu), rosnące i spłaszczone kafelki,
+  // drżące przeszkody.
+  function moving() {
+    if (current || phases.length || effects.length || particles.length || popups.length) return true;
+    if (drag || hint || selected >= 0) return true;
+    const pulse = !reducedMotion();
+    for (const tile of tiles.values()) {
+      if (tile.grow || tile.squash || (pulse && tile.special)) return true;
+    }
+    return blocks.some((block) => block?.shake);
+  }
+
+  // Które storczyki mają teraz zamknięte oczy (mrugają co ok. 5 s) — zmiana = jedna nowa klatka.
+  function blinkState() {
+    let key = "";
+    for (const tile of tiles.values()) {
+      if (tile.kind === "storczyk" && !tile.special && (time * 1000 + tile.id * 937) % 5200 < 170) key += `${tile.id},`;
+    }
+    return key;
   }
 
   function backgroundLayer() {
@@ -775,6 +803,16 @@ export function createBoardRenderer({
     },
     draw(dt = 0) {
       if (!size.width) resize();
+      // Ruch na planszy w tej klatce? Po ostatniej klatce ruchu — jeszcze jedna (stan końcowy), potem cisza.
+      const active = moving();
+      const blinks = blinkState();
+      if (!dirty && !active && !wasActive && blinks === blinkKey) {
+        stats.skipped += 1;
+        return;
+      }
+      dirty = false;
+      wasActive = active;
+      blinkKey = blinks;
       stats.frames += 1;
       context.setTransform(size.ratio, 0, 0, size.ratio, 0, 0);
       context.clearRect(0, 0, size.width, size.height);
@@ -823,18 +861,26 @@ export function createBoardRenderer({
     cellSize: () => size.cell,
     size: () => ({ ...size }),
     select(index) {
+      if (selected !== index) dirty = true;
       selected = index;
     },
     setHint(move) {
+      if (hint !== move) dirty = true;
       hint = move;
     },
     setDrag(next) {
+      if (drag || next) dirty = true;
       drag = next;
+    },
+    /** Wymuszenie przerysowania w następnej klatce (np. po wczytaniu obrazków). */
+    invalidate() {
+      dirty = true;
     },
     stats: () => ({ ...stats, tiles: tiles.size, sprites: painter.count(), particles: particles.length }),
     clearCaches() {
       painter.clear();
       layer.key = "";
+      dirty = true;
     },
   };
 }

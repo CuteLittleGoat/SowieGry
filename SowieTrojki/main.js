@@ -257,7 +257,7 @@ async function startLevel(id, { skipIntro = false } = {}) {
   if (!level) return;
   attempt += 1;
   progressState.attempt += 1;
-  run = createLevelRun(level, { attempt: progressState.attempt, cozy: Boolean(settings().cozy) });
+  run = createLevelRun(level, { attempt: progressState.attempt, cozy: () => Boolean(settings().cozy) });
   showScreen("game");
   titleNode.textContent = `Poziom ${level.id}`;
   selected = -1;
@@ -267,7 +267,6 @@ async function startLevel(id, { skipIntro = false } = {}) {
   hintShown = false;
   sleeping = false;
   helpAnnounced = false;
-  gameNode.style.setProperty("--rows", String(run.board.rows));
   resize();
   renderer.setBoard(run.board);
   renderer.select(-1);

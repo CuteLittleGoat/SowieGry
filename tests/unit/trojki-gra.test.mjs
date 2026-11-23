@@ -97,6 +97,17 @@ test("koniec ruchów: prezent od Sówki (+3) raz przy ≥ 75% celu, potem przegr
     assert.ok(result.events.some((event) => event.type === "cozy"));
     assert.equal(cozy.state.moves, 5);
   }
+  // Przełącznik w pauzie w trakcie poziomu: funkcja czytana w chwili końca ruchów.
+  let cozyOn = false;
+  const live = createLevelRun({ ...levelById(12), moves: 1 }, { attempt: 4, cozy: () => cozyOn });
+  live.state.goals[0].done = 0;
+  cozyOn = true;
+  const liveHint = live.hint();
+  const liveResult = liveHint.type === "tap" ? live.tap(liveHint.a) : live.swap(liveHint.a, liveHint.b);
+  if (live.state.phase === "play") {
+    assert.ok(liveResult.events.some((event) => event.type === "cozy"));
+    assert.equal(live.state.cozyAdded, 5);
+  }
 });
 
 test("Sowia pomoc: tylko przy pełnej Radości, 3 Pióra, ruch nie przepada, Radość od zera", () => {

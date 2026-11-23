@@ -88,11 +88,13 @@ export function scoreMoves(board, hints) {
 }
 
 /**
- * createLevelRun(poziom, { attempt, cozy, seed }) → przebieg jednego podejścia do poziomu. Akcje: `swap(a, b)`,
- * `tap(a)`, `help()`, `finale()`; każda → `{ valid, steps, events }`. Stan: `state` (ruchy, punkty, cele, radość, faza:
- * "play" → "finale" → "won" albo "lost").
+ * createLevelRun(poziom, { attempt, cozy (wartość albo funkcja), seed }) → przebieg jednego podejścia do poziomu.
+ * Akcje: `swap(a, b)`, `tap(a)`, `help()`, `finale()`; każda → `{ valid, steps, events }`. Stan: `state` (ruchy,
+ * punkty, cele, radość, faza: "play" → "finale" → "won" albo "lost").
  */
 export function createLevelRun(level, { attempt = 1, cozy = false, seed = null } = {}) {
+  // Tryb Przytulny: wartość albo funkcja — przełącznik w pauzie działa od razu, także w trwającym poziomie.
+  const isCozy = typeof cozy === "function" ? cozy : () => Boolean(cozy);
   const rng = createRng(seed ?? `trojki:${level.id}:${attempt}`);
   const board = createBoard(level, { rng });
   const state = {
@@ -194,7 +196,7 @@ export function createLevelRun(level, { attempt = 1, cozy = false, seed = null }
       state.giftUsed = true;
       state.moves += GIFT.moves;
       events.push({ type: "gift", moves: GIFT.moves });
-    } else if (cozy) {
+    } else if (isCozy()) {
       state.moves += GIFT.cozyMoves;
       state.cozyAdded += GIFT.cozyMoves;
       events.push({ type: "cozy", moves: GIFT.cozyMoves });

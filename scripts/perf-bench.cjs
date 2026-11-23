@@ -27,7 +27,7 @@ const CPU = option("cpu", "4")
   .split(",")
   .map(Number)
   .filter((value) => value >= 1);
-const GAMES = option("gry", "ogrody,lacz,tory,ucieczka,chmury,menu").split(",");
+const GAMES = option("gry", "ogrody,lacz,tory,ucieczka,chmury,trojki,menu").split(",");
 const MODE = option("tryb", "auto");
 const SECONDS = Number(option("sekundy", "6")) || 6;
 
@@ -112,6 +112,17 @@ const SCENARIOS = {
     run: true,
     runs: [{ name: "Sowa w Chmurach — lot" }],
   },
+  // Sowie Trójki (podgląd): poziom 7 (karteczki), ruch z podpowiedzi, gdy plansza stoi — animacje bez przerwy.
+  trojki: {
+    url: "/SowieTrojki/?cloud=memory",
+    hook: "SowieTrojki",
+    run: true,
+    startArg: 7,
+    runs: [
+      { name: "Sowie Trójki — spokój (Sówka oddycha)", action: "none" },
+      { name: "Sowie Trójki — ruch za ruchem", action: "moves" },
+    ],
+  },
   menu: { url: "/?cloud=memory", runs: [{ name: "Menu (zakładka Gry)" }] },
 };
 
@@ -123,7 +134,7 @@ const percentile = (list, p) => {
 
 // Działania gracza w stronie (zdarzenia wskaźnika na płótnie, wywołania zdarzeń gry); zwraca nic — stop w window.
 function startActions({ actions, hook }) {
-  const canvas = document.querySelector("[data-canvas]");
+  const canvas = document.querySelector("[data-canvas]") || document.querySelector("canvas");
   const box = canvas.getBoundingClientRect();
   const fire = (type, x, y, id) =>
     canvas.dispatchEvent(
@@ -180,6 +191,21 @@ function startActions({ actions, hook }) {
       }, 16),
     );
     stops.push(() => fire("pointerup", x, box.height * 0.75, 1));
+  }
+  if (actions.includes("moves")) {
+    // Sowie Trójki: gdy plansza stoi — ruch z podpowiedzi; cele i ruchy wracają, żeby poziom trwał.
+    timers.push(
+      setInterval(() => {
+        const game = window[hook];
+        const state = game.state();
+        if (!state || state.phase !== "play" || game.busy()) return;
+        state.goals.forEach((_, at) => game.setGoalDone(at, 0));
+        if (state.moves <= 2) game.setMoves(30);
+        const move = game.hint();
+        if (move?.type === "tap") game.tap(move.a);
+        else if (move) game.swap(move.a, move.b);
+      }, 200),
+    );
   }
   if (actions.includes("drag")) {
     const start = window[hook].cellCenter(10);
@@ -249,7 +275,9 @@ async function measureGame(browser, key, cpu) {
     const cdp = await context.newCDPSession(page);
     await cdp.send("Performance.enable");
     if (cpu > 1) await cdp.send("Emulation.setCPUThrottlingRate", { rate: cpu });
-    if (scenario.run) await page.evaluate((hook) => window[hook].start(), scenario.hook);
+    if (scenario.run) {
+      await page.evaluate(({ hook, arg }) => window[hook].start(arg), { hook: scenario.hook, arg: scenario.startArg });
+    }
     if (run.action && run.action !== "none") {
       await page.evaluate(startActions, { actions: run.action.split(","), hook: scenario.hook });
     }
