@@ -106,6 +106,31 @@ export const TASK_POOL = Object.freeze([
     target: 1,
     label: "Wyhoduj hybrydę w Łącz i Hoduj",
   },
+  // Sowie Trójki (od M5): wygrane poziomy, combo w jednym poziomie, wyklute pisklęta.
+  {
+    id: "trojki-wins",
+    game: "trojki",
+    metric: "trojkiWins",
+    type: "delta",
+    target: 2,
+    label: "Wygraj 2 poziomy w Sowich Trójkach",
+  },
+  {
+    id: "trojki-combo",
+    game: "trojki",
+    metric: "trojkiCombo",
+    type: "max",
+    target: 4,
+    label: "Zrób combo ×4 w Sowich Trójkach",
+  },
+  {
+    id: "trojki-owlet",
+    game: "trojki",
+    metric: "trojkiOwlets",
+    type: "delta",
+    target: 1,
+    label: "Sprowadź jajko do gniazda w Sowich Trójkach",
+  },
   {
     id: "any-leaves",
     game: "any",
@@ -242,6 +267,24 @@ export const ACHIEVEMENTS = Object.freeze([
     label: "Wytrwała sówka",
     text: "Rozegraj 50 biegów i lotów.",
     goals: [["runs", 50]],
+    xp: 80,
+    feathers: 8,
+  },
+  {
+    id: "trojkowa-sowka",
+    icon: "⭐",
+    label: "Trójkowa sówka",
+    text: "Zdobądź 3 gwiazdki na 15 poziomach Sowich Trójek.",
+    goals: [["trojkiThree", 15]],
+    xp: 100,
+    feathers: 10,
+  },
+  {
+    id: "sowie-gniazdo",
+    icon: "🥚",
+    label: "Sowie gniazdo",
+    text: "Wykluj 10 piskląt w Sowich Trójkach.",
+    goals: [["trojkiOwlets", 10]],
     xp: 80,
     feathers: 8,
   },
@@ -425,6 +468,15 @@ export function academyCalls(type, detail = {}) {
       push(game, "szklarniaHybrids", detail.hybrids);
       // Najwyższy wyhodowany poziom rośliny w Łącz i Hoduj (P7: 6 — diamentowa, 7 — tęczowa).
       push(game, "szklarniaBest", detail.best);
+    } else if (game === "trojki") {
+      // Sowie Trójki (M5): najwyższy wygrany poziom, gwiazdki, poziomy na 3 gwiazdki, wygrane i pisklęta (rosną),
+      // combo — najlepsze w ostatnim poziomie (zadanie dnia „max” liczy combo z dzisiejszych poziomów).
+      push(game, "trojkiLevels", detail.levels);
+      push(game, "trojkiStars", detail.stars);
+      push(game, "trojkiThree", detail.three);
+      push(game, "trojkiWins", detail.wins);
+      push(game, "trojkiOwlets", detail.owlets);
+      if (Number(detail.combo) > 0) push(game, "trojkiCombo", detail.combo);
     }
   } else if (type === EVENTS.VISIT && game) {
     push(game, `${game}Visits`, 1, "add");

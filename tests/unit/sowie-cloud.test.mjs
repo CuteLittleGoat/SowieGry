@@ -16,6 +16,7 @@ const {
   trimAwards,
   PATHS,
   DEVICE_KEY,
+  GAME_IDS,
 } = cloudModule;
 
 const platform = {
@@ -25,13 +26,21 @@ const platform = {
     { id: "sowa3", kind: "arcade", dailyMetric: "score" },
     { id: "ogrody", kind: "idle" },
     { id: "szklarnia", kind: "idle" },
+    { id: "trojki", kind: "idle" },
   ],
   COSMETICS: { none: {}, bow: {}, glasses: {} },
   DEFAULT_SETTINGS: { music: true, sfx: true, quips: true, reducedEffects: false },
   DEFAULT_MISSIONS: { leaves20: { progress: 0, target: 20, done: false, reward: "glasses" } },
   DEFAULT_STATS: { leaves: 0, nearMisses: 0, extraLives: 0, finishes: 0, maxCombo: 1 },
 };
-const gameKinds = { runner: "arcade", jumper: "arcade", sowa3: "arcade", ogrody: "idle", szklarnia: "idle" };
+const gameKinds = {
+  runner: "arcade",
+  jumper: "arcade",
+  sowa3: "arcade",
+  ogrody: "idle",
+  szklarnia: "idle",
+  trojki: "idle",
+};
 
 const tick = () => new Promise((resolve) => setImmediate(resolve));
 
@@ -176,7 +185,7 @@ test("pierwsze uruchomienie: ekran hasła, potem meta i profil w bazie, w localS
 
   const meta = await backend.getDoc(PATHS.meta);
   assert.equal(meta.schemaVersion, 1);
-  assert.deepEqual(meta.games, ["runner", "jumper", "sowa3", "ogrody", "szklarnia"]);
+  assert.deepEqual(meta.games, ["runner", "jumper", "sowa3", "ogrody", "szklarnia", "trojki"]);
   const profile = await backend.getDoc(PATHS.profile);
   assert.equal(profile.schemaVersion, 1);
   assert.equal(profile.name, "Sowa");
@@ -356,32 +365,74 @@ test("gra idle robi najwyżej 120 zapisów na godzinę, a ważna akcja zapisuje 
 
 test("bramka zapisu: gra spoza GAME_IDS (podgląd nowej gry) zostaje w pamięci strony, profil i inne gry zapisują się dalej", async () => {
   // Analiza 5, rozdz. 13.1a: reguły Firestore dopuszczają tylko gry z listy — zapis dokumentu innej gry w tej samej
-  // paczce odrzuciłby całą paczkę (także profil). Dlatego taki dokument nigdy nie wychodzi z telefonu.
+  // paczce odrzuciłby całą paczkę (także profil). Dlatego taki dokument nigdy nie wychodzi z telefonu. Od M5
+  // Sowie Trójki są na liście — tu przykładem jest gra, której jeszcze nie ma.
   const { cloud, backend } = makeCloud();
   await cloud.ready;
   await tick();
-  cloud.updateGame("trojki", { unlocked: 3 });
-  cloud.saveGameState("trojki", { version: 1, unlocked: 3 }, { immediate: true, saveVersion: 1 });
-  cloud.submitRun("trojki", { score: 1200 });
+  cloud.updateGame("nowa-gra", { unlocked: 3 });
+  cloud.saveGameState("nowa-gra", { version: 1, unlocked: 3 }, { immediate: true, saveVersion: 1 });
+  cloud.submitRun("nowa-gra", { score: 1200 });
   cloud.updateGame("ogrody", { scene: "parapet" });
   cloud.updateProfile((profile) => {
     profile.missions.leaves20.progress = 5;
   });
   await cloud.flush();
-  assert.equal(await backend.getDoc(PATHS.game("trojki")), null);
+  assert.equal(await backend.getDoc(PATHS.game("nowa-gra")), null);
   assert.deepEqual(
-    [...backend.docs.keys()].filter((path) => path.includes("sowiegry_gry/trojki")),
+    [...backend.docs.keys()].filter((path) => path.includes("sowiegry_gry/nowa-gra")),
     [],
     "ani dokumentu gry, ani historii",
   );
   for (const ops of backend.commits) {
-    for (const op of ops) assert.ok(!String(op.path || op.collection).includes("/trojki"), JSON.stringify(op));
+    for (const op of ops) assert.ok(!String(op.path || op.collection).includes("/nowa-gra"), JSON.stringify(op));
   }
   assert.equal((await backend.getDoc(PATHS.profile)).missions.leaves20.progress, 5);
   assert.equal((await backend.getDoc(PATHS.game("ogrody"))).scene, "parapet");
   // W pamięci strony dokument gry jest (gra działa normalnie, tylko bez zapisu).
-  assert.equal(cloud.game("trojki").unlocked, 3);
-  assert.deepEqual(JSON.parse(cloud.game("trojki").state), { version: 1, unlocked: 3 });
+  assert.equal(cloud.game("nowa-gra").unlocked, 3);
+  assert.deepEqual(JSON.parse(cloud.game("nowa-gra").state), { version: 1, unlocked: 3 });
+});
+
+test("Sowie Trójki (od M5) są na liście GAME_IDS: stan i podsumowanie trafiają do bazy", async () => {
+  assert.ok(GAME_IDS.includes("trojki"));
+  const { cloud, backend } = makeCloud();
+  await cloud.ready;
+  await tick();
+  cloud.saveGameState(
+    "trojki",
+    { version: 1, unlocked: 3 },
+    { immediate: true, saveVersion: 1, summary: { level: 2 } },
+  );
+  await cloud.flush();
+  const doc = await backend.getDoc(PATHS.game("trojki"));
+  assert.deepEqual(JSON.parse(doc.state), { version: 1, unlocked: 3 });
+  assert.equal((await backend.getDoc(PATHS.profile)).records.trojki.level, 2);
+});
+
+test("gra z własnym łączeniem zapisów (Sowie Trójki): nowszy zapis z innego urządzenia trafia do niej, bez pytania", async () => {
+  const backend = new MemoryBackend();
+  const a = makeCloud({ backend, gameId: "trojki" });
+  const b = makeCloud({
+    backend,
+    gameId: "trojki",
+    storage: fakeStorage({ [DEVICE_KEY]: JSON.stringify({ unlocked: true, deviceId: "d-drugi", cleaned: true }) }),
+  });
+  await Promise.all([a.cloud.ready, b.cloud.ready]);
+  const asked = [];
+  const merged = [];
+  b.cloud.onConflict((conflict) => asked.push(conflict));
+  b.cloud.setMergeHandler("trojki", (doc) => merged.push(doc));
+  a.cloud.saveGameState("trojki", { version: 1, unlocked: 5 }, { immediate: true });
+  await a.cloud.flush();
+  assert.equal(asked.length, 0, "bez pytania o wczytanie");
+  assert.equal(merged.length, 1);
+  assert.deepEqual(JSON.parse(merged[0].state), { version: 1, unlocked: 5 });
+  // Następny zapis B przewyższa numer zapisu A (rev), więc A zobaczy go jako nowszy.
+  b.cloud.saveGameState("trojki", { version: 1, unlocked: 6 });
+  await b.cloud.flush();
+  assert.equal((await backend.getDoc(PATHS.game("trojki"))).rev, 2);
+  b.cloud.setMergeHandler("trojki", null);
 });
 
 test("flush wysyła kolejkę od razu (przejście aplikacji w tło)", async () => {
