@@ -1,0 +1,603 @@
+/* Sowie Trójki (podgląd). Telefon w pionie (wariant A z Analizy 5, rozdz. 4.1): u góry Menu, numer poziomu, „?”
+   i pauza; pasek z ruchami, celami i punktami (z paskiem gwiazdek); plansza na całą szerokość; pod nią Sówka duża
+   na gałęzi w dolnym rogu, dymek, „Radość Sówki” i „Sowia pomoc”. Telefon poziomo i komputer: Sówka w kolumnie
+   z lewej, plansza na środku, cele i ruchy w kolumnie z prawej. Mapa poziomów: ścieżka kółek w zygzak. */
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+}
+
+/* Klasy z `display` (np. przyciski .sowie-ui-button) nie mogą przebić atrybutu `hidden`. */
+.trojki [hidden] {
+  display: none !important;
+}
+
+body {
+  background: linear-gradient(180deg, #dff7ea 0%, var(--niebo-dol) 100%);
+  font-family: var(--czcionka-sowia);
+  color: var(--kontur);
+}
+
+.trojki {
+  position: relative;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 6px;
+  height: 100dvh;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: max(6px, env(safe-area-inset-top)) max(8px, env(safe-area-inset-right)) max(6px, env(safe-area-inset-bottom))
+    max(8px, env(safe-area-inset-left));
+  box-sizing: border-box;
+}
+
+.trojki-top {
+  display: grid;
+  grid-template-columns: auto 1fr auto auto;
+  align-items: center;
+  gap: 8px;
+}
+
+.trojki-title {
+  margin: 0;
+  font-size: 20px;
+  text-align: center;
+}
+
+.trojki-guide {
+  min-width: 48px;
+  min-height: 48px;
+  font-size: 22px;
+  font-weight: var(--czcionka-pogrubiona);
+}
+
+.trojki-pause {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border: 0;
+  border-radius: 50%;
+  color: var(--kontur);
+  background: rgba(255, 255, 255, 0.88);
+  box-shadow: 0 4px 10px rgba(59, 47, 74, 0.18);
+  cursor: pointer;
+}
+
+.trojki-pause svg {
+  width: 24px;
+  height: 24px;
+}
+
+.trojki-pause:focus-visible,
+.trojki-level:focus-visible,
+.trojki-owl-button:focus-visible,
+.trojki-board:focus-visible {
+  outline: 3px solid var(--niebieski);
+  outline-offset: 3px;
+}
+
+/* ---------- Mapa ---------- */
+
+.trojki-map-screen {
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.trojki-preview {
+  margin: 4px 0 8px;
+  padding: 8px 12px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.85);
+  font-size: 14px;
+}
+
+.trojki-chapter {
+  margin: 0 0 14px;
+  padding: 10px 12px 14px;
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.55);
+  box-shadow: inset 0 0 0 2px rgba(59, 47, 74, 0.08);
+}
+
+.trojki-chapter.is-laka {
+  background: linear-gradient(180deg, rgba(223, 247, 234, 0.9), rgba(255, 246, 227, 0.8));
+}
+
+.trojki-chapter.is-ogrodek {
+  background: linear-gradient(180deg, rgba(255, 233, 210, 0.85), rgba(255, 246, 227, 0.8));
+}
+
+.trojki-chapter.is-staw {
+  background: linear-gradient(180deg, rgba(191, 233, 255, 0.85), rgba(223, 245, 251, 0.8));
+}
+
+.trojki-chapter h2 {
+  margin: 0 0 6px;
+  font-size: 20px;
+}
+
+.trojki-chapter h2 small {
+  font-size: 14px;
+  color: var(--zloto-ciemne);
+}
+
+.trojki-path {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.trojki-path li {
+  display: grid;
+  justify-items: center;
+  transform: translateY(calc(var(--shift, 0) * 6px));
+}
+
+.trojki-level {
+  display: grid;
+  place-items: center;
+  width: 58px;
+  height: 58px;
+  border: 0;
+  border-radius: 50%;
+  color: var(--kontur);
+  background: radial-gradient(circle at 35% 30%, #ffffff, var(--niebo-gora));
+  box-shadow:
+    0 4px 0 rgba(59, 47, 74, 0.25),
+    inset 0 0 0 3px var(--kontur);
+  font: inherit;
+  font-weight: var(--czcionka-pogrubiona);
+  cursor: pointer;
+}
+
+.trojki-level.is-done {
+  background: radial-gradient(circle at 35% 30%, #ffffff, #ffe9a6);
+}
+
+.trojki-level.is-current {
+  animation: trojkiPulse 1.4s ease-in-out infinite;
+}
+
+.trojki-level:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.trojki-level-number {
+  font-size: 20px;
+  line-height: 1;
+}
+
+.trojki-level-number svg {
+  width: 20px;
+  height: 20px;
+}
+
+.trojki-level-stars {
+  font-size: 12px;
+  line-height: 1;
+  color: var(--zloto-ciemne);
+}
+
+@keyframes trojkiPulse {
+  50% {
+    transform: scale(1.08);
+  }
+}
+
+/* ---------- Gra ---------- */
+
+/* Wiersz planszy ma jej wysokość (--board-h z main.js), Sówka dostaje resztę, ale nie mniej niż ok. 1/5 ekranu. */
+.trojki-game {
+  display: grid;
+  grid-template-rows: auto minmax(0, var(--board-h, 1fr)) minmax(clamp(100px, 22dvh, 200px), 1fr);
+  gap: 6px;
+  min-height: 0;
+}
+
+.trojki-bar {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.88);
+  box-shadow: 0 4px 12px rgba(59, 47, 74, 0.12);
+}
+
+.trojki-moves,
+.trojki-score {
+  display: grid;
+  justify-items: center;
+  font-size: 12px;
+  line-height: 1.1;
+}
+
+.trojki-moves strong {
+  font-size: 26px;
+}
+
+.trojki-moves.is-low strong {
+  color: var(--pracu);
+}
+
+.trojki-score strong {
+  font-size: 16px;
+}
+
+.trojki-starbar {
+  position: relative;
+  width: 72px;
+  height: 8px;
+  margin-top: 3px;
+  overflow: hidden;
+  border-radius: 4px;
+  background: rgba(59, 47, 74, 0.15);
+}
+
+.trojki-starbar i {
+  display: block;
+  height: 100%;
+  background: var(--zloto);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.3s ease-out;
+}
+
+.trojki-goals {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.trojki-goals li {
+  display: grid;
+  justify-items: center;
+  font-size: 15px;
+  font-weight: var(--czcionka-pogrubiona);
+}
+
+.trojki-goals li.is-done {
+  color: var(--monstera-ciemna);
+}
+
+.trojki-goal-icon {
+  width: 30px;
+  height: 30px;
+}
+
+.trojki-board-wrap {
+  position: relative;
+  display: grid;
+  min-height: 0;
+}
+
+.trojki-board {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+
+.trojki-combo {
+  position: absolute;
+  left: 50%;
+  top: 38%;
+  color: #ffffff;
+  font-size: clamp(28px, 9vw, 46px);
+  font-weight: var(--czcionka-pogrubiona);
+  white-space: nowrap;
+  -webkit-text-stroke: 7px var(--kontur);
+  paint-order: stroke fill;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+}
+
+.trojki-hand {
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  width: 30px;
+  height: 30px;
+  margin: -15px 0 0 -15px;
+  border: 4px solid #ffffff;
+  border-radius: 50%;
+  background: rgba(59, 47, 74, 0.55);
+  box-sizing: border-box;
+  pointer-events: none;
+  animation: trojkiHand 1.6s ease-in-out infinite;
+}
+
+@keyframes trojkiHand {
+  0%,
+  12% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0;
+  }
+  25% {
+    transform: translate(0, 0) scale(0.82);
+    opacity: 1;
+  }
+  70% {
+    transform: translate(var(--dx), var(--dy)) scale(0.82);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(var(--dx), var(--dy)) scale(1);
+    opacity: 0;
+  }
+}
+
+.trojki-owl-area {
+  position: relative;
+  display: grid;
+  grid-template-columns: var(--owl-w, minmax(96px, 36%)) minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 4px 10px;
+  min-height: 0;
+}
+
+.trojki-owl-button {
+  grid-row: 1 / span 2;
+  align-self: stretch;
+  width: 100%;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 20px;
+  background: none;
+  cursor: pointer;
+}
+
+.trojki-owl {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* Dymek obok głowy Sówki (pozycja z main.js); dłuższy tekst rośnie w górę, nie zasłania „Sowiej pomocy”. */
+.trojki-bubble {
+  position: absolute;
+  left: var(--bubble-x, 36%);
+  bottom: calc(100% - var(--bubble-y, 40px));
+  z-index: 3;
+  max-width: calc(100% - var(--bubble-x, 36%) - 2px);
+  box-sizing: border-box;
+  margin: 0;
+  padding: 8px 14px;
+  border-radius: 18px;
+  background: #ffffff;
+  box-shadow: 0 4px 12px rgba(59, 47, 74, 0.16);
+  font-size: 17px;
+  font-weight: var(--czcionka-pogrubiona);
+  transform-origin: left bottom;
+}
+
+.trojki-bubble::before {
+  content: "";
+  position: absolute;
+  left: -8px;
+  bottom: 10px;
+  border: 8px solid transparent;
+  border-right-color: #ffffff;
+  border-left: 0;
+}
+
+.trojki-joy {
+  grid-column: 2;
+  grid-row: 2;
+  display: grid;
+  gap: 4px;
+  font-size: 13px;
+}
+
+.trojki-joybar {
+  height: 12px;
+  overflow: hidden;
+  border-radius: 6px;
+  background: rgba(59, 47, 74, 0.15);
+}
+
+.trojki-joybar i {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, var(--policzki), var(--serce));
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.3s ease-out;
+}
+
+.trojki-help {
+  justify-self: stretch;
+  min-height: 48px;
+  white-space: nowrap;
+}
+
+.is-help-ready .trojki-help {
+  animation: trojkiGlow 1.2s ease-in-out infinite;
+}
+
+@keyframes trojkiGlow {
+  50% {
+    box-shadow: 0 0 0 6px rgba(244, 197, 66, 0.55);
+  }
+}
+
+.trojki-live {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}
+
+.trojki-goal-list {
+  margin: 0 0 8px;
+  padding-left: 20px;
+  font-size: 18px;
+}
+
+.trojki-start-stars,
+.trojki-result-stars {
+  margin: 6px 0;
+  color: var(--zloto-ciemne);
+  font-size: 32px;
+  letter-spacing: 6px;
+}
+
+.trojki-result-stars span.is-earned {
+  display: inline-block;
+  color: var(--zloto);
+  -webkit-text-stroke: 2px var(--kontur);
+  paint-order: stroke fill;
+  animation: trojkiStar 0.5s ease-out both;
+}
+
+@keyframes trojkiStar {
+  0% {
+    transform: scale(0.2) rotate(-30deg);
+    opacity: 0;
+  }
+  70% {
+    transform: scale(1.25) rotate(8deg);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.trojki-intro-badge {
+  display: inline-block;
+  margin: 0 0 6px;
+  padding: 2px 10px;
+  border-radius: 10px;
+  color: #ffffff;
+  background: var(--monstera);
+  font-weight: var(--czcionka-pogrubiona);
+}
+
+/* Niski telefon w pionie (np. 320 × 568): mniejszy pasek i Sówka — plansza ma pola ≥ 34 px. */
+@media (orientation: portrait) and (max-height: 660px) {
+  .trojki-top {
+    gap: 4px;
+  }
+
+  .trojki-title {
+    font-size: 18px;
+  }
+
+  .trojki-bar {
+    padding: 4px 8px;
+  }
+
+  .trojki-moves strong {
+    font-size: 22px;
+  }
+
+  .trojki-goal-icon {
+    width: 26px;
+    height: 26px;
+  }
+
+  .trojki-joy span {
+    display: none;
+  }
+}
+
+/* Telefon poziomo i komputer: Sówka z lewej, plansza na środku, cele z prawej. */
+@media (orientation: landscape) and (max-height: 640px), (min-width: 900px) and (min-height: 600px) {
+  .trojki-game {
+    grid-template-columns: minmax(150px, 24%) minmax(0, 1fr) minmax(130px, 20%);
+    grid-template-rows: minmax(0, 1fr);
+  }
+
+  /* Nad Sówką stałe miejsce na dymek (bez skakania płótna, gdy dymek się pojawia). */
+  .trojki-owl-area {
+    grid-column: 1;
+    grid-row: 1;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: 62px minmax(0, 1fr) auto;
+  }
+
+  .trojki-owl-button {
+    grid-row: 2;
+  }
+
+  .trojki-joy {
+    grid-column: 1;
+    grid-row: 3;
+  }
+
+  .trojki-joy span {
+    display: none;
+  }
+
+  .trojki-bubble {
+    left: 2px;
+    right: 2px;
+    top: 0;
+    bottom: auto;
+    max-width: none;
+    font-size: 15px;
+    text-align: center;
+    transform-origin: center bottom;
+  }
+
+  .trojki-bubble::before {
+    left: 50%;
+    bottom: -8px;
+    border: 8px solid transparent;
+    border-top-color: #ffffff;
+    border-bottom: 0;
+    transform: translateX(-50%);
+  }
+
+  .trojki-board-wrap {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .trojki-bar {
+    grid-column: 3;
+    grid-row: 1;
+    grid-template-columns: 1fr;
+    align-content: start;
+    justify-items: center;
+  }
+
+  .trojki-goals {
+    flex-direction: column;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .trojki-level.is-current,
+  .trojki-hand,
+  .is-help-ready .trojki-help,
+  .trojki-result-stars span.is-earned {
+    animation: none;
+  }
+}
+
+.sowie-reduced-effects .trojki-level.is-current,
+.sowie-reduced-effects .is-help-ready .trojki-help {
+  animation: none;
+}

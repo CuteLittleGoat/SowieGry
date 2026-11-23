@@ -30,6 +30,8 @@ export function createPauseMenu({
   onExit = () => globalThis.location?.assign?.("../"),
   // Opcjonalnie „Zakończ bieg” (np. Tryb Przytulny bez końca gry): { label, onClick } albo null.
   endAction = null,
+  // Opcjonalnie własna instrukcja „Jak grać” (gra spoza `guides-data.js`, np. podgląd nowej gry).
+  guide: ownGuide = null,
 } = {}) {
   // Automat płynności gry (z powłoki) albo — bez niego — sam zapis wyboru na urządzeniu.
   let ownQuality = null;
@@ -114,7 +116,7 @@ export function createPauseMenu({
   }
 
   function showGuide() {
-    const guide = guideFor(gameId) || guideFor("swiat");
+    const guide = ownGuide || guideFor(gameId) || guideFor("swiat");
     modal = openModal({
       title: `Jak grać — ${guide.title}`,
       content: renderGuide(guide, { atlas, sprites }),

@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <!-- Sowie pióro (moc „Pióro” w Sowich Trójkach), poziomo: chorągiewka w kolorach Sówki i stosina. Kierunek lotu
+       (↔ albo ↕) gra dorysowuje strzałkami i obrotem. -->
+  <path fill="#b07a52" stroke="#3b2f4a" stroke-width="4" stroke-linejoin="round"
+    d="M18 66 C30 42 62 32 104 36 C112 37 118 42 116 50 C112 70 80 90 40 86 C30 85 22 78 18 66 Z"/>
+  <path fill="#f3e3c8" stroke="#3b2f4a" stroke-width="3" stroke-linejoin="round"
+    d="M34 64 C46 50 70 44 100 44 C96 58 74 72 44 74 C38 73 35 69 34 64 Z"/>
+  <g fill="none" stroke="#8a5a3b" stroke-width="3" stroke-linecap="round">
+    <path d="M52 56 L60 70 M68 50 L76 64 M84 46 L90 58"/>
+  </g>
+  <path d="M10 76 Q40 62 112 46" fill="none" stroke="#3b2f4a" stroke-width="7" stroke-linecap="round"/>
+  <path d="M10 76 Q40 62 112 46" fill="none" stroke="#e2b98f" stroke-width="3" stroke-linecap="round"/>
+</svg>

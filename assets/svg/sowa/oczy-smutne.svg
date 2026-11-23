@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <!-- Smutek (Sowie Trójki, przegrana — tylko na chwilę): opuszczone powieki, uniesione brwi i łezka. -->
+  <g fill="none" stroke="#3b2f4a" stroke-width="5" stroke-linecap="round">
+    <path d="M35 58 Q46 66 57 58"/>
+    <path d="M71 58 Q82 66 93 58"/>
+  </g>
+  <g fill="none" stroke="#3b2f4a" stroke-width="4" stroke-linecap="round">
+    <path d="M36 46 L54 40"/>
+    <path d="M92 46 L74 40"/>
+  </g>
+  <path d="M90 66 C94 72 95 76 92 79 C89 81 86 78 87 74 C88 71 89 69 90 66 Z" fill="#5cc8e8" stroke="#3a86b8" stroke-width="1.5"/>
+</svg>

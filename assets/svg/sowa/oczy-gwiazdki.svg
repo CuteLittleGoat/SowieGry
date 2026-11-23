@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <!-- Zachwyt (Sowie Trójki, wielkie combo): białka oczu ze złotymi gwiazdkami zamiast źrenic. -->
+  <g fill="#ffffff" stroke="#3b2f4a" stroke-width="4">
+    <circle cx="46" cy="57" r="14"/>
+    <circle cx="82" cy="57" r="14"/>
+  </g>
+  <g fill="#f4c542" stroke="#d99a1e" stroke-width="2" stroke-linejoin="round">
+    <path d="M46 47 L49 54 L56 54 L50.5 58.5 L52.5 66 L46 61.5 L39.5 66 L41.5 58.5 L36 54 L43 54 Z"/>
+    <path d="M82 47 L85 54 L92 54 L86.5 58.5 L88.5 66 L82 61.5 L75.5 66 L77.5 58.5 L72 54 L79 54 Z"/>
+  </g>
+</svg>

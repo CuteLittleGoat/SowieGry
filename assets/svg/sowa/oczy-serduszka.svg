@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <!-- Czułość (Sowie Trójki, pisklę wraca do Sówki, „hu-hu-hura”): białka oczu z różowymi serduszkami. -->
+  <g fill="#ffffff" stroke="#3b2f4a" stroke-width="4">
+    <circle cx="46" cy="57" r="14"/>
+    <circle cx="82" cy="57" r="14"/>
+  </g>
+  <g fill="#ff6f91" stroke="#3b2f4a" stroke-width="2" stroke-linejoin="round">
+    <path d="M46 66 C38 60 36 55 38 51 C40 47 45 47 46 52 C47 47 52 47 54 51 C56 55 54 60 46 66 Z"/>
+    <path d="M82 66 C74 60 72 55 74 51 C76 47 81 47 82 52 C83 47 88 47 90 51 C92 55 90 60 82 66 Z"/>
+  </g>
+</svg>
