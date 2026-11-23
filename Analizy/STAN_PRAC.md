@@ -244,7 +244,9 @@ zaakceptowany.”) i po przeniesieniu bazy do projektu `sowiegry-1e1f9` (reguły
   połączenie z prawdziwą bazą); istniejący dokument `sowiegry/meta` nie jest nadpisywany; dzisiejsze zadania dnia
   zostają (są zapisane w profilu), nowa pula zadań działa od następnego dnia.
 
-Testy u mnie: pełny `npm test` — wynik w punkcie 0.6a niżej.
+Testy u mnie: pełny `npm test` — składnia, ESLint, Prettier, HTML, 376 testów jednostkowych, 8 testów reguł i kopii
+bazy na emulatorze, 689 testów przeglądarkowych (Chromium: 5 profili telefonów i komputer, emulator Firestore) —
+wszystkie zielone. WebKit (Safari) sprawdzą testy w GitHubie po wypchnięciu na `main`.
 
 ## 1. Co jest zrobione — plan E0–E10 (stan z 2026-10-06)
 
