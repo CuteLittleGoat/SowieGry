@@ -46,9 +46,25 @@ const photoFiles = [
   "sowa-38-puchacz-wirginijski.jpg",
   "sowa-39-dwie-pojdzki.jpg",
   "sowa-40-norkowa-na-kamieniu.jpg",
+  // Uwaga G7 (2026-11-23): nowe sowy, kozy, humbaki i rośliny ozdobne.
+  "sowa-41-puszczak-mszarny.jpg",
+  "sowa-42-syczek-w-rozwidleniu.jpg",
+  "sowa-43-sniezna-z-bliska.jpg",
+  "koza-44-usmiechniete-kozlatko.jpg",
+  "koza-45-mala-wspinaczka.jpg",
+  "koza-46-kozia-rodzina.jpg",
+  "koza-47-laciata-na-lace.jpg",
+  "humbak-48-w-skoku.jpg",
+  "humbak-49-kto-tu-plywa.jpg",
+  "humbak-50-mama-i-maluch.jpg",
+  "humbak-51-ogon-nad-oceanem.jpg",
+  "roslina-52-monstera-albo.jpg",
+  "roslina-53-monstera-w-wazonie.jpg",
+  "roslina-54-rozowy-storczyk.jpg",
+  "roslina-55-bukiet-storczykow.jpg",
 ];
 
-test("folder Obrazki zawiera czterdzieści poprawnych, zoptymalizowanych plików JPEG", () => {
+test("folder Obrazki zawiera 55 poprawnych, zoptymalizowanych plików JPEG (z miniaturami WebP)", () => {
   for (const filename of photoFiles) {
     const file = path.join(root, "Obrazki", filename);
     assert.equal(fs.existsSync(file), true, `Brak ${filename}`);
@@ -59,7 +75,12 @@ test("folder Obrazki zawiera czterdzieści poprawnych, zoptymalizowanych plików
     assert.equal(data.at(-1), 0xd9, `${filename} nie ma końca JPEG`);
     assert.ok(data.length > 15_000, `${filename} jest podejrzanie mały`);
     assert.ok(data.length < 900_000, `${filename} nie został wystarczająco zoptymalizowany`);
+    for (const width of [400, 600]) {
+      const thumb = path.join(root, "assets", "gallery-thumbs", `${filename.replace(/\.jpg$/, "")}-${width}.webp`);
+      assert.equal(fs.existsSync(thumb), true, `Brak miniatury ${width} px dla ${filename}`);
+    }
   }
+  assert.equal(fs.readdirSync(path.join(root, "Obrazki")).filter((name) => name.endsWith(".jpg")).length, 55);
 });
 
 test("dokumentacja podaje licencję i źródło każdego zdjęcia", () => {
@@ -69,9 +90,9 @@ test("dokumentacja podaje licencję i źródło każdego zdjęcia", () => {
   for (const filename of photoFiles) assert.match(documentation, new RegExp(filename.replaceAll(".", "\\.")));
 });
 
-test("katalog galerii ma czterdzieści trwałych nagród i warunki z pięciu gier", () => {
+test("katalog galerii ma 55 trwałych nagród i warunki z pięciu gier", () => {
   const source = read("shared/owl-gallery.js");
-  assert.equal((source.match(/id: "owl-\d\d"/g) || []).length, 40);
+  assert.equal((source.match(/id: "owl-\d\d"/g) || []).length, 55);
   assert.match(source, /profile\?\.\(\)\.gallery/);
   assert.match(source, /profile\.gallery = stored/);
   assert.match(source, /const VERSION = 2/);
@@ -127,7 +148,7 @@ async function loadGallery() {
 
 test("cele galerii są danymi: warunek odblokowania i postęp do paska", async () => {
   const gallery = await loadGallery();
-  assert.equal(gallery.PHOTOS.length, 40);
+  assert.equal(gallery.PHOTOS.length, 55);
   // Zdjęcia 31–40 (uwaga G4): wymagania z nowych treści — Mgławica, Olimp, Sowie Zaświaty, rozdziały Ogrodów, diamentowa
   // i tęczowa roślina, nowe pomieszczenia Łącz i Hoduj.
   // Kopia JSON — tablice z piaskownicy `vm` mają inny prototyp niż tablice testu.
@@ -140,7 +161,30 @@ test("cele galerii są danymi: warunek odblokowania i postęp do paska", async (
     ["szklarniaRooms", 16],
     ["level", 10],
   ]);
-  assert.equal(new Set(gallery.PHOTOS.map((photo) => photo.file)).size, 40);
+  assert.equal(new Set(gallery.PHOTOS.map((photo) => photo.file)).size, 55);
+  assert.equal(new Set(gallery.PHOTOS.map((photo) => photo.id)).size, 55);
+  // Zdjęcia 41–55 (uwaga G7): rodzaje sowa / koza / humbak / roslina (filtr w zakładce), wymagania z kózek, humbaków
+  // i roślin we wszystkich grach; zdjęcia 1–40 bez pola `kind` to sowy.
+  const kindCount = (kind) => gallery.PHOTOS.filter((photo) => gallery.kindOf(photo) === kind).length;
+  assert.deepEqual(JSON.parse(JSON.stringify(gallery.KINDS.map((entry) => entry.id))), [
+    "sowa",
+    "koza",
+    "humbak",
+    "roslina",
+  ]);
+  assert.deepEqual([kindCount("sowa"), kindCount("koza"), kindCount("humbak"), kindCount("roslina")], [43, 4, 4, 4]);
+  assert.deepEqual(goalsOf("owl-44"), [["goatsCaught", 40]]);
+  assert.deepEqual(goalsOf("owl-48"), [["whaleRides", 15]]);
+  assert.deepEqual(goalsOf("owl-49"), [["sowa3Finishes", 3]]);
+  assert.deepEqual(goalsOf("owl-55"), [
+    ["ogrodyChapters", 22],
+    ["szklarniaRooms", 16],
+  ]);
+  for (const photo of gallery.PHOTOS.filter((entry) => Number(entry.id.slice(4)) > 40)) {
+    assert.match(photo.sourceUrl, /^https:\/\/www\.pexels\.com\/photo\/\d+\/$/, photo.id);
+    assert.notEqual(photo.photographer, "", photo.id);
+    assert.ok(photo.requirement.endsWith("."), photo.id);
+  }
   for (const photo of gallery.PHOTOS) {
     assert.ok(Array.isArray(photo.goals), photo.id);
     for (const [source, target] of photo.goals) {
@@ -186,7 +230,7 @@ test("miniatury WebP 400 i 600 px dla każdego zdjęcia, siatka poniżej 1 MB", 
     }
   }
   assert.ok(total400 < 1024 * 1024, `miniatury 400 px: ${total400} B`);
-  assert.equal(fs.readdirSync(path.join(root, "assets/gallery-thumbs")).length, 80);
+  assert.equal(fs.readdirSync(path.join(root, "assets/gallery-thumbs")).length, 110);
 });
 
 test("każdy cel zdjęcia powstaje ze zdarzeń gier (Sowia Akademia, E9d) albo to poziom / liczba osiągnięć", async () => {

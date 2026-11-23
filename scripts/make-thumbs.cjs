@@ -1,5 +1,8 @@
 // Miniatury Galerii Sów: Obrazki/*.jpg (1200 × 900) → assets/gallery-thumbs/<nazwa>-400.webp i -600.webp.
-// Chromium z Playwright skaluje zdjęcie na płótnie (wygładzanie „high”) i koduje WebP. Uruchomienie: node scripts/make-thumbs.cjs
+// Chromium z Playwright skaluje zdjęcie na płótnie (wygładzanie „high”) i koduje WebP. Uruchomienie:
+//   node scripts/make-thumbs.cjs                      — wszystkie zdjęcia
+//   node scripts/make-thumbs.cjs koza-44-….jpg …      — tylko podane (nowe zdjęcia bez przepisywania starych miniatur)
+// SOWIE_CHROMIUM=<ścieżka> — Chromium spoza Playwrighta (jak w playwright.config.js, tylko lokalnie).
 const fs = require("fs");
 const path = require("path");
 const { chromium } = require("@playwright/test");
@@ -14,11 +17,13 @@ const SIZES = [
 
 (async () => {
   fs.mkdirSync(TARGET, { recursive: true });
+  const only = process.argv.slice(2).map((name) => path.basename(name));
   const files = fs
     .readdirSync(SOURCE)
-    .filter((name) => name.endsWith(".jpg"))
+    .filter((name) => name.endsWith(".jpg") && (!only.length || only.includes(name)))
     .sort();
-  const browser = await chromium.launch();
+  const executablePath = process.env.SOWIE_CHROMIUM || undefined;
+  const browser = await chromium.launch(executablePath ? { executablePath } : {});
   const page = await browser.newPage();
   let total = 0;
   for (const file of files) {

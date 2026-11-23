@@ -1,6 +1,6 @@
 # Fotografie w Galerii Sów
 
-Folder zawiera 40 fotografii wykorzystywane jako odblokowywane nagrody w grze. Pliki zostały pobrane z serwisu Pexels i technicznie przetworzone na potrzeby projektu: wykadrowane do proporcji 4:3, zmniejszone do 1200 × 900 px oraz skompresowane jako progresywne pliki JPEG.
+Folder zawiera 55 fotografii (sowy, kozy, humbaki i rośliny ozdobne) wykorzystywanych jako odblokowywane nagrody w grze. Pliki zostały pobrane z serwisu Pexels i technicznie przetworzone na potrzeby projektu: wykadrowane do proporcji 4:3, zmniejszone do 1200 × 900 px oraz skompresowane jako progresywne pliki JPEG.
 
 **Podmiany (2026-11-01, uwaga G5):** zdjęcia nr 2, 12, 22, 25 i 26 były bardzo podobnymi ujęciami tej samej sowy co
 inne zdjęcia Galerii (nr 2 — ta sama fotografia co nr 1, tylko przybliżona). Dostały nowe fotografie pod tymi samymi
@@ -10,6 +10,14 @@ zostają odblokowane); pliki mają nowe nazwy, żeby telefony nie pokazywały st
 **Nowe fotografie (2026-11-02, uwaga G4):** zdjęcia nr 31–40 (`owl-31` … `owl-40`) odblokowują nowe treści: krainy ponad
 Kosmosem w Sowie w Chmurach (1900, 3100 i 5100 m), nowe rozdziały Sowich Ogrodów (6, 9 i 14 ukończonych), diamentowe
 i tęczowe rośliny oraz nowe pomieszczenia w Łącz i Hoduj (12 i 16). Odpowiedź na pytanie 8b z Analizy 4: „Zaskocz mnie i sam wgraj”.
+
+**Nowe fotografie (2026-11-23, uwaga G7):** „Trzeba będzie rozbudować galerię do odblokowania o zdjęcia sów, kóz,
+wielorybów oraz roślin ozdobnych. Możesz wybrać z Pexels.” — zdjęcia nr 41–55 (`owl-41` … `owl-55`, pole `kind`
+w `shared/owl-gallery.js`): 3 sowy gatunków, których w Galerii nie było (puszczak mszarny, syczek, sowa śnieżna
+z bliska), 4 kozy (`koza-…`), 4 humbaki (`humbak-…`) i 4 rośliny ozdobne — Monstery i storczyki (`roslina-…`).
+Wymagania: złapane kózki, rejsy z humbakiem, ukończone kampanie Sowich Torów, rozdziały Sowich Ogrodów, kózki
+i hybrydy w Łącz i Hoduj, wysokość w Sowie w Chmurach, poziom i osiągnięcia Sowiej Akademii. W zakładce „Galeria”
+nowy filtr rodzaju: Sowy, Kozy, Humbaki, Rośliny. Miniatury: `node scripts/make-thumbs.cjs <pliki>` (tylko nowe).
 
 ## Licencja
 
@@ -69,6 +77,21 @@ Galeria pokazuje autora lub informację o twórcy w serwisie Pexels oraz odnośn
 | `sowa-38-puchacz-wirginijski.jpg` | Pexels — Leonardo Merlo | https://www.pexels.com/photo/28794105/ |
 | `sowa-39-dwie-pojdzki.jpg` | Pexels — twórca na stronie źródłowej | https://www.pexels.com/photo/7002648/ |
 | `sowa-40-norkowa-na-kamieniu.jpg` | Pexels — Stefan Messing | https://www.pexels.com/photo/3622695/ |
+| `sowa-41-puszczak-mszarny.jpg` | Pexels — Alexas Fotos | https://www.pexels.com/photo/10768565/ |
+| `sowa-42-syczek-w-rozwidleniu.jpg` | Pexels — Bitnik Gao | https://www.pexels.com/photo/30345313/ |
+| `sowa-43-sniezna-z-bliska.jpg` | Pexels — Charles Pragnell | https://www.pexels.com/photo/2524403/ |
+| `koza-44-usmiechniete-kozlatko.jpg` | Pexels — BLAXTAR ESSENTIALS | https://www.pexels.com/photo/9733333/ |
+| `koza-45-mala-wspinaczka.jpg` | Pexels — David Selbert | https://www.pexels.com/photo/7516858/ |
+| `koza-46-kozia-rodzina.jpg` | Pexels — waqed walid | https://www.pexels.com/photo/15323161/ |
+| `koza-47-laciata-na-lace.jpg` | Pexels — Thomas P | https://www.pexels.com/photo/17047218/ |
+| `humbak-48-w-skoku.jpg` | Pexels — Andre Estevez | https://www.pexels.com/photo/3309869/ |
+| `humbak-49-kto-tu-plywa.jpg` | Pexels — Andre Estevez | https://www.pexels.com/photo/3309785/ |
+| `humbak-50-mama-i-maluch.jpg` | Pexels — Elianne Dipp | https://www.pexels.com/photo/4802101/ |
+| `humbak-51-ogon-nad-oceanem.jpg` | Pexels — Stefanie Klenner | https://www.pexels.com/photo/4786532/ |
+| `roslina-52-monstera-albo.jpg` | Pexels — Huy Phan | https://www.pexels.com/photo/8284916/ |
+| `roslina-53-monstera-w-wazonie.jpg` | Pexels — Lisa Fotios | https://www.pexels.com/photo/1831126/ |
+| `roslina-54-rozowy-storczyk.jpg` | Pexels — Emil Mondoa | https://www.pexels.com/photo/12701202/ |
+| `roslina-55-bukiet-storczykow.jpg` | Pexels — Miguel Marmolejos Fernández | https://www.pexels.com/photo/4607177/ |
 
 ## Zasady dalszej rozbudowy
 

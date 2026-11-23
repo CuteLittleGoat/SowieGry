@@ -66,10 +66,17 @@
         <h2 class="menu-section-title">Galeria Sów</h2>
         <p class="menu-gallery-count" data-gallery-count></p>
       </div>
-      <div class="menu-chips" role="group" aria-label="Pokaż zdjęcia" data-gallery-filters>
+      <div class="menu-chips menu-gallery-filters" role="group" aria-label="Pokaż zdjęcia" data-gallery-filters>
         <button type="button" data-filter="all" aria-pressed="true">Wszystkie</button>
         <button type="button" data-filter="unlocked" aria-pressed="false">Odblokowane</button>
         <button type="button" data-filter="locked" aria-pressed="false">Do zdobycia</button>
+      </div>
+      <div class="menu-chips menu-gallery-filters" role="group" aria-label="Rodzaj zdjęć" data-gallery-kinds>
+        <button type="button" data-kind="all" aria-pressed="true">Wszystkie rodzaje</button>
+        <button type="button" data-kind="sowa" aria-pressed="false">Sowy</button>
+        <button type="button" data-kind="koza" aria-pressed="false">Kozy</button>
+        <button type="button" data-kind="humbak" aria-pressed="false">Humbaki</button>
+        <button type="button" data-kind="roslina" aria-pressed="false">Rośliny</button>
       </div>
       <div class="menu-gallery-grid" data-gallery-grid></div>
     </section>

@@ -1,4 +1,5 @@
-// Zakładka „Galeria”: 40 zdjęć sów (window.SowieOwlGallery), filtry, zablokowane z wymaganiem i paskiem postępu,
+// Zakładka „Galeria”: 55 zdjęć — sowy, kozy, humbaki i rośliny ozdobne (window.SowieOwlGallery), filtry (stan
+// i rodzaj zdjęcia), zablokowane z wymaganiem i paskiem postępu,
 // „Nowe!” z animacją odwrócenia oraz przeglądarka pełnoekranowa (przesuwanie, powiększanie, ulubione, tło menu).
 import { ICONS } from "../ui/icons.js";
 import { focusableIn } from "../ui/modal.js";
@@ -13,13 +14,17 @@ export function createGalleryTab({ root, gallery, academy, onSound = () => {}, o
   const grid = root.querySelector("[data-gallery-grid]");
   const count = root.querySelector("[data-gallery-count]");
   const filters = root.querySelector("[data-gallery-filters]");
+  const kinds = root.querySelector("[data-gallery-kinds]");
   let filter = "all";
+  let kind = "all";
   let announced = false;
   let viewer = null;
 
   const snapshot = () => gallery().snapshot();
   const photos = () => gallery().PHOTOS;
   const academySnapshot = () => academy()?.snapshot?.() || { level: 1, feathers: 0, metrics: {} };
+  // Rodzaj zdjęcia (filtr „Sowy / Kozy / Humbaki / Rośliny”); zdjęcie bez rodzaju to sowa.
+  const ofKind = (photo) => kind === "all" || (gallery().kindOf?.(photo) || photo.kind || "sowa") === kind;
 
   function tile(photo, state, index) {
     const unlocked = state.unlocked.includes(photo.id);
@@ -54,6 +59,7 @@ export function createGalleryTab({ root, gallery, academy, onSound = () => {}, o
     count.textContent = `${state.unlockedCount} / ${state.total}`;
     const list = photos()
       .map((photo, index) => ({ photo, index, unlocked: state.unlocked.includes(photo.id) }))
+      .filter(({ photo }) => ofKind(photo))
       .filter(({ unlocked }) => filter === "all" || (filter === "unlocked" ? unlocked : !unlocked));
     grid.innerHTML = list.length
       ? list.map(({ photo, index }) => tile(photo, state, index)).join("")
@@ -73,6 +79,14 @@ export function createGalleryTab({ root, gallery, academy, onSound = () => {}, o
       other.setAttribute("aria-pressed", String(other === button));
     render();
   });
+  kinds?.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-kind]");
+    if (!button) return;
+    kind = button.dataset.kind;
+    for (const other of kinds.querySelectorAll("[data-kind]"))
+      other.setAttribute("aria-pressed", String(other === button));
+    render();
+  });
   grid.addEventListener("click", (event) => {
     const button = event.target.closest("[data-open-photo]");
     if (button) openViewer(button.dataset.openPhoto, button);
@@ -82,7 +96,8 @@ export function createGalleryTab({ root, gallery, academy, onSound = () => {}, o
 
   function openViewer(id, trigger) {
     const state = snapshot();
-    const unlocked = photos().filter((photo) => state.unlocked.includes(photo.id));
+    // Przeglądanie w obrębie wybranego rodzaju (Sowy, Kozy…), tylko odblokowane.
+    const unlocked = photos().filter((photo) => state.unlocked.includes(photo.id) && ofKind(photo));
     let index = Math.max(
       0,
       unlocked.findIndex((photo) => photo.id === id),
