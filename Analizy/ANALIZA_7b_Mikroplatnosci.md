@@ -5,7 +5,7 @@
 > (gdzie w Dziupli jest „pole” do Wypluffków), [`ANALIZA_8_Nowa_gra_Sowia_Farma.md`](ANALIZA_8_Nowa_gra_Sowia_Farma.md)
 > (skórki narzędzi) i kod na `main` (Sowi Butik `shared/meta/shop.js`, SowieCloud `shared/sowie-cloud.js`, reguły
 > `firestore.rules`, menu `shared/menu/`) · Status: **decyzje właściciela 2026-11-24** ([rozdział 19](#19-pytania-i-decyzje-właściciela)); budowa
-> **razem z Sowią Dziuplą — następne zadanie** ([rozdział 17](#17-plan-prac)) · Zasady pracy bez zmian: [`ANALIZA_3_Plan_prac.md`, rozdz. 8.1](ANALIZA_3_Plan_prac.md);
+> **razem z Sowią Dziuplą — na Twoje polecenie** ([rozdział 17](#17-plan-prac)) · Zasady pracy bez zmian: [`ANALIZA_3_Plan_prac.md`, rozdz. 8.1](ANALIZA_3_Plan_prac.md);
 > zasada „nic nie ginie”: [`ANALIZA_4`, rozdz. 2](ANALIZA_4_Uwagi_z_testow_poprawki_i_rozbudowa.md); lekcja zapisu
 > Butiku: uwaga G3.
 
@@ -41,16 +41,18 @@ i `STAN_PRAC.md` (punkt 0.8). Testy na telefonie dopiszę do `TESTY_NA_TELEFONIE
   jednym stuknięciem. Są też zwroty, historia, ogłoszenie i promocja. Bez logowania do konsoli Firestore.
 - **U gracza:** gdy zatwierdzisz doładowanie, w Dziupli od razu pojawia się „Sowi Bank: wpłynęło 550 Wypluffków! 🎉”
   z Twoją notką.
-- **Bezpiecznie po rodzinnemu:** reguły Firestore pilnują, że saldo **zawsze zgadza się** z doładowaniami i wydatkami,
-  nie spada poniżej zera, a historia jest tylko dopisywana; panel pokazuje każdą niezgodność. Hasło w kodzie to
-  zabezpieczenie „rodzinne” (rozdz. 8.1). Profil gracza i zapisy gier zostają bez zmian.
+- **Prosto:** gra ma jednego gracza i jednego admina, więc **bez zaawansowanych zabezpieczeń** (Twoja decyzja).
+  Reguły Firestore sprawdzają tylko, czy dane są poprawne (np. saldo to liczba nie mniejsza od zera). Profil gracza
+  i zapisy gier zostają bez zmian.
+- **W przyszłości w panelu** (Twoja prośba): **kopia zapasowa** danych z Firestore do pliku i **przywracanie**
+  z pliku (rozdz. 8.3, etap W10).
 - **Parodia, ale bez natręctwa** (zasada potwierdzona przez Ciebie 2026-11-24): żadnych okienek w czasie gry. Żarty są w Butiku: odliczanie „Oferta kończy się za…”,
   które zawsze się przedłuża, regulamin Sowiego Banku, „Kantor: nieczynne”, program VIP od Płotki do **Humbaka**
   (w grach na telefon największych płacących nazywa się „wielorybami” — u nas wieloryb jest uroczy), reklama, która
   daje 0 Wypluffków, i uczciwe sowie jajko-niespodzianka.
 - **Plan:** 10 etapów W0–W9, ok. **13–16 dni pracy**, przeplatanych z etapami Dziupli D0–D7. Dziupla i Wypluffki razem
-  to ok. **5–6 tygodni**. Panel admina i logikę można zrobić na początku. Rzeczy do Farmy — dopiero po jej wdrożeniu. **Start: teraz**
-  (Twoja decyzja: najpierw Dziupla i Wypluffki, Farma później).
+  to ok. **5–6 tygodni**. Panel admina i logikę można zrobić na początku. Rzeczy do Farmy — dopiero po jej wdrożeniu. **Start: na Twoje
+  polecenie** (kolejność: najpierw Dziupla i Wypluffki, Farma później).
 - **Twoje czynności:** tylko publikacja reguł ([Załącznik B](#załącznik-b-reguły-firestore--do-opublikowania-w-etapie-w2))
   w etapie W2 i pierwsze wejście do panelu ([rozdział 18](#18-twoje-czynności-krok-po-kroku)) — bez konsoli
   Authentication. **Decyzje z 2026-11-24** są w [rozdziale 19](#19-pytania-i-decyzje-właściciela); pytań otwartych
@@ -71,6 +73,9 @@ prac.
 | 2026-11-24 (po analizie) | „Logowanie do panelu admina (z mikropłatnościami) ma być zaszyte w kodzie. Ma to być "KoziAdmin". Bez maili.” |
 | 2026-11-24 (po analizie) | „"karta i BLIK wyszarzone" zostaje, ale tekst zmień z "„sowy nie mają kart”" na  „Banki nie akceptują wypluffków”” |
 | 2026-11-24 (po analizie) | „Bardzo też podoba mi się Twój kierunek "Parodia, ale bez natręctwa". Trzymajmy się tego.” |
+| 2026-11-24 (po decyzjach) | „Odnośnie "Hasło „KoziAdmin” w kodzie, bez maili" - gra jest używana przez jednego gracza i jednego admina. Nie ma potrzeby tworzenia jakiś zaawansowanych zabezpieczeń.” |
+| 2026-11-24 (po decyzjach) | „Dopisz też, że w przyszłości w panelu admina chciałbym mieć opcję tworzenia backupu danych z firestore i przywracania ich z pliku.” |
+| 2026-11-24 (po decyzjach) | „Pracę nad wdrożeniem sklepu i butiku zaczniemy potem. Czekaj na moje polecenie.” |
 | 2026-11-24 (po analizie) | odpowiedzi na pytania 1–9 (rozdz. 19) oraz do Analiz 7 i 8, które dotyczą Wypluffków: półka „można to połączyć z Analizy/ANALIZA_7b_Mikroplatnosci.md”, nawozy „kupowanych w sklepie kozy oraz za mikropłatności”, „Proponuję zacząć od wdrożenia mikropłatności i dziupli. Farmę dodamy później.” |
 
 | Wymaganie | Gdzie w projekcie |
@@ -91,6 +96,9 @@ prac.
 | „Parodia, ale bez natręctwa” — trzymamy się tego | rozdz. 3 (zasada 4), 11.2 |
 | półka Dziupli połączona z Wypluffkami; nawozy w Farmie także za Wypluffki | rozdz. 9, 10, Załącznik A |
 | najpierw Dziupla i Wypluffki, Farma później | rozdz. 17 |
+| jeden gracz i jeden admin — bez zaawansowanych zabezpieczeń | rozdz. 8.1, 13, Załącznik B |
+| w przyszłości: kopia zapasowa z Firestore i przywracanie z pliku w panelu admina | rozdz. 8.3, etap W10 |
+| start prac na Twoje polecenie | rozdz. 17 |
 
 ---
 
@@ -101,7 +109,7 @@ prac.
 | **Piórka** | waluta zdobywana w grach (zadania dnia, osiągnięcia, poziomy Sowiej Akademii) — `profil.academy.feathers`, wydawane przez `SowieAcademy.spend` | piórka zostają walutą „za granie”, bez żadnej wymiany na Wypluffki |
 | **Sowi Butik** (zakładka „Sowa”) | 11 strojów (30–80 piórek), 6 gatunków sów (40–120 piórek, od poziomu Akademii), dłuższe działanie kózek (30–100 piórek); dziennik zakupów `profil.shop.purchases` (klucz po kluczu — lekcja z uwagi G3), zapis po 0,3 s | Butik staje się **wspólnym sklepem** z dwiema walutami; zakupy za piórka działają dokładnie jak dziś |
 | **Profil** | jeden dokument `sowiegry/profil`, reguły: zapis z `schemaVersion` i najwyżej 30 pól najwyższego poziomu (dziś 13, Dziupla doda 1) | wybrane skórki zapiszemy w istniejącym polu `profil.shop` — **bez nowego pola najwyższego poziomu** |
-| **Hasło „huhu”** | sprawdzane tylko w przeglądarce, bez logowania w Firebase; reguły nie odróżniają nikogo od nikogo | saldo w **osobnym dokumencie** z własnymi regułami spójności (rozdz. 13); hasło admina „KoziAdmin” też w kodzie (decyzja 2026-11-24) |
+| **Hasło „huhu”** | sprawdzane tylko w przeglądarce, bez logowania w Firebase; reguły nie odróżniają nikogo od nikogo | saldo w **osobnym dokumencie** z prostymi regułami poprawności danych (rozdz. 13); hasło admina „KoziAdmin” też w kodzie (decyzja 2026-11-24) |
 | **Firebase** | projekt `sowiegry-1e1f9`, darmowy plan Spark, tylko Firestore (bez Authentication) | bez zmian — **bez Firebase Authentication** (decyzja 2026-11-24); nikt się nie loguje |
 | **Menu** | dziś lista gier i zakładki; wkrótce **Sowia Dziupla** (Analiza 7) | Wypluffki budujemy **razem z Dziuplą**, bo tam są ich miejsca na ekranie (rozdz. 6) |
 
@@ -119,8 +127,8 @@ regulamin ma trzy paragrafy, z których ostatni brzmi „Admin ma zawsze rację�
    zawsze „× Hu-hu”. W regulaminie i na obrazku „dowodu wpłaty” jest drobny dopisek: „Wypluffki nie są prawdziwe.
    Koza nie ucierpiała.”
 2. **Tylko wygląd.** Za Wypluffki nie da się kupić niczego, co pomaga w grze albo omija postęp (rozdz. 10).
-3. **Saldo zmienia tylko admin** — w panelu z hasłem „KoziAdmin”. Reguły Firestore pilnują, żeby saldo zawsze
-   zgadzało się z doładowaniami i wydatkami (rozdz. 13).
+3. **Saldo zmienia tylko admin** — w panelu z hasłem „KoziAdmin”. Jeden gracz i jeden admin, więc bez
+   zaawansowanych zabezpieczeń (rozdz. 8.1).
 4. **Parodia, ale bez natręctwa** (potwierdzone przez Ciebie: „Trzymajmy się tego”). Żadnych okienek w trakcie gry i żadnych „kup teraz” przy starcie gry. Parodia mieszka w Butiku
    i na ekranie doładowania (rozdz. 11.2).
 5. **Nic nie ginie.** Kupione rzeczy są zapisane w portfelu (dzienniku zakupów), a obecne zakupy za piórka, stroje,
@@ -410,11 +418,8 @@ Na czas tego ekranu znikają dolny pasek i powiadomienia, żeby nic go nie zasł
   w `shared/sowie-cloud.js` obok hasła gracza „huhu” (stała `HASLO_ADMINA`).
 - **Zapamiętanie:** po pierwszym wpisaniu telefon pamięta panel (wpis urządzenia w SowieCloud, jak hasło gracza),
   a „Wyloguj” go zapomina. Panel nie pyta o hasło gracza.
-- **Co to oznacza (uczciwie):** hasło zapisane w kodzie strony może odczytać ktoś, kto zna narzędzia programisty,
-  a bez logowania reguły Firestore nie odróżniają admina od gracza. To **zabezpieczenie rodzinne**: wystarcza, żeby
-  nikt nie zmienił salda przypadkiem albo z ciekawości, ale nie powstrzyma kogoś, kto celowo grzebie w kodzie.
-  Dlatego reguły pilnują **spójności** danych (rozdz. 13), historia jest tylko dopisywana, a panel ma **kontrolę
-  zgodności** (rozdz. 8.2): saldo zmienione poza panelem od razu widać.
+- **Bez zaawansowanych zabezpieczeń** (Twoja decyzja z 2026-11-24): SowieGry mają jednego gracza i jednego admina,
+  więc hasło w kodzie wystarczy — tak samo jak „huhu” dla gracza.
 - Panel korzysta z SowieCloud (tego samego połączenia z bazą co gry), więc SowieCloud zostaje jedynym modułem, który
   rozmawia z Firestore.
 
@@ -455,13 +460,38 @@ Na czas tego ekranu znikają dolny pasek i powiadomienia, żeby nic go nie zasł
 | **Ogłoszenie i promocja** | tekst na górze Butiku i promocja procentowa na rzeczy premium do wybranego dnia — możesz się pobawić w „firmę od gier” |
 | **Historia** | ostatnie 30 operacji: data, zmiana, kod, notka |
 | **Pierwsze wejście** | gdy portfela jeszcze nie ma: przycisk „Załóż portfel gracza” (opcjonalnie z prezentem powitalnym, np. 500 z notką „Witamy w Sowim Banku!”) |
-| **Kontrola zgodności** | panel sprawdza, czy saldo = doładowano − wydano i czy saldo = suma wpisów historii. Różnica → ostrzeżenie „Saldo nie zgadza się z historią o 300 — ktoś zmieniał je poza panelem?” i przycisk „Wyrównaj” (wpis korekty z notką) |
 
 - Każda operacja admina to **jedna transakcja** w bazie: saldo, wpis w historii, status prośby i powiadomienie dla
   gracza zapisują się razem albo wcale.
 - Ten sam styl co SowieGry (czcionka Fredoka, tokeny kolorów), jasny i ciemny, duże przyciski, polski.
 - Panel ma też własną instrukcję: `Admin/docs/README.md` (co zrobić po dostaniu zrzutu) i `Admin/docs/Documentation.md`
   (opis kodu).
+
+### 8.3. Później: kopia zapasowa i przywracanie z pliku (Twoja prośba z 2026-11-24)
+
+Na przyszłość, jako osobny etap **W10** (po Dziupli i Wypluffkach, na Twoje polecenie):
+
+- **„Pobierz kopię zapasową”**: panel czyta wszystkie dane SowieGry z Firestore i zapisuje je w jednym pliku na
+  telefonie albo komputerze (np. `sowiegry-kopia-2026-12-01.json`). W pliku są `sowiegry/meta`, profil, dokumenty
+  wszystkich gier z historią gier oraz portfel Wypluffków z prośbami i historią. Wartości zapisują się 1:1, także
+  znaczniki czasu — tym samym sposobem co skrypt przeniesienia bazy `scripts/kopia-firestore.mjs` (2026-11-23: 49 / 49
+  dokumentów zgodnych). Przed pobraniem panel pokazuje podsumowanie: data, liczba dokumentów, saldo, poziom Akademii.
+- **„Przywróć z pliku”**:
+  1. wybór pliku;
+  2. panel sprawdza, czy to kopia SowieGry i czy jest cała;
+  3. panel pokazuje, co się zmieni („kopia z 1.12, 412 dokumentów, saldo 1 250”);
+  4. okno „Przywrócić? Obecne dane zostaną zastąpione”;
+  5. **najpierw panel sam pobiera kopię obecnego stanu**, więc nic nie ginie nawet przy pomyłce;
+  6. zapis danych z pliku. Dokumenty, których nie ma w kopii (np. nowsze wpisy historii), są usuwane, żeby stan był
+     dokładnie taki jak w pliku.
+- **Otwarta gra na telefonie gracza** mogłaby po przywróceniu nadpisać dane tym, co ma w pamięci. Dlatego
+  przywrócenie zostawia znacznik w `sowiegry/meta`, a SowieCloud po jego zobaczeniu wczytuje dane od nowa. Panel
+  dodatkowo radzi: „Najlepiej, gdy gra na telefonie gracza jest zamknięta”.
+- **Bez nowych kosztów i uprawnień:** kopia to kilkaset odczytów, a przywrócenie kilkaset zapisów — daleko od
+  darmowych limitów. Reguły z Załącznika B już na to pozwalają: wpisy Wypluffków i historię gier można kasować
+  i tworzyć, a profil i `meta` są nadpisywane, nie kasowane.
+- **Testy:** kopia → przywrócenie na emulatorze daje dane identyczne 1:1; plik uszkodzony albo obcy jest odrzucany;
+  kopia obecnego stanu powstaje przed przywróceniem.
 
 ---
 
@@ -575,7 +605,7 @@ wolisz zrobić to sam, pola są w rozdz. 18, krok 6.
 // sowiegry_wypluffki/portfel
 {
   schemaVersion: 1,
-  saldo: 1250,                 // liczba całkowita ≥ 0; zawsze = doladowano − wydano (pilnują reguły)
+  saldo: 1250,                 // liczba całkowita ≥ 0 (reguły); = doladowano − wydano (aplikacja)
   doladowano: 3000,            // suma doładowań minus korekty (panel admina)
   wydano: 1750,                // suma wydatków minus zwroty (od niej zależy VIP)
   kupione: {                   // dziennik zakupów za Wypluffki — mapa, zapisywana klucz po kluczu (lekcja G3)
@@ -595,7 +625,7 @@ wolisz zrobić to sam, pola są w rozdz. 18, krok 6.
 | Ścieżka | Kto pisze | Pola | Do czego |
 | --- | --- | --- | --- |
 | `sowiegry_wypluffki/portfel/wypluffki_prosby/{kod}` | gra (tworzy), admin (załatwia) | `kod`, `pakiet`, `kwota`, `status` („czeka” → „zatwierdzone” / „odrzucone”), `at`; po załatwieniu admin dopisuje `kwotaPrzyznana`, `notka`, `zalatwiono` | „Hu-hu w kolejce” w grze i w panelu |
-| `sowiegry_wypluffki/portfel/wypluffki_historia/{wpis}` | gra (zakupy) i panel admina — **tylko dopisywane** | `zmiana` (+/−), `saldoPo`, `rodzaj` (`doladowanie`, `korekta`, `zwrot`, `zakup`), `kod`, `notka`, `at` | wyciąg z konta, historia i kontrola zgodności w panelu |
+| `sowiegry_wypluffki/portfel/wypluffki_historia/{wpis}` | gra (zakupy) i panel admina | `zmiana` (+/−), `saldoPo`, `rodzaj` (`doladowanie`, `korekta`, `zwrot`, `zakup`), `kod`, `notka`, `at` | wyciąg z konta, historia w panelu |
 
 ### 12.3. Profil — co gracz ma na sobie (bez nowego pola najwyższego poziomu)
 
@@ -631,25 +661,21 @@ wolisz zrobić to sam, pola są w rozdz. 18, krok 6.
 Pełna treść do skopiowania: [Załącznik B](#załącznik-b-reguły-firestore--do-opublikowania-w-etapie-w2). Obecne
 reguły profilu i gier zostają **słowo w słowo** — reguły tylko się rozszerzają.
 
-Bez logowania (Twoja decyzja: hasło w kodzie) reguły nie wiedzą, czy pisze gra, czy panel admina. Pilnują więc, żeby
-**dane zawsze były poprawne i spójne**:
+SowieGry mają jednego gracza i jednego admina, więc **bez zaawansowanych zabezpieczeń** (Twoja decyzja z 2026-11-24).
+Reguły Wypluffków są tak samo proste jak reguły profilu i gier — sprawdzają tylko, czy dane mają sens:
 
-1. **Portfel** każdy może przeczytać i zapisać, ale tylko poprawny: saldo, „doładowano” i „wydano” to liczby
-   całkowite, saldo od 0 do 10 000 000, a **saldo = doładowano − wydano** zawsze. Dziennik zakupów to mapa. Portfela
-   nie da się skasować.
-2. Dlatego każda zmiana musi „zgadzać się w rachunkach”. Zakup zwiększa „wydano” i zmniejsza saldo o tyle samo.
-   Doładowanie zwiększa „doładowano” i saldo, a korekta zmniejsza oba. Zwrot zmniejsza „wydano” i oddaje saldo.
-3. **Prośby o doładowanie:** nowa prośba musi mieć poprawny kod `HU-XXXX-XX`, status „czeka” i kwotę od 1
-   do 100 000. Załatwić ją można **tylko raz** („czeka” → „zatwierdzone” albo „odrzucone”), więc ten sam kod nie
-   doładuje konta dwa razy. Kodu, pakietu ani kwoty prośby nie da się zmienić, a prośby nie da się skasować.
-4. **Historia** (wyciąg z konta) jest **tylko dopisywana**: wpisu nie da się zmienić ani skasować, a każdy wpis ma
-   zmianę i saldo po zmianie (nie poniżej zera).
-5. Wszystko inne jest zamknięte (jak dziś).
+1. **Portfel** każdy może przeczytać i zapisać, jeśli saldo to liczba całkowita nie mniejsza od zera. Portfela nie da
+   się skasować.
+2. **Prośby o doładowanie** i **historia** — odczyt, zapis i kasowanie, jeśli kwota (zmiana) to liczba całkowita.
+   Kasowanie jest potrzebne do przywracania kopii zapasowej (rozdz. 8.3).
+3. Wszystko inne jest zamknięte (jak dziś).
 
-**Czego reguły nie pilnują:** kto zmienia saldo (bez logowania nie da się tego sprawdzić) i ile kosztuje konkretna
-rzecz (to pilnuje aplikacja). Żeby dopisać sobie Wypluffki poza panelem, trzeba by użyć narzędzi programisty i zmienić
-dwa pola naraz. Panel i tak pokaże to jako niezgodność z historią (rozdz. 8.2). Gdyby to kiedyś nie wystarczało,
-można przejść na logowanie e-mailem (pierwsza wersja tej analizy) bez zmiany danych.
+Resztą zajmuje się aplikacja:
+- saldo = doładowano − wydano;
+- prośbę zatwierdza się tylko raz — panel sprawdza jej status w tej samej transakcji, więc podwójne stuknięcie nie
+  doładuje konta dwa razy;
+- ceny biorą się z katalogu;
+- czekające mogą być najwyżej 3 prośby.
 
 ---
 
@@ -664,7 +690,7 @@ można przejść na logowanie e-mailem (pierwsza wersja tej analizy) bez zmiany 
 | `shared/dziupla/doladuj.js` | pakiety, metoda płatności, „Przetwarzanie…”, obrazek hu-hu na kozę (płótno z atlasu + dane wpłaty), „Udostępnij”, „reklama” |
 | `shared/dziupla/bank.js` | licznik Wypluffków na górnym pasku, Wypluffkomat, ulotka na tablicy, okienko „wpłynęło…” |
 | `shared/world/skins.js` | skórki Sówki (palety + warstwy wzorów) łączone z gatunkami w jednym `setTransform` |
-| `Admin/index.html`, `Admin/admin.js`, `Admin/admin.css` | panel admina: ekran „Hasło admina” i widoki (saldo, kolejka hu-hu, doładowanie, zwroty, historia, kontrola zgodności); dane wyłącznie przez SowieCloud (`SowieCloud.bank`), bez Firebase Authentication |
+| `Admin/index.html`, `Admin/admin.js`, `Admin/admin.css` | panel admina: ekran „Hasło admina” i widoki (saldo, kolejka hu-hu, doładowanie, zwroty, historia; później kopia zapasowa i przywracanie — rozdz. 8.3); dane wyłącznie przez SowieCloud (`SowieCloud.bank`), bez Firebase Authentication |
 | `Admin/docs/README.md`, `Admin/docs/Documentation.md` | instrukcja dla admina i opis kodu (zasady z `AGENTS.md`) |
 | `assets/svg/wypluffki/` | ikonka Wypluffki (zwykła i radosna), Wypluffkomat, ulotka, jajko, naklejki |
 | `assets/svg/garderoba/` (nowe) | kostiumy premium |
@@ -709,18 +735,17 @@ można przejść na logowanie e-mailem (pierwsza wersja tej analizy) bez zmiany 
 - **Pakiety, VIP, oferta dnia** (ta sama dla tej samej daty, nigdy rzecz posiadana), **jajko** (bez powtórek, szanse
   sumują się do 100%, „pusta pula”), **kod** (format, alfabet bez 0/O/1/I).
 - **Portfel:** normalizacja (brak, uszkodzony, nieznane rzeczy zostają), zakup w `MemoryBackend`: za mało, już
-  kupione, sukces, bez internetu, dwa zakupy naraz (jeden przechodzi).
+  kupione, sukces, bez internetu, dwa zakupy naraz (jeden przechodzi); operacje panelu (doładowanie, korekta, zwrot, zatwierdzenie prośby — tylko raz,
+  także przy podwójnym stuknięciu) zachowują saldo = doładowano − wydano.
 - **Profil:** kostium premium przechodzi normalizację, `shop.wyglad`, ≤ 30 pól, zwrócona rzecz → wygląd domyślny.
 - **Butik za piórka:** wszystkie dotychczasowe testy (także G3) bez zmian i zielone.
 
 ### 15.2. Reguły (emulator, `@firebase/rules-unit-testing`)
 
-- **Portfel:** odczyt bez logowania; poprawny zakup, doładowanie, korekta i zwrot przechodzą; saldo ≠ doładowano −
-  wydano, saldo < 0, ułamek, tekst albo brak pola → odrzucone; skasowanie portfela → odrzucone.
-- **Prośby:** poprawna przechodzi; zły kod (z 0/O/1/I), zły status, kwota 0 albo > 100 000, dodatkowe pola, czas
-  spoza serwera → odrzucone; załatwienie raz („czeka” → „zatwierdzone”) przechodzi; drugie załatwienie, zmiana
-  kwoty prośby i skasowanie → odrzucone.
-- **Historia:** dopisanie przechodzi; zmiana, skasowanie, saldo po zmianie < 0, nieznany rodzaj → odrzucone.
+- **Portfel:** odczyt i poprawny zapis bez logowania; saldo ujemne, ułamek albo tekst, brak `schemaVersion` →
+  odrzucone; skasowanie portfela → odrzucone.
+- **Prośby i historia:** zapis z całkowitą kwotą (zmianą) przechodzi, bez niej → odrzucony; kasowanie przechodzi
+  (przywracanie kopii).
 - Dotychczasowe testy reguł (profil, gry, historia gier, zamknięte kolekcje) bez zmian.
 
 ### 15.3. W przeglądarce (Playwright, profile telefonów, Chromium + WebKit w GitHubie)
@@ -733,8 +758,7 @@ można przejść na logowanie e-mailem (pierwsza wersja tej analizy) bez zmiany 
    kwota i data widoczne bez przewijania) → prośba w bazie; czwarta prośba → komunikat o kolejce.
 5. Panel admina (hasło „KoziAdmin”, także „koziadmin”; złe hasło → „To nie to hasło”): wejście → prośba na liście → „Zatwierdź” → u gracza w drugiej karcie
    okienko „wpłynęło…” i nowe saldo (nasłuch na żywo).
-6. Zwrot w panelu → rzecz znika z Szafy, Wypluffki wracają; saldo zmienione poza panelem → ostrzeżenie kontroli
-   zgodności.
+6. Zwrot w panelu → rzecz znika z Szafy, Wypluffki wracają.
 7. Szafa i Dekorator: zakładki premium, zakup na miejscu.
 8. Ograniczenie ruchu: bez pulsowania „+” i bez animacji obrazka.
 9. Gry: start każdej gry bez portfela (np. zablokowany odczyt) działa normalnie.
@@ -761,7 +785,8 @@ można przejść na logowanie e-mailem (pierwsza wersja tej analizy) bez zmiany 
 | Gracz pomyśli, że to prawdziwe płatności | niepokój, zwłaszcza u dziecka | nigdzie „zł” ani kart; cena to „× Hu-hu”; regulamin i dopisek „Wypluffki nie są prawdziwe”; karta w „Jak grać?” |
 | Parodia męczy | psuje przytulny klimat | żadnych okienek w grach, jedna ulotka, komentarze Sówki raz dziennie i wyłączane (rozdz. 11.2) |
 | Popsucie obecnego Butiku | powrót uwagi G3 | zakupy za piórka bez zmian w logice i zapisie; testy G3 zostają |
-| Hasło panelu jest w kodzie strony | ktoś znający narzędzia programisty może zmienić saldo | Twoja decyzja (zabezpieczenie rodzinne); reguły spójności, historia tylko dopisywana, kontrola zgodności w panelu; w razie potrzeby przejście na logowanie e-mailem bez zmiany danych |
+| Hasło panelu jest w kodzie strony | teoretycznie ktoś mógłby zmienić saldo | jeden gracz i jeden admin — Twoja decyzja: bez zaawansowanych zabezpieczeń |
+| Przywrócenie złego pliku (W10) | utrata nowszego postępu | podgląd zawartości, potwierdzenie, automatyczna kopia obecnego stanu przed przywróceniem |
 | Zalew próśb o doładowanie | długa lista u admina | najwyżej 3 czekające; „Odrzuć” jednym stuknięciem |
 | Ten sam zrzut wysłany dwa razy | podwójne doładowanie | kod i data na obrazku; panel ostrzega o użytym kodzie |
 | Zakup bez internetu | „zawieszony” zakup | zakupy premium tylko online, w transakcji; czytelny komunikat |
@@ -778,7 +803,7 @@ można przejść na logowanie e-mailem (pierwsza wersja tej analizy) bez zmiany 
 | --- | --- | --- |
 | **W0** | decyzje (rozdz. 19) — ✅ 2026-11-24 | S |
 | **W1** | logika: katalog, pakiety, VIP, oferta dnia, kod, portfel w SowieCloud (odczyt, nasłuch, transakcja, prośby), `MemoryBackend`, reguły + testy reguł, testy jednostkowe | M (2–3 dni) |
-| **W2** | **panel admina** `Admin/` (logowanie, saldo, kolejka hu-hu, doładowanie, korekta, zwrot, historia, ogłoszenie i promocja, kontrola zgodności), dokumentacja panelu → **publikacja reguł przez Ciebie** i test B1 | M (2 dni) |
+| **W2** | **panel admina** `Admin/` (logowanie, saldo, kolejka hu-hu, doładowanie, korekta, zwrot, historia, ogłoszenie i promocja), dokumentacja panelu → **publikacja reguł przez Ciebie** i test B1 | M (2 dni) |
 | **W3** | „Doładuj Wypluffki”: pakiety, metoda płatności, przetwarzanie, **obrazek hu-hu na kozę** (poza „hu-hu”, koza, warianty pakietów), kolejka, okienko „wpłynęło…” (najpierw obrazek do Twojej akceptacji) | M (2 dni) |
 | **W4** | wspólny Sowi Butik (dwie waluty, zakładki, oferta dnia, paragon, wyciąg, regulamin, kantor, VIP) + premium w Szafie i Dekoratorze; licznik, Wypluffkomat, ulotka | M–L (2–3 dni) |
 | **W5** | grafiki premium: ikonka, Wypluffkomat, skórki (palety + wzory), kostiumy, ozdoby Dziupli, gałąź i ramka w Trójkach (najpierw obrazek do akceptacji) | L (3 dni) |
@@ -786,8 +811,9 @@ można przejść na logowanie e-mailem (pierwsza wersja tej analizy) bez zmiany 
 | **W7** | „na deser”: jajko-niespodzianka, „reklama” za 0 Wypluffków, Mityczny Puch | S (1 dzień) |
 | **W8** | Sowia Farma: skórki narzędzi, strachów i domu, Kózka-maskotka, Wypluffkowy nawóz jakości — **dopiero po wdrożeniu Farmy** (Twoja decyzja; Analiza 8, etap F9) | S–M (1–2 dni, w budżecie Farmy) |
 | **W9** | dokumentacja (`docs/`, `Admin/docs/`, dokumentacja gier), `TESTY_NA_TELEFONIE.md` (B1–B7), `UWAGI_WLASCICIELA.md`, `STAN_PRAC.md` — na bieżąco w każdym etapie, zamknięcie na końcu | S |
+| **W10** | *w przyszłości, na Twoje polecenie:* kopia zapasowa danych z Firestore do pliku i przywracanie z pliku w panelu admina (rozdz. 8.3) | M (1–2 dni) |
 
-**Razem ok. 13–16 dni pracy** (bez W8).
+**Razem ok. 13–16 dni pracy** (bez W8 i W10).
 
 ### 17.2. Kolejność razem z Sowią Dziuplą (Analiza 7, rozdz. 15)
 
@@ -805,14 +831,15 @@ W6        wygląd premium w grach
 D6 + W7   „Więcej”, adresy, powitania Sówki; jajko i „reklama”
 D7 + W9   przełączenie ekranu startowego po Twojej zgodzie (stare menu usuwamy — bez „Prostego widoku”), testy, dokumentacja
 — później: Sowia Farma (Analiza 8), a po jej wdrożeniu W8
+— w przyszłości: W10 (kopia zapasowa i przywracanie z pliku w panelu)
 ```
 
 Dziupla (10–14 dni) i Wypluffki (13–16 dni) razem to ok. **23–30 dni pracy, czyli 5–6 tygodni**, bo część pracy jest
 wspólna (Szafa, Dekorator, górny pasek). Podgląd Dziupli z Wypluffkami da się sprawdzać już po W3. Reguły i panel
 admina działają wcześniej, więc pierwsze doładowanie możesz zrobić, zanim gracz zobaczy sklep.
 
-**Start: teraz** — Sowie Trójki już działają, a Ty zdecydowałeś: „Proponuję zacząć od wdrożenia mikropłatności
-i dziupli. Farmę dodamy później.” Wspólny stan prac i kolejność: [`STAN_PRAC.md`, punkt 0.8](STAN_PRAC.md).
+**Start: na Twoje polecenie** („Pracę nad wdrożeniem sklepu i butiku zaczniemy potem. Czekaj na moje polecenie.”).
+Kolejność według Twojej decyzji: „Proponuję zacząć od wdrożenia mikropłatności i dziupli. Farmę dodamy później.” Wspólny stan prac i kolejność: [`STAN_PRAC.md`, punkt 0.8](STAN_PRAC.md).
 
 ---
 
@@ -858,7 +885,10 @@ otwartych nie ma.**
 - Analiza 7, pytanie 6 — demo zawiera tylko demo gier, bez Dziupli i Wypluffków (rozdz. 6);
 - Analiza 8, pytanie 2 — waluta Farmy to **Dziupaki** (rozdz. 10);
 - Analiza 8, pytanie 9 — **nawozy jakości** w Farmie także za Wypluffki (wyjątek w rozdz. 10, W8);
-- **kolejność:** najpierw Dziupla i Wypluffki, Farma później (rozdz. 17).
+- **kolejność:** najpierw Dziupla i Wypluffki, Farma później (rozdz. 17);
+- **bez zaawansowanych zabezpieczeń** — jeden gracz i jeden admin (rozdz. 8.1, 13, Załącznik B);
+- **w przyszłości:** kopia zapasowa danych z Firestore i przywracanie z pliku w panelu admina (rozdz. 8.3, W10);
+- **start budowy na Twoje polecenie** („Czekaj na moje polecenie”).
 
 ---
 
@@ -962,10 +992,11 @@ decyduje, ile daje.
 
 ## Załącznik B. Reguły Firestore — do opublikowania w etapie W2
 
-**Teraz niczego nie publikuj.** W etapie W2 poproszę o publikację tej treści. Wersja z 2026-11-24 jest już **bez
-logowania** (decyzja: hasło panelu w kodzie), więc nie trzeba nic wpisywać ani podmieniać. Część „SowieGry” jest
-**słowo w słowo** taka jak dziś (`firestore.rules` z 2026-11-23). Nowa jest tylko część „Wypluffki”. Jeśli wcześniej
-dojdzie Sowia Farma (`"farma"` na liście gier — Analiza 8, Załącznik B), dostaniesz jedną, połączoną treść.
+**Teraz niczego nie publikuj.** W etapie W2 poproszę o publikację tej treści. Wersja z 2026-11-24 jest **prosta**:
+bez logowania (hasło panelu w kodzie) i bez zaawansowanych zabezpieczeń (jeden gracz i jeden admin), więc nie trzeba
+nic wpisywać ani podmieniać. Część „SowieGry” jest **słowo w słowo** taka jak dziś (`firestore.rules` z 2026-11-23).
+Nowa jest tylko część „Wypluffki”. Jeśli wcześniej dojdzie Sowia Farma (`"farma"` na liście gier — Analiza 8,
+Załącznik B), dostaniesz jedną, połączoną treść.
 
 ```
 rules_version = '2';
@@ -1000,64 +1031,35 @@ service cloud.firestore {
     }
 
     // --- Wypluffki (Analiza 7b) -------------------------------------------------------------
-    // Bez logowania (decyzja 2026-11-24: hasło panelu admina w kodzie). Reguły pilnują poprawności
-    // i spójności: saldo = doładowano − wydano, saldo nie poniżej zera, prośby załatwiane raz,
-    // historia tylko dopisywana.
-    function poprawnyPortfel(p) {
-      return p.schemaVersion is int
-          && p.saldo is int && p.doladowano is int && p.wydano is int
-          && p.saldo >= 0 && p.saldo <= 10000000 && p.wydano >= 0
-          && p.saldo == p.doladowano - p.wydano
-          && p.kupione is map;
-    }
-
+    // Jeden gracz i jeden admin (hasło panelu w kodzie) — bez zaawansowanych zabezpieczeń.
+    // Reguły sprawdzają tylko poprawność danych. Kasowanie wpisów pozwala przywrócić kopię zapasową.
     match /sowiegry_wypluffki/portfel {
       allow read: if true;
-      allow create, update: if poprawnyPortfel(request.resource.data);
+      allow create, update: if request.resource.data.schemaVersion is int
+                            && request.resource.data.saldo is int
+                            && request.resource.data.saldo >= 0;
       allow delete: if false;
 
-      // „Hu-hu w kolejce”: gra dodaje prośby, panel admina załatwia każdą tylko raz.
+      // „Hu-hu w kolejce”: prośby o doładowanie.
       match /wypluffki_prosby/{kod} {
-        allow read: if true;
-        allow create: if kod.matches('^HU-[A-HJ-NP-Z2-9]{4}-[A-HJ-NP-Z2-9]{2}$')
-                      && request.resource.data.keys().hasOnly(["kod", "pakiet", "kwota", "status", "at"])
-                      && request.resource.data.kod == kod
-                      && request.resource.data.pakiet is string
-                      && request.resource.data.kwota is int
-                      && request.resource.data.kwota > 0
-                      && request.resource.data.kwota <= 100000
-                      && request.resource.data.status == "czeka"
-                      && request.resource.data.at == request.time;
-        allow update: if resource.data.status == "czeka"
-                      && request.resource.data.status in ["zatwierdzone", "odrzucone"]
-                      && request.resource.data.diff(resource.data).affectedKeys()
-                           .hasOnly(["status", "kwotaPrzyznana", "notka", "zalatwiono"])
-                      && request.resource.data.kwotaPrzyznana is int
-                      && request.resource.data.kwotaPrzyznana >= 0;
-        allow delete: if false;
+        allow read, delete: if true;
+        allow create, update: if request.resource.data.kwota is int;
       }
 
-      // Wyciąg z konta: wpisy (zakupy, doładowania, korekty, zwroty) tylko dopisywane.
+      // Wyciąg z konta: zakupy, doładowania, korekty, zwroty.
       match /wypluffki_historia/{wpis} {
-        allow read: if true;
-        allow create: if request.resource.data.keys().hasOnly(["zmiana", "saldoPo", "rodzaj", "kod", "notka", "at"])
-                      && request.resource.data.zmiana is int
-                      && request.resource.data.saldoPo is int
-                      && request.resource.data.saldoPo >= 0
-                      && request.resource.data.rodzaj in ["zakup", "doladowanie", "korekta", "zwrot"]
-                      && request.resource.data.at == request.time;
-        allow update, delete: if false;
+        allow read, delete: if true;
+        allow create, update: if request.resource.data.zmiana is int;
       }
     }
   }
 }
 ```
 
-**Sprawdzone 2026-11-24 na emulatorze Firestore** (firebase-tools 15.31.0, poza repozytorium): 10 grup testów
-z rozdz. 15.2 (ok. 40 sprawdzeń) przechodzi. Zakup, doładowanie, korekta i zwrot przechodzą, gdy rachunki się
-zgadzają. Saldo „z powietrza”, saldo poniżej zera, ułamki, brak pól i skasowanie portfela są odrzucane. Prośbę
-można złożyć tylko z poprawnym kodem i załatwić tylko raz. Historia jest tylko dopisywana. Profil i pozostałe
-kolekcje działają bez zmian. W W1 te testy trafią do `tests/rules/`.
+**Sprawdzone 2026-11-24 na emulatorze Firestore** (firebase-tools 15.31.0, poza repozytorium): wszystkie 5 grup testów
+z rozdz. 15.2 przechodzi. Poprawne zapisy portfela przechodzą, a złe saldo, brak `schemaVersion` i skasowanie portfela
+są odrzucane. Prośby i historia działają. Przywracanie kopii przechodzi (nadpisanie profilu, skasowanie i ponowne
+utworzenie historii gry). Pozostałe kolekcje są dalej zamknięte. W W1 te testy trafią do `tests/rules/`.
 
 ---
 

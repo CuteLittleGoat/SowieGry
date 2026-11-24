@@ -70,8 +70,9 @@ gry bez zmian. **Dla Ciebie:** odpowiedzi na pytania Analizy 8 (w wolnej chwili 
 **Wypluffki**, czyli udawane mikropłatności jako parodia: wspólny Sowi Butik (piórka za granie, Wypluffki od admina —
 tylko wygląd), „Doładuj Wypluffki” z obrazkiem Sówki robiącej „HU HU!” na kozę i panel admina z hasłem `KoziAdmin`.
 Twoje odpowiedzi do Analiz 7, 7b i 8 są wpisane w ich rozdziały z pytaniami. **Kolejność:** testy w GitHubie w dwóch
-częściach → **Sowia Dziupla z Wypluffkami** → Sowia Farma → audyt kodu (punkt 0.8). **Dla Ciebie:** teraz nic —
-reguły z portfelem opublikujesz dopiero w etapie W2, gdy o to poproszę.
+częściach → **Sowia Dziupla z Wypluffkami** → Sowia Farma → audyt kodu (punkt 0.8). **Budowę zaczynam dopiero na Twoje
+polecenie** („Czekaj na moje polecenie”). Jeden gracz i jeden admin — bez zaawansowanych zabezpieczeń. W przyszłości
+w panelu admina: kopia zapasowa z Firestore i przywracanie z pliku (W10).
 
 ## 0. Poprawki po testach z 2026-11-01 (etapy P1–P8)
 
@@ -311,8 +312,9 @@ mikropłatności jako parodia „bez natręctwa”:
 - wspólny Sowi Butik: piórka za granie, Wypluffki od admina, a za Wypluffki tylko wygląd;
 - „Doładuj Wypluffki” z obrazkiem Sówki robiącej „HU HU!” na kozę (dowód wpłaty do zrzutu ekranu);
 - panel admina https://cutelittlegoat.github.io/SowieGry/Admin/ z hasłem `KoziAdmin` w kodzie;
-- portfel w nowej kolekcji `sowiegry_wypluffki` z regułami spójności (sprawdzone na emulatorze: 10 grup testów,
-  ok. 40 sprawdzeń).
+- portfel w nowej kolekcji `sowiegry_wypluffki` z prostymi regułami (jeden gracz i jeden admin — bez zaawansowanych
+  zabezpieczeń; sprawdzone na emulatorze);
+- w przyszłości w panelu: kopia zapasowa danych z Firestore do pliku i przywracanie z pliku (etap W10).
 
 Bez zmian w kodzie gier.
 
@@ -321,17 +323,19 @@ Bez zmian w kodzie gier.
 
 | Analiza | Najważniejsze decyzje | Gdzie |
 | --- | --- | --- |
-| 7 — Sowia Dziupla | Dziupla zastępuje menu (bez „Prostego widoku”); tablica w pionie; półka 3 + 2 miejsca (także za Wypluffki); ozdoby za granie, piórka i Wypluffki; automatyczny widok za oknem; demo tylko z grami; budowa teraz; doniczki stoją na półce (D1a) | rozdz. 16 |
-| 7b — Wypluffki | hasło panelu `KoziAdmin` w kodzie (bez maili); „Banki nie akceptują wypluffków”; „Parodia, ale bez natręctwa”; kolejka hu-hu, pakiety i ceny, jajko-niespodzianka, „Udostępnij obrazek”, VIP — tak; rzeczy do Farmy dopiero po Farmie; prezent powitalny | rozdz. 19 |
+| 7 — Sowia Dziupla | Dziupla zastępuje menu (bez „Prostego widoku”); tablica w pionie; półka 3 + 2 miejsca (także za Wypluffki); ozdoby za granie, piórka i Wypluffki; automatyczny widok za oknem; demo tylko z grami; budowa na Twoje polecenie; doniczki stoją na półce (D1a) | rozdz. 16 |
+| 7b — Wypluffki | hasło panelu `KoziAdmin` w kodzie (bez maili); „Banki nie akceptują wypluffków”; „Parodia, ale bez natręctwa”; kolejka hu-hu, pakiety i ceny, jajko-niespodzianka, „Udostępnij obrazek”, VIP — tak; rzeczy do Farmy dopiero po Farmie; prezent powitalny; bez zaawansowanych zabezpieczeń; w przyszłości kopia zapasowa i przywracanie w panelu | rozdz. 19 |
 | 8 — Sowia Farma | waluta „Dziupaki”; pory roku z furtką (rośliny sezonowe, mrozy); pełny plecak — ostrzeżenie i opróżnianie przez gracza; jakość plonów i nawozy jakości (u kozy i za Wypluffki); przyjaźnie w drugim etapie; etapy i testy według mnie; po pierwszej wersji audyt kodu (A1 → etap F11) | rozdz. 20 |
 
 **Kolejność prac** (Twoja decyzja: „Proponuję zacząć od wdrożenia mikropłatności i dziupli. Farmę dodamy później.”)
-— aktualizuję po każdym kroku:
+— **start na Twoje polecenie** („Pracę nad wdrożeniem sklepu i butiku zaczniemy potem. Czekaj na moje polecenie.”);
+aktualizuję po każdym kroku:
 
 | Krok | Co | Stan |
 | --- | --- | --- |
-| T0 | testy w GitHubie w dwóch równoległych częściach (jakość + Chromium, WebKit), WebKit tylko na profilach iPhone — ok. 25 min zamiast 55 (Analiza 8, rozdz. 17.4) | ⏳ następny |
+| T0 | testy w GitHubie w dwóch równoległych częściach (jakość + Chromium, WebKit), WebKit tylko na profilach iPhone — ok. 25 min zamiast 55 (Analiza 8, rozdz. 17.4) | ⏳ czeka na Twoje polecenie |
 | D + W | Sowia Dziupla z Wypluffkami — etapy D1–D7 i W1–W9 przeplatane ([Analiza 7b, rozdz. 17.2](ANALIZA_7b_Mikroplatnosci.md#172-kolejność-razem-z-sowią-dziuplą-analiza-7-rozdz-15)): logika i reguły → panel admina (Ty publikujesz reguły) → scena Dziupli → „Doładuj Wypluffki” → Szafa, Dekorator i Butik → grafiki do akceptacji → wygląd w grach → przełączenie menu po Twoich testach | ⏳ |
+| W10 | kopia zapasowa danych z Firestore do pliku i przywracanie z pliku w panelu admina ([Analiza 7b, rozdz. 8.3](ANALIZA_7b_Mikroplatnosci.md)) | ⏳ w przyszłości, na Twoje polecenie |
 | F | Sowia Farma — F0–F10 ([Analiza 8](ANALIZA_8_Nowa_gra_Sowia_Farma.md), rozdz. 19), z rzeczami za Wypluffki (W8) | ⏳ później |
 | A1 | audyt wszystkich plików i komentarze w kodzie (Analiza 8, etap F11) | ⏳ po pierwszej wersji Farmy |
 
@@ -561,9 +565,10 @@ przybyło (P3–P7) i przebieg zbliżył się do limitu 60 minut, limit czasu CI
 0. Zadanie z 2026-11-22 (punkt 0.3): dokumentacja ✅ → analiza Sowiej Dziupli ✅ → poprawki wydajności W0–W8 ✅ →
    nowa gra „Sowie Trójki” jako podgląd i nowe zdjęcia Galerii ✅ → jeden PR na `main` ✅ → przeniesienie bazy ✅ →
    etap M5 (Trójki w menu i z zapisem) ✅. Twoje czynności: testy T7–T9; decyzja, czy i kiedy usunąć stare dane
-   SowieGry ze starego projektu (`PRZENIESIENIE_FIRESTORE.md`, krok 7 — do tego czasu nic nie kasujemy). Następne
-   zadanie (decyzje z 2026-11-24, punkt 0.8): **T0** — szybsze testy w GitHubie, potem **Sowia Dziupla z Wypluffkami**
-   (Analizy 7 i 7b), później **Sowia Farma** (Analiza 8), a po jej pierwszej wersji **audyt kodu** (A1, etap F11).
+   SowieGry ze starego projektu (`PRZENIESIENIE_FIRESTORE.md`, krok 7 — do tego czasu nic nie kasujemy). Kolejne
+   zadania (decyzje z 2026-11-24, punkt 0.8) — **dopiero na Twoje polecenie**: **T0** — szybsze testy w GitHubie, potem **Sowia Dziupla z Wypluffkami**
+   (Analizy 7 i 7b), później **Sowia Farma** (Analiza 8), a po jej pierwszej wersji **audyt kodu** (A1, etap F11). W przyszłości: kopia zapasowa i przywracanie w panelu
+   admina (W10).
 1. Twoje testy na telefonie (`TESTY_NA_TELEFONIE.md`) i uwagi (w nowym oknie) → wpis w `UWAGI_WLASCICIELA.md` →
    poprawki małymi commitami, każdy z zielonym `npm test`, z aktualizacją dokumentacji gry i tego pliku.
 2. Ewentualnie inne wymagania zdjęć Galerii (punkt 3, wiersz 2) i ceny w Butiku albo w Kramie ogrodnika.

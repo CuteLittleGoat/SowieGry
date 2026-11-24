@@ -3,7 +3,7 @@
 > Data: 2026-11-22 · Podstawa: decyzja właściciela nr 7 do Analizy 5 i dwie wiadomości uzupełniające z tego samego
 > dnia (dosłownie w [rozdziale 1](#1-prośba-dosłownie-i-numer)) oraz kod na `main` (menu `index.html`, `shared/menu/`,
 > Sowi Butik `shared/meta/shop.js`, Galeria `shared/owl-gallery.js`) · Status: **decyzje właściciela 2026-11-24** ([rozdział 16](#16-pytania-do-właściciela-prostym-językiem));
-> budowa **razem z Wypluffkami** ([`ANALIZA_7b_Mikroplatnosci.md`](ANALIZA_7b_Mikroplatnosci.md)) — **następne zadanie**
+> budowa **razem z Wypluffkami** ([`ANALIZA_7b_Mikroplatnosci.md`](ANALIZA_7b_Mikroplatnosci.md)) — **na Twoje polecenie**
 > ([rozdział 15](#15-plan-prac)) · Zasady pracy bez
 > zmian: [`ANALIZA_3_Plan_prac.md`, rozdz. 8.1](ANALIZA_3_Plan_prac.md); zasada „nic nie ginie”:
 > [`ANALIZA_4`, rozdz. 2](ANALIZA_4_Uwagi_z_testow_poprawki_i_rozbudowa.md).
@@ -38,7 +38,7 @@ w Dziupli **każda doniczka stoi dolną krawędzią na półce** (rozdz. 6.2, te
   na ekranie. Zapis w profilu (jedno nowe pole), **bez zmiany reguł Firestore**.
 - **Bez ryzyka:** najpierw podgląd (przycisk „Wypróbuj Sowią Dziuplę”, obecne menu zostaje), dopiero po Twojej
   akceptacji Dziupla **zastępuje** menu główne — stare menu usuwamy, bez „Prostego widoku” (Twoja decyzja).
-- **Plan:** 8 etapów (D0–D7), ok. 10–14 dni pracy, **teraz** — Sowie Trójki już działają (tablica ma od razu 6 gier),
+- **Plan:** 8 etapów (D0–D7), ok. 10–14 dni pracy, **na Twoje polecenie** — Sowie Trójki już działają (tablica ma od razu 6 gier),
   przeplecione z etapami Wypluffków W0–W9 (Analiza 7b, rozdz. 17.2). **Decyzje z 2026-11-24:**
   [rozdział 16](#16-pytania-do-właściciela-prostym-językiem) — pytań otwartych nie ma.
 
@@ -458,7 +458,7 @@ w CI — liczniki pracy (ile płócien rysuje się w spokoju) zamiast liczenia k
 | **D6** | „Więcej” (Akademia, Rekordy, Jak grać, Butik, Ustawienia), adresy, karteczki zadań i instalacji, powitania Sówki | M (1–2 dni) |
 | **D7** | przełączenie ekranu startowego po Twojej zgodzie, **usunięcie starego menu** (bez „Prostego widoku”), aktualizacja testów i dokumentacji (`docs/README.md`, `docs/Documentation.md`) | M (1–2 dni) |
 
-Razem ok. 10–14 dni. **Kiedy: teraz** — Sowie Trójki już działają (decyzja 7), a Ty zdecydowałeś: „Proponuję zacząć
+Razem ok. 10–14 dni. **Kiedy: na Twoje polecenie** („Czekaj na moje polecenie”) — Sowie Trójki już działają (decyzja 7), a Ty zdecydowałeś: „Proponuję zacząć
 od wdrożenia mikropłatności i dziupli. Farmę dodamy później.” Etapy D przeplatamy z etapami Wypluffków W0–W9
 (kolejność: [Analiza 7b, rozdz. 17.2](ANALIZA_7b_Mikroplatnosci.md#172-kolejność-razem-z-sowią-dziuplą-analiza-7-rozdz-15)).
 Przed D1 — krótki krok T0: testy w GitHubie w dwóch równoległych częściach (Analiza 8, decyzja 16).
@@ -480,7 +480,7 @@ Firestore:** sama Dziupla ich nie zmienia; Wypluffki dopisują portfel (Analiza 
 | 4 | zgoda — za granie i za piórka, „plus mikropłatności opisane w Analizy/ANALIZA_7b_Mikroplatnosci.md” | kategoria „Premium ✨” w Dekoratorze (rozdz. 6.4) |
 | 5 | zgoda — „Automatyczny” widok za oknem | rozdz. 6.1 |
 | 6 | zgoda — „Demo zawiera tylko demo gier” | demo bez Dziupli i Wypluffków (rozdz. 8, 12) |
-| 7 | „Sowie Trójki już działają” | budowa teraz, razem z Wypluffkami (rozdz. 15) |
+| 7 | „Sowie Trójki już działają” | budowa razem z Wypluffkami, na Twoje polecenie (rozdz. 15) |
 | 8 | „Zdaję się na Ciebie” | katalog z Załącznika A + ozdoby premium z Analizy 7b, Załącznik A.2 |
 
 Pytania (dla porządku, w pierwotnym brzmieniu):
