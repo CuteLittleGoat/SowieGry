@@ -367,6 +367,11 @@ Na czas tego ekranu znikają dolny pasek i powiadomienia, żeby nic go nie zasł
 └──────────────────────────────┘
 ```
 
+**Makieta do akceptacji (2026-11-24, etap W3)** — złożona z prawdziwych części Sówki, kozy i humbaka z atlasu
+(dorysowane: otwarty dziobek, rozłożone skrzydła, zdziwiona koza):
+
+![Makieta: dowód wpłaty — Garstka (koza mruga „Mee?”), Kieszeń (koza podskakuje „MEEE?!”), Humbaczy Ładunek (Sówka na humbaku, mokra koza)](ANALIZA_7b_huhu_makieta.png)
+
 **Obrazek zależy od pakietu**, więc admin od razu widzi, o co chodzi:
 
 | Pakiet | Sówka | Koza | Tło |
