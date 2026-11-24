@@ -328,12 +328,12 @@ Bez zmian w kodzie gier.
 | 8 — Sowia Farma | waluta „Dziupaki”; pory roku z furtką (rośliny sezonowe, mrozy); pełny plecak — ostrzeżenie i opróżnianie przez gracza; jakość plonów i nawozy jakości (u kozy i za Wypluffki); przyjaźnie w drugim etapie; etapy i testy według mnie; po pierwszej wersji audyt kodu (A1 → etap F11) | rozdz. 20 |
 
 **Kolejność prac** (Twoja decyzja: „Proponuję zacząć od wdrożenia mikropłatności i dziupli. Farmę dodamy później.”)
-— **start na Twoje polecenie** („Pracę nad wdrożeniem sklepu i butiku zaczniemy potem. Czekaj na moje polecenie.”);
-aktualizuję po każdym kroku:
+— start na Twoje polecenie („Pracę nad wdrożeniem sklepu i butiku zaczniemy potem. Czekaj na moje polecenie.”) —
+**polecenie przyszło 2026-11-24: „Ok. Rozpoczynamy pracę nad rozbudową gier.”**; aktualizuję po każdym kroku:
 
 | Krok | Co | Stan |
 | --- | --- | --- |
-| T0 | testy w GitHubie w dwóch równoległych częściach (jakość + Chromium, WebKit), WebKit tylko na profilach iPhone — ok. 25 min zamiast 55 (Analiza 8, rozdz. 17.4) | ⏳ czeka na Twoje polecenie |
+| T0 | testy w GitHubie w dwóch równoległych częściach (jakość + Chromium, WebKit), WebKit tylko na profilach iPhone — ok. 25 min zamiast 55 (Analiza 8, rozdz. 17.4) | ✅ 2026-11-24 — `playwright.config.js` (`SOWIE_E2E_SILNIK`, `WEBKIT_PROFILES`), `.github/workflows/js-check.yml` (zadania `quality` i `webkit`), `npm run test:browser`; testów przeglądarkowych 1094 zamiast 1364 (Chromium 689, WebKit 405) |
 | D + W | Sowia Dziupla z Wypluffkami — etapy D1–D7 i W1–W9 przeplatane ([Analiza 7b, rozdz. 17.2](ANALIZA_7b_Mikroplatnosci.md#172-kolejność-razem-z-sowią-dziuplą-analiza-7-rozdz-15)): logika i reguły → panel admina (Ty publikujesz reguły) → scena Dziupli → „Doładuj Wypluffki” → Szafa, Dekorator i Butik → grafiki do akceptacji → wygląd w grach → przełączenie menu po Twoich testach | ⏳ |
 | W10 | kopia zapasowa danych z Firestore do pliku i przywracanie z pliku w panelu admina ([Analiza 7b, rozdz. 8.3](ANALIZA_7b_Mikroplatnosci.md)) | ⏳ w przyszłości, na Twoje polecenie |
 | F | Sowia Farma — F0–F10 ([Analiza 8](ANALIZA_8_Nowa_gra_Sowia_Farma.md), rozdz. 19), z rzeczami za Wypluffki (W8) | ⏳ później |

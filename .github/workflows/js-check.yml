@@ -11,13 +11,15 @@ permissions:
   contents: read
 
 jobs:
+  # Od kroku T0 (2026-11-24, Analiza 8 rozdz. 17.4) dwa równoległe zadania: „quality” (składnia, ESLint, Prettier,
+  # HTML, testy jednostkowe, reguły Firestore i testy przeglądarkowe w Chromium) i „webkit” (testy przeglądarkowe
+  # w WebKit na profilach iPhone'ów). Wcześniej jedno zadanie z oboma silnikami trwało ok. 55 minut.
   quality:
     # Ubuntu 24.04 na stałe: od 2026-11-02 „ubuntu-latest” to Ubuntu 26.04, którego Playwright 1.56.1 (przypięty
     # w package.json) nie obsługuje — „npx playwright install --with-deps” kończył się błędem przed testami.
     runs-on: ubuntu-24.04
-    # Ok. 1200 testów (Chromium i WebKit na profilach telefonów) trwa ok. 45 minut (cały przebieg ok. 48 minut,
-    # 2026-11-02) — zapas na powtórki niestabilnych testów WebKit.
-    timeout-minutes: 75
+    # Ok. 690 testów w Chromium (komputer i 5 profili telefonów) — zapas na powtórki niestabilnych testów.
+    timeout-minutes: 50
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -43,8 +45,8 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Install Chromium and WebKit
-        run: npx playwright install --with-deps chromium webkit
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
 
       - name: Check JavaScript syntax
         run: npm run syntax
@@ -67,12 +69,13 @@ jobs:
         # Diagnostyka zawieszeń WebKit: wyjście procesów przeglądarek (np. ostrzeżenia GStreamer) trafia do logu.
         env:
           DEBUG: pw:browser
+          SOWIE_E2E_SILNIK: chromium
 
       - name: Upload Playwright report
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: playwright-report
+          name: playwright-report-chromium
           path: playwright-report
           if-no-files-found: ignore
           retention-days: 14
@@ -81,7 +84,67 @@ jobs:
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: test-results
+          name: test-results-chromium
+          path: |
+            test-results
+            firestore-debug.log
+          if-no-files-found: ignore
+          retention-days: 14
+
+  webkit:
+    runs-on: ubuntu-24.04
+    # Ok. 400 testów w WebKit (3 profile iPhone'ów) — zapas na powtórki niestabilnych testów WebKit.
+    timeout-minutes: 50
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      # Emulator Firestore (firebase-tools) wymaga Javy.
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: "21"
+
+      - name: Cache Firestore emulator
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/firebase/emulators
+          key: firebase-emulators-${{ runner.os }}-${{ hashFiles('package.json') }}
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Install WebKit
+        run: npx playwright install --with-deps webkit
+
+      # Reguły Firestore i składnię sprawdza zadanie „quality” — tu tylko testy przeglądarkowe w WebKit (Safari).
+      - name: Run browser tests in WebKit on Firestore emulator
+        run: npm run test:browser
+        # Diagnostyka zawieszeń WebKit: wyjście procesów przeglądarek (np. ostrzeżenia GStreamer) trafia do logu.
+        env:
+          DEBUG: pw:browser
+          SOWIE_E2E_SILNIK: webkit
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-webkit
+          path: playwright-report
+          if-no-files-found: ignore
+          retention-days: 14
+
+      - name: Upload test failures
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-webkit
           path: |
             test-results
             firestore-debug.log
