@@ -398,7 +398,9 @@ async function showPanel() {
 
 if (!bank) {
   document.body.textContent = "Brak SowieCloud — panel nie może działać.";
-} else if (bank.isAdmin()) {
+} else if (bank.isAdmin() && cloud.isUnlocked()) {
+  // Hasło admina zapamiętane i połączenie odblokowane. Gdy telefon wylogowano w menu gry („Wyloguj to urządzenie”),
+  // panel pyta o hasło admina jeszcze raz — inaczej czekałby bez końca na odblokowanie połączenia.
   showPanel();
 } else {
   showGate();

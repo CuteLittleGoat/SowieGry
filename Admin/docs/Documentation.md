@@ -55,7 +55,7 @@ i reguł Firestore: `docs/Documentation.md`, rozdziały „Sowi Bank — `SowieC
   `istnieje`, `zalatwione` („Ta prośba jest już załatwiona — to może stary zrzut ekranu?”), `brak-prosby`, `saldo`,
   `kwota`, `kod`, `brak`, `promocja`, `unknown`, `blad`. Etykiety rodzajów historii (`KINDS_LABEL`), stanów próśb
   (`STATUS_LABEL`: czeka ⏳, zatwierdzone ✅, odrzucone ❌) i połączenia (`STATUS_TEXT`).
-- **Start:** `bank.isAdmin()` → panel, inaczej ekran hasła (`showGate`): „oko” przełącza typ pola; „Wejdź” →
+- **Start:** `bank.isAdmin()` i `cloud.isUnlocked()` → panel (telefon wylogowany w menu gry — znowu ekran hasła admina, bo połączenie czekałoby na odblokowanie), inaczej ekran hasła (`showGate`): „oko” przełącza typ pola; „Wejdź” →
   `bank.unlockAdmin(haslo)` — `true` → panel, `false` → błąd i zaznaczenie pola.
 - **`showPanel()`** (raz): delegacja kliknięć na `document` (`[data-amount]` wpisuje kwotę do pola ręcznego,
   `[data-action]` → funkcja z `actions`), `cloud.onStatus(renderStatus)`, po `cloud.ready` — `bank.onWallet(…)` (stan,
