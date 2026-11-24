@@ -74,6 +74,20 @@ częściach → **Sowia Dziupla z Wypluffkami** → Sowia Farma → audyt kodu (
 polecenie** („Czekaj na moje polecenie”). Jeden gracz i jeden admin — bez zaawansowanych zabezpieczeń. W przyszłości
 w panelu admina: kopia zapasowa z Firestore i przywracanie z pliku (W10).
 
+**2026-11-24 (start budowy Dziupli z Wypluffkami — punkt 0.8):**
+- **Testy w GitHubie** w dwóch równoległych częściach, z WebKitem tylko na iPhone'ach — przebieg trwa ok. 26 minut
+  zamiast prawie godziny (T0).
+- **Sowi Bank:** portfel Wypluffków w bazie, katalog rzeczy, pakiety, VIP i oferta dnia (W1) oraz **panel admina**
+  https://cutelittlegoat.github.io/SowieGry/Admin/ z hasłem `KoziAdmin` (W2).
+- **Dane Sowiej Dziupli:** miejsca, ozdoby z warunkami, półka z roślinkami z gier (D1).
+- Gracz jeszcze niczego nowego nie widzi.
+
+**Dla Ciebie:**
+1. Opublikuj reguły Firestore z Analizy 7b, Załącznik B (= plik `firestore.rules`).
+2. Zrób test **SB1** w [`TESTY_NA_TELEFONIE.md`](TESTY_NA_TELEFONIE.md) — założenie portfela z prezentem.
+3. Obejrzyj makietę obrazka „Sówka robi HU HU! na kozę”
+   ([`ANALIZA_7b_huhu_makieta.png`](ANALIZA_7b_huhu_makieta.png)) — napisz, czy może tak być.
+
 ## 0. Poprawki po testach z 2026-11-01 (etapy P1–P8)
 
 Diagnoza i plan: [`ANALIZA_4_Uwagi_z_testow_poprawki_i_rozbudowa.md`](ANALIZA_4_Uwagi_z_testow_poprawki_i_rozbudowa.md);
