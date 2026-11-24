@@ -17,6 +17,7 @@ telefonie — i jeśli się da, zrób zrzut ekranu.
 
 | Test  | Co sprawdza                                                                                             | Od kiedy   |
 | ----- | ------------------------------------------------------------------------------------------------------- | ---------- |
+| SB1   | Sowi Bank (Wypluffki, Analiza 7b): panel admina — hasło, portfel z prezentem, doładowanie, korekta, historia | 2026-11-24 |
 | T7–T9 | Sowie Trójki w menu (M5): karta „Las”, zapis postępu (także na drugim telefonie), Akademia, Galeria     | 2026-11-23 |
 | M1    | Przeniesienie do nowej bazy (projekt sowiegry-1e1f9): postęp jest, nowe wyniki zapisują się w nowej bazie | 2026-11-23 |
 | T1–T6 | Sowie Trójki (podgląd): pierwszy poziom, combo i Sówka, moce, wygrana i przegrana, zapis, ekran — ✅     | 2026-11-23 |
@@ -39,6 +40,29 @@ telefonie — i jeśli się da, zrób zrzut ekranu.
 | B1–B4 | Sowi Butik: zakupy i kolory sowy nie cofają się, przeprosinowe piórka                                   | 2026-11-01 |
 
 ---
+
+## SB1 — Sowi Bank: panel admina Wypluffków (etap W2)
+
+Dla admina (właściciela). Wypluffki to udawana waluta — nikt nic nie płaci. Gracz jeszcze nie widzi sklepu (przyjdzie
+z Sowią Dziuplą), więc ten test sprawdza tylko panel.
+
+**Najpierw (raz):** opublikuj reguły Firestore z Analizy 7b, Załącznik B (konsola Firebase → projekt
+`sowiegry-1e1f9` → Firestore Database → Reguły → wklej całość → Opublikuj). Gry działają bez przerwy.
+
+1. Otwórz **https://cutelittlegoat.github.io/SowieGry/Admin/** (odśwież dwa razy). **Powinno być:** ekran „Sowi Bank”
+   z polem „Hasło admina”.
+2. Wpisz `huhu` i stuknij „Wejdź”. **Powinno być:** „To nie to hasło 🐐”.
+3. Wpisz `KoziAdmin` i „Wejdź”. **Powinno być:** panel, u góry „połączono”, karta „Portfel gracza jeszcze nie
+   istnieje”. (Jeśli po kilku sekundach jest podpowiedź o regułach — reguły nie są jeszcze opublikowane.)
+4. Zostaw prezent 500 i notkę „Witamy w Sowim Banku!”, stuknij „Załóż portfel gracza”. **Powinno być:** „Portfel
+   założony — prezent 500 Wypluffków.”, saldo 500, „VIP: 🐟 Płotka”.
+5. „Doładuj ręcznie”: stuknij „+100”, notka „Test”, „Doładuj” → „Tak, doładuj”. **Powinno być:** saldo 600.
+6. Stuknij „+50” i „Odejmij (korekta)” → „Tak, odejmij”. **Powinno być:** saldo 550, w historii 3 wpisy (najnowszy
+   „−50 · Korekta”).
+7. „Ogłoszenie i promocja”: wpisz „Test ogłoszenia”, „Zapisz ogłoszenie i promocję”. **Powinno być:** „Zapisano
+   ogłoszenie i promocję.”
+8. Zamknij kartę i otwórz panel jeszcze raz. **Powinno być:** od razu panel (bez hasła) i to samo saldo. „Wyloguj” —
+   wraca ekran hasła.
 
 ## T7–T9 — Sowie Trójki w menu, zapis postępu, Akademia i Galeria (etap M5)
 

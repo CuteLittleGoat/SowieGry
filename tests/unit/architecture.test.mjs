@@ -188,17 +188,27 @@ test("SowieCloud niczego nie kasuje z localStorage i nigdy nie czyści całej pa
   }
 });
 
-test("kod SowieGry pisze tylko w kolekcji sowiegry i jej podkolekcjach", async () => {
+// Od Analizy 7b (Wypluffki) także kolekcja sowiegry_wypluffki (portfel) z podkolekcjami próśb i historii.
+test("kod SowieGry pisze tylko w kolekcjach SowieGry (sowiegry, sowiegry_wypluffki) i ich podkolekcjach", async () => {
   const cloud = await read("shared/sowie-cloud.js");
-  const paths = [...cloud.matchAll(/`(sowiegry[^`]*)`|"(sowiegry\/[^"]*)"/g)].map((match) => match[1] || match[2]);
-  assert.ok(paths.length >= 4);
+  const paths = [...cloud.matchAll(/`(sowiegry[^`]*)`|"(sowiegry[_/][^"]*)"/g)].map((match) => match[1] || match[2]);
+  assert.ok(paths.length >= 8);
+  const allowed = [
+    "sowiegry",
+    "sowiegry_gry",
+    "sowiegry_historia",
+    "sowiegry_wypluffki",
+    "wypluffki_prosby",
+    "wypluffki_historia",
+  ];
   for (const path of paths) {
     const collections = path.split("/").filter((_, index) => index % 2 === 0);
     assert.ok(
-      collections.every((name) => ["sowiegry", "sowiegry_gry", "sowiegry_historia"].includes(name)),
+      collections.every((name) => allowed.includes(name)),
       `nieoczekiwana ścieżka ${path}`,
     );
   }
+  assert.ok(paths.includes("sowiegry_wypluffki/portfel"));
   for (const file of await projectScripts()) {
     if (file === join("shared", "sowie-cloud.js")) continue;
     assert.doesNotMatch(await read(file), /getFirestore|initializeFirestore|writeBatch|setDoc\(|getDocs?\(/, file);

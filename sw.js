@@ -1,7 +1,7 @@
 // Service worker SowieGry (PWA): start bez zasięgu i szybkie ponowne wejścia.
 // Wersjonowana pamięć podręczna — przy każdej zmianie listy SHELL albo strategii podnieś VERSION.
 // Nie obsługuje żądań do Firestore (firestore.googleapis.com) — zapisami offline zajmuje się SDK (IndexedDB).
-const VERSION = "sowiegry-v15";
+const VERSION = "sowiegry-v16";
 const SHELL = [
   "./",
   "index.html",
@@ -182,6 +182,8 @@ self.addEventListener("fetch", (event) => {
   const { request } = event;
   if (request.method !== "GET") return;
   const url = new URL(request.url);
+  // Panel admina Sowiego Banku (Analiza 7b, W2) — zawsze z sieci, nigdy z pamięci aplikacji.
+  if (url.origin === self.location.origin && url.pathname.includes("/Admin/")) return;
   if (url.origin === self.location.origin) {
     event.respondWith(STATIC.test(url.pathname) ? cacheFirst(request) : networkFirst(request));
   } else if (url.href.startsWith("https://www.gstatic.com/firebasejs/12.19.0/")) {

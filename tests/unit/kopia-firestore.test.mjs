@@ -36,6 +36,9 @@ test("dopuszczone ścieżki: tylko dane SowieGry z reguł (6 gier) i ich histori
     "sowiegry/profil",
     "sowiegry/profil/sowiegry_gry/trojki",
     "sowiegry/profil/sowiegry_gry/sowa3/sowiegry_historia/x1",
+    "sowiegry_wypluffki/portfel",
+    "sowiegry_wypluffki/portfel/wypluffki_prosby/HU-7F3K-2Q",
+    "sowiegry_wypluffki/portfel/wypluffki_historia/w1",
   ])
     assert.equal(allowedPath(path), true, path);
   for (const path of [
@@ -43,6 +46,8 @@ test("dopuszczone ścieżki: tylko dane SowieGry z reguł (6 gier) i ich histori
     "sowiegry/profil/sowiegry_gry/tetris",
     "audio/favorites",
     "sowiegry/profil/sowiegry_gry/runner/inne/x",
+    "sowiegry_wypluffki/inny",
+    "sowiegry_wypluffki/portfel/inne/x",
   ])
     assert.equal(allowedPath(path), false, path);
   assert.deepEqual(sortPaths(Object.keys(docs)), [
@@ -57,6 +62,8 @@ test("dopuszczone ścieżki: tylko dane SowieGry z reguł (6 gier) i ich histori
     profil: true,
     gry: ["runner"],
     historia: { runner: 1 },
+    portfel: false,
+    wypluffki: { prosby: 0, historia: 0 },
   });
 });
 

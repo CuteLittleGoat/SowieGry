@@ -44,6 +44,13 @@ internecie zakup mógł się po chwili „cofnąć” — ten błąd jest napraw
 które zniknęły, wracają same. Jeśli przed poprawką był kupiony gatunek sowy, przy wejściu do menu pojawi się
 jednorazowo **„Przeprosiny za Sowi Butik”** i 50 piórek.
 
+## Sowi Bank — panel admina (Wypluffki)
+
+Wypluffki to udawana waluta z Sowiego Butiku (Analiza 7b) — nikt nic nie płaci. Sklep z Wypluffkami pojawi się
+w Sowiej Dziupli. Saldo gracza zmienia admin w osobnym panelu: **https://cutelittlegoat.github.io/SowieGry/Admin/**
+(hasło admina „KoziAdmin”). Instrukcja panelu: [`Admin/docs/README.md`](../Admin/docs/README.md). Panel działa po
+opublikowaniu reguł Firestore z Analizy 7b (Załącznik B).
+
 ## Wersja demo
 
 Pod adresem **`demo.html`** (np. https://cutelittlegoat.github.io/SowieGry/demo.html) jest pokazowa wersja gier — do pokazania znajomym albo na spotkaniu:

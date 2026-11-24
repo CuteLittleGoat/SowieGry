@@ -54,6 +54,15 @@ test("kopia SowieGry: wszystko 1:1 do pustego projektu, bez kasowania, ponowne u
   await seed("sowiegry/profil/sowiegry_gry/runner/sowiegry_historia/a1", { score: 900, at: when });
   await seed("sowiegry/profil/sowiegry_gry/runner/sowiegry_historia/a2", { score: 450.5, at: when });
   await seed("sowiegry/profil/sowiegry_gry/tetris", { x: 1 });
+  // Wypluffki (Analiza 7b): portfel z zakupem i wpis historii.
+  await seed("sowiegry_wypluffki/portfel", {
+    schemaVersion: 1,
+    saldo: 501,
+    doladowano: 1000,
+    wydano: 499,
+    kupione: { "skorka:zlota": { at: when, cena: 499 } },
+  });
+  await seed("sowiegry_wypluffki/portfel/wypluffki_historia/w1", { zmiana: -499, saldoPo: 501, rodzaj: "zakup" });
   await seed("audio/favorites", { list: [1, 2] });
 
   // Źródło czytane jak przez grę (bez uprawnień właściciela) — reguły dopuszczają odczyt SowieGry.
@@ -64,10 +73,12 @@ test("kopia SowieGry: wszystko 1:1 do pustego projektu, bez kasowania, ponowne u
   assert.equal(backup.liczby.profil, true);
   assert.deepEqual(backup.liczby.gry, ["ogrody", "runner", "tetris"]);
   assert.deepEqual(backup.liczby.historia, { runner: 2 });
+  assert.equal(backup.liczby.portfel, true);
+  assert.deepEqual(backup.liczby.wypluffki, { prosby: 0, historia: 1 });
   assert.equal(backup.dokumenty["audio/favorites"], undefined, "dane innej aplikacji nie trafiają do kopii");
 
   const first = await importBackup(target, backup);
-  assert.equal(first.written, 6);
+  assert.equal(first.written, 8);
   assert.deepEqual(first.outside, ["sowiegry/profil/sowiegry_gry/tetris"], "gra spoza reguł — pominięta");
   const after = await readAll(target);
   const comparison = compareDocuments(backup.dokumenty, after);
@@ -81,7 +92,7 @@ test("kopia SowieGry: wszystko 1:1 do pustego projektu, bez kasowania, ponowne u
   // Ponowne uruchomienie: nic do utworzenia, istniejące dokumenty nietknięte.
   const second = await importBackup(target, backup);
   assert.equal(second.written, 0);
-  assert.equal(second.skipped.length, 6);
+  assert.equal(second.skipped.length, 8);
 
   // Źródło bez zmian (tylko odczyt).
   const sourceAfter = await readAll(source);

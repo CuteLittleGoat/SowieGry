@@ -334,13 +334,16 @@ Bez zmian w kodzie gier.
 | Krok | Co | Stan |
 | --- | --- | --- |
 | T0 | testy w GitHubie w dwóch równoległych częściach (jakość + Chromium, WebKit), WebKit tylko na profilach iPhone — ok. 25 min zamiast 55 (Analiza 8, rozdz. 17.4) | ✅ 2026-11-24 — `playwright.config.js` (`SOWIE_E2E_SILNIK`, `WEBKIT_PROFILES`), `.github/workflows/js-check.yml` (zadania `quality` i `webkit`), `npm run test:browser`; testów przeglądarkowych 1094 zamiast 1364 (Chromium 689, WebKit 405) |
+| W1 | logika Wypluffków: `shared/meta/wypluffki.js` (katalog 69 rzeczy, pakiety, VIP, oferta dnia, kod HU, jajko), portfel w SowieCloud (`SowieCloud.bank`: odczyt i nasłuch, transakcje zakupu i operacji panelu, prośby, hasło „KoziAdmin”), `firestore.rules` z częścią „Wypluffki” (do publikacji w W2), kopia bazy z portfelem, testy (20 jednostkowych, 4 reguł, kopia na emulatorze), dokumentacja | ✅ 2026-11-24 — gracz niczego jeszcze nie widzi (Butik i Dziupla w kolejnych etapach) |
+| W2 | **panel admina** https://cutelittlegoat.github.io/SowieGry/Admin/ (hasło „KoziAdmin”): założenie portfela z prezentem, „Hu-hu w kolejce” (zatwierdź / inna kwota / odrzuć — każda prośba tylko raz), doładowanie ręczne i korekta, zwroty zakupów, ogłoszenie i promocja, historia; `sw.js` v16 (panel zawsze z sieci), instrukcja `Admin/docs/README.md`, test e2e na telefonach | ✅ 2026-11-24 — **dla Ciebie:** opublikuj reguły z Analizy 7b, Załącznik B (= `firestore.rules`), wejdź do panelu, załóż portfel z prezentem i zrób test SB1 (`TESTY_NA_TELEFONIE.md`) |
+| D1 | Sowia Dziupla — dane i zasady: `shared/dziupla/items.js` (13 miejsc, 53 ozdoby za granie i piórka + 22 za Wypluffki, półka 3–5 miejsc), `state.js` (`profil.dziupla`, odblokowania z liczników Akademii, piórek, Wypluffków i Galerii, 81 roślinek z gier na półkę, co stoi w pokoju), Łącz i Hoduj zapisuje liczbę połączeń w podsumowaniu, 10 testów jednostkowych | ✅ 2026-11-24 — gracz jeszcze nic nie widzi |
 | D + W | Sowia Dziupla z Wypluffkami — etapy D1–D7 i W1–W9 przeplatane ([Analiza 7b, rozdz. 17.2](ANALIZA_7b_Mikroplatnosci.md#172-kolejność-razem-z-sowią-dziuplą-analiza-7-rozdz-15)): logika i reguły → panel admina (Ty publikujesz reguły) → scena Dziupli → „Doładuj Wypluffki” → Szafa, Dekorator i Butik → grafiki do akceptacji → wygląd w grach → przełączenie menu po Twoich testach | ⏳ |
 | W10 | kopia zapasowa danych z Firestore do pliku i przywracanie z pliku w panelu admina ([Analiza 7b, rozdz. 8.3](ANALIZA_7b_Mikroplatnosci.md)) | ⏳ w przyszłości, na Twoje polecenie |
 | F | Sowia Farma — F0–F10 ([Analiza 8](ANALIZA_8_Nowa_gra_Sowia_Farma.md), rozdz. 19), z rzeczami za Wypluffki (W8) | ⏳ później |
 | A1 | audyt wszystkich plików i komentarze w kodzie (Analiza 8, etap F11) | ⏳ po pierwszej wersji Farmy |
 
 **Dla Ciebie teraz:** nic. Reguły z portfelem (Analiza 7b, Załącznik B) opublikujesz w etapie W2, gdy o to poproszę;
-potem testy B1–B7 i D1–D5 na telefonie (dopiszę je do `TESTY_NA_TELEFONIE.md` przy budowie).
+potem testy SB1–SB7 i D1–D5 na telefonie (dopiszę je do `TESTY_NA_TELEFONIE.md` przy budowie).
 
 ## 1. Co jest zrobione — plan E0–E10 (stan z 2026-10-06)
 

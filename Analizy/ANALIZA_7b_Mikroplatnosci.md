@@ -767,13 +767,13 @@ Resztą zajmuje się aplikacja:
 
 | Test | Co sprawdzasz |
 | --- | --- |
-| B1 | panel admina na Twoim telefonie: hasło „KoziAdmin”, „Załóż portfel gracza” z prezentem powitalnym, doładowanie z notką |
-| B2 | u gracza: licznik w Dziupli, okienko „wpłynęło…” z notką |
-| B3 | „Doładuj Wypluffki”: pakiet → hu-hu na kozę → czy obrazek jest zabawny i cały mieści się na zrzucie; wysłanie zrzutu |
-| B4 | panel: hu-hu z kodem ze zrzutu na liście → „Zatwierdź” → u gracza świętowanie |
-| B5 | Butik: zakup za piórka i za Wypluffki, „za mało”, oferta dnia, wyciąg, regulamin |
-| B6 | skórka, kostium i ślad widać w Dziupli i w grach; głos i taniec po stuknięciu Sówki |
-| B7 | zwrot w panelu; dwa telefony (saldo się zgadza) |
+| SB1 | panel admina na Twoim telefonie: hasło „KoziAdmin”, „Załóż portfel gracza” z prezentem powitalnym, doładowanie z notką |
+| SB2 | u gracza: licznik w Dziupli, okienko „wpłynęło…” z notką |
+| SB3 | „Doładuj Wypluffki”: pakiet → hu-hu na kozę → czy obrazek jest zabawny i cały mieści się na zrzucie; wysłanie zrzutu |
+| SB4 | panel: hu-hu z kodem ze zrzutu na liście → „Zatwierdź” → u gracza świętowanie |
+| SB5 | Butik: zakup za piórka i za Wypluffki, „za mało”, oferta dnia, wyciąg, regulamin |
+| SB6 | skórka, kostium i ślad widać w Dziupli i w grach; głos i taniec po stuknięciu Sówki |
+| SB7 | zwrot w panelu; dwa telefony (saldo się zgadza) |
 
 ---
 
@@ -781,7 +781,7 @@ Resztą zajmuje się aplikacja:
 
 | Ryzyko | Skutek | Jak zapobiegamy |
 | --- | --- | --- |
-| Błąd w regułach | gracz nie może kupić albo admin doładować | testy reguł na emulatorze przed publikacją; test B1 zaraz po publikacji |
+| Błąd w regułach | gracz nie może kupić albo admin doładować | testy reguł na emulatorze przed publikacją; test SB1 zaraz po publikacji |
 | Gracz pomyśli, że to prawdziwe płatności | niepokój, zwłaszcza u dziecka | nigdzie „zł” ani kart; cena to „× Hu-hu”; regulamin i dopisek „Wypluffki nie są prawdziwe”; karta w „Jak grać?” |
 | Parodia męczy | psuje przytulny klimat | żadnych okienek w grach, jedna ulotka, komentarze Sówki raz dziennie i wyłączane (rozdz. 11.2) |
 | Popsucie obecnego Butiku | powrót uwagi G3 | zakupy za piórka bez zmian w logice i zapisie; testy G3 zostają |
@@ -803,14 +803,14 @@ Resztą zajmuje się aplikacja:
 | --- | --- | --- |
 | **W0** | decyzje (rozdz. 19) — ✅ 2026-11-24 | S |
 | **W1** | logika: katalog, pakiety, VIP, oferta dnia, kod, portfel w SowieCloud (odczyt, nasłuch, transakcja, prośby), `MemoryBackend`, reguły + testy reguł, testy jednostkowe | M (2–3 dni) |
-| **W2** | **panel admina** `Admin/` (logowanie, saldo, kolejka hu-hu, doładowanie, korekta, zwrot, historia, ogłoszenie i promocja), dokumentacja panelu → **publikacja reguł przez Ciebie** i test B1 | M (2 dni) |
+| **W2** | **panel admina** `Admin/` (logowanie, saldo, kolejka hu-hu, doładowanie, korekta, zwrot, historia, ogłoszenie i promocja), dokumentacja panelu → **publikacja reguł przez Ciebie** i test SB1 | M (2 dni) |
 | **W3** | „Doładuj Wypluffki”: pakiety, metoda płatności, przetwarzanie, **obrazek hu-hu na kozę** (poza „hu-hu”, koza, warianty pakietów), kolejka, okienko „wpłynęło…” (najpierw obrazek do Twojej akceptacji) | M (2 dni) |
 | **W4** | wspólny Sowi Butik (dwie waluty, zakładki, oferta dnia, paragon, wyciąg, regulamin, kantor, VIP) + premium w Szafie i Dekoratorze; licznik, Wypluffkomat, ulotka | M–L (2–3 dni) |
 | **W5** | grafiki premium: ikonka, Wypluffkomat, skórki (palety + wzory), kostiumy, ozdoby Dziupli, gałąź i ramka w Trójkach (najpierw obrazek do akceptacji) | L (3 dni) |
 | **W6** | wygląd w grach: skórki i kostiumy (atlas), ślady (Ucieczka, Tory, Chmury, iskierki w Trójkach), głosy, tańce | M (1–2 dni) |
 | **W7** | „na deser”: jajko-niespodzianka, „reklama” za 0 Wypluffków, Mityczny Puch | S (1 dzień) |
 | **W8** | Sowia Farma: skórki narzędzi, strachów i domu, Kózka-maskotka, Wypluffkowy nawóz jakości — **dopiero po wdrożeniu Farmy** (Twoja decyzja; Analiza 8, etap F9) | S–M (1–2 dni, w budżecie Farmy) |
-| **W9** | dokumentacja (`docs/`, `Admin/docs/`, dokumentacja gier), `TESTY_NA_TELEFONIE.md` (B1–B7), `UWAGI_WLASCICIELA.md`, `STAN_PRAC.md` — na bieżąco w każdym etapie, zamknięcie na końcu | S |
+| **W9** | dokumentacja (`docs/`, `Admin/docs/`, dokumentacja gier), `TESTY_NA_TELEFONIE.md` (SB1–SB7), `UWAGI_WLASCICIELA.md`, `STAN_PRAC.md` — na bieżąco w każdym etapie, zamknięcie na końcu | S |
 | **W10** | *w przyszłości, na Twoje polecenie:* kopia zapasowa danych z Firestore do pliku i przywracanie z pliku w panelu admina (rozdz. 8.3) | M (1–2 dni) |
 
 **Razem ok. 13–16 dni pracy** (bez W8 i W10).
@@ -821,7 +821,7 @@ Resztą zajmuje się aplikacja:
 T0        testy w GitHubie w dwóch równoległych częściach (Analiza 8, decyzja 16) — przed budową
 D0 + W0   decyzje do obu analiz ✅ 2026-11-24
 D1 + W1   katalog Dziupli i katalog premium, stan, portfel, reguły (testy na emulatorze)
-W2        panel admina → Ty publikujesz reguły → test B1 (możesz już doładować pierwsze Wypluffki)
+W2        panel admina → Ty publikujesz reguły → test SB1 (możesz już doładować pierwsze Wypluffki)
 D2        scena Dziupli z górnym paskiem (licznik Wypluffków), tablica, Sówka — podgląd
 W3        „Doładuj Wypluffki” i obrazek hu-hu na kozę
 D3 + W4   Szafa z zakładkami premium; wspólny Sowi Butik
@@ -852,7 +852,7 @@ kiedy:
    Firebase → projekt `sowiegry-1e1f9` → **Firestore Database** → **Reguły** → wklej całość → **Opublikuj**. Zmiana
    tylko **dopisuje** portfel, więc gry i obecne zapisy działają bez przerwy.
 2. Wejdź na **https://cutelittlegoat.github.io/SowieGry/Admin/**, wpisz **KoziAdmin**, stuknij **„Załóż portfel
-   gracza”** (z prezentem powitalnym, np. 500 Wypluffków i notką „Witamy w Sowim Banku!” — decyzja 8) i zrób test B1.
+   gracza”** (z prezentem powitalnym, np. 500 Wypluffków i notką „Witamy w Sowim Banku!” — decyzja 8) i zrób test SB1.
 3. **Kolekcji, dokumentu i pól nie musisz zakładać ręcznie**, bo zrobi to przycisk z kroku 2. Jeśli wolisz sam (przed
    krokiem 2): Firestore Database → „Rozpocznij kolekcję” → identyfikator `sowiegry_wypluffki` → dokument
    o identyfikatorze `portfel` z polami: `schemaVersion` (number) = 1, `saldo` (number) = 0, `doladowano`

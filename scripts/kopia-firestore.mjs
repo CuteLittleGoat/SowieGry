@@ -1,7 +1,9 @@
 // Kopia zapasowa i przeniesienie danych SowieGry między projektami Firestore — na darmowym planie (Spark), bez
 // eksportu Google Cloud: wszystko przez REST API Firestore z kluczem aplikacji internetowej (jak sama gra), więc
 // o dostępie decydują reguły bazy. Kopiowane są tylko kolekcje SowieGry: sowiegry/meta, sowiegry/profil,
-// sowiegry/profil/sowiegry_gry/<gra> i ich podkolekcje sowiegry_historia — wartości pól 1:1 (także znaczniki czasu).
+// sowiegry/profil/sowiegry_gry/<gra> i ich podkolekcje sowiegry_historia, a od Analizy 7b także portfel Wypluffków
+// sowiegry_wypluffki/portfel z podkolekcjami wypluffki_prosby i wypluffki_historia — wartości pól 1:1 (także znaczniki
+// czasu).
 //
 // Skrypt NIGDY niczego nie kasuje: w projekcie źródłowym tylko czyta, w docelowym tylko tworzy brakujące dokumenty
 // (warunek „dokument nie istnieje” — istniejące zostają nietknięte, a skrypt je zgłasza).
@@ -28,14 +30,28 @@ const ALLOWED = [
   /^sowiegry\/(meta|profil)$/,
   new RegExp(`^sowiegry/profil/sowiegry_gry/(${GAMES})$`),
   new RegExp(`^sowiegry/profil/sowiegry_gry/(${GAMES})/sowiegry_historia/[^/]+$`),
+  // Wypluffki (Analiza 7b): portfel, prośby o doładowanie i wyciąg z konta.
+  /^sowiegry_wypluffki\/portfel$/,
+  /^sowiegry_wypluffki\/portfel\/(wypluffki_prosby|wypluffki_historia)\/[^/]+$/,
 ];
 
 /** Czy ścieżka należy do danych SowieGry dopuszczonych przez reguły. */
 export const allowedPath = (path) => ALLOWED.some((pattern) => pattern.test(path));
 
-// Kolejność zapisu: meta, profil, dokumenty gier, historia (rodzic przed dziećmi — czytelniej w konsoli).
+// Kolejność zapisu: meta, profil, dokumenty gier, historia, portfel i jego wpisy (rodzic przed dziećmi — czytelniej
+// w konsoli).
 const rank = (path) =>
-  path === "sowiegry/meta" ? 0 : path === "sowiegry/profil" ? 1 : path.includes("historia") ? 3 : 2;
+  path === "sowiegry/meta"
+    ? 0
+    : path === "sowiegry/profil"
+      ? 1
+      : path.startsWith("sowiegry_wypluffki/")
+        ? path === "sowiegry_wypluffki/portfel"
+          ? 4
+          : 5
+        : path.includes("historia")
+          ? 3
+          : 2;
 export const sortPaths = (paths) => [...paths].sort((a, b) => rank(a) - rank(b) || a.localeCompare(b));
 
 // JSON z kluczami w stałej kolejności — suma kontrolna i porównania niezależne od kolejności pól z serwera.
@@ -130,6 +146,16 @@ export async function readAll(client) {
     const history = await client.listDocuments(`sowiegry/profil/sowiegry_gry/${id}/sowiegry_historia`);
     history.forEach(add);
   }
+  // Wypluffki (Analiza 7b): portfel i jego podkolekcje (brak portfela — nic się nie dzieje). Przed publikacją reguł
+  // z portfelem (etap W2) baza odmawia dostępu (403) — kopia jest wtedy bez Wypluffków.
+  try {
+    add(await client.getDocument("sowiegry_wypluffki/portfel"));
+    for (const sub of ["wypluffki_prosby", "wypluffki_historia"]) {
+      (await client.listDocuments(`sowiegry_wypluffki/portfel/${sub}`)).forEach(add);
+    }
+  } catch (error) {
+    if (error.status !== 403) throw error;
+  }
   return documents;
 }
 
@@ -149,6 +175,11 @@ export function summarize(documents) {
       .map((path) => path.split("/").pop())
       .sort(),
     historia: history,
+    portfel: paths.includes("sowiegry_wypluffki/portfel"),
+    wypluffki: {
+      prosby: paths.filter((path) => path.includes("/wypluffki_prosby/")).length,
+      historia: paths.filter((path) => path.includes("/wypluffki_historia/")).length,
+    },
   };
 }
 

@@ -31,6 +31,7 @@ module.exports = [
       "shared/ui/**/*.js",
       "shared/meta/**/*.js",
       "shared/menu/**/*.js",
+      "shared/dziupla/**/*.js",
       "lab/**/*.js",
       "SowiaUcieczka/**/*.js",
       "SowieTory/**/*.js",
@@ -38,6 +39,7 @@ module.exports = [
       "LaczIHoduj/**/*.js",
       "SowieOgrody/ogrod/**/*.js",
       "SowieTrojki/**/*.js",
+      "Admin/**/*.js",
     ],
     languageOptions: {
       sourceType: "module",

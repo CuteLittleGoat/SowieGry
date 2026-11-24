@@ -33,13 +33,15 @@ shared/
   engine/                 (Sowi Silnik — moduły ES: pętla, widok, kamera, gesty, sceny, powłoka telefonu, atlas grafik, automat płynności, licznik ?perf=1…)
   world/                  (Sowi Świat — tokeny kolorów, czcionka, Sówka, gatunki sów, katalog grafik postaci)
   ui/                     (wspólny interfejs gier: HUD, komunikaty, okna, menu pauzy, ekran wyników, ui.css)
-  meta/                   (SowieProgress — zdarzenia; academy.js — Sowia Akademia; shop.js — Sowi Butik; missions.js — misje garderoby; guides-data.js — instrukcje)
+  meta/                   (SowieProgress — zdarzenia; academy.js — Sowia Akademia; shop.js — Sowi Butik; wypluffki.js — Wypluffki: katalog i zasady (Analiza 7b); missions.js — misje garderoby; guides-data.js — instrukcje)
+  dziupla/                (Sowia Dziupla — moduły ES (Analiza 7, od D1): items.js — miejsca i ozdoby, state.js — zapis, odblokowania, półka z roślinkami z gier)
   menu/                   (menu główne — moduły ES: zakładki Gry, Jak grać, Galeria, Sowa; menu.css; menu wersji demo)
 SowiaUcieczka/            (Sowia Ucieczka — przebudowany SowaRunner, moduły ES na Sowim Silniku; docs/)
 SowieTory/                (Sowie Tory — przebudowana Sowa3 (E5), moduły ES na Sowim Silniku; docs/)
 SowaWChmurach/            (Sowa w Chmurach — przebudowana SowaJumper (E6), moduły ES na Sowim Silniku; docs/)
 LaczIHoduj/               (Łącz i Hoduj — przebudowana Sowia Szklarnia (merge, E8); moduły ES; docs/)
 SowieTrojki/              (Sowie Trójki — gra match-3 z Sówką (Analiza 5), od M5 w menu i z zapisem; moduły ES; docs/)
+Admin/                    (Sowi Bank — panel admina Wypluffków (Analiza 7b, W2): index.html, admin.js, admin.css; docs/)
 lab/                      (Sowie Laboratorium — strona testowa silnika na telefonie: postacie, gesty, informacje)
 assets/icons/             (ikona aplikacji SVG i PNG)
 assets/svg/               (źródła SVG postaci: sowa/, garderoba/, kozki/, humbak/, pracu/, amic/, liscie/, interfejs/, trojki/)
@@ -59,7 +61,7 @@ tests/
   unit/           (testy node --test)
   rules/          (testy reguł Firestore na emulatorze)
 firebase.json     (tylko emulator Firestore)
-firestore.rules   (kopia reguł opublikowanych 2026-09-27)
+firestore.rules   (reguły Firestore — od W1 z częścią „Wypluffki” z Analizy 7b, Załącznik B; publikacja w W2)
 playwright.config.js
 SowieOgrody/      (Sowie Ogrody — nowa odsłona (E7): index.html, ogrod/ — moduły ES; docs/)
 Obrazki/          (58 zdjęć Galerii Sów: sowy, kozy, humbaki, rośliny ozdobne)
@@ -585,6 +587,24 @@ Piórka z Akademii wydaje się na stroje, gatunki sów i dłuższe działanie k�
 
 Gry zręcznościowe przekazują `goatTime: goatTimeFactor(SowieCloud.profile())` do `createRun` (opis w dokumentacji gier): czas power-upów kózek (i Kóziej jazdy / Rakietki) jest mnożony, a pasek w HUD liczy się od wydłużonego czasu.
 
+### `wypluffki.js` — Wypluffki: katalog i zasady (Analiza 7b, etap W1)
+
+Udawana waluta premium (parodia mikropłatności z gier na telefon): nikt nic nie płaci, saldo zmienia admin
+(`SowieCloud.bank`), „ceną” doładowania jest hu-hu na kozę. Za Wypluffki kupuje się **tylko wygląd** — z dwoma
+wyjątkami z decyzji właściciela: miejsca 4 i 5 na półce Sowiej Dziupli (także za granie) i — dopiero z Sowią Farmą —
+nawóz jakości (Analiza 7b, rozdz. 10). Moduł ES bez zapisu w bazie (importuje tylko `createRng` z `shared/engine/rng.js`).
+
+- `WYPLUFFKI_VERSION = 1`; `RARITY` — `rzadki` (`#4f8fe8`), `epicki` (`#9b5de5`), `legendarny` (`#f4b400`), `mityczny` („Mityczny Puch”, `rainbow`); `KINDS` — `skorka`, `stroj`, `slad`, `glos`, `taniec` (grupa `sowka`), `dziupla` (grupa `dziupla`), `trojki`, `farma` (grupa `gry`).
+- **`CATALOG`** (69 rzeczy, zamrożone obiekty `{ id, kind, label, cena, rarity, text, … }`, `kind` = część `id` przed dwukropkiem): 9 skórek z paletą `colors` (`dark`, `body`, `face`, `belly`, `beak` — jak `OWL_PALETTE`) i wzorem `pattern` (`szron`, `poswiata`, `gwiazdki`, `duszek`, `tecza`, `iskierki`, `mityczny`), 9 kostiumów (w tym `stroj:nowicjusz` za 0 z `pakiet: "startowy"`), 6 śladów, 5 głosów, 4 tańce, 24 ozdoby Dziupli z `slot` (miejsce z Analizy 7, rozdz. 6.1; `dziupla:polka-4` i `polka-5` z `wyjatek: "polka"`, `dziupla:humbak-vip` za 0 z `vip: "humbak"`), 3 rzeczy do Sowich Trójek, 9 do Sowiej Farmy z `requires: "farma"`. Ceny 149–2499 (Załącznik A analizy). `itemById(id)`.
+- **`PACKAGES`** — pakiety „Doładuj Wypluffki”: `startowy` (300 + `bonus: ["stroj:nowicjusz"]`, `raz: true`, „TYLKO RAZ!”, ~~3 × Hu-hu~~ 1 × Hu-hu), `garstka` 100, `kieszen` 550 („NAJPOPULARNIEJSZE”), `worek` 1200, `skrzynia` 2600 („NAJLEPSZA OFERTA”), `humbak` 6500 („DLA WIELORYBÓW 🐋”); pola `label`, `kwota`, `cena` (tekst z „Hu-hu”), `gratis`, `naklejka`. `packageById(id)`, `MAX_PENDING = 3` (najwyżej tyle próśb czeka naraz).
+- **`VIP_LEVELS`** — Sowi Klub: Płotka 🐟 (0), Śledź 🐠 (1000), Delfin 🐬 (5000), Humbak 🐋 (15 000 wydanych; nagroda `dziupla:humbak-vip`). `vipLevel(wydano)` → poziom z `index`, `next`, `brakuje`. `ownedIds(portfel)` → `Set` z kluczy `kupione` i nagród VIP osiągniętych poziomów.
+- `isForSale(rzecz, gry)` — cena > 0, nie z pakietu ani VIP, a rzecz z `requires` tylko, gdy gra jest na liście `gry`; `forSale(gry)`.
+- **Oferta dnia:** `dailyOfferId(RRRR-MM-DD, posiadane, gry)` — z rzeczy w sprzedaży, których gracz nie ma (posortowane id), `createRng("oferta:" + data).pick(…)` — ta sama na każdym telefonie; `null`, gdy gracz ma wszystko. `DAILY_DISCOUNT = 20`.
+- `activePromo(portfel, nowMs)` — promocja admina, gdy `do > nowMs`. **`priceFor(rzecz, { wallet, dayKey, nowMs, games })`** → `{ cena, bazowa, rabat }`: lepszy z rabatów (oferta dnia −20% albo promocja), nigdy oba; `cena = max(1, floor(bazowa × (100 − procent) / 100))`.
+- **Kod prośby:** `CODE_ALPHABET` (32 znaki bez 0/O i 1/I), `CODE_PATTERN` (= `WALLET_CODE` z SowieCloud i wzór z reguł), `generateCode(random)` → `HU-XXXX-XX`.
+- **Sowie jajko-niespodzianka:** `EGG` (`cena: 399`, rodzaje Sówki, szanse `rzadki` 0,6 / `epicki` 0,35 / `legendarny` 0,05); `eggPool(posiadane)` — rzeczy Sówki w sprzedaży, bez posiadanych i bez Mitycznego Puchu; `drawEgg(posiadane, random)` — rzadkość według szans spośród rzadkości obecnych w puli (gdy np. zostały tylko legendarne — wypada legendarna), potem rzecz; pusta pula → `null`.
+- Operacje z chmurą: `buyItem(id, { cloud, dayKey, nowMs, games })` (nieznana → `"unknown"`, nie w sprzedaży → `"niedostepne"`, posiadana → `"owned"`, potem `cloud.bank.buy` z ceną z `priceFor`), `buyEgg({ cloud, random })` (`"pusto"` albo zakup wylosowanej rzeczy za cenę jajka, wynik z `item`), `requestTopUp(pakiet, { cloud, random })` (3 czekające → `"kolejka"`, Pakiet Startowy już wzięty albo jego bonus posiadany → `"raz"`, potem `cloud.bank.requestTopUp` z nowym kodem).
+
 ### `guides-data.js` — instrukcje
 
 Struktura przewodnika `{ id, title, summary, cards: [{ id, title, text, sprite?, gesture?, tip? }] }`; `GESTURES` (tap „Stuknij”, hold „Przytrzymaj”, swipe-up/down/left/right „Przesuń w …”, drag „Przeciągnij”); `GUIDES.swiat` — „Poznaj Sowi Świat” (7 kart: Sówka, Liście monstery, Pracu Pracu, Amic, Skaczące kózki, Humbak, Serduszka-doniczki); `validateGuide(przewodnik, { sprites })` → lista błędów (brak pól, puste karty, powtórzone id, nieznany gest, brak grafiki w katalogu); `guideFor(id)`; `GUIDE_ORDER = ["swiat", "runner", "jumper", "sowa3", "ogrody", "szklarnia", "trojki"]` (kolejność w zakładce „Jak grać”; od M5 z `trojki` — przewodnik `GUIDES.trojki` „Sowie Trójki”, 7 kart: Cel gry, Ruch (gest `swipe-right`), Moce (gest `tap`), Pracu Pracu i Amic, Jajka i gniazda, Sówka i Sowia pomoc (gest `tap`), Gwiazdki i Humbaczy Finał — treść w `SowieTrojki/docs/Documentation.md`).
@@ -600,6 +620,62 @@ Przewodnik **`jumper`** to od E6f **Sowa w Chmurach** (w E6e był osobnym przewo
 Przewodnik **`runner`** to od E4f **Sowia Ucieczka** (w E4a–E4e był osobnym przewodnikiem `ucieczka`, a `runner` opisywał dawny SowaRunner): tytuł „Sowia Ucieczka”, opis „Sówka ucieka przed Chmurą Pracu przez coraz bardziej zwariowane okolice. Skacz, szybuj i ślizgaj się, zbieraj liście monstery i nie daj się dogonić.”; 6 kart: „Cel gry” (Chmura Pracu, wskazówka: 400 m bez trafienia), „Skok” (`tap`), „Szybowanie” (`hold`), „Ślizg” (`swipe-down`), „Pracu i Amic” (rodziny przeszkód, znak „!”), „Kózki i humbak” (grafika `kozka-magnes-skok`: 5 kózek, Plusk-o-metr — 150 liści albo 3 bąbelki, 20 s rejsu, potem przerwa humbaka 💤; wskazówka o zadaniach biegu i Sowim mnożniku). Okno „Jak grać?” na ekranie tytułowym Sowiej Ucieczki ma też przycisk „Zagraj samouczek”; menu pauzy gry pokazuje ten sam przewodnik.
 
 Od E3 do E8e w pliku były też przewodniki **dawnych gier** (treść przeniesiona z `shared/game-guides.js`); każda podmiana (E4f–E8e) zastąpiła przewodnik gry przewodnikiem nowej wersji pod tym samym kluczem, więc dziś wszystkie przewodniki z `GUIDE_ORDER` opisują przebudowane gry.
+
+## Sowia Dziupla (`shared/dziupla/`, Analiza 7 — od etapu D1)
+
+Nowy ekran główny SowieGry (Analiza 7) budowany razem z Wypluffkami (Analiza 7b). Etap D1 to dane i zasady (czyste
+moduły ES, `shared/dziupla/package.json` z `"type": "module"`); pokój, tablica z grami, Szafa i Dekorator — kolejne
+etapy. Do przełączenia (D7) obecne menu zostaje ekranem startowym.
+
+### `items.js` — miejsca i ozdoby
+
+- `DZIUPLA_VERSION = 1`.
+- **`SLOTS`** — miejsca w pokoju `{ id, label, default, empty }`: `wyglad` (Jasne drewno, bez „pusto”), `okno` (Łąka),
+  `sufit` (Żarówka), `obrazek` (zdjęcie Galerii, domyślnie `owl-01`, `photo: true`), `ramka` (Drewniana), `tablica`
+  (Korek), `pinezki` (Kolorowe), `doniczki` (Gliniane — wygląd doniczek na półce), `szafa` (Drewniana), `miejsce`
+  (Poduszka — gdzie siedzi Sówka), `dywan` (Różowy), `roslina` (duża roślina — Monstera w donicy), `zabawka` (brak).
+  `empty: true` — wolno wybrać „pusto” (`null`). Względem Analizy 7 (rozdz. 9 — „zdjęcie|ramka”, „korek|serduszka”)
+  obrazek i ramka oraz tablica i pinezki to osobne miejsca. `slotById(id)`.
+- **`SHELF`** — półka z roślinkami z gier: `base: 3`, `max: 5`, `extra` — `polka-4` (warunek `[["level", 5]]` albo
+  Wypluffki `dziupla:polka-4`), `polka-5` (`[["ogrodyChapters", 14]]` albo `dziupla:polka-5`); `default` —
+  `{ "polka-1": "ogrody:monstera" }`.
+- **`FREE_DECOR`** — ozdoby za granie i piórka (Analiza 7, Załącznik A), identyfikator „miejsce:nazwa”: `start: true`
+  (od początku), `goals` (warunki w formacie zdjęć Galerii — liczniki Sowiej Akademii: `level`, `achievements`,
+  `jumperHeight`, `whaleRides`, `ogrodyChapters`, `szklarniaRooms`, `sowa3Finishes`, `trojkiLevels`, `trojkiOwlets`,
+  `leaves`, `goatsCaught`, `ogrodyLeaves`) z opisem `text`, `feathers` (cena w piórkach: Ramka kwiatowa 40, Pinezki
+  serduszka 20 i gwiazdki 30, Szafa w kwiatki 30, Storczykowa 100 — także za granie). Wygląd dziupli: Jasne drewno,
+  Brzozowa (poziom 3), Wiśniowa (9 rozdziałów Ogrodów), Zimowa (1000 m), Morska (10 humbaków), Nocna (1900 m),
+  Szklarniana (10 pomieszczeń), Storczykowa (21 rozdziałów albo 100 piórek), Drzewo świata (22 rozdziały). Okno:
+  Łąka, Automatyczny, Ocean (3 humbaki), Chmury (500 m), Nocne niebo (1500 m), Miasto (kampania Torów), Ogród
+  (6 rozdziałów), Staw (rozdział „Staw Humbaka” Trójek — 30 poziomów). Sufit, ramki, tablica, pinezki, szafa,
+  miejsce Sówki, dywan, duża roślina i zabawki — jak w kodzie (Analiza 7, Załącznik A; liczby do strojenia).
+- **`PREMIUM_DECOR`** — ozdoby za Wypluffki: rzeczy `dziupla:*` z katalogu Wypluffków poza miejscami półki
+  (`{ id, slot, label, premium: id, text }`); identyfikator w zapisie = identyfikator z katalogu Wypluffków.
+- `DECOR` (wszystkie), `decorById(id)`, `decorForSlot(miejsce)`.
+
+### `state.js` — zapis, odblokowania, półka
+
+- **Zapis** w profilu: `profil.dziupla = { version: 1, placed: { miejsce → id | null, "polka-1…5" → roślinka },
+  seen: { "miejsce:ozdoba" → czas } }` — jedno nowe pole najwyższego poziomu (profil ma ich ≤ 30 — test), reguły
+  Firestore bez zmian. `defaultDziupla()`; `normalizeDziupla(raw)` — brak albo uszkodzone → domyślne, `placed` tylko
+  tekst albo `null`, `seen` tylko liczby, nieznane miejsca, ozdoby i pola zostają (nic nie ginie).
+- **`unlockContext({ profile, wallet })`** → `{ academy: normalizeAcademy(profil.academy), feathers: Set ozdób
+  kupionych za piórka (klucze „decor:<id>” z `profil.shop.purchases` — `decorPurchaseKey(id)`), premium:
+  ownedIds(portfel), photos: Set odblokowanych zdjęć Galerii, records: profil.records }`.
+- `goalProgress(goals, kontekst)` — `achievementProgress` z Akademii (`{ done, share, goals }`); `isUnlocked(ozdoba,
+  kontekst)` — od początku, premium tylko z portfela, warunek spełniony albo kupiona za piórka.
+- `shelfSlots(kontekst)` — 3 + dodatkowe miejsca (warunek albo Wypluffki), najwyżej 5.
+- **`shelfPlants(kontekst)`** — wszystkie roślinki na półkę `{ id, game, label, available, text }`: 43 gatunki Sowich
+  Ogrodów (`ogrody:<id>`, z `SowieOgrody/ogrod/config.js` — dostępny, gdy indeks rozdziału ≤ `ogrodyChapters`),
+  Łącz i Hoduj — 9 łańcuchów doniczki × poziomy `LACZ_LEVELS` 4–7 (`lacz:<łańcuch>:<poziom>`, nazwy poziomów z
+  `CHAINS`; łańcuch odblokowany, gdy `records.szklarnia.merges ≥ unlock` z `POT.chains`; poziomy 5–7, gdy
+  `szklarniaBest` ≥ poziom), Sowie Trójki — `TROJKI_PLANTS` (`trojki:truskawka` po pierwszej wygranej,
+  `trojki:storczyk` po 15 poziomach).
+- **`resolvePlaced(dziupla, kontekst)`** — co stoi w pokoju: wybrana ozdoba musi istnieć, być z tego miejsca
+  i odblokowana, inaczej domyślna (zapis się nie zmienia); `null` tylko w miejscu z `empty`; obrazek — odblokowane
+  zdjęcie; półka — tylko dostępne miejsca i dostępne roślinki (reszta `null`).
+- `placeDecor(profil, miejsce, id)` — zmiana jednego miejsca (do `updateProfile`; zapis klucz po kluczu), nieznane
+  miejsce odrzucone; `markSeen(profil, klucz, czas)` — „Nowe!” obejrzane.
 
 ## Dźwięki (`assets/audio/`, `scripts/make-audio.mjs`) — etap E2c
 
@@ -623,7 +699,7 @@ Wszystkie dźwięki są syntezowane kodem (własna twórczość, CC0 — `assets
 - każda strona (menu, gry, Laboratorium) ma w `<head>`: `<link rel="manifest">`, ikonę SVG, `apple-touch-icon`, `mobile-web-app-capable`, `apple-mobile-web-app-capable`, `apple-mobile-web-app-title` „SowieGry” oraz skrypt `shared/pwa.js` po `password-gate.js`;
 - `shared/pwa.js` — po `load` rejestruje `sw.js` z katalogu głównego (zakres = cała strona) na `https` i `localhost`; błąd rejestracji to tylko `console.warn`; od E3 od razu przechwytuje `beforeinstallprompt` (`preventDefault`, zdarzenie zapamiętane — może przyjść, zanim wczyta się menu) i `appinstalled`; `window.SowiePwa` (zawsze, także bez service workera): `standalone()` — czy gra działa jako zainstalowana aplikacja (`display-mode: standalone` albo `navigator.standalone`), `canPrompt()` — czy przeglądarka pozwala zainstalować przyciskiem, `prompt()` → `"accepted"` / `"dismissed"` / `null` (systemowe okno instalacji; zdarzenie jednorazowe), `onInstallChange(słuchacz)` → odłączenie (słuchacz dostaje `true` po `beforeinstallprompt`, `false` po instalacji);
 - `sw.js` (katalog główny — service worker w `shared/` obejmowałby tylko ten katalog, a GitHub Pages nie pozwala ustawić nagłówka `Service-Worker-Allowed`):
-  - `VERSION = "sowiegry-v15"` (v2 — E3a: `shared/meta/guides-data.js`; v3 — nowe menu E3; v4 — E4f: podmiana SowaRunner na Sowią Ucieczkę, nowe moduły `meta/progress-events.js` i `meta/missions.js`, a podniesienie wersji usuwa z telefonów stare pliki SowaRunner razem z `p5.js` ok. 5 MB; v5 — E5f: podmiana Sowa3 na Sowie Tory, podniesienie usuwa z pamięci telefonów stare pliki Sowa3; v6 — E6f: podmiana SowaJumper na Sowę w Chmurach; v7 — E7e: nowa odsłona Sowich Ogrodów, usunięte `SowieOgrody/script.js` i `style.css`; v8 — E8e: Łącz i Hoduj zamiast Sowiej Szklarni, usunięte `SowiaSzklarnia/script.js`, `style.css` i `shared/stable-panel.js`; v9 — E9a: usunięte dawne moduły interfejsu gier i ich pliki z listy `SHELL`; v10 — E9b: Sowia Akademia jako moduł `meta/academy.js` zamiast `sowie-academy.js`; v11 — E9c: `meta/shop.js`, `world/species.js` i 4 nowe stroje SVG; v12 — E10: wersja demo `demo.html`, `menu/demo.js`, `menu/demo.css`; v13 — Analiza 6: `engine/quality.js` i `engine/perf-meter.js` w grafie modułów menu; v14 — przeniesienie bazy do projektu `sowiegry-1e1f9` (nowy `config/firebase-config.js`); v15 — M5: Sowie Trójki w menu — zmienione moduły menu z listy `SHELL` (`menu/games.js`, `menu/owl-tab.js`, `meta/guides-data.js`, `meta/academy.js`, `owl-gallery.js`, `sowie-platform.js`, `sowie-cloud.js`) muszą trafić do telefonów od razu) — jedna pamięć podręczna na wersję; przy aktywacji usuwane są stare `sowiegry-*`; **przy każdej zmianie listy lub strategii trzeba podnieść `VERSION`**;
+  - `VERSION = "sowiegry-v16"` (v2 — E3a: `shared/meta/guides-data.js`; v3 — nowe menu E3; v4 — E4f: podmiana SowaRunner na Sowią Ucieczkę, nowe moduły `meta/progress-events.js` i `meta/missions.js`, a podniesienie wersji usuwa z telefonów stare pliki SowaRunner razem z `p5.js` ok. 5 MB; v5 — E5f: podmiana Sowa3 na Sowie Tory, podniesienie usuwa z pamięci telefonów stare pliki Sowa3; v6 — E6f: podmiana SowaJumper na Sowę w Chmurach; v7 — E7e: nowa odsłona Sowich Ogrodów, usunięte `SowieOgrody/script.js` i `style.css`; v8 — E8e: Łącz i Hoduj zamiast Sowiej Szklarni, usunięte `SowiaSzklarnia/script.js`, `style.css` i `shared/stable-panel.js`; v9 — E9a: usunięte dawne moduły interfejsu gier i ich pliki z listy `SHELL`; v10 — E9b: Sowia Akademia jako moduł `meta/academy.js` zamiast `sowie-academy.js`; v11 — E9c: `meta/shop.js`, `world/species.js` i 4 nowe stroje SVG; v12 — E10: wersja demo `demo.html`, `menu/demo.js`, `menu/demo.css`; v13 — Analiza 6: `engine/quality.js` i `engine/perf-meter.js` w grafie modułów menu; v14 — przeniesienie bazy do projektu `sowiegry-1e1f9` (nowy `config/firebase-config.js`); v15 — M5: Sowie Trójki w menu — zmienione moduły menu z listy `SHELL` (`menu/games.js`, `menu/owl-tab.js`, `meta/guides-data.js`, `meta/academy.js`, `owl-gallery.js`, `sowie-platform.js`, `sowie-cloud.js`) muszą trafić do telefonów od razu; v16 — Analiza 7b, W1–W2: nowy `sowie-cloud.js` z portfelem Wypluffków (`SowieCloud.bank`) i pomijanie adresów `/Admin/` — panel admina zawsze z sieci, nigdy z pamięci aplikacji) — jedna pamięć podręczna na wersję; przy aktywacji usuwane są stare `sowiegry-*`; **przy każdej zmianie listy lub strategii trzeba podnieść `VERSION`**;
   - `SHELL` (108 plików — od Analizy 6 także `engine/quality.js` i `engine/perf-meter.js`; od E9c także `meta/shop.js`, `world/species.js` i 4 nowe stroje, od E10 `demo.html`, `menu/demo.js` i `menu/demo.css`; od E9a bez dawnych modułów `game-enhancements.css`, `owl-gallery.css`, `sowie-core.js`, `notification-manager.js`, `game-guides.js`): `./`, `index.html`, `demo.html`, manifest, 6 ikon, obie czcionki Fredoka, `config/firebase-config.js`, style (`cute-ui.css`, `world/tokens.css`, `ui/ui.css`, `menu/menu.css`, `menu/demo.css`), skrypty klasyczne (`sowie-platform`, `sowie-cloud`, `password-gate`, `pwa`, `owl-gallery`; od E9b bez `sowie-academy`), **cały graf modułów ES menu i menu demo** (8 plików `shared/menu/` — od E10 także `demo.js`, `engine/assets, audio, loop, sprites, quality, perf-meter`, `meta/guides-data, academy, progress, progress-events, missions, shop`, `ui/guide-view, icons, modal, toasts`, `world/catalog, owl, species, tokens`), `assets/audio/audio.json` z czterema efektami menu (`klik`, `hu-hu`, `zakup`, `rekord`) i **52 pliki SVG postaci** z katalogu (`svgFiles(SPRITES)`) — menu rysuje postacie także przy pierwszym starcie bez zasięgu; kompletność pilnuje test jednostkowy (graf `import … from "./…"` od `shared/menu/menu.js`);
   - instalacja: `SHELL` z `cache: "reload"`, w tle pliki SDK Firebase 12.19.0 z gstatic (błąd nie blokuje instalacji), `skipWaiting`, przy aktywacji `clients.claim`;
   - pobieranie (tylko `GET`): strony i kod z tej domeny — **najpierw sieć** (aktualizacje z GitHub Pages od razu), przy braku sieci lub po 4 s — pamięć, a dla nawigacji bez kopii — menu `./`; obrazki, czcionki i dźwięki (`png, jpg, webp, gif, svg, ico, woff/woff2, mp3, ogg, wav`) oraz SDK z gstatic — **najpierw pamięć**; zapisywane są tylko odpowiedzi `ok` typu `basic`/`cors`; żądania do Firestore nie są obsługiwane (zapis offline robi SDK w IndexedDB);
@@ -764,6 +840,8 @@ Zależności deweloperskie są przypięte tam, gdzie wersja wpływa na przegląd
 `tory.spec.js` (E5 — Sowie Tory, podgląd): opis w `SowieTory/docs/Documentation.md`, rozdział „Testy”.
 
 `lacz.spec.js` (E8 — Łącz i Hoduj, od E8e gra „szklarnia”): opis w `LaczIHoduj/docs/Documentation.md`, rozdział „Testy” (tam też test jednostkowy `tests/unit/lacz-plansza.test.mjs` — m.in. to, że plansza nigdy nie blokuje się bez wyjścia).
+
+`admin.spec.js` (Analiza 7b, W2 — panel admina Sowiego Banku na telefonie, emulator, urządzenie bez hasła gracza): opis w `Admin/docs/Documentation.md`, rozdział „PWA i testy” (hasło „KoziAdmin”, założenie portfela z prezentem, prośba z drugiego urządzenia zatwierdzona raz, doładowanie i korekta, zwrot, ogłoszenie z promocją, „Wyloguj”).
 
 `trojki.spec.js` (Analiza 5 — Sowie Trójki, od M5 w menu): opis w `SowieTrojki/docs/Documentation.md`, rozdział „Testy” (mapa, gesty, moce, Sowia pomoc, wygrana z zapisem w chmurze i po ponownym otwarciu — od 2026-11-23 w nowej karcie zamiast przeładowania, jak w `tory.spec.js` i `rekordy.spec.js` (WebKit zgłasza przerwane przeładowaniem zapytania kanału Firestore jako błędy strony), Akademia i Galeria na stronie gry — „Pierwsze kroki”, zdjęcie 26, metryki po wygranej, komunikaty nad oknem wyniku; tam też testy jednostkowe `tests/unit/trojki-plansza.test.mjs`, `trojki-gra.test.mjs`, `trojki-sowka.test.mjs`).
 
@@ -934,6 +1012,26 @@ Nazwa pliku pochodzi od dawnego `shared/gameplay-expansion.js` (usuniętego w E9
 
 W testach gier zręcznościowych (`ucieczka.test.mjs`, `tory-dodatki.test.mjs`, `chmury-dodatki.test.mjs`): `createRun({ goatTime })` mnoży czas power-upów (Magnes ×1,4; Tarcza i Kózia jazda ×1,6; Magnes i Rakietka ×1,2), mnożnik w granicach 1–2, zła wartość → 1. E2e: `menu.spec.js` (Sowi Butik niżej), `ucieczka.spec.js` (profil z `goatLevel: 2` → Magnes 8 s × 1,4 i chip w HUD).
 
+### Testy Wypluffków (`tests/unit/wypluffki.test.mjs`, Analiza 7b W1)
+
+`MemoryBackend` i `createCloud` z `shared/sowie-cloud.js` oraz `shared/meta/wypluffki.js` (20 testów): hasło admina
+(„KoziAdmin” bez wielkości liter i spacji na końcach), `normalizeWallet` (liczby całkowite, nieznane pola zostają),
+operacje panelu bez hasła → `"admin"`, hasło admina odblokowuje połączenie na nowym urządzeniu, założenie portfela
+z prezentem (drugi raz `"istnieje"`), zatwierdzenie prośby tylko raz przy dwóch równoczesnych stuknięciach (bonus
+z pakietu), odrzucenie, korekta i zwrot (saldo = doładowano − wydano, kolejność wpisów historii), ogłoszenie
+i promocja, zakup gracza (za mało, sukces, `"owned"`, bez portfela, bez sieci), dwa zakupy naraz (drugi `"saldo"`),
+nasłuch portfela (doładowanie z drugiego „urządzenia” widać od razu), prośba (zły kod odrzucony, dokument
+w bazie), katalog (unikalne id, rodzaje, rzadkości, ceny, cena 0 tylko z pakietu albo VIP, miejsca Dziupli, palety
+skórek, **brak pól działania** — tylko wygląd), Sowia Farma poza sprzedażą bez gry, pakiety, VIP, oferta dnia
+i rabaty, kod (zgodny z regułami), jajko (bez powtórek, szanse = 1, legendarna, gdy tylko takie zostały),
+`buyItem` / `buyEgg` / `requestTopUp` z chmurą (cena z oferty, kolejka najwyżej 3, Pakiet Startowy raz).
+Reguły portfela: `tests/rules/firestore-rules.test.mjs` (4 testy „Wypluffki — …” na emulatorze); kopia z portfelem:
+`tests/rules/kopia-firestore.test.mjs`.
+
+### Testy Sowiej Dziupli (`tests/unit/dziupla.test.mjs`, Analiza 7 D1)
+
+Katalog (unikalne id, ozdoby w znanych miejscach, domyślne od początku, 12 wyglądów dziupli), warunki odwołują się do liczników z `academy.js` (wyciąganych z kodu — `push(game, "…"`), ozdoby premium = ozdoby Dziupli z katalogu Wypluffków, `normalizeDziupla` (brak, uszkodzone, nieznane zostają), odblokowanie (od początku, licznikiem, za piórka, za Wypluffki, Storczykowa na dwa sposoby, nagroda VIP), półka 3 → 4 → 5 (poziom 5 = 610 XP, 14 rozdziałów, Wypluffki), roślinki z gier (nowy gracz: Monstera i Pilea z Ogrodów i Monstera z Łącz i Hoduj; zaawansowany: Sowi storczyk, Drzewo życia, diamentowy Storczyk bez tęczowego, Słonecznik zamknięty przy 100 połączeniach, Storczyk z Trójek; razem 43 + 36 + 2), `resolvePlaced` (zablokowana, obca i nieznana → domyślna, zapis bez zmian, „pusto” tylko gdzie wolno, zdjęcie zablokowane → `owl-01`, półka tylko dostępna), `placeDecor` i `markSeen`, profil z polem `dziupla` ≤ 30 pól.
+
 ### Testy galerii (`tests/unit/owl-gallery.test.mjs`, uzupełnienie E3)
 
 - `shared/owl-gallery.js` uruchamiany w piaskownicy `node:vm` (atrapa `window`/`document`): 40 zdjęć z listą `goals` (od uwagi G4 cele zdjęć 31–40 i unikalne pliki; zapis z atrapą `SowieCloud` zachowuje identyfikatory nieznane tej wersji — `owl-99` — a liczniki biorą tylko znane) (źródła `level`, `feathers` albo metryka; progi > 0), `owl-01` bez celów, `progressOf` (jeden cel — 0,5; dwa cele — średnia 0,75 i szczegóły; 5 celów wizyt; nieznane id → `null`);
@@ -1020,6 +1118,8 @@ SowieGry przeniesiono do własnego projektu Firebase **`sowiegry-1e1f9`** (konto
   kontrolną SHA-256) i wgrywa ją do dowolnego projektu z regułami SowieGry (`import`, `--proba` bez zapisu).
 - Stary projekt `rpg-dataslate-relay` jest nietknięty (dane SowieGry jako archiwum, druga aplikacja działa dalej);
   o usunięciu starych danych decyduje właściciel po potwierdzeniu, że wszystko działa.
+- **Od etapu W1 (2026-11-24) `firestore.rules` = reguły z Analizy 7b, Załącznik B** (część „SowieGry” słowo w słowo jak wyżej + część „Wypluffki”: portfel `sowiegry_wypluffki/portfel` — odczyt dla każdego, zapis, gdy `schemaVersion` i `saldo` to liczby całkowite, saldo ≥ 0, bez kasowania; `wypluffki_prosby/{kod}` — odczyt i kasowanie, zapis z całkowitą `kwota`; `wypluffki_historia/{wpis}` — odczyt i kasowanie, zapis z całkowitą `zmiana`). **Właściciel publikuje je w etapie W2** (razem z panelem admina); do tego czasu produkcja nie ma części „Wypluffki” — portfel w produkcji jest niedostępny (odmowa dostępu), a gry działają bez zmian. Test `tests/unit/firestore-rules.test.mjs` pilnuje, że plik = blok z Załącznika B i że część SowieGry zaczyna się dokładnie jak reguły z `Analizy/PRZENIESIENIE_FIRESTORE.md`.
+- `scripts/kopia-firestore.mjs` od W1 kopiuje też portfel i obie jego podkolekcje (`allowedPath`, `readAll`, `summarize` → `portfel`, `wypluffki: { prosby, historia }`); bez dostępu do portfela (403 — przed publikacją reguł) kopia powstaje bez Wypluffków.
 - Pamięć Firestore w przeglądarce (IndexedDB) jest osobna dla każdego projektu — telefony po przełączeniu nie mieszają
   danych; `sw.js` dostał nową wersję, żeby od razu pobrać nową konfigurację.
 
@@ -1116,6 +1216,12 @@ Jedyny moduł SowieGry, który rozmawia z Firestore i używa pamięci przegląda
 | `DAILY_DAYS` / `AWARD_DAYS`                       | 30 / 30                                                                                             | ile dni trzymamy rekordy dnia i nagrody dzienne Akademii                                            |
 | `PROFILE_COUNTERS`                                | `stats.leaves`, `stats.nearMisses`, `stats.extraLives`, `stats.finishes`, `records.{id}.runs`       | liczniki zapisywane wyłącznie przez `increment()`                                                   |
 | `GAME_COUNTERS`                                   | `historyCount`                                                                                      | licznik wpisów historii w dokumencie gry                                                            |
+| `PATHS.wallet`, `walletRequests`, `walletRequest(kod)`, `walletHistory` | `sowiegry_wypluffki/portfel`, `…/portfel/wypluffki_prosby`, `…/wypluffki_prosby/{kod}`, `…/portfel/wypluffki_historia` | od Analizy 7b (W1, 2026-11-24): portfel Wypluffków, prośby o doładowanie, wyciąg z konta |
+| `HASLO_ADMINA` | `"koziadmin"` | hasło panelu admina `Admin/` jawne w kodzie (decyzja właściciela 2026-11-24 — jeden gracz i jeden admin, bez zaawansowanych zabezpieczeń); porównanie jak `HASLO_GRACZA` (trim, małe litery) |
+| `WALLET_VERSION` | `1` | `schemaVersion` portfela |
+| `BANK_LIMITS` | `maxSaldo` 10 000 000, `maxKwota` 100 000, `maxNotka` 120 znaków, `maxPromo` 90% | granice operacji Sowiego Banku |
+| `WALLET_CODE` | `/^HU-[A-HJ-NP-Z2-9]{4}-[A-HJ-NP-Z2-9]{2}$/` | kod prośby o doładowanie (bez 0/O i 1/I) — ten sam wzór co w `shared/meta/wypluffki.js` |
+| `WALLET_ITEM` | `/^[a-z0-9]+:[a-z0-9-]+$/` | identyfikator rzeczy w dzienniku zakupów (`skorka:zlota`) |
 
 ### Znaczniki operacji
 
@@ -1139,6 +1245,8 @@ Stan w pamięci to zwykły JSON. Operacje specjalne są zapisywane jako obiekty 
 - `trimDaily(map, today, days = 30)` — zostawia klucze `RRRR-MM-DD` z ostatnich 30 dni (włącznie z dziś);
 - `trimAwards(awards, today, days = 30)` — usuwa nagrody `daily:*` i `feature:*` z datą starszą niż 30 dni; `weekly:*`, `trait:*`, `gallery:*` zostają;
 - (do zadania 9.5, 2026-11-02, także `STARE_KLUCZE`, `STARE_PREFIKSY`, `isOldKey(key)` i `cleanupOldKeys(storage)` — jednorazowe kasowanie dawnych kluczy SowieGry sprzed zapisu w chmurze; usunięte, dziś SowieGry niczego nie kasuje z `localStorage` i nigdy nie woła `clear()`, bo domena jest współdzielona z innymi stronami);
+- `checkAdminPassword(v)` (od W1) — `normalizePassword(v) === HASLO_ADMINA` („KoziAdmin”, „koziadmin”, „ KOZIADMIN ” — tak; „kozi admin” — nie);
+- `normalizeWallet(raw)` (od W1) — portfel z bazy → stan w pamięci: `saldo`, `doladowano`, `wydano` jako liczby całkowite ≥ 0 (`Math.floor`, ujemne → 0), `kupione` jako mapa `id → { at, cena }`, `ostatnieDoladowanie` (`{ kwota, notka, kod | null, at }` albo `null`), `ogloszenie` (tekst, domyślnie `""`), `promocja` (`{ procent ≤ 90, do }` albo `null`), `zmieniono`, `schemaVersion` (domyślnie `WALLET_VERSION`); nieznane pola zostają (nic nie ginie);
 - `normalizeValue(v)` — zamienia obiekty z `toMillis()` (Timestamp Firestore) na liczby milisekund, rekurencyjnie;
 - `randomId("d-")` — identyfikator urządzenia `d-` + 6 znaków `[0-9a-z]` z `crypto.getRandomValues` (niezależnie od `?seed=`, który podmienia `Math.random`);
 - `defaultProfile(platform)` — profil domyślny: `schemaVersion: 1`, `name: "Sowa"`, `settings` (`DEFAULT_SETTINGS`), `cosmetics: { unlocked: ["none", "bow"], selected: "none" }`, `missions` (`DEFAULT_MISSIONS`), `stats` (`DEFAULT_STATS`), `academy: { xp: 0, feathers: 0, metrics: {}, daily: null, weekly: null, awards: {} }`, `gallery: { unlocked: ["owl-01"], viewed: [], favorite: null }`, `records: {}`;
@@ -1154,6 +1262,7 @@ Wspólny interfejs:
 | `commit(ops)`                                      | jeden zapis zbiorczy (`writeBatch`); `ops`: `{ type: "set", path, data }` (zawsze `merge: true`), `{ type: "add", collection, data }` (dokument z automatycznym id), `{ type: "delete", path }` |
 | `query(collection, { orderBy, direction, limit })` | lista `{ id, path, data }`                                                                                                                                                                      |
 | `subscribe(path, listener)`                        | nasłuch dokumentu; `listener(data, { fromCache, pendingWrites })`; zwraca funkcję odpinającą                                                                                                    |
+| `transact(paths, compute)` (od W1) | transakcja Sowiego Banku: odczyt dokumentów `paths` (lista ścieżek), `compute(dokumenty)` (czysta funkcja, `null` = brak dokumentu) zwraca `{ ops, result }`, `ops` w formacie `commit` zapisuje się razem albo wcale; zwraca `result`. Firestore: `runTransaction(db, …)` (tylko z siecią; przy konflikcie SDK powtarza `compute`), `set` z `merge: true`, `add` jako `doc(collection(…))`. `MemoryBackend`: transakcje po kolei w łańcuchu obietnic (`txChain`), odczyt `getDoc`, zapis `commit` |
 
 **`MemoryBackend`** (klasa): dokumenty w `Map` ścieżka → obiekt, `commits` (lista wszystkich zapisów — do testów), `writesTo(path)` (liczba zapisów zbiorczych dotykających dokumentu). `add` nadaje id `m-000001`, `m-000002`… Po `commit` powiadamia nasłuchujących dotkniętych dokumentów (`fromCache: false`, `pendingWrites: false`). Używany w testach (`?cloud=memory`), przy awarii CDN i w testach jednostkowych. Dane giną po przeładowaniu strony.
 
@@ -1214,6 +1323,7 @@ Po zbudowaniu stan bazowy = kopia stanu w pamięci. Podczas zapisu status `"zapi
 | `offlineReason()`                                                    | `null`, `"sdk"` albo `"profil"`                                                                                                                                                                        |
 | `backendKind()`, `mode()`, `gameId()`, `deviceId()`                  | informacje diagnostyczne (tryb: `memory` / `emulator` / `firestore`)                                                                                                                                   |
 | `devicePrefs()`, `setDevicePrefs(zmiany)`                            | ustawienia **tego urządzenia** (od Analizy 6: `quality` — tryb i poziom automatu płynności) we wpisie urządzenia `sowiegry:urzadzenie` w `localStorage` (pole `prefs`, kopia; `setDevicePrefs` scala zmiany); nigdy nie trafiają do Firestore |
+| `bank` (od W1) | Sowi Bank — portfel Wypluffków i operacje panelu admina (rozdział niżej) |
 | `helpers`                                                            | `{ trimAwards, trimDaily, dayKey, recordKey }` — przycinanie nagród i rekordów dnia (używa Sowia Akademia), klucz rekordów                                                                             |
 
 **`submitRun(gameId, { score, distance?, height?, leaves?, durationMs?, difficulty = "arcade", mode?, daily?, seed? })`** — jeden zapis zbiorczy na rozgrywkę. Klucz rekordów `recordKey(poziom, tryb)`: bez trybu albo `"kampania"` — sam poziom (np. `arcade`, jak dotąd), inny tryb — `"<tryb>-<poziom>"` (np. `nieskonczony-arcade`, Sowie Tory od E5d2); wpis z trybem ma pole `mode`:
@@ -1222,6 +1332,35 @@ Po zbudowaniu stan bazowy = kopia stanu w pamięci. Podczas zapisu status `"zapi
 - dokument gry: `top10[klucz]` (`insertTop`), przy `daily: true` `dailyBest[RRRR-MM-DD]` = max wartości metryki dnia gry (`GAME_REGISTRY[].dailyMetric`: Runner — dystans, Jumper — wysokość, Sowie Tory — wynik), przycięte do 30 dni; `historyCount` +1;
 - nowy wpis `sowiegry_historia`: `{ score, distance?, height?, leaves?, durationMs?, difficulty, daily, seed, at: serverTimestamp }`;
 - gdy `historyCount > 60`, najstarsze wpisy ponad 50 są kasowane (`query(orderBy("at","asc"), limit(nadmiar))` + `delete`, `historyCount` −n). Nie używamy polityk TTL, bo działają na grupę kolekcji w całej (współdzielonej) bazie.
+
+### Sowi Bank — `SowieCloud.bank` (Analiza 7b, etap W1)
+
+Portfel udawanej waluty premium **Wypluffki** (`sowiegry_wypluffki/portfel`). Gra tylko wydaje, saldo zmienia admin
+w panelu `Admin/` (hasło „KoziAdmin”). Operacje na saldzie są **transakcjami** (`backend.transact`) i wymagają sieci;
+prośba o doładowanie to zwykły zapis (`commitNow`, bez sieci czeka w kolejce SDK). Wyniki operacji: `{ ok: true, … }`
+albo `{ ok: false, reason }`.
+
+| Funkcja | Opis |
+| --- | --- |
+| `wallet()`, `known()` | ostatni znany portfel (`normalizeWallet`, kopia) albo `null` (brak portfela); `known()` — czy portfel już odczytano (przed publikacją reguł z portfelem — `false`) |
+| `load()` | Promise: jednorazowy odczyt (`readDoc` — najpierw pamięć telefonu, potem serwer) |
+| `onWallet(fn)` | nasłuch: `fn(portfel \| null)` od razu (gdy znany) i przy każdej zmianie (`backend.subscribe`, uruchamiany przy pierwszym odbiorcy po `ready`, z jednorazowym `load()`); migawka z pamięci telefonu bez danych jest pomijana; zwraca funkcję odpinającą |
+| `available()` | `"laczenie"` (przed `ready`), `"offline"` (bez sieci, awaria SDK — `offlineReason() === "sdk"` — albo backend bez `transact`), `"online"` |
+| `buy({ id, price })` | zakup gracza: `id` zgodne z `WALLET_ITEM`, cena 1–100 000 (cenę liczy `shared/meta/wypluffki.js`); transakcja: brak portfela → `"brak-portfela"`, rzecz w `kupione` → `"owned"`, za mało → `"saldo"`; zapis `saldo − cena`, `wydano + cena`, `kupione[id] = { at: serverTimestamp, cena }`, `zmieniono`, wpis historii `{ zmiana: −cena, saldoPo, rodzaj: "zakup", kod: id, at }`; wynik `{ ok, saldo, id, cena }`. Bez sieci → `"offline"`, złe dane → `"unknown"` |
+| `requestTopUp({ kod, pakiet, kwota })` | prośba gracza („Hu-hu w kolejce”): kod `WALLET_CODE`, `pakiet` (tekst ≤ 40 znaków), kwota 1–100 000 → dokument `wypluffki_prosby/{kod}` `{ kod, pakiet, kwota, status: "czeka", at: serverTimestamp }`; wynik od razu `{ ok, kod, pakiet, kwota, at }` |
+| `requests(limit = 20)`, `history(limit = 30)` | Promise: prośby / wpisy historii od najnowszych (`orderBy("at", "desc")`), każdy z `id`; błąd odczytu → `[]` |
+| `isAdmin()`, `unlockAdmin(haslo)`, `lockAdmin()` | panel admina: `unlockAdmin` sprawdza `checkAdminPassword`, zapisuje we wpisie urządzenia `admin: true` **i** `unlocked: true` (panel nie pyta o hasło gracza — połączenie z bazą rusza od razu); `lockAdmin` — `admin: false` |
+| `create({ prezent = 0, notka })` | admin: założenie portfela (istnieje → `"istnieje"`): `schemaVersion`, `saldo = doladowano = prezent`, `wydano: 0`, `kupione: {}`, `ogloszenie: ""`, `promocja: null`, `ostatnieDoladowanie` (przy prezencie), `utworzono`, `zmieniono`; przy prezencie wpis historii `doladowanie` |
+| `topUp({ kwota, notka, kod, bonus })` | admin: doładowanie ręczne albo z prośby — prośba musi istnieć (`"brak-prosby"`) i czekać (`"zalatwione"` — **zatwierdzenie tylko raz**, także przy podwójnym stuknięciu); `saldo` i `doladowano` + kwota (saldo ≤ 10 mln), `ostatnieDoladowanie: { kwota, notka, kod, at }` (powiadomienie u gracza), `bonus` — rzeczy z pakietu dopisane do `kupione` z ceną 0 (np. Czapeczka Nowicjusza z Pakietu Startowego), wpis historii `doladowanie`, prośba `{ status: "zatwierdzone", kwotaPrzyznana, notka, zalatwiono }` |
+| `reject({ kod, notka })` | admin: prośba `odrzucone` (`kwotaPrzyznana: 0`) — tylko czekająca |
+| `correct({ kwota, notka })` | admin: korekta — `saldo` i `doladowano` − kwota (za mało → `"saldo"`), wpis `korekta` |
+| `refund({ id, notka })` | admin: zwrot — rzecz znika z `kupione` (`deleteField`), `saldo + cena`, `wydano − cena`, wpis `zwrot` (brak rzeczy → `"brak"`) |
+| `announce({ ogloszenie, promocja })` | admin: tekst na górze Butiku (≤ 120 znaków) i promocja `{ procent 1–90, do (ms) }` albo `null` (zła → `"promocja"`) |
+
+Bez hasła admina operacje panelu zwracają `"admin"`. Saldo zawsze równa się `doladowano − wydano` (pilnuje
+aplikacja — reguły sprawdzają tylko poprawność danych). Notki są przycinane do 120 znaków.
+
+**Panel admina** (`Admin/`, etap W2) korzysta wyłącznie z `SowieCloud.bank` — opis strony, modułu i stylów: `Admin/docs/Documentation.md`, instrukcja dla admina: `Admin/docs/README.md`.
 
 ### Start w przeglądarce
 

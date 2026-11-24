@@ -135,6 +135,8 @@ function save({ immediate = false, flush = false } = {}) {
     hybrids: state.stats.hybrids,
     orders: state.stats.orders,
     poolBest: state.poolBest,
+    // Od Sowiej Dziupli (D1): liczba połączeń — łańcuchy odblokowane w doniczce to roślinki na półce Dziupli.
+    merges: state.stats.merges,
   };
   cloud.saveGameState(GAME_ID, state, { immediate, saveVersion: SAVE_VERSION, summary });
   if (flush) cloud.flush?.();

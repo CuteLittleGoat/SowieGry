@@ -97,3 +97,51 @@ test("sowiegry_historia: tworzenie z liczbowym score, kasowanie tak, edycja nie"
   await assertFails(updateDoc(doc(history, "stary"), { score: 9999 }));
   await assertSucceeds(deleteDoc(doc(history, "stary")));
 });
+
+// Wypluffki (Analiza 7b, Załącznik B): jeden gracz i jeden admin — reguły sprawdzają tylko poprawność danych.
+const WALLET = "sowiegry_wypluffki/portfel";
+
+async function seedWallet() {
+  await env.withSecurityRulesDisabled(async (context) => {
+    const admin = context.firestore();
+    await setDoc(doc(admin, WALLET), { schemaVersion: 1, saldo: 1000, doladowano: 1000, wydano: 0, kupione: {} });
+  });
+}
+
+test("Wypluffki — portfel: odczyt i poprawne zapisy bez logowania (zakup, doładowanie, założenie)", async () => {
+  await seedWallet();
+  await assertSucceeds(getDoc(doc(db, WALLET)));
+  await assertSucceeds(
+    updateDoc(doc(db, WALLET), { saldo: 501, wydano: 499, "kupione.skorka:zlota": { at: 1, cena: 499 } }),
+  );
+  await assertSucceeds(updateDoc(doc(db, WALLET), { saldo: 1051, doladowano: 1550 }));
+  await assertSucceeds(setDoc(doc(db, WALLET), { schemaVersion: 1, saldo: 0, kupione: {} }));
+});
+
+test("Wypluffki — portfel: saldo ujemne, ułamek albo tekst, brak schemaVersion i kasowanie odrzucone", async () => {
+  await seedWallet();
+  await assertFails(updateDoc(doc(db, WALLET), { saldo: -1 }));
+  await assertFails(updateDoc(doc(db, WALLET), { saldo: 10.5 }));
+  await assertFails(updateDoc(doc(db, WALLET), { saldo: "100" }));
+  await assertFails(setDoc(doc(db, WALLET), { saldo: 5 }));
+  await assertFails(deleteDoc(doc(db, WALLET)));
+});
+
+test("Wypluffki — prośby i historia: zapis z liczbą całkowitą, kasowanie (przywracanie kopii)", async () => {
+  await seedWallet();
+  const request = doc(db, `${WALLET}/wypluffki_prosby/HU-7F3K-2Q`);
+  const entry = doc(db, `${WALLET}/wypluffki_historia/w1`);
+  await assertSucceeds(setDoc(request, { kod: "HU-7F3K-2Q", pakiet: "kieszen", kwota: 550, status: "czeka" }));
+  await assertSucceeds(updateDoc(request, { status: "zatwierdzone", kwotaPrzyznana: 550 }));
+  await assertFails(setDoc(doc(db, `${WALLET}/wypluffki_prosby/HU-AAAA-BB`), { kwota: "550" }));
+  await assertSucceeds(deleteDoc(request));
+  await assertSucceeds(setDoc(entry, { zmiana: 550, saldoPo: 1550, rodzaj: "doladowanie" }));
+  await assertFails(setDoc(doc(db, `${WALLET}/wypluffki_historia/w2`), { saldoPo: 1 }));
+  await assertSucceeds(getDocs(collection(db, `${WALLET}/wypluffki_historia`)));
+  await assertSucceeds(deleteDoc(entry));
+});
+
+test("Wypluffki — inne dokumenty kolekcji sowiegry_wypluffki są zamknięte", async () => {
+  await assertFails(setDoc(doc(db, "sowiegry_wypluffki/inny"), { saldo: 1 }));
+  await assertFails(getDoc(doc(db, "sowiegry_wypluffki/inny")));
+});

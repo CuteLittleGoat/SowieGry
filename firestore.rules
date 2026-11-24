@@ -28,5 +28,28 @@ service cloud.firestore {
         }
       }
     }
+
+    // --- Wypluffki (Analiza 7b) -------------------------------------------------------------
+    // Jeden gracz i jeden admin (hasło panelu w kodzie) — bez zaawansowanych zabezpieczeń.
+    // Reguły sprawdzają tylko poprawność danych. Kasowanie wpisów pozwala przywrócić kopię zapasową.
+    match /sowiegry_wypluffki/portfel {
+      allow read: if true;
+      allow create, update: if request.resource.data.schemaVersion is int
+                            && request.resource.data.saldo is int
+                            && request.resource.data.saldo >= 0;
+      allow delete: if false;
+
+      // „Hu-hu w kolejce”: prośby o doładowanie.
+      match /wypluffki_prosby/{kod} {
+        allow read, delete: if true;
+        allow create, update: if request.resource.data.kwota is int;
+      }
+
+      // Wyciąg z konta: zakupy, doładowania, korekty, zwroty.
+      match /wypluffki_historia/{wpis} {
+        allow read, delete: if true;
+        allow create, update: if request.resource.data.zmiana is int;
+      }
+    }
   }
 }

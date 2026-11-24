@@ -21,7 +21,22 @@
     profile: "sowiegry/profil",
     game: (gameId) => `sowiegry/profil/sowiegry_gry/${gameId}`,
     history: (gameId) => `sowiegry/profil/sowiegry_gry/${gameId}/sowiegry_historia`,
+    // Wypluffki (Analiza 7b, rozdz. 12): portfel gracza, prośby o doładowanie i wyciąg z konta.
+    wallet: "sowiegry_wypluffki/portfel",
+    walletRequests: "sowiegry_wypluffki/portfel/wypluffki_prosby",
+    walletRequest: (kod) => `sowiegry_wypluffki/portfel/wypluffki_prosby/${kod}`,
+    walletHistory: "sowiegry_wypluffki/portfel/wypluffki_historia",
   });
+
+  // Sowi Bank (Analiza 7b): hasło panelu admina zaszyte w kodzie, jak hasło gracza (decyzja właściciela 2026-11-24 —
+  // jeden gracz i jeden admin, bez zaawansowanych zabezpieczeń). Porównanie po trim i małych literach.
+  const HASLO_ADMINA = "koziadmin";
+  const WALLET_VERSION = 1;
+  const BANK_LIMITS = Object.freeze({ maxSaldo: 10_000_000, maxKwota: 100_000, maxNotka: 120, maxPromo: 90 });
+  // Kod prośby o doładowanie: HU-XXXX-XX bez znaków łatwych do pomylenia (0/O, 1/I) — ten sam wzór co w regułach.
+  const WALLET_CODE = /^HU-[A-HJ-NP-Z2-9]{4}-[A-HJ-NP-Z2-9]{2}$/;
+  // Identyfikator rzeczy w dzienniku zakupów: „rodzaj:nazwa” (np. „skorka:zlota”).
+  const WALLET_ITEM = /^[a-z0-9]+:[a-z0-9-]+$/;
 
   // Opóźnienia zapisów (Analiza 1, rozdział 6).
   const DELAYS = Object.freeze({
@@ -89,6 +104,10 @@
 
   function checkPassword(value) {
     return normalizePassword(value) === HASLO_GRACZA;
+  }
+
+  function checkAdminPassword(value) {
+    return normalizePassword(value) === HASLO_ADMINA;
   }
 
   function dayKey(ms = Date.now()) {
@@ -287,6 +306,41 @@
     return result;
   }
 
+  // Portfel Wypluffków z bazy → stan w pamięci (Analiza 7b, rozdz. 12.1). Liczby całkowite ≥ 0, dziennik zakupów
+  // jako mapa „id → { at, cena }”; nieznane pola (np. z nowszej wersji) zostają — nic nie ginie.
+  function normalizeWallet(raw) {
+    const input = isPlainObject(raw) ? raw : {};
+    const int = (value) => Math.max(0, Math.floor(Number(value) || 0));
+    const kupione = {};
+    for (const [id, entry] of Object.entries(isPlainObject(input.kupione) ? input.kupione : {})) {
+      kupione[id] = { at: Number(entry?.at) || 0, cena: int(entry?.cena) };
+    }
+    const last = isPlainObject(input.ostatnieDoladowanie) ? input.ostatnieDoladowanie : null;
+    const promo = isPlainObject(input.promocja) ? input.promocja : null;
+    return {
+      ...input,
+      schemaVersion: Number.isInteger(input.schemaVersion) ? input.schemaVersion : WALLET_VERSION,
+      saldo: int(input.saldo),
+      doladowano: int(input.doladowano),
+      wydano: int(input.wydano),
+      kupione,
+      ostatnieDoladowanie: last
+        ? {
+            kwota: int(last.kwota),
+            notka: typeof last.notka === "string" ? last.notka : "",
+            kod: typeof last.kod === "string" && last.kod ? last.kod : null,
+            at: Number(last.at) || 0,
+          }
+        : null,
+      ogloszenie: typeof input.ogloszenie === "string" ? input.ogloszenie : "",
+      promocja:
+        promo && int(promo.procent) > 0
+          ? { procent: Math.min(BANK_LIMITS.maxPromo, int(promo.procent)), do: Number(promo.do) || 0 }
+          : null,
+      zmieniono: Number(input.zmieniono) || 0,
+    };
+  }
+
   // ---------------------------------------------------------------------------
   // MemoryBackend: testy (?cloud=memory), awaria CDN, tryb offline bez SDK
   // ---------------------------------------------------------------------------
@@ -344,6 +398,20 @@
       if (!this.listeners.has(path)) this.listeners.set(path, new Set());
       this.listeners.get(path).add(listener);
       return () => this.listeners.get(path)?.delete(listener);
+    }
+
+    // Transakcja (Sowi Bank): odczyt dokumentów `paths`, `compute(dokumenty)` → { ops, result } i zapis ops.
+    // Transakcje idą po kolei (łańcuch obietnic), więc dwie naraz nie przeczytają tego samego salda.
+    transact(paths, compute) {
+      const run = async () => {
+        const docs = await Promise.all(paths.map((path) => this.getDoc(path)));
+        const { ops = [], result } = compute(docs);
+        if (ops.length) await this.commit(ops);
+        return result;
+      };
+      const task = (this.txChain || Promise.resolve()).then(run, run);
+      this.txChain = task.catch(() => {});
+      return task;
     }
 
     // Liczba zapisów dokumentu (do testów limitów).
@@ -413,6 +481,20 @@
           fs.query(fs.collection(db, collection), fs.orderBy(orderBy, direction), fs.limit(limit)),
         );
         return snapshot.docs.map((entry) => ({ id: entry.id, path: entry.ref.path, data: read(entry) }));
+      },
+      // Transakcja Firestore (Sowi Bank, tylko z siecią): odczyty, potem zapisy z `compute(dokumenty)`. Przy
+      // konflikcie SDK powtarza całą funkcję, dlatego `compute` jest czysta (bez skutków ubocznych).
+      transact(paths, compute) {
+        return fs.runTransaction(db, async (transaction) => {
+          const snapshots = await Promise.all(paths.map((path) => transaction.get(ref(path))));
+          const { ops = [], result } = compute(snapshots.map((entry) => (entry.exists() ? read(entry) : null)));
+          for (const op of ops) {
+            if (op.type === "set") transaction.set(ref(op.path), toFirestore(op.data), { merge: true });
+            else if (op.type === "add") transaction.set(fs.doc(fs.collection(db, op.collection)), toFirestore(op.data));
+            else if (op.type === "delete") transaction.delete(ref(op.path));
+          }
+          return result;
+        });
       },
       subscribe(path, listener) {
         return fs.onSnapshot(
@@ -1014,6 +1096,311 @@
       schedule(immediate ? DELAYS.idleImportant : DELAYS.idle);
     }
 
+    // --- Sowi Bank: portfel Wypluffków (Analiza 7b, rozdz. 8 i 12) ---------------------------
+    // Wypluffki są na niby: saldo zmienia admin w panelu `Admin/`, gra tylko wydaje. Zakupy i operacje panelu idą
+    // transakcjami (tylko z siecią), prośby o doładowanie zwykłym zapisem (bez sieci czekają w kolejce SDK).
+    let wallet = null;
+    let walletKnown = false;
+    let walletWatch = null;
+    let walletLoading = null;
+    const walletListeners = new Set();
+
+    function setWallet(raw) {
+      wallet = raw ? normalizeWallet(raw) : null;
+      walletKnown = true;
+      for (const listener of walletListeners) {
+        try {
+          listener(clone(wallet));
+        } catch (error) {
+          logError("SowieCloud: błąd odbiorcy portfela", error);
+        }
+      }
+    }
+
+    // Jednorazowy odczyt (pamięć telefonu, potem serwer). Nieznany portfel (np. brak reguł) zostaje „nieznany”.
+    async function loadWallet() {
+      await ready;
+      walletLoading ||= readDoc(PATHS.wallet).then((result) => {
+        walletLoading = null;
+        if (result.known) setWallet(result.data);
+        return clone(wallet);
+      });
+      return walletLoading;
+    }
+
+    // Nasłuch portfela (doładowanie od admina widać od razu). Startuje przy pierwszym odbiorcy.
+    function onWallet(listener) {
+      walletListeners.add(listener);
+      if (walletKnown) listener(clone(wallet));
+      ready.then(() => {
+        if (!walletWatch && backend) {
+          walletWatch = backend.subscribe(PATHS.wallet, (data, meta = {}) => {
+            if (data || !meta.fromCache) setWallet(data);
+          });
+          if (!walletKnown) loadWallet();
+        }
+      });
+      return () => walletListeners.delete(listener);
+    }
+
+    // Bank działa z siecią i z prawdziwą bazą (albo z pamięcią w testach — ?cloud=memory). Bez SDK — „offline”.
+    function bankAvailable() {
+      if (!isReadyFlag) return "laczenie";
+      if (!isOnline() || fallbackReason === "sdk" || !backend?.transact) return "offline";
+      return "online";
+    }
+
+    function bankFail(reason) {
+      const error = new Error(`Sowi Bank: ${reason}`);
+      error.bankReason = reason;
+      return error;
+    }
+
+    async function bankTransaction(paths, compute) {
+      await ready;
+      if (bankAvailable() !== "online") return { ok: false, reason: "offline" };
+      try {
+        const result = await backend.transact(paths, compute);
+        return { ok: true, ...(result || {}) };
+      } catch (error) {
+        if (error?.bankReason) return { ok: false, reason: error.bankReason };
+        logError("SowieCloud: operacja Sowiego Banku nie powiodła się", error);
+        return { ok: false, reason: "blad" };
+      }
+    }
+
+    const toInt = (value) => Math.floor(Number(value));
+    const validAmount = (value) => Number.isInteger(value) && value > 0 && value <= BANK_LIMITS.maxKwota;
+    const note = (value) =>
+      String(value ?? "")
+        .trim()
+        .slice(0, BANK_LIMITS.maxNotka);
+    const historyOp = (entry) => ({
+      type: "add",
+      collection: PATHS.walletHistory,
+      data: { ...entry, at: serverTime() },
+    });
+    const walletOp = (data) => ({ type: "set", path: PATHS.wallet, data: { ...data, zmieniono: serverTime() } });
+
+    // Gracz: zakup rzeczy za Wypluffki (cenę liczy wywołujący z katalogu — shared/meta/wypluffki.js).
+    function buyPremium({ id, price } = {}) {
+      const cena = toInt(price);
+      if (!WALLET_ITEM.test(String(id || "")) || !validAmount(cena))
+        return Promise.resolve({ ok: false, reason: "unknown" });
+      return bankTransaction([PATHS.wallet], ([raw]) => {
+        if (!raw) throw bankFail("brak-portfela");
+        const current = normalizeWallet(raw);
+        if (current.kupione[id]) throw bankFail("owned");
+        if (current.saldo < cena) throw bankFail("saldo");
+        const saldo = current.saldo - cena;
+        return {
+          ops: [
+            walletOp({ saldo, wydano: current.wydano + cena, kupione: { [id]: { at: serverTime(), cena } } }),
+            historyOp({ zmiana: -cena, saldoPo: saldo, rodzaj: "zakup", kod: id }),
+          ],
+          result: { saldo, id, cena },
+        };
+      });
+    }
+
+    // Gracz: prośba o doładowanie („Hu-hu w kolejce”). Zwykły zapis — bez sieci czeka w kolejce SDK.
+    async function requestTopUp({ kod, pakiet, kwota } = {}) {
+      const amount = toInt(kwota);
+      if (!WALLET_CODE.test(String(kod || "")) || typeof pakiet !== "string" || !pakiet || !validAmount(amount)) {
+        return { ok: false, reason: "unknown" };
+      }
+      await ready;
+      const data = { kod, pakiet: pakiet.slice(0, 40), kwota: amount, status: "czeka", at: serverTime() };
+      commitNow([{ type: "set", path: PATHS.walletRequest(kod), data }]);
+      return { ok: true, kod, pakiet: data.pakiet, kwota: amount, at: now() };
+    }
+
+    async function listRows(collection, limit) {
+      await ready;
+      try {
+        const rows = await backend.query(collection, { orderBy: "at", direction: "desc", limit });
+        return rows.map((row) => ({ ...row.data, id: row.id }));
+      } catch (error) {
+        console.warn("SowieCloud: nie udało się wczytać listy Sowiego Banku", error);
+        return [];
+      }
+    }
+
+    // --- Sowi Bank: panel admina (hasło „KoziAdmin”) ---------------------------------------------
+    function isAdmin() {
+      return Boolean(device.admin);
+    }
+
+    // Hasło admina odblokowuje też połączenie z bazą na tym urządzeniu (panel nie pyta o hasło gracza).
+    function unlockAdmin(password) {
+      if (!checkAdminPassword(password)) return false;
+      writeDevice({ admin: true, unlocked: true });
+      unlockResolve();
+      refreshStatus();
+      return true;
+    }
+
+    function lockAdmin() {
+      writeDevice({ admin: false });
+    }
+
+    function adminTransaction(paths, compute) {
+      if (!isAdmin()) return Promise.resolve({ ok: false, reason: "admin" });
+      return bankTransaction(paths, compute);
+    }
+
+    // Założenie portfela (pierwsze wejście do panelu), opcjonalnie z prezentem powitalnym.
+    function createWallet({ prezent = 0, notka = "" } = {}) {
+      const amount = toInt(prezent) || 0;
+      if (amount && !validAmount(amount)) return Promise.resolve({ ok: false, reason: "kwota" });
+      return adminTransaction([PATHS.wallet], ([raw]) => {
+        if (raw) throw bankFail("istnieje");
+        const text = note(notka);
+        const ops = [
+          walletOp({
+            schemaVersion: WALLET_VERSION,
+            saldo: amount,
+            doladowano: amount,
+            wydano: 0,
+            kupione: {},
+            ogloszenie: "",
+            promocja: null,
+            ostatnieDoladowanie: amount ? { kwota: amount, notka: text, kod: null, at: serverTime() } : null,
+            utworzono: serverTime(),
+          }),
+        ];
+        if (amount)
+          ops.push(historyOp({ zmiana: amount, saldoPo: amount, rodzaj: "doladowanie", kod: null, notka: text }));
+        return { ops, result: { saldo: amount } };
+      });
+    }
+
+    // Doładowanie: ręczne albo z prośby (`kod`) — prośbę da się zatwierdzić tylko raz. `bonus` — rzeczy z pakietu.
+    function topUp({ kwota, notka = "", kod = null, bonus = [] } = {}) {
+      const amount = toInt(kwota);
+      if (!validAmount(amount)) return Promise.resolve({ ok: false, reason: "kwota" });
+      if (kod && !WALLET_CODE.test(String(kod))) return Promise.resolve({ ok: false, reason: "kod" });
+      const paths = kod ? [PATHS.wallet, PATHS.walletRequest(kod)] : [PATHS.wallet];
+      return adminTransaction(paths, ([raw, request]) => {
+        if (!raw) throw bankFail("brak-portfela");
+        if (kod && !request) throw bankFail("brak-prosby");
+        if (kod && request.status !== "czeka") throw bankFail("zalatwione");
+        const current = normalizeWallet(raw);
+        const saldo = current.saldo + amount;
+        if (saldo > BANK_LIMITS.maxSaldo) throw bankFail("kwota");
+        const text = note(notka);
+        const data = {
+          saldo,
+          doladowano: current.doladowano + amount,
+          ostatnieDoladowanie: { kwota: amount, notka: text, kod: kod || null, at: serverTime() },
+        };
+        const gifts = (Array.isArray(bonus) ? bonus : []).filter((id) => WALLET_ITEM.test(id) && !current.kupione[id]);
+        if (gifts.length) data.kupione = Object.fromEntries(gifts.map((id) => [id, { at: serverTime(), cena: 0 }]));
+        const ops = [
+          walletOp(data),
+          historyOp({ zmiana: amount, saldoPo: saldo, rodzaj: "doladowanie", kod: kod || null, notka: text }),
+        ];
+        if (kod) {
+          ops.push({
+            type: "set",
+            path: PATHS.walletRequest(kod),
+            data: { status: "zatwierdzone", kwotaPrzyznana: amount, notka: text, zalatwiono: serverTime() },
+          });
+        }
+        return { ops, result: { saldo } };
+      });
+    }
+
+    function rejectRequest({ kod, notka = "" } = {}) {
+      if (!WALLET_CODE.test(String(kod || ""))) return Promise.resolve({ ok: false, reason: "kod" });
+      return adminTransaction([PATHS.walletRequest(kod)], ([request]) => {
+        if (!request) throw bankFail("brak-prosby");
+        if (request.status !== "czeka") throw bankFail("zalatwione");
+        return {
+          ops: [
+            {
+              type: "set",
+              path: PATHS.walletRequest(kod),
+              data: { status: "odrzucone", kwotaPrzyznana: 0, notka: note(notka), zalatwiono: serverTime() },
+            },
+          ],
+          result: {},
+        };
+      });
+    }
+
+    // Korekta: odjęcie Wypluffków (np. pomyłka) — saldo nie spada poniżej zera.
+    function correct({ kwota, notka = "" } = {}) {
+      const amount = toInt(kwota);
+      if (!validAmount(amount)) return Promise.resolve({ ok: false, reason: "kwota" });
+      return adminTransaction([PATHS.wallet], ([raw]) => {
+        if (!raw) throw bankFail("brak-portfela");
+        const current = normalizeWallet(raw);
+        if (current.saldo < amount) throw bankFail("saldo");
+        const saldo = current.saldo - amount;
+        return {
+          ops: [
+            walletOp({ saldo, doladowano: Math.max(0, current.doladowano - amount) }),
+            historyOp({ zmiana: -amount, saldoPo: saldo, rodzaj: "korekta", kod: null, notka: note(notka) }),
+          ],
+          result: { saldo },
+        };
+      });
+    }
+
+    // Zwrot zakupu: rzecz znika z dziennika, Wypluffki wracają.
+    function refund({ id, notka = "" } = {}) {
+      if (!WALLET_ITEM.test(String(id || ""))) return Promise.resolve({ ok: false, reason: "unknown" });
+      return adminTransaction([PATHS.wallet], ([raw]) => {
+        if (!raw) throw bankFail("brak-portfela");
+        const current = normalizeWallet(raw);
+        const item = current.kupione[id];
+        if (!item) throw bankFail("brak");
+        const saldo = current.saldo + item.cena;
+        return {
+          ops: [
+            walletOp({ saldo, wydano: Math.max(0, current.wydano - item.cena), kupione: { [id]: deleteValue() } }),
+            historyOp({ zmiana: item.cena, saldoPo: saldo, rodzaj: "zwrot", kod: id, notka: note(notka) }),
+          ],
+          result: { saldo, cena: item.cena },
+        };
+      });
+    }
+
+    // Ogłoszenie na górze Butiku i promocja procentowa na rzeczy za Wypluffki (do wybranego dnia).
+    function announce({ ogloszenie = "", promocja = null } = {}) {
+      const procent = toInt(promocja?.procent);
+      const until = Number(promocja?.do) || 0;
+      const promo =
+        promocja && procent > 0 && procent <= BANK_LIMITS.maxPromo && until > 0 ? { procent, do: until } : null;
+      if (promocja && !promo) return Promise.resolve({ ok: false, reason: "promocja" });
+      return adminTransaction([PATHS.wallet], ([raw]) => {
+        if (!raw) throw bankFail("brak-portfela");
+        return { ops: [walletOp({ ogloszenie: note(ogloszenie), promocja: promo })], result: {} };
+      });
+    }
+
+    const bank = Object.freeze({
+      wallet: () => clone(wallet),
+      known: () => walletKnown,
+      load: loadWallet,
+      onWallet,
+      available: bankAvailable,
+      buy: buyPremium,
+      requestTopUp,
+      requests: (limit = 20) => listRows(PATHS.walletRequests, limit),
+      history: (limit = 30) => listRows(PATHS.walletHistory, limit),
+      isAdmin,
+      unlockAdmin,
+      lockAdmin,
+      create: createWallet,
+      topUp,
+      reject: rejectRequest,
+      correct,
+      refund,
+      announce,
+    });
+
     // --- API ------------------------------------------------------------------------
     const api = Object.freeze({
       ready,
@@ -1060,6 +1447,7 @@
       loadGameState,
       saveGameState,
       flush,
+      bank,
     });
 
     start().catch((error) => {
@@ -1074,6 +1462,11 @@
     SDK_VERSION,
     SDK_URL,
     HASLO_GRACZA,
+    HASLO_ADMINA,
+    WALLET_VERSION,
+    BANK_LIMITS,
+    WALLET_CODE,
+    WALLET_ITEM,
     SCHEMA_VERSION,
     DEVICE_KEY,
     GAME_IDS,
@@ -1085,7 +1478,9 @@
     createCloud,
     createFirestoreBackend,
     checkPassword,
+    checkAdminPassword,
     normalizePassword,
+    normalizeWallet,
     diff,
     applyPatch,
     insertTop,

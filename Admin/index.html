@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="pl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="robots" content="noindex, nofollow" />
+    <meta name="theme-color" content="#3b2f4a" />
+    <meta name="description" content="Sowi Bank — panel admina Wypluffków (SowieGry)." />
+    <link rel="icon" href="../assets/icons/icon.svg" type="image/svg+xml" />
+    <title>Sowi Bank</title>
+    <link rel="stylesheet" href="../shared/world/tokens.css" />
+    <link rel="stylesheet" href="admin.css" />
+    <!-- Panel admina Sowiego Banku (Analiza 7b, rozdz. 8 — etap W2). Bez ekranu „Hasło sowy”: hasło admina
+         „KoziAdmin” (SowieCloud.bank.unlockAdmin) odblokowuje też połączenie z bazą na tym urządzeniu. -->
+    <script src="../config/firebase-config.js"></script>
+    <script src="../shared/sowie-platform.js"></script>
+    <script src="../shared/sowie-cloud.js"></script>
+    <script type="module" src="admin.js"></script>
+  </head>
+  <body class="admin" data-admin>
+    <main class="admin-main">
+      <section class="admin-gate" data-admin-gate hidden aria-labelledby="adminGateTitle">
+        <div class="admin-gate-hero" aria-hidden="true">🦉💰🐐</div>
+        <h1 id="adminGateTitle">Sowi Bank</h1>
+        <p>Panel admina Wypluffków. Wpisz hasło admina.</p>
+        <form class="admin-gate-form" data-admin-login novalidate>
+          <label for="adminPassword">Hasło admina</label>
+          <div class="admin-field">
+            <input
+              id="adminPassword"
+              name="haslo"
+              type="password"
+              autocomplete="off"
+              autocapitalize="none"
+              autocorrect="off"
+              spellcheck="false"
+              enterkeyhint="go"
+            />
+            <button type="button" class="admin-eye" data-admin-eye aria-label="Pokaż hasło" aria-pressed="false">
+              👁
+            </button>
+          </div>
+          <p class="admin-error" data-admin-login-error role="alert" hidden>To nie to hasło 🐐</p>
+          <button type="submit" class="admin-button">Wejdź</button>
+        </form>
+      </section>
+
+      <div class="admin-panel" data-admin-panel hidden>
+        <header class="admin-header">
+          <h1>Sowi Bank <small>panel admina</small></h1>
+          <span class="admin-status" data-admin-status role="status" aria-live="polite"></span>
+          <button type="button" class="admin-button is-small is-secondary" data-action="logout">Wyloguj</button>
+        </header>
+
+        <p class="admin-message" data-admin-message role="status" aria-live="polite" hidden></p>
+        <div class="admin-confirm" data-admin-confirm hidden></div>
+
+        <section class="admin-card" data-admin-unknown hidden>
+          <h2>Wczytuję portfel…</h2>
+          <p data-admin-unknown-text>Łączę się z Sowim Bankiem.</p>
+        </section>
+
+        <section class="admin-card" data-admin-create hidden aria-labelledby="adminCreateTitle">
+          <h2 id="adminCreateTitle">Portfel gracza jeszcze nie istnieje</h2>
+          <p>Załóż go raz — możesz od razu dać prezent powitalny.</p>
+          <label class="admin-label"
+            >Prezent powitalny (Wypluffki)
+            <input type="number" inputmode="numeric" min="0" max="100000" value="500" data-create-gift />
+          </label>
+          <label class="admin-label"
+            >Notka dla gracza
+            <input type="text" maxlength="120" value="Witamy w Sowim Banku!" data-create-note />
+          </label>
+          <button type="button" class="admin-button" data-action="create">Załóż portfel gracza</button>
+        </section>
+
+        <div data-admin-wallet hidden>
+          <section class="admin-card admin-balance" aria-labelledby="adminBalanceTitle">
+            <h2 id="adminBalanceTitle">Saldo gracza</h2>
+            <p class="admin-saldo"><span aria-hidden="true">●</span> <strong data-admin-saldo>0</strong></p>
+            <p class="admin-stats" data-admin-stats></p>
+          </section>
+
+          <section class="admin-card" aria-labelledby="adminQueueTitle">
+            <h2 id="adminQueueTitle">
+              Hu-hu w kolejce <span class="admin-badge" data-admin-pending>0</span>
+              <button type="button" class="admin-button is-small is-secondary" data-action="refresh">Odśwież</button>
+            </h2>
+            <ul class="admin-list" data-admin-queue></ul>
+            <details class="admin-details">
+              <summary>Załatwione</summary>
+              <ul class="admin-list is-compact" data-admin-done></ul>
+            </details>
+          </section>
+
+          <section class="admin-card" aria-labelledby="adminManualTitle">
+            <h2 id="adminManualTitle">Doładuj ręcznie</h2>
+            <div class="admin-chips" role="group" aria-label="Szybkie kwoty">
+              <button type="button" class="admin-chip" data-amount="50">+50</button>
+              <button type="button" class="admin-chip" data-amount="100">+100</button>
+              <button type="button" class="admin-chip" data-amount="500">+500</button>
+              <button type="button" class="admin-chip" data-amount="1000">+1000</button>
+            </div>
+            <label class="admin-label"
+              >Kwota
+              <input type="number" inputmode="numeric" min="1" max="100000" data-manual-amount />
+            </label>
+            <label class="admin-label"
+              >Notka dla gracza
+              <input type="text" maxlength="120" placeholder="Za piękne hu-hu!" data-manual-note />
+            </label>
+            <div class="admin-row">
+              <button type="button" class="admin-button" data-action="topup">Doładuj</button>
+              <button type="button" class="admin-button is-secondary" data-action="correct">Odejmij (korekta)</button>
+            </div>
+          </section>
+
+          <section class="admin-card" aria-labelledby="adminBoughtTitle">
+            <h2 id="adminBoughtTitle">Ostatnie zakupy gracza</h2>
+            <ul class="admin-list" data-admin-bought></ul>
+          </section>
+
+          <section class="admin-card" aria-labelledby="adminAnnounceTitle">
+            <h2 id="adminAnnounceTitle">Ogłoszenie i promocja</h2>
+            <label class="admin-label"
+              >Ogłoszenie na górze Butiku
+              <input type="text" maxlength="120" placeholder="Black Friday w Sowim Banku!" data-announce-text />
+            </label>
+            <div class="admin-row">
+              <label class="admin-label"
+                >Promocja (%)
+                <input type="number" inputmode="numeric" min="0" max="90" placeholder="0" data-announce-percent />
+              </label>
+              <label class="admin-label"
+                >do dnia
+                <input type="date" data-announce-until />
+              </label>
+            </div>
+            <button type="button" class="admin-button" data-action="announce">Zapisz ogłoszenie i promocję</button>
+          </section>
+
+          <section class="admin-card" aria-labelledby="adminHistoryTitle">
+            <h2 id="adminHistoryTitle">Historia (ostatnie 30)</h2>
+            <ul class="admin-list is-compact" data-admin-history></ul>
+          </section>
+        </div>
+
+        <p class="admin-footnote">Wypluffki nie są prawdziwe. Koza nie ucierpiała.</p>
+      </div>
+    </main>
+  </body>
+</html>

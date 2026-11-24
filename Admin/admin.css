@@ -1,0 +1,345 @@
+/* Panel admina Sowiego Banku (Analiza 7b, rozdz. 8 — etap W2). Telefon w pionie najpierw; kolory z tokenów
+   Sowiego Świata (shared/world/tokens.css), czcionka Fredoka. */
+:root {
+  --admin-tlo: #fff6e3;
+  --admin-karta: #ffffff;
+  --admin-cien: 0 4px 14px rgba(59, 47, 74, 0.12);
+  --admin-promien: 18px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body.admin {
+  margin: 0;
+  min-height: 100dvh;
+  background: linear-gradient(180deg, var(--niebo-gora) 0, var(--admin-tlo) 260px);
+  color: var(--kontur);
+  font:
+    500 16px/1.45 "Fredoka",
+    system-ui,
+    sans-serif;
+}
+
+.admin-main {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: max(16px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) 32px
+    max(16px, env(safe-area-inset-left));
+}
+
+h1,
+h2 {
+  margin: 0 0 10px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+h1 {
+  font-size: 26px;
+}
+
+h1 small {
+  font-size: 15px;
+  font-weight: 500;
+  opacity: 0.7;
+}
+
+h2 {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  font-size: 19px;
+}
+
+/* --- ekran hasła --- */
+.admin-gate {
+  margin-top: 8vh;
+  padding: 24px 18px;
+  border-radius: var(--admin-promien);
+  background: var(--admin-karta);
+  box-shadow: var(--admin-cien);
+  text-align: center;
+}
+
+.admin-gate-hero {
+  font-size: 44px;
+}
+
+.admin-gate-form {
+  display: grid;
+  gap: 10px;
+  margin-top: 14px;
+  text-align: left;
+}
+
+.admin-field {
+  display: flex;
+  gap: 8px;
+}
+
+.admin-field input {
+  flex: 1;
+}
+
+.admin-eye {
+  min-width: 48px;
+  min-height: 48px;
+  border: 2px solid var(--kontur);
+  border-radius: 14px;
+  background: var(--admin-tlo);
+  font-size: 20px;
+}
+
+.admin-error {
+  margin: 0;
+  color: var(--pracu);
+  font-weight: 700;
+}
+
+/* --- panel --- */
+.admin-header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.admin-header h1 {
+  flex: 1 1 auto;
+  margin: 0;
+}
+
+.admin-status {
+  font-size: 14px;
+  opacity: 0.8;
+}
+
+.admin-status[data-status="online"]::before {
+  content: "● ";
+  color: var(--monstera);
+}
+
+.admin-status[data-status="offline"]::before,
+.admin-status[data-status="blad"]::before {
+  content: "● ";
+  color: var(--pracu);
+}
+
+.admin-card {
+  margin: 0 0 14px;
+  padding: 16px;
+  border-radius: var(--admin-promien);
+  background: var(--admin-karta);
+  box-shadow: var(--admin-cien);
+}
+
+.admin-balance {
+  text-align: center;
+}
+
+.admin-saldo {
+  margin: 0;
+  font-size: 44px;
+  font-weight: 700;
+  color: var(--sowa-ciemna);
+}
+
+.admin-saldo span {
+  color: var(--sowa);
+  font-size: 30px;
+}
+
+.admin-stats {
+  margin: 4px 0 0;
+  font-size: 15px;
+}
+
+.admin-label {
+  display: grid;
+  gap: 4px;
+  margin: 0 0 10px;
+  font-size: 15px;
+}
+
+input {
+  min-height: 48px;
+  width: 100%;
+  padding: 10px 12px;
+  border: 2px solid var(--kontur);
+  border-radius: 14px;
+  background: #fffdf8;
+  color: var(--kontur);
+  font: inherit;
+}
+
+input:focus-visible,
+button:focus-visible,
+summary:focus-visible {
+  outline: 3px solid var(--niebieski);
+  outline-offset: 3px;
+}
+
+.admin-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.admin-row .admin-label {
+  flex: 1 1 130px;
+}
+
+.admin-button {
+  min-height: 48px;
+  padding: 10px 18px;
+  border: 2px solid var(--kontur);
+  border-radius: 16px;
+  background: var(--zloto);
+  color: var(--kontur);
+  font:
+    700 16px/1.2 "Fredoka",
+    system-ui,
+    sans-serif;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.admin-button.is-secondary {
+  background: var(--admin-tlo);
+}
+
+.admin-button.is-danger {
+  background: #ffd9de;
+}
+
+.admin-button.is-small {
+  min-height: 44px;
+  padding: 8px 12px;
+  font-size: 15px;
+}
+
+.admin-button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.admin-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.admin-chip {
+  min-width: 64px;
+  min-height: 44px;
+  border: 2px solid var(--kontur);
+  border-radius: 999px;
+  background: var(--monstera-jasna);
+  color: var(--kontur);
+  font:
+    700 16px "Fredoka",
+    system-ui,
+    sans-serif;
+}
+
+.admin-badge {
+  min-width: 28px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--zloto);
+  font-size: 15px;
+  text-align: center;
+}
+
+.admin-list {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.admin-list.is-compact {
+  gap: 6px;
+  font-size: 14px;
+}
+
+.admin-request,
+.admin-item {
+  display: grid;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: var(--admin-tlo);
+}
+
+.admin-item {
+  grid-template-columns: 1fr auto;
+  align-items: center;
+}
+
+.admin-empty {
+  opacity: 0.7;
+}
+
+.admin-details {
+  margin-top: 12px;
+}
+
+.admin-details summary {
+  min-height: 44px;
+  padding: 10px 0;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.admin-message {
+  margin: 0 0 12px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: #dff5e6;
+  font-weight: 700;
+}
+
+.admin-message[data-kind="error"] {
+  background: #ffe1e5;
+}
+
+.admin-confirm {
+  position: sticky;
+  top: 8px;
+  z-index: 2;
+  margin: 0 0 14px;
+  padding: 16px;
+  border: 3px solid var(--kontur);
+  border-radius: var(--admin-promien);
+  background: #fffbe8;
+  box-shadow: var(--admin-cien);
+}
+
+.admin-confirm p {
+  margin: 0 0 10px;
+  font-weight: 700;
+}
+
+.admin-footnote {
+  margin: 18px 0 0;
+  font-size: 13px;
+  text-align: center;
+  opacity: 0.7;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    scroll-behavior: auto !important;
+  }
+}
