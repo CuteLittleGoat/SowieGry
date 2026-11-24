@@ -4,7 +4,8 @@
 > atlas mechanik [`Mechaniki_Littlewood_Stardew_Valley_Sprout_Valley_Fields_of_Mistria.md`](Mechaniki_Littlewood_Stardew_Valley_Sprout_Valley_Fields_of_Mistria.md),
 > krótki przegląd w internecie ([Załącznik A](#załącznik-a-źródła)) i kod na `main` (Sowi Silnik `shared/engine/`,
 > Sowi Świat `shared/world/`, SowieCloud, rośliny z Sowich Ogrodów i Łącz i Hoduj, dziki z Sowich Torów) ·
-> Status: **analiza — bez zmian w kodzie gier**; budowa to osobne zadanie **po Sowiej Dziupli** (Analiza 7) ·
+> Status: **decyzje właściciela 2026-11-24** ([rozdział 20](#20-pytania-do-właściciela-prostym-językiem)); budowa
+> **po Sowiej Dziupli i Wypluffkach** (Analizy 7 i 7b — „Farmę dodamy później”), a po pierwszej wersji audyt kodu (F11) ·
 > Zasady pracy bez zmian: [`ANALIZA_3_Plan_prac.md`, rozdz. 8.1](ANALIZA_3_Plan_prac.md); zasada „nic nie ginie”:
 > [`ANALIZA_4`, rozdz. 2](ANALIZA_4_Uwagi_z_testow_poprawki_i_rozbudowa.md); wydajność od pierwszego dnia:
 > [`ANALIZA_6`](ANALIZA_6_Wydajnosc_lagi.md); bramka zapisu nowej gry: [`ANALIZA_5`, rozdz. 13.1a](ANALIZA_5_Nowa_gra_Sowie_Trojki_match3.md).
@@ -12,7 +13,9 @@
 Makieta to **rysunek poglądowy** zrobiony z prawdziwych elementów SowieGry: Sówka (także w kapeluszu ogrodnika
 z Garderoby), Pójdźka (gatunek z Sowiego Butiku), kózka i humbak z atlasu Sowiego Świata, rośliny narysowane tymi
 samymi funkcjami co w Sowich Ogrodach (Sowi storczyk, Monstera, Kaktus). Gołębie, dziki z warchlakami, warzywa,
-narzędzia i budynki są narysowane na nowo, w tym samym stylu — tylko na potrzeby makiety.
+narzędzia i budynki są narysowane na nowo, w tym samym stylu — tylko na potrzeby makiety. **Od decyzji 2026-11-24**
+waluta Farmy nazywa się **Dziupaki** (na makiecie to jeszcze żołędzie 🌰), a doniczki na parapecie stoją na nim
+dolną krawędzią (jak w Sowiej Dziupli — uwaga D1a).
 
 ---
 
@@ -30,7 +33,8 @@ narzędzia i budynki są narysowane na nowo, w tym samym stylu — tylko na potr
   „hit dnia”), **Warsztat Pójdźki** (narzędzia, zraszacze, strachy), **Stolarnia Puchacza** (rozbudowy), **Kwiaciarnia
   Płomykówki** (rośliny do domu), **Przytulne Gniazdko Uszatki** (meble — np. gałąź do spania) i **tablica ogłoszeń**
   z zamówieniami mieszkańców. Kozy, humbak i sowy już są narysowane w grach — mieszkańcy prawie „za darmo”.
-- **Ekwipunek i ulepszenia:** pasek narzędzi na dole ekranu, plecak (12 → 36 miejsc), skrzynia w domu; narzędzia
+- **Ekwipunek i ulepszenia:** pasek narzędzi na dole ekranu, plecak (12 → 36 miejsc — większy to ulepszenie; gdy
+  jest pełny, gra ostrzega, a opróżniasz go sam), skrzynia w domu; narzędzia
   w 5 poziomach (zwykłe → miedziane → srebrne → złote → tęczowe), **zraszacze** (4 rodzaje, największy to fontanna-humbak),
   **strach-sowa** (gołębie boją się sów — tak jest naprawdę), **płot** przeciw dzikom.
 - **Rozbudowa:** **pole** 16 → 80 grządek, **szklarnia** od naprawy (8 miejsc) do 48 miejsc i palmiarni, **dom** od
@@ -47,8 +51,11 @@ narzędzia i budynki są narysowane na nowo, w tym samym stylu — tylko na potr
   „mrugająca sówka jako kwiat”: Sowi słonecznik, Kozi liść, Humbakowiec, Pisklęce pąki), potem kolejne.
 - **To duża gra:** pierwsza wersja (**„Pierwszy sezon”**) to ok. **44–50 dni pracy (9–10 tygodni)** w 11 etapach (F0–F10), najpierw
   jako **podgląd bez zapisu** (jak Sowie Trójki), potem — po Twoich testach i publikacji reguł — zapis i karta
-  w Dziupli. **Kiedy:** po Sowiej Dziupli (Twoja decyzja).
-- **16 pytań** prostym językiem: [rozdział 20](#20-pytania-do-właściciela-prostym-językiem).
+  w Dziupli. **Kiedy:** po Sowiej Dziupli i Wypluffkach (Twoja decyzja: „Farmę dodamy później”). Po pierwszej wersji —
+  **audyt wszystkich plików i komentarze w kodzie** (etap F11).
+- **Decyzje z 2026-11-24** ([rozdział 20](#20-pytania-do-właściciela-prostym-językiem)): waluta **Dziupaki**, pory roku
+  z furtką na rośliny sezonowe i mrozy, jakość plonów z **nawozami jakości** (u kozy i za Wypluffki), pełny plecak
+  z ostrzeżeniem, przyjaźnie w drugim etapie, reszta według rad. Pytań otwartych nie ma.
 
 ![Makieta: A — Farma (podlewanie przeciągnięciem palca, zraszacz, strach-sowa, gołąb na świeżo zasianej grządce, dziki z warchlakami za płotem, pasek narzędzi); B — Dom (parapet z roślinami ozdobnymi, telewizor z prognozą humbaka, gałąź do spania, arkusz „Kończysz dzień?”); C — Miasteczko (Kozi Sklepik, Targ w porcie u humbaka, Pójdźka z warsztatu, arkusz sklepu z nasionami)](ANALIZA_8_farma_makieta.png)
 
@@ -130,7 +137,7 @@ Na podstawie atlasu mechanik (numery rozdziałów atlasu w nawiasach) i krótkie
 | **Sprzedaż** | Stardew i Mistria: skrzynia wysyłkowa — pieniądze rano (3.13, 5.13); Littlewood: targ (2.11) | **targ w miasteczku** (od razu) + później **skrzynka sprzedaży** na farmie (pieniądze rano) |
 | **Odblokowanie nasion sprzedażą** | Sprout: „Ship to Unlock” — nowe nasiona po liczbie wysyłek (4.9) | **bierzemy** — nowe nasiona po sprzedaży plonów i po zamówieniach |
 | **Ranga miasta** | Mistria: Town Rank za zadania (5.17); Littlewood: życzenia mieszkańców (2.10) | **Ranga Miasteczka** za zamówienia z tablicy → nowe sklepy i nasiona |
-| **Jakość plonów** | Stardew: zwykła / srebrna / złota / irydowa (3.9) | **opcjonalnie** gwiazdki za codzienną opiekę (pytanie 9) |
+| **Jakość plonów** | Stardew: zwykła / srebrna / złota / irydowa (3.9) | **tak** — gwiazdki za codzienną opiekę i nawozy jakości (decyzja 9, rozdz. 8.5) |
 | **Pory roku** | Stardew: twarde — rośliny więdną przy zmianie (3.4); Littlewood: łagodne (2.4) | **łagodne**: zmienia się oferta, pogoda i wygląd; posadzone rośliny nie więdną (rozdz. 5.5, pytanie 1) |
 | **Walka** | Stardew i Mistria: w kopalniach (3.18, 5.20) | **nie teraz** — przepędzanie bez walki; furtka w kodzie (rozdz. 10.5) |
 | **Stamina, omdlenia, kopalnie, rudy, romanse, kowal zabierający narzędzie na 2 dni** | — | **nie bierzemy** (nie są „cozy” albo za duże na pierwszą wersję); ulepszenie narzędzia jest gotowe **następnego ranka**, a do tego czasu Sówka używa starego |
@@ -192,7 +199,7 @@ Poranek (co urosło, pogoda, poczta)
 
 - **Nie ma zegara.** Sklepy są zawsze otwarte, mieszkańcy zawsze na swoich miejscach, nic nie „ucieka”.
 - **Nie ma staminy.** Każda czynność jest darmowa i można ją powtarzać.
-- **Pora dnia jako dekoracja (propozycja, pytanie 3):** niebo powoli robi się popołudniowe, a potem wieczorne
+- **Pora dnia jako dekoracja (decyzja 3: tak):** niebo powoli robi się popołudniowe, a potem wieczorne
   w miarę tego, ile czynności Sówka już zrobiła (jak w Littlewood, ale **bez żadnego limitu**) — gdy wszystko jest
   podlane i zebrane, Sówka ziewa i mówi „Chyba czas na drzemkę na gałęzi…”. To tylko podpowiedź; można grać dalej.
   Wersja prostsza: zawsze ładny dzień, a wieczór tylko w czasie zasypiania.
@@ -203,7 +210,7 @@ Poranek (co urosło, pogoda, poczta)
    z podsumowaniem: co jeszcze niepodlane, jutrzejsza prognoza (jeśli jest telewizor), przyciski **„Śpij”**
    i **„Jeszcze nie”** (makieta B). Gdy coś zostało niepodlane, arkusz to mówi, ale niczego nie blokuje.
 2. **Noc** — krótka animacja (2–3 s, gwiazdy, „Zzz”, świetliki; stuknięcie pomija).
-3. **Poranek** — karta z wynikami nocy: „Urosło 12 roślin, 4 gotowe do zbioru”, „Skrzynka sprzedaży: +340 żołędzi”,
+3. **Poranek** — karta z wynikami nocy: „Urosło 12 roślin, 4 gotowe do zbioru”, „Skrzynka sprzedaży: +340 Dziupaków”,
    „Gołębie wydziobały 2 grządki z nasionami” albo „Strach-sowa przegonił 3 gołębie”, „Dziś: deszcz — pole
    podlane”, „Poczta: pocztówka od Cioci Uli (prezent: nasiona Sowiego słonecznika)”. Zapis od razu.
 
@@ -213,7 +220,7 @@ Poranek (co urosło, pogoda, poczta)
    (z nawozem szybciej); niepodlane — bez zmian (**nie usychają**).
 2. Rośliny wielokrotne po zbiorze odliczają do kolejnego plonu; dojrzałe czekają **bez końca** (nie gniją).
 3. Szkodniki, które zostały na polu, robią swoje (rozdz. 10) — z limitem szkód.
-4. Skrzynka sprzedaży → żołędzie; zamówienia z poczty; ulepszenia zamówione w warsztacie i stolarni są gotowe.
+4. Skrzynka sprzedaży → Dziupaki; zamówienia z poczty; ulepszenia zamówione w warsztacie i stolarni są gotowe.
 5. Nowy dzień: losowanie pogody na **jutro** (z ziarnem dnia — rozdz. 9.3), nowe ceny „hitu dnia”, odnowienie
    towaru, nowe zamówienia na tablicy, szkodniki na rano.
 
@@ -236,7 +243,13 @@ symulator na setki dni w kilka sekund.
   dopóki nie wróci jej pora; wielosezonowe (kukurydza, truskawka) rosną dalej.
 - **Zima:** pole odpoczywa (rośnie tylko kilka zimowych roślin: jarmuż, czosnek, ciemiernik) — wtedy szczególnie
   przydaje się **szklarnia i dom** (tam pory roku nie obowiązują).
-- Wersja jeszcze prostsza: bez pór roku, cały rok wiosna-lato — wtedy szklarnia jest „tylko” na rośliny egzotyczne.
+- **Decyzja 2026-11-24:** pory roku — tak.
+- **Furtka na przyszłość** (Twoja prośba): być może dojdą **rośliny sezonowe** i **mrozy** — niektóre rośliny nie
+  przetrwają zimy na polu. Już w pierwszej wersji każda roślina ma w katalogu pole `zimuje` (dziś każda zimą tylko
+  „zasypia” — nic nie umiera), a noc ma miejsce na regułę „mróz”, wyłączoną flagą `features.frost = false`.
+  Włączenie to zmiana danych i jednej reguły nocy, a nie przebudowa. Gdyby kiedyś weszło: ostrzeżenie kilka dni
+  przed zimą (prognoza, list cioci), okrycie rośliny albo przeniesienie jej do szklarni lub domu, a Tryb Przytulny
+  mrozy wyłącza.
 
 ---
 
@@ -246,7 +259,7 @@ symulator na setki dni w kilka sekund.
 
 ```
 ┌──────────────────────────────┐
-│ [Dzień 12 · Wiosna] [☀] [🌰 1 240] [≡] │  dzień i pora roku, pogoda (stuknięcie → prognoza), żołędzie, menu/pauza
+│ [Dzień 12 · Wiosna] [☀] [🪙 1 240] [≡] │  dzień i pora roku, pogoda (stuknięcie → prognoza), Dziupaki, menu/pauza
 │                              │
 │   dom          szklarnia     │  mapa z kafelków; kamera płynnie za Sówką
 │      ▫▫▫▫▫▫                  │
@@ -363,11 +376,12 @@ i czasy ostatecznie ustawi symulator (rozdz. 14).
   warzywach), **po zamówieniach** (Ranga Miasteczka) i z **pocztówek cioci** (rzadkie).
 - Każda pora roku ma swój asortyment; w szklarni można siać wszystko, co już się kupiło.
 
-### 8.5. Jakość plonów (opcja — pytanie 9)
+### 8.5. Jakość plonów (decyzja 2026-11-24: tak, z nawozami jakości)
 
 - ★ zwykła, ★★ srebrna (+25% ceny), ★★★ złota (+50%) — szansa rośnie, gdy roślina była **podlewana każdego dnia
   bez przerwy** i ma nawóz. Brak kary — najgorzej jest „zwykła”.
-- Bez jakości gra jest prostsza (jeden plon = jedna cena); z jakością jest drobny cel „opiekuj się codziennie”.
+- **Nawozy jakości** (Twoja decyzja) podnoszą szansę na ★★ i ★★★ (rozdz. 8.7). Jakość podnosi tylko cenę plonu
+  w Dziupakach i daje cel „opiekuj się codziennie”; nie daje piórek ani punktów Sowiej Akademii.
 
 ### 8.6. Rośliny ozdobne w domu
 
@@ -378,6 +392,8 @@ i czasy ostatecznie ustawi symulator (rozdz. 14).
 - Co dają: **sadzonki** (rozmnażanie: dorosła roślina raz na kilka dni daje sadzonkę do nowej doniczki albo
   na sprzedaż w Kwiaciarni), **kwiaty** (storczyki, fiołki — do Kwiaciarni i zamówień), **„Przytulność”** domu
   (licznik w domu — za progi drobne nagrody: nowy mebel, zdjęcie w Galerii, ozdoba Dziupli).
+- **Doniczki stoją dolną krawędzią na parapecie i półce** — ten sam sposób zaczepienia rysunku i ten sam test co
+  w Sowiej Dziupli (Analiza 7, uwaga D1a).
 - **Dziupla:** wyhodowane rośliny domowe trafiają na półkę Sowiej Dziupli (Analiza 7, rozdz. 6.2) jako kolejna
   kategoria „Sowia Farma”.
 
@@ -387,8 +403,14 @@ i czasy ostatecznie ustawi symulator (rozdz. 14).
 | --- | --- | --- |
 | Kompost | −1 dzień wzrostu | kompostownik (ulepszenie): resztki po zbiorze, chwasty → kompost po 3 dniach |
 | Ziemia, która trzyma wodę | grządka zostaje mokra 2 dni | Kozi Sklepik |
-| Złoty nawóz | lepsza jakość (jeśli jakość będzie) | Kozi Sklepik, później |
+| **Nawóz jakości** | większa szansa na ★★ | Kozi Sklepik (Dziupaki) |
+| **Złoty nawóz** | jeszcze większa szansa na ★★ i ★★★ | Kozi Sklepik (Dziupaki), od Rangi Miasteczka 2 |
+| **Wypluffkowy nawóz jakości** | **dokładnie jak Złoty nawóz** (nie mocniej), puchate iskierki; paczka po 10 | za Wypluffki w Sowim Butiku (Analiza 7b — wyjątek od „tylko wygląd”, decyzja 9) |
 | Tęczowy nawóz | −2 dni i iskierki; rzadki | pocztówki cioci, festyny |
+
+Na grządce działa **jeden nawóz naraz** (jak w Stardew Valley) — prosto i czytelnie: albo szybciej (kompost,
+Tęczowy), albo lepiej (nawozy jakości), albo dłużej mokro (ziemia trzymająca wodę). Nawozów wzrostu za Wypluffki
+nie ma (Analiza 7b, rozdz. 10).
 
 ---
 
@@ -511,7 +533,7 @@ przerabiać**:
 
 ## 11. Miasteczko i mieszkańcy
 
-### 11.1. Miejsca i postacie (imiona robocze — pytanie 7)
+### 11.1. Miejsca i postacie (imiona — decyzja 7: „zdaję się na Ciebie”)
 
 | Miejsce | Kto | Co tam robisz | Grafika |
 | --- | --- | --- | --- |
@@ -521,7 +543,7 @@ przerabiać**:
 | **Stolarnia** | **Puchacz Bartek** | rozbudowa domu, szklarni, pola, ogrodu | Sówka w kolorach Puchacza |
 | **Kwiaciarnia** | **Płomykówka Flora** | rośliny do domu, doniczki, skup kwiatów i sadzonek | Sówka w kolorach Płomykówki |
 | **Przytulne Gniazdko** | **Uszatka Ola** (kuzynka cioci) | meble i ozdoby: gałąź do spania, hamak, tapety, dywany, lampy | Sówka w kolorach Uszatki |
-| **Tablica ogłoszeń** | wszyscy mieszkańcy | **zamówienia**: „Kózka Sprężynka prosi o 5 marchewek na urodziny” → żołędzie + serduszko Rangi | ikony mieszkańców |
+| **Tablica ogłoszeń** | wszyscy mieszkańcy | **zamówienia**: „Kózka Sprężynka prosi o 5 marchewek na urodziny” → Dziupaki + serduszko Rangi | ikony mieszkańców |
 | **Poczta** (skrzynka przy domu) | — | listy i pocztówki cioci (prezenty, nowe nasiona), rachunki „Wysłano z targu” | — |
 | *później* | **Śnieżna** (kafejka — gotowanie), **Puszczyk** (biblioteka — „Zielnik”, czyli album roślin), kozy z festynu | — | gatunki z Butiku |
 
@@ -534,12 +556,12 @@ zna, a grafiki są gotowe.
   kałuże!”). Bez długich dialogów i bez wyborów odpowiedzi w pierwszej wersji.
 - **Ranga Miasteczka** (jak Town Rank w Mistrii): za zamówienia z tablicy przybywa serduszek; kolejne progi
   otwierają nowe sklepy (Kwiaciarnia, Przytulne Gniazdko), nowe nasiona, większe zamówienia i festyny.
-- **Przyjaźnie z mieszkańcami** (prezenty, ulubione rośliny) — drugi etap (pytanie 14).
+- **Przyjaźnie z mieszkańcami** (prezenty, ulubione rośliny) — drugi etap (decyzja 14).
 
 ### 11.3. Jak wygląda miasteczko na telefonie
 
 - **Ulica przewijana w bok** (makieta C) — Sówka przelatuje do sklepu po stuknięciu; stuknięcie sklepu otwiera
-  **arkusz od dołu** z listą towarów (duże wiersze, cena w żołędziach, „Kup” / „Kup ×5”, przy sprzedaży suwak ilości).
+  **arkusz od dołu** z listą towarów (duże wiersze, cena w Dziupakach, „Kup” / „Kup ×5”, przy sprzedaży suwak ilości).
 - Sklepy są zawsze otwarte (nie ma zegara).
 
 ---
@@ -554,8 +576,12 @@ zna, a grafiki są gotowe.
 - **Skrzynia w domu:** 36 → 72 miejsca; przy skrzyni **„Odłóż wszystkie plony”** jednym stuknięciem.
 - **Operacje zbiorcze** (jak w dodatku do Sprout Valley): „Sprzedaj wszystkie plony” na targu, „Odłóż do skrzyni”,
   „Posortuj”.
-- **Pełny plecak (propozycja — pytanie 8):** zbiór się nie zatrzymuje — nadmiar trafia do **kosza przy domu**
-  (komunikat „Plecak pełny — reszta czeka w koszu przy domu”). Nic nie przepada.
+- **Pełny plecak (decyzja 2026-11-24):** gra **ostrzega** („Plecak pełny! Sprzedaj plony albo odłóż je do skrzyni”,
+  z przyciskiem „Otwórz plecak”), a zbieranie się zatrzymuje, dopóki gracz sam nie zrobi miejsca. Wcześniej, przy
+  2 wolnych miejscach, jest łagodne „Plecak prawie pełny”. Nic nie przepada: dojrzała roślina czeka na grządce
+  bez końca (rozdz. 8.1), a przy przeciąganiu palcem Sówka pomija grządki, których nie zmieści. **Większy plecak
+  to ulepszenie** (12 → 18 → 24 → 36 w Przytulnym Gniazdku), a „Odłóż wszystkie plony” przy skrzyni i „Sprzedaj
+  wszystkie plony” na targu opróżniają go jednym stuknięciem.
 - **Wybór nasion do siewu:** stuknięcie miejsca z nasionami na pasku; przy przeciąganiu siejemy wybrany rodzaj.
 
 ---
@@ -573,7 +599,7 @@ zna, a grafiki są gotowe.
 | **Worek nasion** — obszar siewu | 1 | 1 × 3 | 3 × 3 | 3 × 5 | 5 × 5 |
 | **„Hu-hu!”** (zdolność Sówki) — zasięg przepędzania | 1 zwierzak | 2 kafelki | 3 | 4 | całe pole |
 
-- Koszt: **żołędzie + plony** (np. miedziana konewka: 500 żołędzi i 10 marchewek) — ulepszenia są powiązane
+- Koszt: **Dziupaki + plony** (np. miedziana konewka: 500 Dziupaków i 10 marchewek) — ulepszenia są powiązane
   z uprawą, bez kopalni i rud.
 - Gotowe **następnego ranka**; do tego czasu Sówka używa starego narzędzia (nie ma dni „bez konewki”).
 - Napełnianie konewki: stuknięcie studni albo beczki na deszczówkę (deszcz napełnia beczkę za darmo).
@@ -586,7 +612,7 @@ zna, a grafiki są gotowe.
 | **Zraszacz** (zajmuje 1 kafelek; podlewa rano) | Zwykły (4 pola — „plus”), Srebrny (3 × 3), Złoty (5 × 5), **Fontanna-humbak** (7 × 7; humbak tryska wodą z grzbietu) |
 | **Strach-sowa** | 4 poziomy (rozdz. 10.2) |
 | **Płot** | 4 poziomy (rozdz. 10.3) |
-| **Skrzynka sprzedaży** | sprzedaż z farmy, żołędzie rano (bez „hitu dnia”) |
+| **Skrzynka sprzedaży** | sprzedaż z farmy, Dziupaki rano (bez „hitu dnia”) |
 | **Kompostownik** | resztki → kompost (rozdz. 8.7) |
 | **Beczka na deszczówkę** | napełnianie konewki przy polu |
 | **Kroplówka w szklarni** | podlewa całą szklarnię |
@@ -611,7 +637,7 @@ bez siekiery i kilofa).
 | Etap | Co | Miejsca |
 | --- | --- | --- |
 | start | zrujnowana szklarnia (dziura w dachu, zbite szyby) | 0 |
-| **Naprawa** | zamówienie od Puchacza: 15 dowolnych warzyw + 800 żołędzi | **8** |
+| **Naprawa** | zamówienie od Puchacza: 15 dowolnych warzyw + 800 Dziupaków | **8** |
 | 1–4 | kolejne rzędy stołów uprawnych | 16 → 24 → 36 → **48** |
 | **Palmiarnia** | dobudówka na drzewka (cytryna, banan) | 6 dużych miejsc |
 | **Kroplówka** | samo podlewanie | — |
@@ -657,9 +683,11 @@ symulator (rozdz. 14).
 
 ---
 
-## 14. Ekonomia — żołędzie
+## 14. Ekonomia — Dziupaki
 
-- **Waluta Farmy: żołędzie** (nazwa — pytanie 2). Osobna od **piórek** Sowiej Akademii — piórka zostają walutą
+- **Waluta Farmy: Dziupaki** (nazwa — Twoja decyzja 2026-11-24; l. poj. **Dziupak**; ikonka: drewniany krążek
+  z małą dziuplą i listkiem). Dziupaków nie da się kupić za Wypluffki ani wymienić (Analiza 7b, rozdz. 10). Osobna
+  od **piórek** Sowiej Akademii — piórka zostają walutą
   Butiku i Dziupli; Farma ma własną gospodarkę, więc nie rozregulowuje innych gier.
 - **Zasada opłacalności:** zysk z grządki na dzień = (cena plonu × liczba plonów − cena nasion) / dni. Później
   odblokowane rośliny dają więcej na dzień, ale potrzebują więcej dni albo miejsca w szklarni.
@@ -674,7 +702,7 @@ symulator (rozdz. 14).
 | Ananas (szklarnia) | 150 | 400 | 12 | ok. 21 |
 
 - **Hit dnia** w porcie (+50% za jeden rodzaj), ceny zmieniają się lekko (±10%) — z ziarnem dnia.
-- **Bez pułapki:** gdy gracz ma mniej niż 10 żołędzi i nic nie rośnie, Klementyna daje 5 nasion rzodkiewki
+- **Bez pułapki:** gdy gracz ma mniej niż 10 Dziupaków i nic nie rośnie, Klementyna daje 5 nasion rzodkiewki
   („Na koszt firmy, Sówko!”). Nie da się „zablokować”.
 - **Strojenie:** gracz-symulator (jak w Sowich Trójkach i Ogrodach) gra 100–200 dni „rozsądnie”; cele: pierwsze
   ulepszenie konewki ok. 8.–12. dnia, telewizor ok. 10.–15., pełne pole ok. 60.–80. dnia.
@@ -692,7 +720,7 @@ symulator (rozdz. 14).
 {
   version: 1,
   day: 34, season: "lato", seed: "f-8k2x",          // dzień gry, pora roku, ziarno zapisu (pogoda, ceny)
-  money: 12500,                                      // żołędzie
+  money: 12500,                                      // Dziupaki
   weather: { today: "deszcz", tomorrow: "slonce" },
   maps: {
     pole:      { size: [8, 6], tiles: [[0, 0, { t: "grzadka", wet: 1, plant: "pomidor", age: 5, harvests: 2 }], …] },
@@ -701,7 +729,7 @@ symulator (rozdz. 14).
     dom:       { level: 2, slots: { "parapet-1": { plant: "sowiStorczyk", age: 22, water: 1 }, … }, decor: { spanie: "galaz", tapeta: "kwiatki" } },
     farma:     { objects: [["zraszacz-srebrny", 6, 4], ["strach-sowa", 2, 9, { cosmetic: "wianek" }], …] },
   },
-  inventory: { bar: ["konewka", "motyka", "sierp", "nasiona:marchew", …], bag: { "plon:pomidor": 14, … }, chest: { … }, basket: { … } },
+  inventory: { bar: ["konewka", "motyka", "sierp", "nasiona:marchew", …], bag: { "plon:pomidor": 14, … }, chest: { … } },
   tools: { konewka: 2, motyka: 1, sierp: 1, worek: 0, huhu: 1, pending: { konewka: 3 } },   // pending — gotowe rano
   upgrades: { plot: 2, fence: 1, scarecrow: 2, tv: true, antenna: false, … },
   pests: { pigeons: [[5, 0]], boars: null, shooed: { pigeons: 41, boars: 6 } },
@@ -732,12 +760,13 @@ symulator (rozdz. 14).
 | --- | --- |
 | **Rejestr gier** (`shared/sowie-platform.js`) | 7. gra: `{ id: "farma", name: "Sowia Farma", path: "SowiaFarma/", kind: "idle", saveVersion: 1, rebuilt: true }` (dopiero w F9; podgląd działa bez wpisu) |
 | **SowieCloud** | `"farma"` w `GAME_IDS` — po Twojej publikacji reguł |
-| **Sowia Dziupla** — tablica korkowa | karta-zdjęcie „Farma” z ruchomą ilustracją (Sówka podlewa grządkę, gołąb ucieka) i karteczką „Dzień 34 · 🌰 12 500” |
+| **Sowia Dziupla** — tablica korkowa | karta-zdjęcie „Farma” z ruchomą ilustracją (Sówka podlewa grządkę, gołąb ucieka) i karteczką „Dzień 34 · 🪙 12 500” |
 | **Sowia Dziupla** — ozdoby | **roślinki z Farmy na półce** (nowa kategoria), widok za oknem „Farma”, zabawka „pluszowy warchlak”, dywan „w marchewki”, lampa-dynia |
+| **Wypluffki** (Analiza 7b, etap W8 — dopiero po wdrożeniu Farmy) | w Sowim Butiku (zakładka „Gry”): skórki narzędzi (np. Konewka-humbak), strachów i domu, Kózka-maskotka — tylko wygląd; poziom narzędzia widać zawsze po kolorowym pasku; oraz Wypluffkowy nawóz jakości (rozdz. 8.7) |
 | **„Jak grać?”** (`shared/meta/guides-data.js`) | instrukcja: Cel, Sterowanie (stuknięcie i przeciąganie), Dzień i sen, Pogoda, Gołębie i dziki, Miasteczko, Ulepszenia |
 | **Sowia Akademia** | metryki `farmaDays`, `farmaHarvest`, `farmaSold`, `farmaSpecies`, `farmaShooed`, `farmaOrders`; zadania dnia („Zbierz 15 plonów w Sowiej Farmie”, „Przepędź 3 gołębie”, „Zrealizuj zamówienie z tablicy”); osiągnięcia („Zielona łapka” — 25 gatunków, „Sowi strażnik” — 50 przepędzonych, „Przyjaciółka Sowiogrodu” — Ranga 5) |
-| **Galeria** | nowe zdjęcia z Pexels za cele w Farmie (sowy, kozy, humbaki, rośliny — tak jak dotąd; ewentualnie też warzywa i gołębie / warchlaki — pytanie 15) |
-| **Rekordy** (`owl-tab.js`) | dzień, zarobione żołędzie, zebrane plony, gatunki, przepędzone szkodniki |
+| **Galeria** | nowe zdjęcia z Pexels za cele w Farmie (sowy, kozy, humbaki, rośliny — tak jak dotąd; decyzja 15: także warchlaki i gołębie) |
+| **Rekordy** (`owl-tab.js`) | dzień, zarobione Dziupaki, zebrane plony, gatunki, przepędzone szkodniki |
 | **Wersja demo** | Farma w pamięci strony, od dnia 1 (bez zapisu) |
 | **PWA** (`sw.js`) | pliki gry do pamięci przy pierwszym wejściu |
 | **Opisy „sześć gier”** | → „siedem gier” (`index.html`, `demo.html`, `manifest.webmanifest`, `docs/README.md`) |
@@ -825,9 +854,11 @@ testy z „sześcioma grami”.
 - **Katalogi:** unikalne identyfikatory, każda roślina ma rysunek, dni > 0, ceny dodatnie, rośliny wielokrotne mają
   czas odrastania, ulepszenia w kolejności, każde odblokowanie wskazuje istniejący warunek.
 - **Czynności:** przekop, siew tylko na przekopanej, podlewanie, zbiór jednorazowej i wielokrotnej, pełny plecak →
-  kosz (nic nie ginie), przeciąganie po 5 grządkach = 5 czynności, obszar narzędzi według poziomu.
+  ostrzeżenie i zatrzymany zbiór (roślina czeka na grządce — nic nie ginie), nawozy jakości podnoszą szansę na
+  ★★ / ★★★ (Wypluffkowy dokładnie jak Złoty), jeden nawóz na grządce, roślina z `zimuje` przy `features.frost = false`
+  tylko zasypia, przeciąganie po 5 grządkach = 5 czynności, obszar narzędzi według poziomu.
 - **Noc (`advanceDay`):** podlana rośnie, niepodlana stoi (nie usycha), deszcz podlewa pole i ogród, ale nie szklarnię
-  i dom, zraszacz podlewa tylko swój zasięg, pora roku usypia rośliny bez więdnięcia, skrzynka sprzedaży → żołędzie
+  i dom, zraszacz podlewa tylko swój zasięg, pora roku usypia rośliny bez więdnięcia, skrzynka sprzedaży → Dziupaki
   rano, ulepszenie gotowe rano.
 - **Pogoda:** ta sama z tym samym ziarnem; nie więcej niż 3 deszczowe dni z rzędu; co najmniej 1 deszcz w tygodniu;
   festyn — ładnie.
@@ -845,7 +876,7 @@ GitHuba bywa bardzo wolny (lekcja z przebiegów 262–265):
 1. Start: farma, Sówka, pasek, HUD, bez błędów; 320 × 568 i poziomo — nic się nie nakłada, kafelek ≥ 40 px.
 2. Stuknięcie suchej grządki → podlana; przeciągnięcie po 4 grządkach → 4 podlane.
 3. Siew → sen → „Poranek” → roślina urosła; deszcz → pole podlane, szklarnia nie.
-4. Zbiór → plecak; miasteczko → targ → „Sprzedaj wszystkie” → żołędzie; Kozi Sklepik → zakup nasion.
+4. Zbiór → plecak; miasteczko → targ → „Sprzedaj wszystkie” → Dziupaki; Kozi Sklepik → zakup nasion.
 5. Ulepszenie konewki → rano nowy poziom; rozbudowa pola → więcej grządek.
 6. Gołąb na grządce → stuknięcie → odlatuje; dziki rano → przepędzenie; Tryb Przytulny → brak szkodników.
 7. Dom: doniczka na parapecie, telewizor z prognozą, zmiana łóżka na gałąź.
@@ -873,6 +904,17 @@ Testy w GitHubie trwają dziś ok. **55 minut** (ok. 1360 testów w Chromium i W
 doda ok. 100–150 testów (≈ +5–8 minut). **Proponuję przed Farmą** (osobna, mała zmiana) rozdzielić testy w GitHubie
 na **dwa równoległe zadania** (Chromium i WebKit osobno) albo części — cały przebieg skróciłby się do ok. **30 minut**
 (pytanie 16).
+
+**Decyzja (2026-11-24 — „zostawiam Tobie… najlepiej i najefektywniej względem nakładów pracy i zużycia tokenów”):**
+krok **T0** jeszcze **przed Sowią Dziuplą**, bo testów przybędzie już z Dziuplą i Wypluffkami:
+
+1. **Dwa równoległe zadania w GitHubie:** „jakość + Chromium” (składnia, ESLint, Prettier, HTML, testy jednostkowe,
+   reguły i testy w Chromium) oraz „WebKit”.
+2. **WebKit (silnik Safari) tylko na profilach iPhone** (SE, 13, 13 poziomo). Na profilach Androida (Pixel 7,
+   360 × 800) prawdziwe telefony mają Chrome, a ten sprawdza Chromium — WebKit na „Androidzie” niczego nie dodaje.
+
+Przebieg skróci się z ok. 55 do ok. 25 minut, testów WebKit będzie o ok. 40% mniej, a pokrycie prawdziwych telefonów
+zostaje. Mniej czekania i rzadsze, krótsze logi do czytania przy błędach. U mnie lokalnie dalej tylko Chromium.
 
 ---
 
@@ -904,17 +946,24 @@ na **dwa równoległe zadania** (Chromium i WebKit osobno) albo części — ca�
 | **F3** | grafika farmy: podłoże, ok. 30 roślin (etapy), budynki, urządzenia — **najpierw obrazek do akceptacji** | L (5–6 dni) |
 | **F4** | dom i szklarnia (wnętrza, doniczki z rysunkami z Ogrodów, telewizor, gałąź) → **pierwszy podgląd do zagrania** (adres `SowiaFarma/`, bez zapisu) | M–L (4 dni) |
 | **F5** | miasteczko: ulica, mieszkańcy (kozy, humbak, sowy), arkusze sklepów, targ, tablica zamówień, Ranga | L (5 dni) |
-| **F6** | ekwipunek (plecak, skrzynia, kosz, operacje zbiorcze), ulepszenia narzędzi, zraszacze, strachy, płot, rozbudowy pola / szklarni / domu | L (5 dni) |
+| **F6** | ekwipunek (plecak z ostrzeżeniem o zapełnieniu, skrzynia, operacje zbiorcze), ulepszenia narzędzi, zraszacze, strachy, płot, rozbudowy pola / szklarni / domu | L (5 dni) |
 | **F7** | pogoda (wszystkie rodzaje, efekty), prognoza, gołębie i dziki (nowe SVG, przepędzanie), Tryb Przytulny | M–L (4 dni) |
 | **F8** | personalizacja, listy cioci (samouczek), dźwięk i muzyka, pory roku i pierwszy festyn, strojenie symulatorem, testy e2e i wydajności → **pełny podgląd** do Twoich testów F1–F7 | L (5–6 dni) |
 | **F9** | po akceptacji i publikacji reguł: zapis w chmurze, karta w Dziupli, ozdoby Dziupli, Akademia, Galeria, Rekordy, „Jak grać?”, demo, PWA; dokumentacja (`docs/README.md`, `docs/Documentation.md`, dokumentacja gry) | M–L (4 dni) |
 | **F10** | poprawki po Twoich testach (F8) i testach rodziny | M (2–3 dni) |
+| **F11** | **audyt wszystkich plików i komentarze w kodzie** (Twoja prośba z 2026-11-24 — po pierwszej wersji Farmy): przegląd każdego pliku SowieGry (gry, `shared/`, Sowia Dziupla, Wypluffki, panel admina, skrypty, testy, `sw.js`); komentarze po polsku przy każdej funkcji i w nieoczywistych miejscach (co robi, dlaczego tak, skąd liczby); usunięcie martwego kodu i powtórzeń; zgodność z `docs/Documentation.md` i dokumentacją gier. **Bez zmian w działaniu gier** — te same testy przed i po; małe commity, folder po folderze | M–L (3–5 dni) |
 
 **Razem ok. 44–50 dni pracy, czyli ok. 9–10 tygodni roboczych** (dla porównania: Sowie Trójki — 3–4 tygodnie, Dziupla —
-10–14 dni). **Kiedy:** po Sowiej Dziupli (Analiza 7). Przed F1 — rozdzielenie testów w GitHubie (rozdz. 17.4),
-jeśli się zgodzisz.
+10–14 dni). **Kiedy:** po Sowiej Dziupli i Wypluffkach (Analizy 7 i 7b — Twoja decyzja: „Farmę dodamy później”).
+Rozdzielenie testów w GitHubie (T0) robię już przed Dziuplą (rozdz. 17.4). Po F10 — **audyt F11** (poza 44–50 dniami).
 
-**Twoje czynności:** odpowiedzi na pytania (rozdz. 20), akceptacja grafik (F3, F7), testy podglądu (po F4 krótki,
+**Kolejność etapów i testów (decyzja 12 — „zostawiam Tobie”):** zostaje podgląd bez zapisu (F4–F8), a zapis i karta
+w Dziupli dopiero po Twoich testach (F9) — najmniej ryzyka dla zapisów i najmniej poprawek. Testy na telefonie
+w **dwóch rundach** (krótka po F4, pełna po F8). Zasady gry sprawdzają szybkie testy jednostkowe i gracz-symulator
+(tanio, bez przeglądarki), a testy w przeglądarce obejmują tylko najważniejsze ścieżki (rozdz. 17.2). To mniej pracy,
+krótsze przebiegi i mniej powtórek.
+
+**Twoje czynności:** akceptacja grafik (F3, F7), testy podglądu (po F4 krótki,
 po F8 pełny), publikacja reguł Firestore (Załącznik B — dopiero w F9), zgoda na kartę w Dziupli.
 
 **Drugi etap (po pierwszej wersji, do wyboru):** drzewa owocowe, gotowanie (kuchnia, Kafejka Śnieżnej, kanał
@@ -925,8 +974,31 @@ warzywa, Zielnik (album roślin), Las i przygody (ewentualnie walka — rozdz. 1
 
 ## 20. Pytania do właściciela (prostym językiem)
 
-Przy każdym pytaniu jest moja rada. Można odpowiedzieć krótko, np. „1 tak, 2 tak, 3 prostsza wersja…” albo
-„wszystko według rad”.
+**Decyzje z 2026-11-24** (dosłownie w `UWAGI_WLASCICIELA.md`, tabela „2026-11-24”) — pytań otwartych nie ma:
+
+| # | Decyzja | Gdzie w analizie |
+| --- | --- | --- |
+| 1 | pory roku — **tak**, z furtką: „być może wprowadzimy sezonowe rośliny i w przyszłości niektóre rośliny nie przetrwają zimy” | rozdz. 5.5 |
+| 2 | waluta Farmy: **„Dziupaki”** | rozdz. 14 (i cały dokument) |
+| 3 | pora dnia „za zrobione rzeczy” — tak | rozdz. 5.1 |
+| 4 | szkodniki według rady (a) | rozdz. 10 |
+| 5 | sterowanie według rady | rozdz. 6 |
+| 6 | automatyczne narzędzie według rady | rozdz. 6.2 |
+| 7 | nazwy — „Zdaję się na Ciebie” | rozdz. 4, 11.1 |
+| 8 | pełny plecak — **ostrzeżenie, gracz sam opróżnia**; większe plecaki to ulepszenie | rozdz. 12 |
+| 9 | jakość plonów — tak, plus **nawozy jakości** z Koziego Sklepiku i za Wypluffki | rozdz. 8.5, 8.7; Analiza 7b, rozdz. 10 |
+| 10 | sprzedaż według rady (targ i skrzynka) | rozdz. 11, 13.2 |
+| 11 | strój dnia — tak | rozdz. 13.6 |
+| 12 | kolejność etapów i testów — „zostawiam Tobie” | rozdz. 19 |
+| 13 | dwa telefony — tak | rozdz. 15.1 |
+| 14 | przyjaźnie — drugi etap | rozdz. 11.2, 19 |
+| 15 | Galeria — tak (także warchlaki i gołębie) | rozdz. 15.2 |
+| 16 | testy w GitHubie — „zostawiam Tobie” | rozdz. 17.4 (krok T0) |
+
+Dodatkowo: po pierwszej wersji Farmy — audyt wszystkich plików i komentarze w kodzie (F11, rozdz. 19). Kolejność
+całości: najpierw Sowia Dziupla i Wypluffki, potem Farma (`STAN_PRAC.md`, punkt 0.8).
+
+Pytania (dla porządku, w pierwotnym brzmieniu):
 
 1. **Pory roku:** czy w grze mają być wiosna, lato, jesień i zima (po 14 dni)? Zimą pole odpoczywa, a działa
    szklarnia i dom. Posadzone rośliny nigdy nie więdną — tylko „zasypiają”. (**Polecam:** tak.)
@@ -1034,7 +1106,8 @@ service cloud.firestore {
 }
 ```
 
-Jeśli do tego czasu reguły zmienią się z innego powodu (np. przy Dziupli), dostaniesz aktualną pełną treść.
+Wcześniej reguły zmienią się przy Wypluffkach (portfel — [Analiza 7b, Załącznik B](ANALIZA_7b_Mikroplatnosci.md)),
+więc przy F9 dostaniesz jedną, połączoną treść: tamte reguły plus `"farma"` na liście gier.
 
 ---
 
@@ -1046,7 +1119,7 @@ Jeśli do tego czasu reguły zmienią się z innego powodu (np. przy Dziupli), d
    wszystkie po drodze; zraszacz w rogu podlał 4 sąsiednie już rano.
 3. Na świeżo zasianej grządce siedzi gołąb: **stuknięcie** → „Hu-hu!” → „Gru?!” — odlatuje, zostawia piórko.
 4. Przeciągnięcie po gotowych marchewkach — zbiór; przeciągnięcie z nasionami rzodkiewki po pustych — siew.
-5. **Mapa → Miasteczko.** Tablica: zamówienie Sprężynki (5 marchewek) → +60 żołędzi i serduszko Rangi. Targ
+5. **Mapa → Miasteczko.** Tablica: zamówienie Sprężynki (5 marchewek) → +60 Dziupaków i serduszko Rangi. Targ
    w porcie: „Hit dnia: rzodkiewki +50%” → sprzedaż reszty. Kozi Sklepik: nasiona truskawek („Nowość!”).
    Warsztat: zamówienie miedzianej konewki (gotowa jutro rano).
 6. **Dom.** Podlanie Sowiego storczyka na parapecie (mruga). Telewizor: humbak — „Jutro deszcz!”.

@@ -1,4 +1,4 @@
-# Stan prac — 2026-11-23
+# Stan prac — 2026-11-24
 
 Podsumowanie dla właściciela: co jest zrobione, co zostało, jakie są decyzje do podjęcia i na czym polegają problemy
 z testami automatycznymi. Szczegóły techniczne: `docs/Documentation.md`; plany: `ANALIZA_3_Plan_prac.md` (etapy
@@ -65,6 +65,13 @@ do przepędzania bez walki; plan F0–F10 (ok. 44–50 dni pracy) i **16 pytań*
 były zawieszone (punkt 0.7): przebieg 265 doszedł do testu 1351 z 1364, gdy został anulowany — trwa po prostu ok.
 55 minut; czerwony wynik dawał **jeden test Sowich Trójek w WebKit** (przeładowanie strony) — poprawiony w teście,
 gry bez zmian. **Dla Ciebie:** odpowiedzi na pytania Analizy 8 (w wolnej chwili — budowa i tak po Dziupli).
+
+**2026-11-24 (Wypluffki i decyzje):** nowa analiza [`ANALIZA_7b_Mikroplatnosci.md`](ANALIZA_7b_Mikroplatnosci.md) —
+**Wypluffki**, czyli udawane mikropłatności jako parodia: wspólny Sowi Butik (piórka za granie, Wypluffki od admina —
+tylko wygląd), „Doładuj Wypluffki” z obrazkiem Sówki robiącej „HU HU!” na kozę i panel admina z hasłem `KoziAdmin`.
+Twoje odpowiedzi do Analiz 7, 7b i 8 są wpisane w ich rozdziały z pytaniami. **Kolejność:** testy w GitHubie w dwóch
+częściach → **Sowia Dziupla z Wypluffkami** → Sowia Farma → audyt kodu (punkt 0.8). **Dla Ciebie:** teraz nic —
+reguły z portfelem opublikujesz dopiero w etapie W2, gdy o to poproszę.
 
 ## 0. Poprawki po testach z 2026-11-01 (etapy P1–P8)
 
@@ -294,7 +301,42 @@ w kodzie gier. Plan F0–F10 (ok. 44–50 dni pracy), budowa po Sowiej Dziupli; 
   (`tests/e2e/telefon/trojki.spec.js`), jak w `tory.spec.js` i `rekordy.spec.js`. U mnie w Chromium: wszystkie testy
   Trójek przechodzą (18 / 18, iPhone SE i Pixel 7, emulator); WebKit sprawdzi GitHub po wypchnięciu na `main`.
 - **Propozycja:** rozdzielić testy w GitHubie na dwie równoległe części (Chromium i WebKit) — ok. 30 minut zamiast
-  prawie godziny (Analiza 8, pytanie 16). Nie zmieniam tego bez Twojej zgody.
+  prawie godziny (Analiza 8, pytanie 16). Nie zmieniam tego bez Twojej zgody. → **2026-11-24: „zostawiam Tobie”** —
+  krok T0 przed Dziuplą, z WebKitem tylko na profilach iPhone (punkt 0.8).
+
+### 0.8. 2026-11-24: Wypluffki (Analiza 7b), decyzje do Analiz 7, 7b i 8 i kolejność prac
+
+**Analiza 7b — Wypluffki (W1):** [`ANALIZA_7b_Mikroplatnosci.md`](ANALIZA_7b_Mikroplatnosci.md) — udawane
+mikropłatności jako parodia „bez natręctwa”:
+- wspólny Sowi Butik: piórka za granie, Wypluffki od admina, a za Wypluffki tylko wygląd;
+- „Doładuj Wypluffki” z obrazkiem Sówki robiącej „HU HU!” na kozę (dowód wpłaty do zrzutu ekranu);
+- panel admina https://cutelittlegoat.github.io/SowieGry/Admin/ z hasłem `KoziAdmin` w kodzie;
+- portfel w nowej kolekcji `sowiegry_wypluffki` z regułami spójności (sprawdzone na emulatorze: 10 grup testów,
+  ok. 40 sprawdzeń).
+
+Bez zmian w kodzie gier.
+
+**Twoje decyzje** (dosłownie w [`UWAGI_WLASCICIELA.md`](UWAGI_WLASCICIELA.md), tabela „Prośby, uwagi i decyzje —
+2026-11-24”):
+
+| Analiza | Najważniejsze decyzje | Gdzie |
+| --- | --- | --- |
+| 7 — Sowia Dziupla | Dziupla zastępuje menu (bez „Prostego widoku”); tablica w pionie; półka 3 + 2 miejsca (także za Wypluffki); ozdoby za granie, piórka i Wypluffki; automatyczny widok za oknem; demo tylko z grami; budowa teraz; doniczki stoją na półce (D1a) | rozdz. 16 |
+| 7b — Wypluffki | hasło panelu `KoziAdmin` w kodzie (bez maili); „Banki nie akceptują wypluffków”; „Parodia, ale bez natręctwa”; kolejka hu-hu, pakiety i ceny, jajko-niespodzianka, „Udostępnij obrazek”, VIP — tak; rzeczy do Farmy dopiero po Farmie; prezent powitalny | rozdz. 19 |
+| 8 — Sowia Farma | waluta „Dziupaki”; pory roku z furtką (rośliny sezonowe, mrozy); pełny plecak — ostrzeżenie i opróżnianie przez gracza; jakość plonów i nawozy jakości (u kozy i za Wypluffki); przyjaźnie w drugim etapie; etapy i testy według mnie; po pierwszej wersji audyt kodu (A1 → etap F11) | rozdz. 20 |
+
+**Kolejność prac** (Twoja decyzja: „Proponuję zacząć od wdrożenia mikropłatności i dziupli. Farmę dodamy później.”)
+— aktualizuję po każdym kroku:
+
+| Krok | Co | Stan |
+| --- | --- | --- |
+| T0 | testy w GitHubie w dwóch równoległych częściach (jakość + Chromium, WebKit), WebKit tylko na profilach iPhone — ok. 25 min zamiast 55 (Analiza 8, rozdz. 17.4) | ⏳ następny |
+| D + W | Sowia Dziupla z Wypluffkami — etapy D1–D7 i W1–W9 przeplatane ([Analiza 7b, rozdz. 17.2](ANALIZA_7b_Mikroplatnosci.md#172-kolejność-razem-z-sowią-dziuplą-analiza-7-rozdz-15)): logika i reguły → panel admina (Ty publikujesz reguły) → scena Dziupli → „Doładuj Wypluffki” → Szafa, Dekorator i Butik → grafiki do akceptacji → wygląd w grach → przełączenie menu po Twoich testach | ⏳ |
+| F | Sowia Farma — F0–F10 ([Analiza 8](ANALIZA_8_Nowa_gra_Sowia_Farma.md), rozdz. 19), z rzeczami za Wypluffki (W8) | ⏳ później |
+| A1 | audyt wszystkich plików i komentarze w kodzie (Analiza 8, etap F11) | ⏳ po pierwszej wersji Farmy |
+
+**Dla Ciebie teraz:** nic. Reguły z portfelem (Analiza 7b, Załącznik B) opublikujesz w etapie W2, gdy o to poproszę;
+potem testy B1–B7 i D1–D5 na telefonie (dopiszę je do `TESTY_NA_TELEFONIE.md` przy budowie).
 
 ## 1. Co jest zrobione — plan E0–E10 (stan z 2026-10-06)
 
@@ -520,8 +562,8 @@ przybyło (P3–P7) i przebieg zbliżył się do limitu 60 minut, limit czasu CI
    nowa gra „Sowie Trójki” jako podgląd i nowe zdjęcia Galerii ✅ → jeden PR na `main` ✅ → przeniesienie bazy ✅ →
    etap M5 (Trójki w menu i z zapisem) ✅. Twoje czynności: testy T7–T9; decyzja, czy i kiedy usunąć stare dane
    SowieGry ze starego projektu (`PRZENIESIENIE_FIRESTORE.md`, krok 7 — do tego czasu nic nie kasujemy). Następne
-   zadanie: Sowia Dziupla (Analiza 7, po Twoich odpowiedziach w rozdz. 16), potem **Sowia Farma** (Analiza 8, po
-   odpowiedziach w rozdz. 20; najpierw ewentualnie szybsze testy w GitHubie — pytanie 16).
+   zadanie (decyzje z 2026-11-24, punkt 0.8): **T0** — szybsze testy w GitHubie, potem **Sowia Dziupla z Wypluffkami**
+   (Analizy 7 i 7b), później **Sowia Farma** (Analiza 8), a po jej pierwszej wersji **audyt kodu** (A1, etap F11).
 1. Twoje testy na telefonie (`TESTY_NA_TELEFONIE.md`) i uwagi (w nowym oknie) → wpis w `UWAGI_WLASCICIELA.md` →
    poprawki małymi commitami, każdy z zielonym `npm test`, z aktualizacją dokumentacji gry i tego pliku.
 2. Ewentualnie inne wymagania zdjęć Galerii (punkt 3, wiersz 2) i ceny w Butiku albo w Kramie ogrodnika.

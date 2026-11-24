@@ -2,15 +2,18 @@
 
 > Data: 2026-11-22 · Podstawa: decyzja właściciela nr 7 do Analizy 5 i dwie wiadomości uzupełniające z tego samego
 > dnia (dosłownie w [rozdziale 1](#1-prośba-dosłownie-i-numer)) oraz kod na `main` (menu `index.html`, `shared/menu/`,
-> Sowi Butik `shared/meta/shop.js`, Galeria `shared/owl-gallery.js`) · Status: **analiza — bez zmian w kodzie**;
-> budowa to osobne zadanie (proponuję po nowej grze Sowie Trójki — [rozdział 15](#15-plan-prac)) · Zasady pracy bez
+> Sowi Butik `shared/meta/shop.js`, Galeria `shared/owl-gallery.js`) · Status: **decyzje właściciela 2026-11-24** ([rozdział 16](#16-pytania-do-właściciela-prostym-językiem));
+> budowa **razem z Wypluffkami** ([`ANALIZA_7b_Mikroplatnosci.md`](ANALIZA_7b_Mikroplatnosci.md)) — **następne zadanie**
+> ([rozdział 15](#15-plan-prac)) · Zasady pracy bez
 > zmian: [`ANALIZA_3_Plan_prac.md`, rozdz. 8.1](ANALIZA_3_Plan_prac.md); zasada „nic nie ginie”:
 > [`ANALIZA_4`, rozdz. 2](ANALIZA_4_Uwagi_z_testow_poprawki_i_rozbudowa.md).
 
 Makieta to **rysunek poglądowy** zrobiony z prawdziwych elementów SowieGry: ilustracje kart gier z obecnego menu,
 Sówka i kózka z atlasu, rośliny narysowane tymi samymi funkcjami co w Sowich Ogrodach (Monstera, Sowi storczyk)
 i w Łącz i Hoduj (Truskawka, Lotos, Diamentowa monstera), miniatura zdjęcia z Galerii. Właścicielowi podoba się
-kierunek makiety, z prośbą o miejsce na co najmniej 3 roślinki — makieta ma już 3 roślinki na półce.
+kierunek makiety, z prośbą o miejsce na co najmniej 3 roślinki — makieta ma już 3 roślinki na półce. **Uwaga
+(D1a, 2026-11-24):** na makiecie roślinka na 2. miejscu półki „lewituje” nad deską. To błąd rysunku, a nie wzór:
+w Dziupli **każda doniczka stoi dolną krawędzią na półce** (rozdz. 6.2, test w rozdz. 13.1).
 
 ---
 
@@ -22,18 +25,22 @@ kierunek makiety, z prośbą o miejsce na co najmniej 3 roślinki — makieta ma
   Dziupli**.
 - **Ozdoby zdobywa się, grając** we wszystkie gry (te same liczniki, które dziś odblokowują zdjęcia w Galerii),
   a część można kupić za piórka. Dziupla jest **niezależna od gier** — gry tylko dają ozdoby.
-- **Półka z roślinkami z gier:** co najmniej **3 miejsca** od początku (4. i 5. do odblokowania). Na każde miejsce
+- **Półka z roślinkami z gier:** co najmniej **3 miejsca** od początku (4. i 5. za granie **albo** za Wypluffki). Na każde miejsce
   gracz wybiera roślinkę wyhodowaną w Sowich Ogrodach, Łącz i Hoduj albo w Sowich Trójkach — narysowaną dokładnie
-  tak jak w grze (Sowi storczyk mruga także na półce).
+  tak jak w grze (Sowi storczyk mruga także na półce). Każda doniczka stoi dolną krawędzią na półce.
+- **Wypluffki** (udawane mikropłatności, Analiza 7b): licznik z „+” na górnym pasku obok piórek, Wypluffkomat
+  w pokoju, ulotka „Oferta dnia” na końcu tablicy i rzeczy premium w Szafie i Dekoratorze. Wspólny Sowi Butik
+  z dwiema walutami — piórka za granie, Wypluffki od admina.
 - **Wygląd dziupli też jest ozdobą do wyboru** (jasne drewno, brzozowa, wiśniowa, zimowa, morska, nocna,
   storczykowa…), podobnie jak widok za oknem, lampki, obrazek ze zdjęciem z Galerii, dywan, miejsce Sówki,
   zabawka i wygląd szafy.
 - **Nic nie ginie:** stroje, gatunki sów, piórka, zdjęcia, rekordy i zadania zostają — zmienia się tylko to, gdzie są
   na ekranie. Zapis w profilu (jedno nowe pole), **bez zmiany reguł Firestore**.
 - **Bez ryzyka:** najpierw podgląd (przycisk „Wypróbuj Sowią Dziuplę”, obecne menu zostaje), dopiero po Twojej
-  akceptacji Dziupla staje się ekranem głównym.
-- **Plan:** 8 etapów (D0–D7), ok. 10–14 dni pracy, jako osobne zadanie **po nowej grze Sowie Trójki** (tablica będzie
-  miała od razu 6 gier). **8 pytań** prostym językiem: [rozdział 16](#16-pytania-do-właściciela-prostym-językiem).
+  akceptacji Dziupla **zastępuje** menu główne — stare menu usuwamy, bez „Prostego widoku” (Twoja decyzja).
+- **Plan:** 8 etapów (D0–D7), ok. 10–14 dni pracy, **teraz** — Sowie Trójki już działają (tablica ma od razu 6 gier),
+  przeplecione z etapami Wypluffków W0–W9 (Analiza 7b, rozdz. 17.2). **Decyzje z 2026-11-24:**
+  [rozdział 16](#16-pytania-do-właściciela-prostym-językiem) — pytań otwartych nie ma.
 
 ![Makieta: A — Dziupla jako ekran główny (półka z 3 roślinkami z gier, tablica korkowa z grami, Sówka, szafa); B — Dekorator Dziupli (miejsca na ozdoby, wybór roślinki na 4. miejsce półki, wygląd dziupli w kategoriach)](ANALIZA_7_dziupla_makieta.png)
 
@@ -48,6 +55,8 @@ Numer z [`UWAGI_WLASCICIELA.md`](UWAGI_WLASCICIELA.md): **D1** (Dziupla).
 | 2026-11-22 | „„Sowia Dziupla” to fajny feature, który powinien być niezależny od gier. Znaczy grając w gry odblokowuje się itemy a potem dekoruje dziuplę. Dziupla zastąpiłaby obecne menu główne. To znaczy gdzieś na ekranie byłoby przewijane menu (np. coś jak tablica korkowa wewnątrz dziupli), na której gracz by wybierał grę. Garderoba/szafa do zmiany wyglądy sówki itd. Elementy dekoracyjne gracz by sam wybierał przez menu „Dekorator Dziupli”. Przeprowadź dodatkową analizę dotyczącą wprowadzenia takiej funkcjonalności.” |
 | 2026-11-22 | „W „Sowiej Dziupli” elementami dekoracyjnymi mają być m.in. roślinki z innych gier ustawiane na półce. Mają to być „sloty” i gracz będzie wybierać z dostępnych co tam wstawić. Sam wygląd dziupli też ma być jednym z takich elementów dekoracyjnych do wyboru.” |
 | 2026-11-22 | „Podoba mi się kierunek z makiety. Tylko zrób miejsce na przyjnajmniej 3 roślinki.” |
+| 2026-11-24 | „Na makiecie Dziupli jeden z kwiatków lewituje nad półką. Przy wdrażaniu zadbaj o to, żeby doniczki dolną krawędzią dotykały półki.” |
+| 2026-11-24 | odpowiedzi na pytania 1–8 (rozdz. 16) i „Proponuję zacząć od wdrożenia mikropłatności i dziupli. Farmę dodamy później.” |
 
 | Wymaganie | Gdzie w projekcie |
 | --- | --- |
@@ -59,6 +68,8 @@ Numer z [`UWAGI_WLASCICIELA.md`](UWAGI_WLASCICIELA.md): **D1** (Dziupla).
 | roślinki z innych gier na półce, w miejscach (slotach) | rozdz. 6.2 |
 | wygląd dziupli jako ozdoba do wyboru | rozdz. 6.3 |
 | miejsce na co najmniej 3 roślinki | rozdz. 6.2 (3 od początku, do 5) i makieta |
+| doniczki dolną krawędzią na półce (nie „lewitują”) | rozdz. 6.2, 11, 13.1 |
+| razem z Wypluffkami (Analiza 7b) | rozdz. 4.1, 5, 6, 8, 15 |
 
 ---
 
@@ -103,7 +114,7 @@ Zasady:
 
 ```
 ┌──────────────────────────────┐
-│ SowieGry      🪶 120      ⚙  │  logo, piórka (stuknięcie → Sowia Akademia), ustawienia
+│ SowieGry  🪶 120  (● 1 250 +) ⚙ │  logo, piórka (→ Sowia Akademia), Wypluffki z „+” (Analiza 7b), ustawienia
 │ ˚lampki˚˚˚˚˚˚˚˚˚˚˚˚˚˚˚˚˚˚˚˚   │  sufit: lampki (ozdoba)
 │ [obrazek]  ═półka═  ( okno ) │  obrazek z Galerii · półka z roślinkami (3+) · okno z widokiem
 │ ┌──────────────────────────┐ │
@@ -113,8 +124,9 @@ Zasady:
 │ │ │ [Graj]  │ │ [Graj]  │  │ │  rekord na kolorowej karteczce,
 │ │ └─────────┘ └─────────┘  │ │  przewijanie w pionie
 │ │   …   (6 gier)           │ │
+│ │ [ulotka: Oferta dnia]    │ │  ulotka Sowiego Butiku — na końcu tablicy (Analiza 7b)
 │ └──────────────────────────┘ │
-│ [szafa]   (Sówka)   🌸 🐐    │  podłoga: szafa, Sówka na swoim miejscu, roślina, zabawka, dywan
+│ [Wypluffkomat][szafa] (Sówka) 🌸 🐐 │  podłoga: szafa, Sówka na swoim miejscu, roślina, zabawka, dywan
 │ [Gry][Szafa][Dekoruj][Galeria][Więcej] │  dolny pasek (strefa kciuka)
 └──────────────────────────────┘
 ```
@@ -152,8 +164,8 @@ Zasady:
 
 ## 5. Szafa — wygląd Sówki
 
-- Stuknięcie szafy albo „Szafa” na dole otwiera arkusz z Sówką na środku (duży podgląd na żywo) i dwiema
-  zakładkami: **Gatunki** (Sówka, Puszczyk, Pójdźka, Uszatka, Płomykówka, Śnieżna, Puchacz — z Sowiego Butiku)
+- Stuknięcie szafy albo „Szafa” na dole otwiera arkusz z Sówką na środku (duży podgląd na żywo) i zakładkami
+  (od Analizy 7b także **Skórki**, **Ślad**, **Głos** i **Taniec** za Wypluffki): **Gatunki** (Sówka, Puszczyk, Pójdźka, Uszatka, Płomykówka, Śnieżna, Puchacz — z Sowiego Butiku)
   i **Stroje** (13 dodatków z Garderoby).
 - Zablokowane: kłódka i jak zdobyć („Misja: …” albo „Kup za 40 piórek”); zakup od razu w Szafie, z potwierdzeniem —
   ta sama logika co dziś w Sowim Butiku (`shared/meta/shop.js`: zapis po 0,3 s, dziennik zakupów `outfit:`
@@ -188,7 +200,13 @@ Każde miejsce ma też wybór „pusto” (oprócz wyglądu dziupli i tablicy). 
 ### 6.2. Półka z roślinkami z gier
 
 - **Miejsca:** 3 od początku (właściciel: „przynajmniej 3 roślinki”), **4. miejsce** po 5. poziomie Sowiej Akademii,
-  **5. miejsce** po ukończeniu 14. rozdziału Sowich Ogrodów — półka rośnie razem z graczem.
+  **5. miejsce** po ukończeniu 14. rozdziału Sowich Ogrodów — półka rośnie razem z graczem. **Decyzja 2026-11-24
+  („można to połączyć z Analizy/ANALIZA_7b_Mikroplatnosci.md”):** miejsca 4 i 5 można też kupić za Wypluffki
+  (499 i 799 — Analiza 7b, Załącznik A.2). Roślinki na nie i tak trzeba wyhodować w grach.
+- **Doniczka stoi na półce (uwaga D1a):** rysunek roślinki jest zaczepiony w **środku dolnej krawędzi doniczki**,
+  a ta leży dokładnie na górnej krawędzi deski — na każdym rozmiarze ekranu, dla każdej roślinki i doniczki
+  (także roślin z Sowich Ogrodów i Łącz i Hoduj, których rysunki mają w grach inne odstępy). Kołysanie i mruganie
+  ruszają tylko liście i kwiaty, nigdy doniczką w górę. Na makiecie jedna roślinka „lewituje” — w kodzie nie może.
 - **Skąd roślinki** (gracz wybiera z odblokowanych, każdą można postawić na dowolnym miejscu, ta sama roślinka może
   stać na dwóch miejscach):
 
@@ -232,7 +250,9 @@ Motyw zmienia wygląd ścian i podłogi, ale nie zasłania ozdób — wszystkie 
 3. **Piórka** — część ozdób (zwłaszcza motywy i dywany) można kupić w Dekoratorze, jak stroje w Butiku; zakup
    w dzienniku `shop.purchases["decor:<ozdoba>"]` (zapisywany po jednym kluczu — nie ginie, lekcja z uwagi G3).
 4. **Galeria** — każde odblokowane zdjęcie można powiesić w ramce.
-5. **Później** — ozdoby sezonowe (np. lampki w grudniu) i nagrody za wyzwania dnia.
+5. **Wypluffki** (Analiza 7b, decyzja 4 z 2026-11-24 — „zgoda plus mikropłatności”): kategoria „Premium ✨”
+   w Dekoratorze (np. Złota Dziupla, Złoty tron, kula disco) i miejsca 4–5 na półce.
+6. **Później** — ozdoby sezonowe (np. lampki w grudniu) i nagrody za wyzwania dnia.
 
 Odblokowanie **wynika z postępu**, a nie jest osobno zapisywane — nie trzeba niczego przenosić, a ozdoba nie może
 „zniknąć” (liczniki tylko rosną). Nowe ozdoby dostają znaczek „Nowe!”, a Sówka mówi o nich w dymku.
@@ -270,12 +290,13 @@ Odblokowanie **wynika z postępu**, a nie jest osobno zapisywane — nie trzeba 
 | Galeria | „Galeria” na dole, obrazek na ścianie | `#galeria` |
 | Sowa → poziom, XP, piórka | piórka w pasku u góry → Sowia Akademia | `#sowa` → Sowia Akademia |
 | Sowa → Garderoba, Sowi Butik (gatunki, stroje) | **Szafa** | `#szafa` (nowy) |
-| Sowa → Sowi Butik (dłuższe kózki) | „Więcej → Sowi Butik” | — |
+| Sowa → Sowi Butik (dłuższe kózki) | **wspólny Sowi Butik** (piórka i Wypluffki — Analiza 7b): licznik Wypluffek u góry, Wypluffkomat, ulotka na tablicy, „Więcej → Sowi Butik” | `#butik` (nowy) |
+| — | „Doładuj Wypluffki” (Analiza 7b, rozdz. 7) | `#doladuj` (nowy) |
 | Sowa → Zadania, Osiągnięcia | karteczka na tablicy, „Więcej → Sowia Akademia” | — |
 | Sowa → Rekordy | „Więcej → Rekordy” (i karteczki z rekordami na kartach gier) | — |
 | Sowa → Ustawienia | ⚙ u góry, „Więcej → Ustawienia” | `#ustawienia` |
 | — | Dekorator Dziupli | `#dekorator` (nowy) |
-| Wersja demo (`demo.html`) | **bez zmian** — własne, proste menu (pytanie 6) | — |
+| Wersja demo (`demo.html`) | **bez zmian** — „Demo zawiera tylko demo gier” (decyzja 6): bez Dziupli i Wypluffków | — |
 
 ---
 
@@ -307,7 +328,8 @@ dziupla: {
 ```
 
 - **Zakupy** w istniejącym dzienniku `shop.purchases["decor:<ozdoba>"]`, piórka przez `SowieAcademy.spend` — jak
-  w Sowim Butiku.
+  w Sowim Butiku. Ozdoby za Wypluffki — w portfelu `sowiegry_wypluffki/portfel` (Analiza 7b, rozdz. 12); reguły
+  Firestore zmieniają się tylko o portfel (Analiza 7b, Załącznik B), profil bez zmian.
 - **Odblokowane ozdoby nie są zapisywane** — wynikają z postępu (rozdz. 6.4). Do podsumowań gier w profilu
   (`profil.records.<gra>`, zapisywanych już dziś przez `saveGameState`) dopisujemy tylko brakujące drobiazgi,
   np. w Łącz i Hoduj liczbę połączeń (odblokowane łańcuchy) i najlepszy poziom w każdym łańcuchu.
@@ -347,17 +369,21 @@ dziupla: {
   i podłoga), widoki za oknem, lampy, ramki, tablica i pinezki, szafy, miejsca Sówki, dywany, duże rośliny, zabawki.
 - **Bez nowych rysunków** dla roślinek z gier (rysunki z Sowich Ogrodów i Łącz i Hoduj) i zdjęć (Galeria).
 - Każda nowa grafika najpierw na obrazku do Twojej akceptacji (jak makieta), potem w kodzie.
+- **Doniczki na półce** (uwaga D1a): na obrazku do akceptacji i w kodzie każda doniczka stoi na desce —
+  błąd makiety (roślinka na 2. miejscu nad półką) się nie powtórzy.
 
 ---
 
 ## 12. Wprowadzenie bez ryzyka
 
 1. **Podgląd:** w obecnym menu (Sowa → Ustawienia) przycisk „Wypróbuj Sowią Dziuplę” — otwiera Dziuplę, a z niej
-   można wrócić do zwykłego menu. Obecne menu zostaje ekranem startowym.
+   można wrócić do zwykłego menu. Obecne menu zostaje ekranem startowym tylko **na czas budowy**, bo zmiany trafiają
+   od razu na stronę (`main`) i gracz musi mieć działające menu.
 2. **Twoje testy na telefonie** (rozdz. 13.4) i poprawki.
-3. **Przełączenie:** po Twojej zgodzie Dziupla staje się ekranem startowym; zwykłe menu zostaje jako „Prosty widok”
-   w ustawieniach na czas testów rodziny (pytanie 1).
-4. **Wersja demo** bez zmian (pytanie 6).
+3. **Przełączenie:** po Twojej zgodzie Dziupla **zastępuje** menu główne. Stare menu i jego kod usuwamy, bez
+   „Prostego widoku” (decyzja 1: „Sowia Dziupla ma zastąpić zwykłe menu”); adresy zakładek działają dalej
+   (rozdz. 8).
+4. **Wersja demo** bez zmian — tylko demo gier (decyzja 6).
 
 ---
 
@@ -372,6 +398,9 @@ dziupla: {
 - Normalizacja `profil.dziupla`: brak pola, uszkodzone, z nieznaną ozdobą (zostaje), ozdoba w złym miejscu.
 - Zakup za piórka: odjęte piórka, wpis w dzienniku, druga próba nie pobiera drugi raz.
 - Profil po zmianach ma ≤ 30 pól najwyższego poziomu (reguła Firestore).
+- **Doniczki na półce (D1a):** dla każdej roślinki z każdej gry i każdej doniczki (także złotych za Wypluffki) dolna
+  krawędź rysunku doniczki = górna krawędź deski (±1 px) na 320 × 568, 390 × 844, poziomo i na tablecie; test
+  sprawdza też klatki kołysania i mrugania.
 
 ### 13.2. W przeglądarce (Playwright, profile telefonów, Chromium + WebKit w CI)
 
@@ -395,7 +424,7 @@ w CI — liczniki pracy (ile płócien rysuje się w spokoju) zamiast liczenia k
 | --- | --- |
 | D1 | wejście do Dziupli, przewijanie tablicy, start każdej gry |
 | D2 | Szafa: strój i gatunek widać w dziupli i w grach |
-| D3 | Dekorator: 3 roślinki na półce, widok za oknem, wygląd dziupli — zostają po zamknięciu aplikacji |
+| D3 | Dekorator: 3 roślinki na półce (czy każda doniczka stoi na półce), widok za oknem, wygląd dziupli — zostają po zamknięciu aplikacji |
 | D4 | kłódki: czy opis „jak zdobyć” jest zrozumiały; zakup za piórka |
 | D5 | płynność na Redmi Note 10 Pro (`?perf=1`) i mały telefon / poziomo |
 
@@ -405,7 +434,7 @@ w CI — liczniki pracy (ile płócien rysuje się w spokoju) zamiast liczenia k
 
 | Ryzyko | Skutek | Jak zapobiegamy |
 | --- | --- | --- |
-| Zmiana ekranu startowego wszystkich gier | trudniej znaleźć grę, błąd blokuje wejście | podgląd przy zachowaniu obecnego menu; gra zawsze 1 stuknięcie z tablicy; testy e2e startu każdej gry; „Prosty widok” |
+| Zmiana ekranu startowego wszystkich gier | trudniej znaleźć grę, błąd blokuje wejście | podgląd przy zachowaniu obecnego menu na czas budowy; gra zawsze 1 stuknięcie z tablicy; testy e2e startu każdej gry; przełączenie dopiero po Twoich testach |
 | Dużo grafik | długa praca | rośliny i zdjęcia z gier (bez nowych rysunków), na start ok. 35–45 małych SVG, reszta później |
 | Za mało miejsca na małym telefonie | ozdoby się nakładają | stałe miejsca (sloty), układ dla 320 px i poziomo, test nakładania prostokątów |
 | Wolniejszy start menu | lagi na słabszych telefonach | pokój z obrazków bez rysowania co klatkę, leniwe ładowanie ozdób, budżet w rozdz. 10 |
@@ -420,25 +449,41 @@ w CI — liczniki pracy (ile płócien rysuje się w spokoju) zamiast liczenia k
 
 | Etap | Co | Rozmiar |
 | --- | --- | --- |
-| **D0** | decyzje (rozdz. 16), akceptacja makiety — ta analiza | S |
+| **D0** | decyzje (rozdz. 16), akceptacja makiety — ✅ 2026-11-24 | S |
 | **D1** | katalog miejsc i ozdób, liczenie odblokowanych, `profil.dziupla`, zakupy + testy jednostkowe | M (2 dni) |
 | **D2** | scena dziupli (motyw domyślny), tablica korkowa z kartami gier, dolny pasek, Sówka — jako podgląd | L (3 dni) |
 | **D3** | Szafa (gatunki i stroje z zakupem) | M (1 dzień) |
 | **D4** | Dekorator: miejsca, arkusz, kłódki i postęp, zakup za piórka; półka z roślinkami z gier (3–5 miejsc) | M–L (2–3 dni) |
 | **D5** | grafiki: motywy, widoki, ozdoby (ok. 35–45 SVG; najpierw obrazek do akceptacji) | L (2–3 dni) |
 | **D6** | „Więcej” (Akademia, Rekordy, Jak grać, Butik, Ustawienia), adresy, karteczki zadań i instalacji, powitania Sówki | M (1–2 dni) |
-| **D7** | przełączenie ekranu startowego po Twojej zgodzie, „Prosty widok”, aktualizacja testów i dokumentacji (`docs/README.md`, `docs/Documentation.md`) | M (1–2 dni) |
+| **D7** | przełączenie ekranu startowego po Twojej zgodzie, **usunięcie starego menu** (bez „Prostego widoku”), aktualizacja testów i dokumentacji (`docs/README.md`, `docs/Documentation.md`) | M (1–2 dni) |
 
-Razem ok. 10–14 dni. **Kiedy:** jako osobne zadanie **po** obecnym (dokumentacja → wydajność → Sowie Trójki), żeby
-tablica od razu miała 6 gier, a Dziupla korzystała z poprawek wydajności i reżysera reakcji Sówki z Sowich Trójek
-(pytanie 7).
+Razem ok. 10–14 dni. **Kiedy: teraz** — Sowie Trójki już działają (decyzja 7), a Ty zdecydowałeś: „Proponuję zacząć
+od wdrożenia mikropłatności i dziupli. Farmę dodamy później.” Etapy D przeplatamy z etapami Wypluffków W0–W9
+(kolejność: [Analiza 7b, rozdz. 17.2](ANALIZA_7b_Mikroplatnosci.md#172-kolejność-razem-z-sowią-dziuplą-analiza-7-rozdz-15)).
+Przed D1 — krótki krok T0: testy w GitHubie w dwóch równoległych częściach (Analiza 8, decyzja 16).
 
-**Twoje czynności:** odpowiedzi na pytania, akceptacja grafik (D5), testy D1–D5 na telefonie, zgoda na przełączenie
-(D7). **Reguły Firestore — bez zmian.**
+**Twoje czynności:** akceptacja grafik (D5), testy D1–D5 na telefonie, zgoda na przełączenie (D7). **Reguły
+Firestore:** sama Dziupla ich nie zmienia; Wypluffki dopisują portfel (Analiza 7b, Załącznik B — publikacja w W2).
 
 ---
 
 ## 16. Pytania do właściciela (prostym językiem)
+
+**Decyzje z 2026-11-24** (dosłownie w `UWAGI_WLASCICIELA.md`, tabela „2026-11-24”) — pytań otwartych nie ma:
+
+| # | Decyzja | Co zmienia |
+| --- | --- | --- |
+| 1 | **Nie** — „Sowia Dziupla ma zastąpić zwykłe menu” | bez „Prostego widoku”; stare menu usuwamy w D7 (rozdz. 12, 15) |
+| 2 | zgoda — tablica w górę i w dół, dwie kolumny | rozdz. 4.2 |
+| 3 | zgoda — 3 miejsca + 4. i 5. do zdobycia, „można to połączyć z Analizy/ANALIZA_7b_Mikroplatnosci.md” | miejsca 4 i 5 także za Wypluffki (rozdz. 6.2) |
+| 4 | zgoda — za granie i za piórka, „plus mikropłatności opisane w Analizy/ANALIZA_7b_Mikroplatnosci.md” | kategoria „Premium ✨” w Dekoratorze (rozdz. 6.4) |
+| 5 | zgoda — „Automatyczny” widok za oknem | rozdz. 6.1 |
+| 6 | zgoda — „Demo zawiera tylko demo gier” | demo bez Dziupli i Wypluffków (rozdz. 8, 12) |
+| 7 | „Sowie Trójki już działają” | budowa teraz, razem z Wypluffkami (rozdz. 15) |
+| 8 | „Zdaję się na Ciebie” | katalog z Załącznika A + ozdoby premium z Analizy 7b, Załącznik A.2 |
+
+Pytania (dla porządku, w pierwotnym brzmieniu):
 
 1. **Czy po przejściu na Dziuplę zostawić w ustawieniach „Prosty widok”** (obecne menu z listą gier) — na czas testów
    rodziny? (**Polecam:** tak, na kilka tygodni, potem usunąć, żeby nie utrzymywać dwóch menu.)
